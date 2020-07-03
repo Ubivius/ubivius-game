@@ -13,6 +13,8 @@ June 27, 2020
     * `[SerializeField] ... m_maVariablePriveeDevoileeALEditeur`
 2. **Fonctions**
     * `MaFonctionQuelconque()`
+    * `MaClasseQuelconque`
+    * `IMonInterfaceQuelconque // notez bien le I au début`
 
 ## STRUCTURAL GUIDE
 
@@ -67,6 +69,62 @@ June 27, 2020
         * Plus de sections à venir
     * Builds
       * On n'y touche pas, c'est là que vont les *builds* générés par Unity
+
+## BONNES PRATIQUES & *PRO TIPS*
+
+- Pour qu'une collision soit *registered*, au moins un des deux `colliders` **doit** posséder un `Rigidbody2D`
+- Assurez vous de caller la version `2D` des fonctions (`OnTriggerEnter` vs `OnTriggerEnter2D`)
+- Avant d'importer des `assets` externes, passez par moi
+- Évitez l'utilisation de `GameObject.Find` et ses dérivées, particulièrement dans du code de prod 
+- Utilisez TextMeshPro pour le texte du UI
+- Si vous avez des appels fréquents à `Instantiate()`, pensez à utiliser un *pooler*
+- Ne rendez des variables publiques dans vos `MonoBehaviours` que lorsque c'est nécessaire. Préférez l'utilisation de `[SerializeField]` sur des variables privées
+- Utilisez `[RequireComponent(typeof(MonComponent))]` pour forcer un script à posséder un `Component` particulier. Ça garanti la non-nullité des appels à `GetComponent<>()`!
+- Cachez (comme dans mettre en *cache*) les `Components` sur lesquels vous appelez souvent `GetComponent`. Exemple: 
+ ```
+// Mauvais: GetComponent est appellé à chaque Update()
+
+void Update()
+{
+    ComponentXYZ xyz = GetComponent<ComponentXYZ>();
+    xyz.FonctionQuelconque();
+    ...
+}
+
+// Bon: Unique call à GetComponent
+private ComponentXYZ m_xyz;
+
+void Awake()
+{
+    m_xyz = GetComponent<ComponentXYZ>();
+}
+
+void Update()
+{
+    m_xyz.FonctionQuelconque();
+    ...
+}
+
+// Encore mieux: on s'assure que le premier appel à GetComponent sera valide (non-null)
+[RequireComponent(typeof(ComponentXYZ))]
+class MonScript : MonoBehaviour 
+...
+
+private ComponentXYZ m_xyz;
+
+void Awake()
+{
+    m_xyz = GetComponent<ComponentXYZ>();
+}
+
+void Update()
+{
+    m_xyz.FonctionQuelconque();
+    ...
+}
+ ```
+- Évitez l'utilisation des *Singletons*, dans la mesure du possible
+- Si vous voyez des passes-passes sur Internet reliées au dossier `Resources`, ignorez-les. On touche pas à ça!
 
 ## CRÉATION D'UN PROTOTYPE
 
