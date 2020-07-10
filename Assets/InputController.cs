@@ -7,7 +7,7 @@ public class InputController : MonoBehaviour
     [Header("Movement parameters")]
     [SerializeField] private float m_velocity;
     [SerializeField] private float m_acceleration;
-    
+    [SerializeField] private UDPClient m_udpClient;
 
     // Start is called before the first frame update
     void Start()
@@ -26,5 +26,12 @@ public class InputController : MonoBehaviour
     {
         float dt = Time.fixedDeltaTime;
         // apply input to body according to rules of movement (of your choosing)
+
+        // send pertinent data to server
+
+        if(Time.frameCount % 20 == 0)
+        {
+            m_udpClient.Send(42);
+        }
     }
 }
