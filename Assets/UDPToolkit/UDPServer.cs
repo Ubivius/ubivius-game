@@ -53,16 +53,17 @@ public class UDPServer : MonoBehaviour
         StartCoroutine(ListenCoroutine());
     }
 
-    private void Send(uint data, UDPClient target)
+    void Send(uint data, UDPClient target)
     {
         target.Receive(new UDPToolkit.Packet(data,
             m_clientConnections[target].ConnectionData.LocalSequence,
-            m_clientConnections[target].ConnectionData.RemoteSequence, 0));
+            m_clientConnections[target].ConnectionData.RemoteSequence, 
+            m_clientConnections[target].ConnectionData.GetACKBitfield()));
     }
 
     private void OnReceive(UDPToolkit.Packet packet, UDPClient source)
     {
-        Debug.Log("Received " + packet.Data.ToString());
+        Debug.Log("Received in server " + packet.Data.ToString());
         
         if(!m_clientConnections.ContainsKey(source))
         {
@@ -70,18 +71,14 @@ public class UDPServer : MonoBehaviour
         }
         m_clientConnections[source].LastConnectionTime = Time.time;
 
-        if (packet.Sequence > m_clientConnections[source].ConnectionData.RemoteSequence)
-            m_clientConnections[source].ConnectionData.RemoteSequence = packet.Sequence;
+        m_clientConnections[source].ConnectionData.Receive(packet);
 
+        source.Receive(new UDPToolkit.Packet(packet.Data,
+            m_clientConnections[source].ConnectionData.LocalSequence++,
+            m_clientConnections[source].ConnectionData.RemoteSequence,
+            m_clientConnections[source].ConnectionData.GetACKBitfield()));
     }
-
-    public void Receive(UDPToolkit.Packet packet, UDPClient source)
-    {
-        // random chance of not receiving it (0 for now)
-
-        m_receivedPackets.Enqueue(new PacketClientPair(packet, source));
-    }
-
+    
     private IEnumerator ListenCoroutine()
     {
         while (m_running)
@@ -99,4 +96,9 @@ public class UDPServer : MonoBehaviour
         }
     }
 
+    public void Receive(UDPToolkit.Packet packet, UDPClient source)
+    {
+        // random chance of not receiving it (0 for now)
+        m_receivedPackets.Enqueue(new PacketClientPair(packet, source));
+    }
 }
