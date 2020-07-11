@@ -1,70 +1,68 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Sockets;
+using System.Net;
 
-/// <summary>
-/// MOCK CLIENT (interface is valid)
-/// </summary>
-public class UDPClient : MonoBehaviour
+namespace UBV
 {
-    [SerializeField] private bool m_running = true;
-    [SerializeField] private float m_mockWaitTime = 0.005f;
-    private Queue<UDPToolkit.Packet> m_receivedPackets;
-    [SerializeField] private UDPServer m_server;
-
-    private UDPToolkit.ConnectionData m_connectionData;
-
-    private void Awake()
+    /// <summary>
+    /// Wrapper 
+    /// </summary>
+    public class UDPClient : MonoBehaviour
     {
-        m_receivedPackets = new Queue<UDPToolkit.Packet>();
-        m_connectionData = new UDPToolkit.ConnectionData();
-        StartCoroutine(ListenCoroutine());
-    }
+        [Header("Connection parameters")]
+        [SerializeField] private string m_serverAddress;
+        [SerializeField] private int m_port;
+        
+        private UDPToolkit.ConnectionData m_connectionData;
+        private UdpClient m_client;
+        private IPEndPoint m_server;
 
-    private void Start()
-    {
-        // connect to server
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    public void Send(uint data)
-    {
-        m_server.Receive(new UDPToolkit.Packet(data, 
-            m_connectionData.LocalSequence++,
-            m_connectionData.RemoteSequence,
-            m_connectionData.GetACKBitfield()), this);
-    }
-
-    public void Receive(UDPToolkit.Packet packet)
-    {
-        m_receivedPackets.Enqueue(packet);
-    }
-
-    private void OnReceive(UDPToolkit.Packet packet)
-    {
-        m_connectionData.Receive(packet);
-        Debug.Log("Received in client " + packet.Data.ToString());
-    }
-
-    private IEnumerator ListenCoroutine()
-    {
-        while (m_running)
+        private void Awake()
         {
-            yield return new WaitForSecondsRealtime(m_mockWaitTime);
+            m_connectionData = new UDPToolkit.ConnectionData();
 
-            if (m_receivedPackets.Count > 0)
-            {
-                UDPToolkit.Packet packet = m_receivedPackets.Dequeue();
-                if (UDPToolkit.HasValidProtocolID(packet))
-                {
-                    OnReceive(packet);
-                }
-            }
+            m_client = new UdpClient();
+            m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
+            m_client.Connect(m_server);
         }
+
+        private void Start()
+        {
+            m_client.BeginReceive(EndReceiveCallback, m_client);
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
+
+        public void Send(byte[] data) // TODO: generic it then convert to bytes from T
+        {
+            
+            byte[] bytes = m_connectionData.Send(data).ToBytes();
+            m_client.BeginSend(bytes, bytes.Length, EndSendCallback, m_client);
+            
+        }
+
+        private void EndSendCallback(System.IAsyncResult ar)
+        {
+            UdpClient c = (UdpClient)ar.AsyncState;
+            Debug.Log("Client sent " + c.EndSend(ar).ToString() + " bytes");
+        }
+        
+        private void EndReceiveCallback(System.IAsyncResult ar)
+        {
+            UdpClient c = (UdpClient)ar.AsyncState;
+            byte[] bytes = c.EndReceive(ar, ref m_server);
+
+            m_connectionData.Receive(UDPToolkit.Packet.PacketFromBytes(bytes));
+            Debug.Log("Client received " + UDPToolkit.Packet.PacketFromBytes(bytes).ToString() + " packet bytes");
+
+            c.BeginReceive(EndReceiveCallback, c);
+        }
+        
     }
 }
