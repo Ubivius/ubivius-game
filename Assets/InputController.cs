@@ -22,6 +22,14 @@ namespace UBV
         {
             // collect input (calls to Input.GetXYZ.(...))
             // compute if needed (ex: trigo with cursor position)
+
+            // temporary test
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                byte[] bytes = new byte[1];
+                bytes[0] = 7;
+                m_udpClient.Send(bytes);
+            }
         }
 
         private void FixedUpdate()
@@ -31,12 +39,7 @@ namespace UBV
 
             // send pertinent data to server
 
-            if (Time.frameCount % 100 == 0)
-            {
-                byte[] bytes = new byte[1];
-                bytes[0] = 7;
-                m_udpClient.Send(bytes);
-            }
+            
         }
     }
 }

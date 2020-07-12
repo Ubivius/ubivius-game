@@ -35,7 +35,7 @@ namespace UBV
         // Update is called once per frame
         void Update()
         {
-
+            // TODO : check if server has timed out after request 
         }
 
         public void Send(byte[] data) // TODO: generic it then convert to bytes from T

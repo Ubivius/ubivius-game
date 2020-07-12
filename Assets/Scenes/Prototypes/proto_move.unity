@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56f55256fc4a6704eafd0dd78732d19e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_serverAddress: 192.168.0.141
+  m_serverAddress: 127.0.0.1
   m_port: 9050
 --- !u!4 &925986284
 Transform:
@@ -358,6 +358,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85d3ee263d884c041b9e9a1900ffd499, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_port: 9050
+  m_connectionTimeout: 10
+  m_timeOutCheckInverseRate: 2
 --- !u!4 &1538287031
 Transform:
   m_ObjectHideFlags: 0
