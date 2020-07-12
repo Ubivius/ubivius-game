@@ -42,14 +42,21 @@ namespace UBV {
 
         private void Send(byte[] data, UdpClient clientConnection)
         {
-            byte[] bytes = m_clientConnections[clientConnection].ConnectionData.Send(data).ToBytes();
-            clientConnection.BeginSend(bytes, bytes.Length, EndSendCallback, clientConnection);
+            try
+            {
+                byte[] bytes = m_clientConnections[clientConnection].ConnectionData.Send(data).ToBytes();
+                clientConnection.BeginSend(bytes, bytes.Length, EndSendCallback, clientConnection);
+            }
+            catch (SocketException e)
+            {
+                Debug.Log("Server socket exception: " + e);
+            }
         }
 
         private void EndSendCallback(System.IAsyncResult ar)
         {
             UdpClient c = (UdpClient)ar.AsyncState;
-            Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
+            //Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
         }
 
         private void EndReceiveCallback(System.IAsyncResult ar)
@@ -67,9 +74,12 @@ namespace UBV {
                 m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
             }
 
-            m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(UDPToolkit.Packet.PacketFromBytes(bytes));
-            Debug.Log("Server received "+ UDPToolkit.Packet.PacketFromBytes(bytes).ToString() + " packet bytes");
-            Send(bytes, m_endPoints[clientEndPoint]);
+            UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
+            m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet);
+            Debug.Log("Server received " + packet.ToString() + " packet bytes");
+
+            // Send back to client for ACK
+            Send(packet.Data, m_endPoints[clientEndPoint]);
             server.BeginReceive(EndReceiveCallback, server);
         }
 

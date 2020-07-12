@@ -47,14 +47,14 @@ namespace UBV
             }
             catch (SocketException e)
             {
-                Debug.Log("Socket exception: " + e);
+                Debug.Log("Client socket exception: " + e);
             }
         }
 
         private void EndSendCallback(System.IAsyncResult ar)
         {
             UdpClient c = (UdpClient)ar.AsyncState;
-            Debug.Log("Client sent " + c.EndSend(ar).ToString() + " bytes");
+            //Debug.Log("Client sent " + c.EndSend(ar).ToString() + " bytes");
         }
         
         private void EndReceiveCallback(System.IAsyncResult ar)

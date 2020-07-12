@@ -34,7 +34,7 @@ namespace UBV
             if (Time.frameCount % 100 == 0)
             {
                 byte[] bytes = new byte[1];
-                bytes[0] = 42;
+                bytes[0] = 7;
                 m_udpClient.Send(bytes);
             }
         }
