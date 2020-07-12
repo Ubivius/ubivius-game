@@ -15,8 +15,8 @@ namespace UBV
     public class UDPToolkit
     {
         private static readonly byte[] UDP_PROTOCOL_ID = { 0xAA, 0x0C, 0xC0, 0xFF };
-        public const short UDP_PACKET_SIZE = 256; // size in bytes
-        public const short UDP_MAX_PAYLOAD_SIZE = 128;
+        public const ushort UDP_PACKET_SIZE = 256; // size in bytes
+        public const ushort UDP_MAX_PAYLOAD_SIZE = 128;
         
         public class ConnectionData
         {
@@ -61,7 +61,6 @@ namespace UBV
 
         public class Packet
         {
-
             public readonly byte[] ProtocolID;
             public readonly ushort Sequence;
             public readonly ushort ACK;
@@ -71,7 +70,11 @@ namespace UBV
             public Packet(byte[] data, ushort seq, ushort ack, int ackBitfield)
             {
                 ProtocolID = UDP_PROTOCOL_ID;
-                Data = data;
+                Data = new byte[UDP_MAX_PAYLOAD_SIZE];
+                for (ushort i = 0; i < UDP_MAX_PAYLOAD_SIZE; i++)
+                {
+                    Data[i] = i < data.Length ? data[i] : (byte)0;
+                }
                 Sequence = seq;
                 ACK = ack;
                 ACK_Bitfield = ackBitfield;
@@ -101,21 +104,27 @@ namespace UBV
             {
                 byte[] arr = new byte[UDP_PACKET_SIZE];
                 ushort i;
-                for (i = 0; i < UDP_PROTOCOL_ID.Length; i++)
-                {
+                int currentLimit = UDP_PROTOCOL_ID.Length;
+                for (i = 0; i < currentLimit; i++)
                     arr[i] = UDP_PROTOCOL_ID[i];
-                }
 
-                arr[i++] = (byte)(Sequence);
-                arr[i++] = (byte)(Sequence >> 8);
+                byte[] sequenceBytes = System.BitConverter.GetBytes(Sequence);
+                for (; i < currentLimit + sequenceBytes.Length; i++)
+                    arr[i] = sequenceBytes[i - currentLimit];
+                currentLimit += sequenceBytes.Length;
 
-                arr[i++] = (byte)(ACK);
-                arr[i++] = (byte)(ACK >> 8);
+                byte[] ACKBytes = System.BitConverter.GetBytes(ACK);
+                for (; i < currentLimit + ACKBytes.Length; i++)
+                    arr[i] = ACKBytes[i - currentLimit];
+                currentLimit += ACKBytes.Length;
                 
-                arr[i++] = (byte)(ACK_Bitfield);
-                arr[i++] = (byte)(ACK_Bitfield >> 8);
-                arr[i++] = (byte)(ACK_Bitfield >> 16);
-                arr[i++] = (byte)(ACK_Bitfield >> 24);
+                byte[] bitFieldBytes = System.BitConverter.GetBytes(ACK_Bitfield);
+                for (; i < currentLimit + bitFieldBytes.Length; i++)
+                    arr[i] = bitFieldBytes[i - currentLimit];
+                currentLimit += bitFieldBytes.Length;
+
+                for (; i < UDP_MAX_PAYLOAD_SIZE + currentLimit; i++)
+                    arr[i] = Data[i - 12];
                 
                 return arr;
             }
@@ -123,11 +132,15 @@ namespace UBV
             public static Packet PacketFromBytes(byte[] bytes)
             {
                 byte[] data = new byte[UDP_MAX_PAYLOAD_SIZE];
-                for(ushort i = 0; i < UDP_MAX_PAYLOAD_SIZE; i++)
+                for(ushort i = UDP_MAX_PAYLOAD_SIZE; i > 0; i--)
                 {
-                    data[i] = bytes[i + 12];
+                    data[UDP_MAX_PAYLOAD_SIZE - i] = bytes[i + 12];
                 }
-                return new Packet(data, bytes[4], bytes[6], bytes[8]);
+
+                return new Packet(data, 
+                    System.BitConverter.ToUInt16(bytes, 4),
+                    System.BitConverter.ToUInt16(bytes, 6),
+                    System.BitConverter.ToInt32(bytes, 8));
             }
         }
 

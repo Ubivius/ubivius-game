@@ -49,14 +49,14 @@ namespace UBV {
         private void EndSendCallback(System.IAsyncResult ar)
         {
             UdpClient c = (UdpClient)ar.AsyncState;
-            Debug.Log("Server sent " + c.EndSend(ar).ToString() + "bytes");
+            Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
         }
 
         private void EndReceiveCallback(System.IAsyncResult ar)
         {
             IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
-            UdpClient s = (UdpClient)ar.AsyncState;
-            byte[] bytes = s.EndReceive(ar, ref clientEndPoint);
+            UdpClient server = (UdpClient)ar.AsyncState;
+            byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
             
             // If client is not registered, create a new Socket 
             if(!m_endPoints.ContainsKey(clientEndPoint))
@@ -70,7 +70,7 @@ namespace UBV {
             m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(UDPToolkit.Packet.PacketFromBytes(bytes));
             Debug.Log("Server received "+ UDPToolkit.Packet.PacketFromBytes(bytes).ToString() + " packet bytes");
             Send(bytes, m_endPoints[clientEndPoint]);
-            s.BeginReceive(EndReceiveCallback, s);
+            server.BeginReceive(EndReceiveCallback, server);
         }
 
         public void OnReceive(UDPToolkit.Packet packet)

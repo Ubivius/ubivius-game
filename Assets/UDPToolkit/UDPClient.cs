@@ -25,7 +25,6 @@ namespace UBV
 
             m_client = new UdpClient();
             m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
-            m_client.Connect(m_server);
         }
 
         private void Start()
@@ -41,10 +40,15 @@ namespace UBV
 
         public void Send(byte[] data) // TODO: generic it then convert to bytes from T
         {
-            
-            byte[] bytes = m_connectionData.Send(data).ToBytes();
-            m_client.BeginSend(bytes, bytes.Length, EndSendCallback, m_client);
-            
+            try
+            {
+                byte[] bytes = m_connectionData.Send(data).ToBytes();
+                m_client.BeginSend(bytes, bytes.Length, m_server, EndSendCallback, m_client);
+            }
+            catch (SocketException e)
+            {
+                Debug.Log("Socket exception: " + e);
+            }
         }
 
         private void EndSendCallback(System.IAsyncResult ar)
@@ -56,7 +60,8 @@ namespace UBV
         private void EndReceiveCallback(System.IAsyncResult ar)
         {
             UdpClient c = (UdpClient)ar.AsyncState;
-            byte[] bytes = c.EndReceive(ar, ref m_server);
+            IPEndPoint temp = new IPEndPoint(0, 0);
+            byte[] bytes = c.EndReceive(ar, ref temp);
 
             m_connectionData.Receive(UDPToolkit.Packet.PacketFromBytes(bytes));
             Debug.Log("Client received " + UDPToolkit.Packet.PacketFromBytes(bytes).ToString() + " packet bytes");

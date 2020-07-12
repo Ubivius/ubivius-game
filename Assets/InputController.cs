@@ -31,7 +31,7 @@ namespace UBV
 
             // send pertinent data to server
 
-            if (Time.frameCount % 20 == 0)
+            if (Time.frameCount % 100 == 0)
             {
                 byte[] bytes = new byte[1];
                 bytes[0] = 42;
