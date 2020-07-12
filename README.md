@@ -24,6 +24,8 @@ June 27, 2020
     Idem pour les fonctions. Ça permet de se retrouver beaucoup plus facilement et de réutiliser des scripts aisément.
 2. ***Scriptable objects***  
     Les scriptables objects sont très utiles. Utilisez-les pour partager facilement des paramètres entre plusieurs objets et vous éviter du tweaking de variables redondantes.
+3. ***Namespaces***
+    On utilise le ***namespace*** UBV pour éviter les conflits entre les bases de code existantes (ex: `UDPClient` vs `UdpClient`).
 
 ## EDITOR GUIDE
 
