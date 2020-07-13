@@ -14,13 +14,17 @@ namespace UBV
         [Header("Connection parameters")]
         [SerializeField] private string m_serverAddress;
         [SerializeField] private int m_port;
-        
+        [SerializeField] private float m_serverTimeOut = 10;
+
+        private float m_timeOutTimer;
+
         private UDPToolkit.ConnectionData m_connectionData;
         private UdpClient m_client;
         private IPEndPoint m_server;
 
         private void Awake()
         {
+            m_timeOutTimer = 0;
             m_connectionData = new UDPToolkit.ConnectionData();
 
             m_client = new UdpClient();
@@ -35,7 +39,11 @@ namespace UBV
         // Update is called once per frame
         void Update()
         {
-            // TODO : check if server has timed out after request 
+            m_timeOutTimer += Time.deltaTime;
+            if(m_timeOutTimer > m_serverTimeOut)
+            {
+                m_connectionData = new UDPToolkit.ConnectionData();
+            }
         }
 
         public void Send(byte[] data) // TODO: generic it then convert to bytes from T
@@ -62,6 +70,8 @@ namespace UBV
             UdpClient c = (UdpClient)ar.AsyncState;
             IPEndPoint temp = new IPEndPoint(0, 0);
             byte[] bytes = c.EndReceive(ar, ref temp);
+            
+            m_timeOutTimer = 0;
 
             m_connectionData.Receive(UDPToolkit.Packet.PacketFromBytes(bytes));
             Debug.Log("Client received " + UDPToolkit.Packet.PacketFromBytes(bytes).ToString() + " packet bytes");
