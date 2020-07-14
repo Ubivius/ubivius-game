@@ -152,6 +152,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_serverAddress: 127.0.0.1
   m_port: 9050
+  m_serverTimeOut: 10
+  m_lostPacketTimeOut: 1
 --- !u!4 &925986284
 Transform:
   m_ObjectHideFlags: 0
@@ -203,7 +205,6 @@ MonoBehaviour:
   m_sprinting: 0
   m_acceleration: 0
   m_udpClient: {fileID: 925986283}
-  rb_player: {fileID: 1146798268}
 --- !u!212 &1146798266
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -386,7 +387,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_port: 9050
   m_connectionTimeout: 10
-  m_timeOutCheckInverseRate: 2
 --- !u!4 &1538287031
 Transform:
   m_ObjectHideFlags: 0
