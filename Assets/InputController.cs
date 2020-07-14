@@ -43,6 +43,13 @@ namespace UBV
 
             // rigibbody.addforce()
 
+            // temporary test
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                byte[] bytes = new byte[1];
+                bytes[0] = 7;
+                m_udpClient.Send(bytes);
+            }
         }
 
         private void FixedUpdate()
@@ -54,12 +61,7 @@ namespace UBV
 
             // send pertinent data to server
 
-            if (Time.frameCount % 100 == 0)
-            {
-                byte[] bytes = new byte[1];
-                bytes[0] = 42;
-                m_udpClient.Send(bytes);
-            }
+            
         }
     }
 }

@@ -15,23 +15,24 @@ namespace UBV
     public class UDPToolkit
     {
         private static readonly byte[] UDP_PROTOCOL_ID = { 0xAA, 0x0C, 0xC0, 0xFF };
-        public const ushort UDP_PACKET_SIZE = 256; // size in bytes
-        public const ushort UDP_MAX_PAYLOAD_SIZE = 128;
+        public const ushort UDP_PACKET_SIZE = 64; // size in bytes
+        public const ushort UDP_MAX_PAYLOAD_SIZE = 16;
+        public const ushort UDP_HEADER_SIZE = 4 + 4 + 4 + 4;
         
         public class ConnectionData
         {
             public class PacketCallback : UnityEvent<Packet> { }
             
-            private ushort m_localSequence;
-            private ushort m_remoteSequence;
-            private List<ushort> m_received = new List<ushort>();
+            private uint m_localSequence;
+            private uint m_remoteSequence;
+            private List<uint> m_received = new List<uint>();
 
             private int GetACKBitfield()
             {
                 int bitfield = 0;
                 for (ushort i = 0; i < 32; i++)
                 {
-                    if (m_remoteSequence > i && m_received.Contains((ushort)(m_remoteSequence - i)))
+                    if (m_remoteSequence > i && m_received.Contains(m_remoteSequence - i))
                         bitfield |= 1 << i;
                 }
                 return bitfield;
@@ -57,35 +58,49 @@ namespace UBV
                     m_received.Add(packet.ACK);
                 }
             }
+            
         }
 
         public class Packet
         {
-            public readonly byte[] ProtocolID;
-            public readonly ushort Sequence;
-            public readonly ushort ACK;
-            public readonly int ACK_Bitfield;
-            public readonly byte[] Data; 
+            public readonly byte[] RawBytes;
+            public uint Sequence { get  { return System.BitConverter.ToUInt32(RawBytes, 4); }}
+            public uint ACK { get { return System.BitConverter.ToUInt32(RawBytes, 8); } }
+            public int ACK_Bitfield { get { return System.BitConverter.ToInt32(RawBytes, 12); } }
+            public byte[] Data { get { return RawBytes.SubArray(16, UDP_PACKET_SIZE - UDP_HEADER_SIZE); } }
 
-            public Packet(byte[] data, ushort seq, ushort ack, int ackBitfield)
+            private Packet(byte[] bytes)
             {
-                ProtocolID = UDP_PROTOCOL_ID;
-                Data = new byte[UDP_MAX_PAYLOAD_SIZE];
-                for (ushort i = 0; i < UDP_MAX_PAYLOAD_SIZE; i++)
-                {
-                    Data[i] = i < data.Length ? data[i] : (byte)0;
-                }
-                Sequence = seq;
-                ACK = ack;
-                ACK_Bitfield = ackBitfield;
+                RawBytes = bytes;
             }
 
-            public  bool HasValidProtocolID()
+            internal Packet(byte[] data, uint seq, uint ack, int ackBitfield)
+            {
+                RawBytes = new byte[UDP_PACKET_SIZE];
+
+                ushort index = 0;
+                for (; index < UDP_PROTOCOL_ID.Length; index++)
+                    RawBytes[index] = UDP_PROTOCOL_ID[index];
+
+                for (ushort i = 0; i < 4; i++, index++)
+                    RawBytes[index] = System.BitConverter.GetBytes(seq)[i];
+
+                for (ushort i = 0; i < 4; i++, index++)
+                    RawBytes[index] = System.BitConverter.GetBytes(ack)[i];
+
+                for (ushort i = 0; i < 4; i++, index++)
+                    RawBytes[index] = System.BitConverter.GetBytes(ackBitfield)[i];
+
+                for (ushort i = 0; i < UDP_MAX_PAYLOAD_SIZE; i++, index++)
+                    RawBytes[index] = i < data.Length ? data[i] : (byte)0;
+            }
+
+            public bool HasValidProtocolID()
             {
                 bool valid = true;
                 for (ushort i = 0; i < UDP_PROTOCOL_ID.Length && valid; i++)
                 {
-                    if (ProtocolID[i] != UDP_PROTOCOL_ID[i])
+                    if (RawBytes[i] != UDP_PROTOCOL_ID[i])
                         valid = false;
                 }
 
@@ -94,57 +109,19 @@ namespace UBV
 
             public override string ToString()
             {
-                return "Packet: " + Sequence.ToString() +
-                    " " + ACK.ToString() +
-                    " " + System.Convert.ToString(ACK_Bitfield, 2) +
-                    " " + Encoding.Default.GetString(Data);
+                return "Packet bytes: " + System.BitConverter.ToString(RawBytes);
             }
 
             public byte[] ToBytes()
             {
-                byte[] arr = new byte[UDP_PACKET_SIZE];
-                ushort i;
-                int currentLimit = UDP_PROTOCOL_ID.Length;
-                for (i = 0; i < currentLimit; i++)
-                    arr[i] = UDP_PROTOCOL_ID[i];
-
-                byte[] sequenceBytes = System.BitConverter.GetBytes(Sequence);
-                for (; i < currentLimit + sequenceBytes.Length; i++)
-                    arr[i] = sequenceBytes[i - currentLimit];
-                currentLimit += sequenceBytes.Length;
-
-                byte[] ACKBytes = System.BitConverter.GetBytes(ACK);
-                for (; i < currentLimit + ACKBytes.Length; i++)
-                    arr[i] = ACKBytes[i - currentLimit];
-                currentLimit += ACKBytes.Length;
-                
-                byte[] bitFieldBytes = System.BitConverter.GetBytes(ACK_Bitfield);
-                for (; i < currentLimit + bitFieldBytes.Length; i++)
-                    arr[i] = bitFieldBytes[i - currentLimit];
-                currentLimit += bitFieldBytes.Length;
-
-                for (; i < UDP_MAX_PAYLOAD_SIZE + currentLimit; i++)
-                    arr[i] = Data[i - 12];
-                
-                return arr;
+                return RawBytes;
             }
 
             public static Packet PacketFromBytes(byte[] bytes)
             {
-                byte[] data = new byte[UDP_MAX_PAYLOAD_SIZE];
-                for(ushort i = UDP_MAX_PAYLOAD_SIZE; i > 0; i--)
-                {
-                    data[UDP_MAX_PAYLOAD_SIZE - i] = bytes[i + 12];
-                }
-
-                return new Packet(data, 
-                    System.BitConverter.ToUInt16(bytes, 4),
-                    System.BitConverter.ToUInt16(bytes, 6),
-                    System.BitConverter.ToInt32(bytes, 8));
+                return new Packet(bytes);
             }
         }
-
-        
     }
 
 }
