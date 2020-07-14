@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Net;
+using System.Threading;
 
 namespace UBV {
     /// <summary>
@@ -109,6 +110,10 @@ namespace UBV {
             Debug.Log("Server received " + packet.ToString() + " packet bytes");
 
             // Send back to client for ACK
+
+            // introdude random delay
+            Thread.Sleep(100);
+
             Send(packet.Data, m_endPoints[clientEndPoint]);
             server.BeginReceive(EndReceiveCallback, server);
         }

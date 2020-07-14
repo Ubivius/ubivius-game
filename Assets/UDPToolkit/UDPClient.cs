@@ -15,9 +15,13 @@ namespace UBV
         [SerializeField] private string m_serverAddress;
         [SerializeField] private int m_port;
         [SerializeField] private float m_serverTimeOut = 10;
+        [SerializeField] private float m_lostPacketTimeOut =  1;
 
         private float m_timeOutTimer;
+        private float m_RTTTimer;
+        private float m_RTT;
 
+        private Dictionary<uint, float> m_sequencesSendTime;
         private UDPToolkit.ConnectionData m_connectionData;
         private UdpClient m_client;
         private IPEndPoint m_server;
@@ -25,7 +29,10 @@ namespace UBV
         private void Awake()
         {
             m_timeOutTimer = 0;
+            m_RTT = 0;
+            m_RTTTimer = 0;
             m_connectionData = new UDPToolkit.ConnectionData();
+            m_sequencesSendTime = new Dictionary<uint, float>();
 
             m_client = new UdpClient();
             m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
@@ -40,17 +47,25 @@ namespace UBV
         void Update()
         {
             m_timeOutTimer += Time.deltaTime;
+            m_RTTTimer = Time.realtimeSinceStartup;
             if(m_timeOutTimer > m_serverTimeOut)
             {
                 m_connectionData = new UDPToolkit.ConnectionData();
             }
+            
         }
 
         public void Send(byte[] data) // TODO: generic it then convert to bytes from T
         {
             try
             {
-                byte[] bytes = m_connectionData.Send(data).ToBytes();
+                UDPToolkit.Packet packet = m_connectionData.Send(data);
+                uint seq = packet.Sequence;
+
+                Debug.Log("Sending " + seq);
+                m_sequencesSendTime.Add(seq, Time.realtimeSinceStartup);
+
+                byte[] bytes = packet.ToBytes();
                 m_client.BeginSend(bytes, bytes.Length, m_server, EndSendCallback, m_client);
             }
             catch (SocketException e)
@@ -73,8 +88,16 @@ namespace UBV
             
             m_timeOutTimer = 0;
 
-            m_connectionData.Receive(UDPToolkit.Packet.PacketFromBytes(bytes));
-            Debug.Log("Client received " + UDPToolkit.Packet.PacketFromBytes(bytes).ToString() + " packet bytes");
+            UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
+
+            if (m_sequencesSendTime.ContainsKey(packet.ACK))
+            {
+                m_RTT = m_RTTTimer - m_sequencesSendTime[packet.ACK];
+                m_sequencesSendTime.Remove(packet.ACK);
+            }
+
+            m_connectionData.Receive(packet);
+            Debug.Log("Client received (RTT = " + m_RTT.ToString() + ") " + packet.ToString() +" packet bytes");
 
             c.BeginReceive(EndReceiveCallback, c);
         }
