@@ -7,7 +7,7 @@ using System.Net;
 namespace UBV
 {
     /// <summary>
-    /// Wrapper 
+    /// Wrapper around System.Net.Sockets.UdpClient. Manages client-side connection with server, with timeout and packet loss
     /// </summary>
     public class UDPClient : MonoBehaviour
     {
@@ -55,14 +55,14 @@ namespace UBV
             
         }
 
-        public void Send(byte[] data) // TODO: generic it then convert to bytes from T
+        public void Send(byte[] data) // TODO: generic it then convert to bytes from T or overload with standard data types (int, float, etc)
         {
             try
             {
                 UDPToolkit.Packet packet = m_connectionData.Send(data);
                 uint seq = packet.Sequence;
 
-                Debug.Log("Sending " + seq);
+                Debug.Log("Sending packet with local seq. " + seq);
                 m_sequencesSendTime.Add(seq, Time.realtimeSinceStartup);
 
                 byte[] bytes = packet.ToBytes();
