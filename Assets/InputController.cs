@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace UBV
 {
@@ -16,12 +17,29 @@ namespace UBV
 
         private Rigidbody2D m_rigidBody;
 
+        private PlayerControls m_controls;
+
         private Vector2 m_playerMouvement;
+
+        // test pour réseau, à retirer.
+        private bool m_envoieTest;
 
         private void Awake()
         {
             m_sprinting = false;
+            m_envoieTest = false;
             m_rigidBody = GetComponent<Rigidbody2D>();
+
+            m_controls = new PlayerControls();
+
+            m_controls.Gameplay.Move.performed += context => m_playerMouvement = context.ReadValue<Vector2>();
+            m_controls.Gameplay.Move.canceled += context => m_playerMouvement = Vector2.zero;
+
+            m_controls.Gameplay.Sprint.performed += context => m_sprinting = true;
+            m_controls.Gameplay.Sprint.canceled += context => m_sprinting = false;
+
+            m_controls.Gameplay.TestServer.performed += context => m_envoieTest = true;
+            m_controls.Gameplay.TestServer.canceled += context => m_envoieTest = false;
         }
 
         // Start is called before the first frame update
@@ -34,23 +52,10 @@ namespace UBV
         void Update()
         {
             // collect input (calls to Input.GetXYZ.(...))
-            m_playerMouvement.x = Input.GetAxisRaw("Horizontal");
-            m_playerMouvement.y = Input.GetAxisRaw("Vertical");
-
-            m_sprinting = (Input.GetKey("left shift") || Input.GetAxis("Sprint") == 1f);
 
             // compute if needed (ex: trigo with cursor position)
 
-
-            // rigibbody.addforce()
-
-            // temporary test
-            if (Input.GetKeyDown(KeyCode.Return))
-            {
-                byte[] bytes = new byte[1];
-                bytes[0] = 7;
-                m_udpClient.Send(bytes);
-            }
+            // rigibbody.addforce()            
         }
 
         private void FixedUpdate()
@@ -59,10 +64,26 @@ namespace UBV
             // apply input to body according to rules of movement (of your choosing)
             m_rigidBody.MovePosition(m_rigidBody.position + m_playerMouvement * (m_sprinting?m_sprint_velocity:m_walk_velocity) * dt);
 
+            // temporary test
+            if (m_envoieTest)
+            {
+                byte[] bytes = new byte[1];
+                bytes[0] = 7;
+                m_udpClient.Send(bytes);
+            }
 
             // send pertinent data to server
 
-            
+        }
+
+        private void OnEnable()
+        {
+            m_controls.Gameplay.Enable();
+        }
+
+        private void OnDisable()
+        {
+            m_controls.Gameplay.Disable();
         }
     }
 }
