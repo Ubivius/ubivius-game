@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace UBV {
     /// <summary>
-    /// UDP SERVER CLASS - Wrapper around C# sockets
+    /// Wrapper around System.Net.Sockets.UdpClient. Manage server-side UDP connections with other clients
     /// https://www.winsocketdotnetworkprogramming.com/clientserversocketnetworkcommunication8d.html
     /// </summary>
     public class UDPServer : MonoBehaviour
@@ -15,6 +15,9 @@ namespace UBV {
         [SerializeField] int m_port = 9050;
         [SerializeField] float m_connectionTimeout = 10f;
 
+        /// <summary>
+        /// Manages a specific client connection 
+        /// </summary>
         private class ClientConnection
         {
             public float LastConnectionTime;
@@ -113,6 +116,8 @@ namespace UBV {
 
             // introdude random delay
             Thread.Sleep(100);
+
+            // design pattern decorator ?
 
             Send(packet.Data, m_endPoints[clientEndPoint]);
             server.BeginReceive(EndReceiveCallback, server);

@@ -19,6 +19,9 @@ namespace UBV
         public const ushort UDP_MAX_PAYLOAD_SIZE = 16;
         public const ushort UDP_HEADER_SIZE = 4 + 4 + 4 + 4;
         
+        /// <summary>
+        /// Manages sequence numbers and packet acknowledgement, creates packets to be sent and deals with reception
+        /// </summary>
         public class ConnectionData
         {
             public class PacketCallback : UnityEvent<Packet> { }
@@ -48,6 +51,10 @@ namespace UBV
                 return new Packet(Data, m_localSequence++, m_remoteSequence, GetACKBitfield());
             }
             
+            /// <summary>
+            /// Acknowledges packet and updates sequence numbers
+            /// </summary>
+            /// <param name="packet"></param>
             public void Receive(Packet packet)
             {
                 if (packet.HasValidProtocolID())
