@@ -24,18 +24,23 @@ namespace UBV
         /// </summary>
         public class ConnectionData
         {
-            public class PacketCallback : UnityEvent<Packet> { }
-            
             private uint m_localSequence;
             private uint m_remoteSequence;
-            private List<uint> m_received = new List<uint>();
+            private Queue<uint> m_acknowledged; // packets we sent and know other side received
 
-            private int GetACKBitfield()
+            public ConnectionData()
+            {
+                m_localSequence = 1;
+                m_remoteSequence = 0;
+                m_acknowledged = new Queue<uint>();
+            }
+
+            private int GenerateACKBitfield()
             {
                 int bitfield = 0;
                 for (ushort i = 0; i < 32; i++)
                 {
-                    if (m_remoteSequence > i && m_received.Contains(m_remoteSequence - i))
+                    if (m_remoteSequence > i && m_acknowledged.Contains(m_remoteSequence - i))
                         bitfield |= 1 << i;
                 }
                 return bitfield;
@@ -48,22 +53,45 @@ namespace UBV
             /// <returns></returns>
             public Packet Send(byte[] Data)
             {
-                return new Packet(Data, m_localSequence++, m_remoteSequence, GetACKBitfield());
+                return new Packet(Data, m_localSequence++, m_remoteSequence, GenerateACKBitfield());
             }
             
             /// <summary>
             /// Acknowledges packet and updates sequence numbers
             /// </summary>
             /// <param name="packet"></param>
-            public void Receive(Packet packet)
+            public bool Receive(Packet packet)
             {
                 if (packet.HasValidProtocolID())
                 {
                     if (packet.Sequence > m_remoteSequence)
                         m_remoteSequence = packet.Sequence;
 
-                    m_received.Add(packet.ACK);
+                    uint ack = packet.ACK;
+                    // ack packet 
+                    if(ack > 0 && !m_acknowledged.Contains(ack))
+                        m_acknowledged.Enqueue(ack);
+
+                    // ack bitfield
+                    int bitfield = packet.ACK_Bitfield;
+                    for (ushort i = 0; i < 32; i++)
+                    {
+                        if ((bitfield & (1 << i)) == 1 && !m_acknowledged.Contains(ack - i))
+                            m_acknowledged.Enqueue(ack - i);
+                    }
+
+                    while (m_acknowledged.Count > 32)
+                        m_acknowledged.Dequeue();
+
+                    Debug.Log("Acknowledged:");
+                    for(ushort i = 0; i < m_acknowledged.Count; i++)
+                    {
+                        Debug.Log(m_acknowledged.ToArray()[i]);
+                    }
+                    
+                    return true;
                 }
+                return false;
             }
             
         }

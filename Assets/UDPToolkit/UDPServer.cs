@@ -93,6 +93,7 @@ namespace UBV {
 
         private void EndReceiveCallback(System.IAsyncResult ar)
         {
+            // TODO: authentication
             IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
             UdpClient server = (UdpClient)ar.AsyncState;
             byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
@@ -109,17 +110,21 @@ namespace UBV {
             m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
 
             UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
-            m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet);
-            Debug.Log("Server received " + packet.ToString() + " packet bytes");
+            if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
+            {
+                Debug.Log("Server received");
+                Debug.Log(packet.ToString());
 
-            // Send back to client for ACK
+                // Send back to client for ACK
 
-            // introdude random delay
-            Thread.Sleep(100);
+                // introdude random delay
+                Thread.Sleep(100);
 
-            // design pattern decorator ?
+                // design pattern decorator ?
 
-            Send(packet.Data, m_endPoints[clientEndPoint]);
+                Send(packet.Data, m_endPoints[clientEndPoint]);
+            }
+
             server.BeginReceive(EndReceiveCallback, server);
         }
 

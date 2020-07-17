@@ -20,6 +20,7 @@ namespace UBV
         private float m_timeOutTimer;
         private float m_RTTTimer;
         private float m_RTT;
+        private bool m_connected;
 
         private Dictionary<uint, float> m_sequencesSendTime;
         private UDPToolkit.ConnectionData m_connectionData;
@@ -33,6 +34,7 @@ namespace UBV
             m_RTTTimer = 0;
             m_connectionData = new UDPToolkit.ConnectionData();
             m_sequencesSendTime = new Dictionary<uint, float>();
+            m_connected = false;
 
             m_client = new UdpClient();
             m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
@@ -46,11 +48,18 @@ namespace UBV
         // Update is called once per frame
         void Update()
         {
-            m_timeOutTimer += Time.deltaTime;
             m_RTTTimer = Time.realtimeSinceStartup;
-            if(m_timeOutTimer > m_serverTimeOut)
+            if (m_connected)
             {
-                m_connectionData = new UDPToolkit.ConnectionData();
+                m_timeOutTimer += Time.deltaTime;
+                if (m_timeOutTimer > m_serverTimeOut)
+                {
+                    m_connectionData = new UDPToolkit.ConnectionData();
+                    m_sequencesSendTime.Clear();
+                    Debug.Log("Server timed out. Disconnecting.");
+                    m_connected = false;
+                    m_timeOutTimer = 0;
+                }
             }
             
         }
@@ -62,7 +71,7 @@ namespace UBV
                 UDPToolkit.Packet packet = m_connectionData.Send(data);
                 uint seq = packet.Sequence;
 
-                Debug.Log("Sending packet with local seq. " + seq);
+                Debug.Log("Sending (from client) packet with local seq. " + packet.Sequence);
                 m_sequencesSendTime.Add(seq, Time.realtimeSinceStartup);
 
                 byte[] bytes = packet.ToBytes();
@@ -96,9 +105,13 @@ namespace UBV
                 m_sequencesSendTime.Remove(packet.ACK);
             }
 
-            m_connectionData.Receive(packet);
-            Debug.Log("Client received (RTT = " + m_RTT.ToString() + ") " + packet.ToString() +" packet bytes");
+            if (m_connectionData.Receive(packet))
+            {
+                m_connected = true;
+                Debug.Log("Client received (RTT = " + m_RTT.ToString() + ")");
+                Debug.Log(packet.ToString());
 
+            }
             c.BeginReceive(EndReceiveCallback, c);
         }
         
