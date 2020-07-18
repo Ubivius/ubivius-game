@@ -71,7 +71,7 @@ namespace UBV
                 UDPToolkit.Packet packet = m_connectionData.Send(data);
                 uint seq = packet.Sequence;
 
-                Debug.Log("Sending (from client) packet with local seq. " + packet.Sequence);
+                //Debug.Log("Sending (from client) packet with local seq. " + packet.Sequence);
                 m_sequencesSendTime.Add(seq, Time.realtimeSinceStartup);
 
                 byte[] bytes = packet.ToBytes();
@@ -108,8 +108,8 @@ namespace UBV
             if (m_connectionData.Receive(packet))
             {
                 m_connected = true;
-                Debug.Log("Client received (RTT = " + m_RTT.ToString() + ")");
-                Debug.Log(packet.ToString());
+                //Debug.Log("Client received (RTT = " + m_RTT.ToString() + ")");
+                //Debug.Log(packet.ToString());
 
             }
             c.BeginReceive(EndReceiveCallback, c);

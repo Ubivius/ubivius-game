@@ -7,17 +7,22 @@ namespace UBV
 {
     public struct InputFrame
     {
-        public bool Running;
-        public bool Up, Right, Left, Down;
-
+        public bool Sprinting;
+        public Vector2 Movement;
+        
         public byte[] ToBytes()
         {
-            byte[] arr = new byte[5];
-            arr[0] = (byte)(Running ? 1 : 0);
-            arr[1] = (byte)(Up ? 1 : 0);
-            arr[2] = (byte)(Right ? 1 : 0);
-            arr[3] = (byte)(Down ? 1 : 0);
-            arr[4] = (byte)(Left ? 1 : 0);
+            byte[] move_x = System.BitConverter.GetBytes(Movement.x);
+            byte[] move_y = System.BitConverter.GetBytes(Movement.y);
+            byte[] arr = new byte[4 + 4 + 1]; // 4 Bytes per float
+            arr[0] = (byte)(Sprinting ? 1 : 0);
+            
+            for(ushort i = 0; i < 4; i++)
+                arr[i + 1] = move_x[i];
+
+            for (ushort i = 0; i < 4; i++)
+                arr[i + 1 + 4] = move_y[i];
+
             return arr;
         }
         
@@ -30,17 +35,14 @@ namespace UBV
         {
             InputFrame frame = new InputFrame
             {
-                Running = arr[0] == 1,
-                Up = arr[1] == 1,
-                Right = arr[2] == 1,
-                Down = arr[3] == 1,
-                Left = arr[4] == 1
+                Sprinting = arr[0] == 1,
+                Movement = new Vector2(System.BitConverter.ToSingle(arr, 1), System.BitConverter.ToSingle(arr, 4 + 1))
             };
             return frame;
         }
     }
 
-    public class InputController : MonoBehaviour
+    public class InputController : MonoBehaviour, IClientStateUpdater
     {
         [Header("Movement parameters")]
         [SerializeField] private float m_velocity;
@@ -48,33 +50,37 @@ namespace UBV
         [SerializeField] private float m_sprint_velocity;
         [SerializeField] private bool m_sprinting;
         [SerializeField] private float m_acceleration;
-        [SerializeField] private UDPClient m_udpClient;
+        [SerializeField] private ClientSync m_clientSync;
 
         private Rigidbody2D m_rigidBody;
 
         private PlayerControls m_controls;
 
         private Vector2 m_playerMouvement;
+        private InputFrame m_currentInputFrame;
 
         // test pour réseau, à retirer.
         private bool m_envoieTest;
 
         private void Awake()
         {
+            m_currentInputFrame = new InputFrame();
             m_sprinting = false;
             m_envoieTest = false;
             m_rigidBody = GetComponent<Rigidbody2D>();
 
             m_controls = new PlayerControls();
 
-            m_controls.Gameplay.Move.performed += context => m_playerMouvement = context.ReadValue<Vector2>();
-            m_controls.Gameplay.Move.canceled += context => m_playerMouvement = Vector2.zero;
+            m_controls.Gameplay.Move.performed += context => m_currentInputFrame.Movement = context.ReadValue<Vector2>();
+            m_controls.Gameplay.Move.canceled += context => m_currentInputFrame.Movement = Vector2.zero;
 
-            m_controls.Gameplay.Sprint.performed += context => m_sprinting = true;
-            m_controls.Gameplay.Sprint.canceled += context => m_sprinting = false;
+            m_controls.Gameplay.Sprint.performed += context => m_currentInputFrame.Sprinting = true;
+            m_controls.Gameplay.Sprint.canceled += context => m_currentInputFrame.Sprinting = false;
 
             m_controls.Gameplay.TestServer.performed += context => m_envoieTest = true;
             m_controls.Gameplay.TestServer.canceled += context => m_envoieTest = false;
+            
+            ClientState.RegisterUpdater(this);
         }
 
         // Start is called before the first frame update
@@ -86,30 +92,13 @@ namespace UBV
         // Update is called once per frame
         void Update()
         {
-            // collect input (calls to Input.GetXYZ.(...))
-
-            // compute if needed (ex: trigo with cursor position)
-
-            // rigibbody.addforce()            
+            // ...
+            m_clientSync.SetCurrentInputBuffer(m_currentInputFrame);
         }
 
         private void FixedUpdate()
         {
-            float dt = Time.fixedDeltaTime;
-            // apply input to body according to rules of movement (of your choosing)
-            m_rigidBody.MovePosition(m_rigidBody.position + m_playerMouvement * (m_sprinting?m_sprint_velocity:m_walk_velocity) * dt);
-
-            // temporary test
-            /*if (m_envoieTest)
-            {
-                byte[] bytes = new byte[1];
-                bytes[0] = 7;
-                m_udpClient.Send(bytes);
-                m_envoieTest = false;
-            }*/
-
-            // send pertinent data to server
-
+            // ...
         }
 
         private void OnEnable()
@@ -120,6 +109,13 @@ namespace UBV
         private void OnDisable()
         {
             m_controls.Gameplay.Disable();
+        }
+
+        public void ClientStep(ref ClientState state, InputFrame input, float deltaTime)
+        {
+            state.Position = m_rigidBody.position;
+            m_rigidBody.MovePosition(m_rigidBody.position + 
+                input.Movement * (input.Sprinting ? m_sprint_velocity : m_walk_velocity) * deltaTime);
         }
     }
 }

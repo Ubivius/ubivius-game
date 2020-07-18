@@ -26,19 +26,27 @@ namespace UBV
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
         }
 
-        public void AddToInputBuffer(InputFrame inputs)
+        public void SetCurrentInputBuffer(InputFrame inputs)
         {
-
+            // queue up plusieurs inputs pour un tick?
+            // pour pouvoir send plusieurs inputs dans un seul packet? si la vitesse de la connexion baisse
+            m_inputBuffer[m_localTick % CLIENT_STATE_BUFFER_SIZE] = inputs;
         }
 
         private void FixedUpdate()
         {
-            ClientState.Step(ref m_clientStateBuffer[m_localTick], m_inputBuffer[m_localTick], Time.fixedDeltaTime);
+            m_clientStateBuffer[m_localTick % CLIENT_STATE_BUFFER_SIZE] = m_localTick == 0 ?
+                new ClientState() : 
+                m_clientStateBuffer[(m_localTick - 1) % CLIENT_STATE_BUFFER_SIZE];
+
+            ClientState.Step(ref m_clientStateBuffer[m_localTick % CLIENT_STATE_BUFFER_SIZE], 
+                m_inputBuffer[m_localTick % CLIENT_STATE_BUFFER_SIZE], 
+                Time.fixedDeltaTime);
 
             // send to server at a particular rate ?
-            m_udpClient.Send(m_inputBuffer[m_localTick].ToBytes());
+            m_udpClient.Send(m_inputBuffer[m_localTick % CLIENT_STATE_BUFFER_SIZE].ToBytes());
 
-            ++m_localTick;
+            ++m_localTick;;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace UBV
     public class ClientState
     {
         // Add here the stuff you need to share
-        public Vector3 Position;
+        public Vector2 Position;
         public Quaternion Rotation;
 
         #region UTILITY FUNCTIONS

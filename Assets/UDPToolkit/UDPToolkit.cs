@@ -83,11 +83,11 @@ namespace UBV
                     while (m_acknowledged.Count > 32)
                         m_acknowledged.Dequeue();
 
-                    Debug.Log("Acknowledged:");
+                    /*Debug.Log("Acknowledged:");
                     for(ushort i = 0; i < m_acknowledged.Count; i++)
                     {
                         Debug.Log(m_acknowledged.ToArray()[i]);
-                    }
+                    }*/
                     
                     return true;
                 }

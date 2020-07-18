@@ -125,15 +125,19 @@ namespace UBV {
 
                 // design pattern decorator ?
 
-                Send(packet.Data, m_endPoints[clientEndPoint]);
+
+                OnReceive(packet, clientEndPoint);
             }
 
             server.BeginReceive(EndReceiveCallback, server);
         }
 
-        public void OnReceive(UDPToolkit.Packet packet)
+        public void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
         {
-            Debug.Log("Received in server " + packet.ToString());
+            //Debug.Log("Received in server " + packet.ToString());
+
+
+            Send(packet.Data, m_endPoints[clientEndPoint]);
         }
 
         private void OnReceive(UDPToolkit.Packet packet, UdpClient source)
