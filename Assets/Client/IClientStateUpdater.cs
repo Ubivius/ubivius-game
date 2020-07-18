@@ -1,7 +1,11 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-public interface IClientStateUpdater
+namespace UBV
 {
-    void ClientStep(ClientState state, float deltaTime);
+
+    public interface IClientStateUpdater
+    {
+        void ClientStep(ref ClientState state, InputFrame input, float deltaTime);
+    }
 }

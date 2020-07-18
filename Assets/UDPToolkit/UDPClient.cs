@@ -31,7 +31,7 @@ namespace UBV
         {
             m_timeOutTimer = 0;
             m_RTT = 0;
-            m_RTTTimer = 0;
+            m_RTTTimer = 0; // modify to make it per packet
             m_connectionData = new UDPToolkit.ConnectionData();
             m_sequencesSendTime = new Dictionary<uint, float>();
             m_connected = false;

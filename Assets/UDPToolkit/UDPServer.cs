@@ -6,6 +6,9 @@ using System.Net;
 using System.Threading;
 
 namespace UBV {
+
+    // NOTE: Server and client must use same functions for client state simulation steps ?
+
     /// <summary>
     /// Wrapper around System.Net.Sockets.UdpClient. Manage server-side UDP connections with other clients
     /// https://www.winsocketdotnetworkprogramming.com/clientserversocketnetworkcommunication8d.html
@@ -118,7 +121,7 @@ namespace UBV {
                 // Send back to client for ACK
 
                 // introdude random delay
-                Thread.Sleep(100);
+                Thread.Sleep(10);
 
                 // design pattern decorator ?
 

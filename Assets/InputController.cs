@@ -5,6 +5,41 @@ using UnityEngine.InputSystem;
 
 namespace UBV
 {
+    public struct InputFrame
+    {
+        public bool Running;
+        public bool Up, Right, Left, Down;
+
+        public byte[] ToBytes()
+        {
+            byte[] arr = new byte[5];
+            arr[0] = (byte)(Running ? 1 : 0);
+            arr[1] = (byte)(Up ? 1 : 0);
+            arr[2] = (byte)(Right ? 1 : 0);
+            arr[3] = (byte)(Down ? 1 : 0);
+            arr[4] = (byte)(Left ? 1 : 0);
+            return arr;
+        }
+        
+        static public byte[] ToBytes(InputFrame frame)
+        {
+            return frame.ToBytes();
+        }
+
+        static public InputFrame FromBytes(byte[] arr)
+        {
+            InputFrame frame = new InputFrame
+            {
+                Running = arr[0] == 1,
+                Up = arr[1] == 1,
+                Right = arr[2] == 1,
+                Down = arr[3] == 1,
+                Left = arr[4] == 1
+            };
+            return frame;
+        }
+    }
+
     public class InputController : MonoBehaviour
     {
         [Header("Movement parameters")]
@@ -65,12 +100,13 @@ namespace UBV
             m_rigidBody.MovePosition(m_rigidBody.position + m_playerMouvement * (m_sprinting?m_sprint_velocity:m_walk_velocity) * dt);
 
             // temporary test
-            if (m_envoieTest)
+            /*if (m_envoieTest)
             {
                 byte[] bytes = new byte[1];
                 bytes[0] = 7;
                 m_udpClient.Send(bytes);
-            }
+                m_envoieTest = false;
+            }*/
 
             // send pertinent data to server
 
