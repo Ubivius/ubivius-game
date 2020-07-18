@@ -113,9 +113,10 @@ namespace UBV
 
         public void ClientStep(ref ClientState state, InputFrame input, float deltaTime)
         {
-            state.Position = m_rigidBody.position;
             m_rigidBody.MovePosition(m_rigidBody.position + 
                 input.Movement * (input.Sprinting ? m_sprint_velocity : m_walk_velocity) * deltaTime);
+
+            state.Position = m_rigidBody.position;
         }
     }
 }

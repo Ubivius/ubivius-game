@@ -15,6 +15,56 @@ namespace UBV
         public Vector2 Position;
         public Quaternion Rotation;
 
+        // add your data in the XYZBytes() functions to make them "network-able"
+        public byte[] ToBytes()
+        {
+            byte[] positionBytes_x = System.BitConverter.GetBytes(Position.x);
+            byte[] positionBytes_y = System.BitConverter.GetBytes(Position.y);
+
+            byte[] rotationBytes_w = System.BitConverter.GetBytes(Rotation.w);
+            byte[] rotationBytes_x = System.BitConverter.GetBytes(Rotation.x);
+            byte[] rotationBytes_y = System.BitConverter.GetBytes(Rotation.y);
+            byte[] rotationBytes_z = System.BitConverter.GetBytes(Rotation.z);
+
+            byte[] arr = new byte[4 + 4 + 4 + 4 + 4 + 4];
+            
+            for(ushort i = 0; i < 4; i++)
+                arr[i] = positionBytes_x[i];
+
+            for (ushort i = 0; i < 4; i++)
+                arr[i + 4] = positionBytes_y[i];
+
+            for (ushort i = 0; i < 8; i++)
+                arr[i + 8] = rotationBytes_w[i];
+
+            for (ushort i = 0; i < 12; i++)
+                arr[i + 12] = rotationBytes_x[i];
+
+            for (ushort i = 0; i < 16; i++)
+                arr[i + 16] = rotationBytes_y[i];
+
+            for (ushort i = 0; i < 20; i++)
+                arr[i + 20] = rotationBytes_z[i];
+
+
+            return arr;
+        }
+
+        public static ClientState FromBytes(byte[] arr)
+        {
+            ClientState state = new ClientState();
+
+            state.Position = new Vector2(System.BitConverter.ToSingle(arr, 0), 
+                System.BitConverter.ToSingle(arr, 4));
+            
+            state.Rotation = new Quaternion(System.BitConverter.ToSingle(arr, 12), 
+                System.BitConverter.ToSingle(arr, 16), 
+                System.BitConverter.ToSingle(arr, 20),
+                System.BitConverter.ToSingle(arr, 8));
+
+            return state;
+        }
+
         #region UTILITY FUNCTIONS
         private static List<IClientStateUpdater> m_updaters = new List<IClientStateUpdater>();
       
