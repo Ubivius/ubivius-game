@@ -52,22 +52,29 @@ namespace UBV
 
         public static ClientState FromBytes(byte[] arr)
         {
-            ClientState state = new ClientState();
+            ClientState state = new ClientState
+            {
+                Position = new Vector2(System.BitConverter.ToSingle(arr, 0),
+                System.BitConverter.ToSingle(arr, 4)),
 
-            state.Position = new Vector2(System.BitConverter.ToSingle(arr, 0), 
-                System.BitConverter.ToSingle(arr, 4));
-            
-            state.Rotation = new Quaternion(System.BitConverter.ToSingle(arr, 12), 
-                System.BitConverter.ToSingle(arr, 16), 
+                Rotation = new Quaternion(System.BitConverter.ToSingle(arr, 12),
+                System.BitConverter.ToSingle(arr, 16),
                 System.BitConverter.ToSingle(arr, 20),
-                System.BitConverter.ToSingle(arr, 8));
+                System.BitConverter.ToSingle(arr, 8))
+            };
 
             return state;
         }
 
         #region UTILITY FUNCTIONS
         private static List<IClientStateUpdater> m_updaters = new List<IClientStateUpdater>();
+        private static List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
       
+        static public void RegisterReceiver(IPacketReceiver receiver)
+        {
+            m_receivers.Add(receiver);
+        }
+
         static public void RegisterUpdater(IClientStateUpdater updater)
         {
             m_updaters.Add(updater);
@@ -80,6 +87,15 @@ namespace UBV
                 m_updaters[i].ClientStep(ref state, input, deltaTime);
             }
         }
+
+        static public void Receive(UDPToolkit.Packet packet)
+        {
+            for (int i = 0; i < m_receivers.Count; i++)
+            {
+                m_receivers[i].ReceivePacket(packet);
+            }
+        }
+
         #endregion
     }
 }

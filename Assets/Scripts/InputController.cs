@@ -42,31 +42,25 @@ namespace UBV
         }
     }
 
-    public class InputController : MonoBehaviour, IClientStateUpdater
+    public class InputController : MonoBehaviour, IClientStateUpdater, IPacketReceiver
     {
+        // TODO: make data and  behaviour available to server (to make it symetrical)
         [Header("Movement parameters")]
         [SerializeField] private float m_velocity;
         [SerializeField] private float m_walk_velocity;
         [SerializeField] private float m_sprint_velocity;
-        [SerializeField] private bool m_sprinting;
         [SerializeField] private float m_acceleration;
         [SerializeField] private ClientSync m_clientSync;
 
         private Rigidbody2D m_rigidBody;
 
         private PlayerControls m_controls;
-
-        private Vector2 m_playerMouvement;
+        
         private InputFrame m_currentInputFrame;
-
-        // test pour réseau, à retirer.
-        private bool m_envoieTest;
-
+        
         private void Awake()
         {
             m_currentInputFrame = new InputFrame();
-            m_sprinting = false;
-            m_envoieTest = false;
             m_rigidBody = GetComponent<Rigidbody2D>();
 
             m_controls = new PlayerControls();
@@ -76,11 +70,9 @@ namespace UBV
 
             m_controls.Gameplay.Sprint.performed += context => m_currentInputFrame.Sprinting = true;
             m_controls.Gameplay.Sprint.canceled += context => m_currentInputFrame.Sprinting = false;
-
-            m_controls.Gameplay.TestServer.performed += context => m_envoieTest = true;
-            m_controls.Gameplay.TestServer.canceled += context => m_envoieTest = false;
             
             ClientState.RegisterUpdater(this);
+            ClientState.RegisterReceiver(this);
         }
 
         // Start is called before the first frame update
@@ -117,6 +109,11 @@ namespace UBV
                 input.Movement * (input.Sprinting ? m_sprint_velocity : m_walk_velocity) * deltaTime);
 
             state.Position = m_rigidBody.position;
+        }
+
+        public void ReceivePacket(UDPToolkit.Packet packet)
+        {
+            ClientState serverState = ClientState.FromBytes(packet.Data);
         }
     }
 }

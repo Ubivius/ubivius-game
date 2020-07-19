@@ -115,8 +115,8 @@ namespace UBV {
             UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
             if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
             {
-                Debug.Log("Server received");
-                Debug.Log(packet.ToString());
+                //Debug.Log("Server received");
+                //Debug.Log(packet.ToString());
 
                 // Send back to client for ACK
 
@@ -136,8 +136,13 @@ namespace UBV {
         {
             //Debug.Log("Received in server " + packet.ToString());
 
+            InputFrame frame = InputFrame.FromBytes(packet.Data); // TODO: create byte indicator to detect type of byte array before using it
+            Debug.Log("Input received in server: " + frame.Sprinting + ", " + frame.Movement);
 
-            Send(packet.Data, m_endPoints[clientEndPoint]);
+            //ClientState state = new ClientState(); 
+            // localPlayer: rigidbody etc
+            
+            Send(packet.Data/*state.ToBytes()*/, m_endPoints[clientEndPoint]);
         }
 
         private void OnReceive(UDPToolkit.Packet packet, UdpClient source)
