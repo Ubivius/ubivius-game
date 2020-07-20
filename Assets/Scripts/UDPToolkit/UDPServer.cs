@@ -15,6 +15,13 @@ namespace UBV {
     /// </summary>
     public class UDPServer : MonoBehaviour
     {
+        // TEMPORARY, for test purposes
+        [SerializeField] private StandardMovementSettings m_movementSettings;
+        [SerializeField] private Rigidbody2D m_rigidBody;
+        private InputFrame m_currentInput;
+        private bool m_inputFrameIsReady = false;
+        static private Mutex m_threadLocker = new Mutex();
+
         [SerializeField] int m_port = 9050;
         [SerializeField] float m_connectionTimeout = 10f;
 
@@ -121,7 +128,7 @@ namespace UBV {
                 // Send back to client for ACK
 
                 // introdude random delay
-                Thread.Sleep(10);
+                Thread.Sleep(15);
 
                 // design pattern decorator ?
 
@@ -136,26 +143,28 @@ namespace UBV {
         {
             //Debug.Log("Received in server " + packet.ToString());
 
-            InputFrame frame = InputFrame.FromBytes(packet.Data); // TODO: create byte indicator to detect type of byte array before using it
-            Debug.Log("Input received in server: " + frame.Sprinting + ", " + frame.Movement);
-
+            InputFrame input = InputFrame.FromBytes(packet.Data); // TODO: create byte indicator to detect type of byte array before using it
+            Debug.Log("Input received in server: " + input.Sprinting + ", " + input.Movement);
+            m_threadLocker.WaitOne();
+            m_inputFrameIsReady = true;
+            m_currentInput = input;
+            m_threadLocker.ReleaseMutex();
             //ClientState state = new ClientState(); 
-            // localPlayer: rigidbody etc
-            
+
             Send(packet.Data/*state.ToBytes()*/, m_endPoints[clientEndPoint]);
         }
 
-        private void OnReceive(UDPToolkit.Packet packet, UdpClient source)
+        // temporary
+        private void FixedUpdate()
         {
-            if (!m_clientConnections.ContainsKey(source))
+            m_threadLocker.WaitOne();
+            if (m_inputFrameIsReady)
             {
-                m_clientConnections.Add(source, new ClientConnection());
+                m_inputFrameIsReady = false;
+                m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
+                   m_currentInput.Movement * (m_currentInput.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * Time.fixedDeltaTime);
             }
-            m_clientConnections[source].LastConnectionTime = Time.time;
-
-            m_clientConnections[source].ConnectionData.Receive(packet);
-
-            Send(packet.Data, source);
+            m_threadLocker.ReleaseMutex();
         }
     }
 }

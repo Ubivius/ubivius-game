@@ -46,10 +46,7 @@ namespace UBV
     {
         // TODO: make data and  behaviour available to server (to make it symetrical)
         [Header("Movement parameters")]
-        [SerializeField] private float m_velocity;
-        [SerializeField] private float m_walk_velocity;
-        [SerializeField] private float m_sprint_velocity;
-        [SerializeField] private float m_acceleration;
+        [SerializeField] private StandardMovementSettings m_movementSettings;
         [SerializeField] private ClientSync m_clientSync;
 
         private Rigidbody2D m_rigidBody;
@@ -106,7 +103,7 @@ namespace UBV
         public void ClientStep(ref ClientState state, InputFrame input, float deltaTime)
         {
             m_rigidBody.MovePosition(m_rigidBody.position + 
-                input.Movement * (input.Sprinting ? m_sprint_velocity : m_walk_velocity) * deltaTime);
+                input.Movement * (input.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * deltaTime);
 
             state.Position = m_rigidBody.position;
         }

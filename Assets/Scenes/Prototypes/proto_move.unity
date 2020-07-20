@@ -132,7 +132,6 @@ GameObject:
   - component: {fileID: 388494385}
   - component: {fileID: 388494384}
   - component: {fileID: 388494383}
-  - component: {fileID: 388494382}
   m_Layer: 0
   m_Name: MovableServer
   m_TagString: Player
@@ -140,23 +139,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &388494382
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 388494381}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fca65deabe2d13e438e8d0e9b7183f69, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_velocity: 0
-  m_walk_velocity: 2
-  m_sprint_velocity: 5
-  m_acceleration: 0
-  m_clientSync: {fileID: 0}
 --- !u!50 &388494383
 Rigidbody2D:
   serializedVersion: 4
@@ -364,10 +346,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fca65deabe2d13e438e8d0e9b7183f69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_velocity: 0
-  m_walk_velocity: 2
-  m_sprint_velocity: 5
-  m_acceleration: 0
+  m_movementSettings: {fileID: 11400000, guid: a2974712f0687ee4f995c884f2948972, type: 2}
   m_clientSync: {fileID: 1668815429}
 --- !u!212 &1146798266
 SpriteRenderer:
@@ -568,6 +547,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85d3ee263d884c041b9e9a1900ffd499, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_movementSettings: {fileID: 11400000, guid: a2974712f0687ee4f995c884f2948972, type: 2}
+  m_rigidBody: {fileID: 388494383}
   m_port: 9050
   m_connectionTimeout: 10
 --- !u!4 &1538287031

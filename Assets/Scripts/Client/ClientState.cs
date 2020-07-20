@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 namespace UBV
 {
-
     /// <summary>
     /// Class reprensenting local client state, which will be simulated locally and synced with an authoritative server.
     /// Add here everything that needs to be shared with the server (and the other players).
