@@ -13,6 +13,7 @@ namespace UBV
         // Add here the stuff you need to share
         public Vector2 Position;
         public Quaternion Rotation;
+        public uint Tick;
 
         // add your data in the XYZBytes() functions to make them "network-able"
         // TODO: cache byte arrays to avoid GC.Alloc
@@ -26,25 +27,20 @@ namespace UBV
             byte[] rotationBytes_y = System.BitConverter.GetBytes(Rotation.y);
             byte[] rotationBytes_z = System.BitConverter.GetBytes(Rotation.z);
 
-            byte[] arr = new byte[4 + 4 + 4 + 4 + 4 + 4];
-            
-            for(ushort i = 0; i < 4; i++)
-                arr[i] = positionBytes_x[i];
+            byte[] tickBytes = System.BitConverter.GetBytes(Tick);
+
+            byte[] arr = new byte[4 + 4 + 4 + 4 + 4 + 4 + 4];
 
             for (ushort i = 0; i < 4; i++)
+            {
+                arr[i] = positionBytes_x[i];
                 arr[i + 4] = positionBytes_y[i];
-
-            for (ushort i = 0; i < 8; i++)
                 arr[i + 8] = rotationBytes_w[i];
-
-            for (ushort i = 0; i < 12; i++)
                 arr[i + 12] = rotationBytes_x[i];
-
-            for (ushort i = 0; i < 16; i++)
                 arr[i + 16] = rotationBytes_y[i];
-
-            for (ushort i = 0; i < 20; i++)
                 arr[i + 20] = rotationBytes_z[i];
+                arr[i + 24] = tickBytes[i];
+            }
 
 
             return arr;
@@ -60,7 +56,9 @@ namespace UBV
                 Rotation = new Quaternion(System.BitConverter.ToSingle(arr, 12),
                 System.BitConverter.ToSingle(arr, 16),
                 System.BitConverter.ToSingle(arr, 20),
-                System.BitConverter.ToSingle(arr, 8))
+                System.BitConverter.ToSingle(arr, 8)),
+
+                Tick = System.BitConverter.ToUInt32(arr, 24)
             };
 
             return state;

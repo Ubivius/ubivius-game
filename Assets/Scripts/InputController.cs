@@ -9,27 +9,32 @@ namespace UBV
     {
         public bool Sprinting;
         public Vector2 Movement;
+        public uint Tick;
 
         private byte[] m_cachedBytes;
         private byte[] m_cachedMove_x;
         private byte[] m_cachedMove_y;
+        private byte[] m_cachedTick;
 
         static private InputFrame m_cachedFrame;
 
         public byte[] ToBytes()
         {
             if(m_cachedBytes == null)
-               m_cachedBytes = new byte[4 + 4 + 1]; // 4 Bytes per float
+               m_cachedBytes = new byte[4 + 4 + 4 + 1]; // 4 Bytes per float
 
             m_cachedMove_x = System.BitConverter.GetBytes(Movement.x);
             m_cachedMove_y = System.BitConverter.GetBytes(Movement.y);
+            m_cachedTick = System.BitConverter.GetBytes(Tick);
+
             m_cachedBytes[0] = (byte)(Sprinting ? 1 : 0);
-            
-            for(ushort i = 0; i < 4; i++)
-                m_cachedBytes[i + 1] = m_cachedMove_x[i];
 
             for (ushort i = 0; i < 4; i++)
+            {
+                m_cachedBytes[i + 1] = m_cachedMove_x[i];
                 m_cachedBytes[i + 1 + 4] = m_cachedMove_y[i];
+                m_cachedBytes[i + 1 + 4 + 4] = m_cachedTick[i];
+            }
 
             return m_cachedBytes;
         }
@@ -44,6 +49,7 @@ namespace UBV
             m_cachedFrame.Sprinting = arr[0] == 1;
             m_cachedFrame.Movement.x = System.BitConverter.ToSingle(arr, 1);
             m_cachedFrame.Movement.y = System.BitConverter.ToSingle(arr, 4 + 1);
+            m_cachedFrame.Tick = System.BitConverter.ToUInt32(arr, 4 + 4 + 1);
             return m_cachedFrame;
         }
     }
@@ -117,6 +123,7 @@ namespace UBV
         public void ReceivePacket(UDPToolkit.Packet packet)
         {
             ClientState serverState = ClientState.FromBytes(packet.Data);
+            
         }
     }
 }

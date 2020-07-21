@@ -128,7 +128,7 @@ namespace UBV {
                 // Send back to client for ACK
 
                 // introdude random delay
-                Thread.Sleep(15);
+                Thread.Sleep(3);
 
                 // design pattern decorator ?
 

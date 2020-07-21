@@ -35,16 +35,25 @@ namespace UBV
 
         private void FixedUpdate()
         {
-            m_clientStateBuffer[m_localTick % CLIENT_STATE_BUFFER_SIZE] = m_localTick == 0 ?
+            uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
+            m_clientStateBuffer[bufferIndex] = m_localTick == 0 ?
                 new ClientState() : 
                 m_clientStateBuffer[(m_localTick - 1) % CLIENT_STATE_BUFFER_SIZE];
 
-            ClientState.Step(ref m_clientStateBuffer[m_localTick % CLIENT_STATE_BUFFER_SIZE], 
-                m_inputBuffer[m_localTick % CLIENT_STATE_BUFFER_SIZE], 
+            m_clientStateBuffer[bufferIndex].Tick = bufferIndex;
+
+            ClientState.Step(ref m_clientStateBuffer[bufferIndex], 
+                m_inputBuffer[bufferIndex], 
                 Time.fixedDeltaTime);
 
+            // client correction ?
+            // receive a state from server
+            // check what tick it corresponds to
+            // rewind client state to the tick
+            // replay up to local tick by stepping every tick
+
             // send to server at a particular rate ?
-            m_udpClient.Send(m_inputBuffer[m_localTick % CLIENT_STATE_BUFFER_SIZE].ToBytes());
+            m_udpClient.Send(m_inputBuffer[bufferIndex].ToBytes());
 
             ++m_localTick;;
         }
