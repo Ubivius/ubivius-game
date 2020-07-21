@@ -78,11 +78,18 @@ namespace UBV
             m_updaters.Add(updater);
         }
 
-        static public void Step(ref ClientState state, InputFrame input, float deltaTime)
+        static public void Step(ref ClientState state, InputFrame input, float deltaTime, PhysicsScene2D physics)
         {
             for (int i = 0; i < m_updaters.Count; i++)
             {
                 m_updaters[i].ClientStep(ref state, input, deltaTime);
+            }
+
+            physics.Simulate(deltaTime);
+
+            for (int i = 0; i < m_updaters.Count; i++)
+            {
+                m_updaters[i].SaveClientState(ref state);
             }
         }
 

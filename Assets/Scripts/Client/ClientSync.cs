@@ -49,15 +49,34 @@ namespace UBV
 
             ClientState.Step(ref m_clientStateBuffer[bufferIndex], 
                 m_inputBuffer[bufferIndex], 
-                Time.fixedDeltaTime);
+                Time.fixedDeltaTime,
+                m_clientPhysics);
 
-            m_clientPhysics.Simulate(Time.fixedDeltaTime);
 
             // client correction ?
             // receive a state from server
             // check what tick it corresponds to
             // rewind client state to the tick
             // replay up to local tick by stepping every tick
+            bool corr = false;
+            if (corr)
+            {
+                ClientState playerServerState = null;
+                
+                uint rewindTicks = playerServerState.Tick;
+                uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
+
+                m_clientStateBuffer[bufferIndex] = playerServerState;
+
+                while (rewindTicks < m_localTick)
+                {
+                    rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
+                    ClientState.Step(ref m_clientStateBuffer[bufferIndex],
+                        m_inputBuffer[bufferIndex],
+                        Time.fixedDeltaTime,
+                        m_clientPhysics);
+                }
+            }
 
             // send to server at a particular rate ?
             m_udpClient.Send(m_inputBuffer[bufferIndex].ToBytes());
