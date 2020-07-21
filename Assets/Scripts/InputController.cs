@@ -9,21 +9,29 @@ namespace UBV
     {
         public bool Sprinting;
         public Vector2 Movement;
-        
+
+        private byte[] m_cachedBytes;
+        private byte[] m_cachedMove_x;
+        private byte[] m_cachedMove_y;
+
+        static private InputFrame m_cachedFrame;
+
         public byte[] ToBytes()
         {
-            byte[] move_x = System.BitConverter.GetBytes(Movement.x);
-            byte[] move_y = System.BitConverter.GetBytes(Movement.y);
-            byte[] arr = new byte[4 + 4 + 1]; // 4 Bytes per float
-            arr[0] = (byte)(Sprinting ? 1 : 0);
+            if(m_cachedBytes == null)
+               m_cachedBytes = new byte[4 + 4 + 1]; // 4 Bytes per float
+
+            m_cachedMove_x = System.BitConverter.GetBytes(Movement.x);
+            m_cachedMove_y = System.BitConverter.GetBytes(Movement.y);
+            m_cachedBytes[0] = (byte)(Sprinting ? 1 : 0);
             
             for(ushort i = 0; i < 4; i++)
-                arr[i + 1] = move_x[i];
+                m_cachedBytes[i + 1] = m_cachedMove_x[i];
 
             for (ushort i = 0; i < 4; i++)
-                arr[i + 1 + 4] = move_y[i];
+                m_cachedBytes[i + 1 + 4] = m_cachedMove_y[i];
 
-            return arr;
+            return m_cachedBytes;
         }
         
         static public byte[] ToBytes(InputFrame frame)
@@ -33,12 +41,10 @@ namespace UBV
 
         static public InputFrame FromBytes(byte[] arr)
         {
-            InputFrame frame = new InputFrame
-            {
-                Sprinting = arr[0] == 1,
-                Movement = new Vector2(System.BitConverter.ToSingle(arr, 1), System.BitConverter.ToSingle(arr, 4 + 1))
-            };
-            return frame;
+            m_cachedFrame.Sprinting = arr[0] == 1;
+            m_cachedFrame.Movement.x = System.BitConverter.ToSingle(arr, 1);
+            m_cachedFrame.Movement.y = System.BitConverter.ToSingle(arr, 4 + 1);
+            return m_cachedFrame;
         }
     }
 
