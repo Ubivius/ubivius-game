@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using UnityEngine.SceneManagement;
 
 namespace UBV
 {
@@ -18,12 +19,16 @@ namespace UBV
         private uint m_localTick;
 
         private const ushort CLIENT_STATE_BUFFER_SIZE = 256;
+        
+        private PhysicsScene2D m_clientPhysics;
 
         private void Awake()
         {
             m_localTick = 0;
             m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
+
+            m_clientPhysics = SceneManager.GetActiveScene().GetPhysicsScene2D();
         }
 
         public void SetCurrentInputBuffer(InputFrame inputs)
@@ -45,6 +50,8 @@ namespace UBV
             ClientState.Step(ref m_clientStateBuffer[bufferIndex], 
                 m_inputBuffer[bufferIndex], 
                 Time.fixedDeltaTime);
+
+            m_clientPhysics.Simulate(Time.fixedDeltaTime);
 
             // client correction ?
             // receive a state from server

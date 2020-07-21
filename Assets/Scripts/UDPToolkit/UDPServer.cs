@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading;
+using UnityEngine.SceneManagement;
 
 namespace UBV {
 
@@ -21,6 +22,8 @@ namespace UBV {
         private InputFrame m_currentInput;
         private bool m_inputFrameIsReady = false;
         static private Mutex m_threadLocker = new Mutex();
+
+        private PhysicsScene2D m_serverPhysics;
 
         [SerializeField] int m_port = 9050;
         [SerializeField] float m_connectionTimeout = 10f;
@@ -49,6 +52,9 @@ namespace UBV {
             m_endPoints = new Dictionary<IPEndPoint, UdpClient>();
             m_clientConnections = new Dictionary<UdpClient, ClientConnection>();
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
+
+            m_serverPhysics = SceneManager.GetActiveScene().GetPhysicsScene2D();
+
             m_server = new UdpClient(localEndPoint);
             m_server.BeginReceive(EndReceiveCallback, m_server);
         }
@@ -163,6 +169,8 @@ namespace UBV {
                 m_inputFrameIsReady = false;
                 m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
                    m_currentInput.Movement * (m_currentInput.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * Time.fixedDeltaTime);
+
+                m_serverPhysics.Simulate(Time.fixedDeltaTime);
             }
             m_threadLocker.ReleaseMutex();
         }
