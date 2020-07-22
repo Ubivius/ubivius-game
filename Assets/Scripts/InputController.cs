@@ -54,7 +54,7 @@ namespace UBV
         }
     }
 
-    public class InputController : MonoBehaviour, IClientStateUpdater, IPacketReceiver
+    public class InputController : MonoBehaviour, IClientStateUpdater
     {
         // TODO: make data and  behaviour available to server (to make it symetrical)
         [Header("Movement parameters")]
@@ -81,7 +81,6 @@ namespace UBV
             m_controls.Gameplay.Sprint.canceled += context => m_currentInputFrame.Sprinting = false;
             
             ClientState.RegisterUpdater(this);
-            ClientState.RegisterReceiver(this);
         }
 
         // Start is called before the first frame update
@@ -121,12 +120,6 @@ namespace UBV
         public void SaveClientState(ref ClientState state)
         {
             state.Position = m_rigidBody.position;
-        }
-
-        public void ReceivePacket(UDPToolkit.Packet packet)
-        {
-            ClientState serverState = ClientState.FromBytes(packet.Data);
-            
         }
     }
 }

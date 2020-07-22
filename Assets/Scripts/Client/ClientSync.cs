@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 namespace UBV
 {
-    public class ClientSync : MonoBehaviour
+    public class ClientSync : MonoBehaviour, IPacketReceiver
     {
         // TO CHECK:: https://www.codeproject.com/Articles/311944/BinaryFormatter-or-Manual-serializing
         // https://github.com/spectre1989/unity_physics_csp/blob/master/Assets/Logic.cs
@@ -16,10 +17,13 @@ namespace UBV
         private ClientState[] m_clientStateBuffer;
         private InputFrame[] m_inputBuffer;
 
+        private Queue<ClientState> m_serverStates;
+
         private uint m_localTick;
 
         private const ushort CLIENT_STATE_BUFFER_SIZE = 256;
-        
+
+        [SerializeField] private string m_physicsScene;
         private PhysicsScene2D m_clientPhysics;
 
         private void Awake()
@@ -27,8 +31,10 @@ namespace UBV
             m_localTick = 0;
             m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
-
-            m_clientPhysics = SceneManager.GetActiveScene().GetPhysicsScene2D();
+            
+            m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
+            m_serverStates = new Queue<ClientState>();
+            ClientState.RegisterReceiver(this);
         }
 
         public void SetCurrentInputBuffer(InputFrame inputs)
@@ -58,14 +64,15 @@ namespace UBV
             // check what tick it corresponds to
             // rewind client state to the tick
             // replay up to local tick by stepping every tick
-            bool corr = false;
-            if (corr)
+
+            ClientState playerServerState = null;
+            while (m_serverStates.Count > 0)
+                playerServerState = m_serverStates.Dequeue();
+
+            if (playerServerState != null)
             {
-                ClientState playerServerState = null;
-                
                 uint rewindTicks = playerServerState.Tick;
                 uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
-
                 m_clientStateBuffer[bufferIndex] = playerServerState;
 
                 while (rewindTicks < m_localTick)
@@ -82,6 +89,11 @@ namespace UBV
             m_udpClient.Send(m_inputBuffer[bufferIndex].ToBytes());
 
             ++m_localTick;;
+        }
+        
+        public void ReceivePacket(UDPToolkit.Packet packet)
+        {
+            m_serverStates.Enqueue(ClientState.FromBytes(packet.Data));
         }
     }
 }

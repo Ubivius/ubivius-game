@@ -42,6 +42,7 @@ namespace UBV
 
         private void Start()
         {
+            // Wait for server to be ready?
             m_client.BeginReceive(EndReceiveCallback, m_client);
         }
 
@@ -93,25 +94,37 @@ namespace UBV
         {
             UdpClient c = (UdpClient)ar.AsyncState;
             IPEndPoint temp = new IPEndPoint(0, 0);
-            byte[] bytes = c.EndReceive(ar, ref temp);
-            
-            m_timeOutTimer = 0;
-
-            UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
-
-            if (m_sequencesSendTime.ContainsKey(packet.ACK))
+            byte[] bytes = null;
+            try
             {
-                m_RTT = m_RTTTimer - m_sequencesSendTime[packet.ACK];
-                m_sequencesSendTime.Remove(packet.ACK);
+                bytes = c.EndReceive(ar, ref temp); 
+            }
+            catch(SocketException e)
+            {
+                Debug.Log("Socket error: " + e.ToString());
             }
 
-            if (m_connectionData.Receive(packet))
+            if (bytes != null)
             {
-                m_connected = true;
-                //Debug.Log("Client received (RTT = " + m_RTT.ToString() + ")");
-                //Debug.Log(packet.ToString());
+                m_timeOutTimer = 0;
 
+                UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
+
+                if (m_sequencesSendTime.ContainsKey(packet.ACK))
+                {
+                    m_RTT = m_RTTTimer - m_sequencesSendTime[packet.ACK];
+                    m_sequencesSendTime.Remove(packet.ACK);
+                }
+
+                if (m_connectionData.Receive(packet))
+                {
+                    m_connected = true;
+                    //Debug.Log("Client received (RTT = " + m_RTT.ToString() + ")");
+                    //Debug.Log(packet.ToString());
+                    ClientState.Receive(packet);
+                }
             }
+
             c.BeginReceive(EndReceiveCallback, c);
         }
         

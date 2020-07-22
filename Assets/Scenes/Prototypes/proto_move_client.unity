@@ -489,6 +489,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_udpClient: {fileID: 925986283}
+  m_physicsScene: proto_move_client
 --- !u!4 &1668815430
 Transform:
   m_ObjectHideFlags: 0

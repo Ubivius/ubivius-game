@@ -7,8 +7,8 @@ public class AdditiveSceneLoader : MonoBehaviour
 {
     [SerializeField] private string m_sceneToLoad;
 
-    private void Awake()
+    private void Start()
     {
-        SceneManager.LoadSceneAsync(m_sceneToLoad, LoadSceneMode.Additive);
+        SceneManager.LoadScene(m_sceneToLoad, LoadSceneMode.Additive);
     }
 }

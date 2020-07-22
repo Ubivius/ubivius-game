@@ -255,6 +255,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_movementSettings: {fileID: 11400000, guid: a2974712f0687ee4f995c884f2948972, type: 2}
   m_rigidBody: {fileID: 388494383}
+  m_physicsScene: proto_move_server
   m_port: 9050
   m_connectionTimeout: 10
 --- !u!4 &1538287031

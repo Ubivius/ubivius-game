@@ -23,6 +23,7 @@ namespace UBV {
         private bool m_inputFrameIsReady = false;
         static private Mutex m_threadLocker = new Mutex();
 
+        [SerializeField] private string m_physicsScene; 
         private PhysicsScene2D m_serverPhysics;
 
         [SerializeField] int m_port = 9050;
@@ -53,7 +54,7 @@ namespace UBV {
             m_clientConnections = new Dictionary<UdpClient, ClientConnection>();
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
 
-            m_serverPhysics = SceneManager.GetActiveScene().GetPhysicsScene2D();
+            m_serverPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
 
             m_server = new UdpClient(localEndPoint);
             m_server.BeginReceive(EndReceiveCallback, m_server);
@@ -155,9 +156,11 @@ namespace UBV {
             m_inputFrameIsReady = true;
             m_currentInput = input;
             m_threadLocker.ReleaseMutex();
-            //ClientState state = new ClientState(); 
+            ClientState state = new ClientState();
+            state.Position = m_rigidBody.position;
+            state.Tick = input.Tick;
 
-            Send(packet.Data/*state.ToBytes()*/, m_endPoints[clientEndPoint]);
+            Send(state.ToBytes(), m_endPoints[clientEndPoint]);
         }
 
         // temporary
@@ -169,7 +172,7 @@ namespace UBV {
                 m_inputFrameIsReady = false;
                 m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
                    m_currentInput.Movement * (m_currentInput.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * Time.fixedDeltaTime);
-
+                m_rigidBody.position += new Vector2(0, -1f);
                 m_serverPhysics.Simulate(Time.fixedDeltaTime);
             }
             m_threadLocker.ReleaseMutex();
