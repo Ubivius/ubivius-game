@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace UBV
 {
-    public struct InputFrame
+    public class InputFrame
     {
         public bool Sprinting;
         public Vector2 Movement;
@@ -16,24 +16,25 @@ namespace UBV
         private byte[] m_cachedMove_y;
         private byte[] m_cachedTick;
 
-        static private InputFrame m_cachedFrame;
+        static private InputFrame m_cachedFrame = new InputFrame();
 
-        public byte[] ToBytes()
+        public byte[] ToBytes() // TODO: make it so every first byte automatically corresponds to the type?
         {
             if(m_cachedBytes == null)
-               m_cachedBytes = new byte[4 + 4 + 4 + 1]; // 4 Bytes per float
+               m_cachedBytes = new byte[1 + 4 + 4 + 4 + 1]; // 4 Bytes per float
 
             m_cachedMove_x = System.BitConverter.GetBytes(Movement.x);
             m_cachedMove_y = System.BitConverter.GetBytes(Movement.y);
             m_cachedTick = System.BitConverter.GetBytes(Tick);
 
-            m_cachedBytes[0] = (byte)(Sprinting ? 1 : 0);
+            m_cachedBytes[0] = (byte)Serialization.BYTE_TYPE.INPUT_FRAME;
+            m_cachedBytes[1] = (byte)(Sprinting ? 1 : 0);
 
             for (ushort i = 0; i < 4; i++)
             {
-                m_cachedBytes[i + 1] = m_cachedMove_x[i];
-                m_cachedBytes[i + 1 + 4] = m_cachedMove_y[i];
-                m_cachedBytes[i + 1 + 4 + 4] = m_cachedTick[i];
+                m_cachedBytes[i + 1 + 1] = m_cachedMove_x[i];
+                m_cachedBytes[i + 1 + 4 + 1] = m_cachedMove_y[i];
+                m_cachedBytes[i + 1 + 4 + 4 + 1] = m_cachedTick[i];
             }
 
             return m_cachedBytes;
@@ -46,10 +47,13 @@ namespace UBV
 
         static public InputFrame FromBytes(byte[] arr)
         {
-            m_cachedFrame.Sprinting = arr[0] == 1;
-            m_cachedFrame.Movement.x = System.BitConverter.ToSingle(arr, 1);
-            m_cachedFrame.Movement.y = System.BitConverter.ToSingle(arr, 4 + 1);
-            m_cachedFrame.Tick = System.BitConverter.ToUInt32(arr, 4 + 4 + 1);
+            if (arr[0] != (byte)Serialization.BYTE_TYPE.INPUT_FRAME)
+                return null;
+
+            m_cachedFrame.Sprinting = arr[1] == 1;
+            m_cachedFrame.Movement.x = System.BitConverter.ToSingle(arr, 2);
+            m_cachedFrame.Movement.y = System.BitConverter.ToSingle(arr, 4 + 1 + 1);
+            m_cachedFrame.Tick = System.BitConverter.ToUInt32(arr, 4 + 4 + 1 + 1);
             return m_cachedFrame;
         }
     }

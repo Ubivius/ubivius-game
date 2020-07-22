@@ -16,11 +16,10 @@ namespace UBV {
     /// </summary>
     public class UDPServer : MonoBehaviour
     {
-        // TEMPORARY, for test purposes
+        // TEMPORARY, for test purposes because running on same program
         [SerializeField] private StandardMovementSettings m_movementSettings;
         [SerializeField] private Rigidbody2D m_rigidBody;
-        private InputFrame m_currentInput;
-        private bool m_inputFrameIsReady = false;
+
         static private Mutex m_threadLocker = new Mutex();
 
         [SerializeField] private string m_physicsScene; 
@@ -36,6 +35,9 @@ namespace UBV {
         {
             public float LastConnectionTime;
             public UDPToolkit.ConnectionData ConnectionData;
+
+            public InputFrame CurrentInput;
+            public bool InputFrameIsReady = false;
 
             public ClientConnection()
             {
@@ -150,32 +152,38 @@ namespace UBV {
         {
             //Debug.Log("Received in server " + packet.ToString());
 
-            InputFrame input = InputFrame.FromBytes(packet.Data); // TODO: create byte indicator to detect type of byte array before using it
-            Debug.Log("Input received in server: " + input.Sprinting + ", " + input.Movement);
-            m_threadLocker.WaitOne();
-            m_inputFrameIsReady = true;
-            m_currentInput = input;
-            m_threadLocker.ReleaseMutex();
-            ClientState state = new ClientState();
-            state.Position = m_rigidBody.position;
-            state.Tick = input.Tick;
+            InputFrame input = InputFrame.FromBytes(packet.Data); 
+            if (input != null)
+            {
+                Debug.Log("Input received in server: " + input.Sprinting + ", " + input.Movement);
+                m_threadLocker.WaitOne();
+                m_clientConnections[m_endPoints[clientEndPoint]].InputFrameIsReady = true;
+                m_clientConnections[m_endPoints[clientEndPoint]].CurrentInput = input;
 
-            Send(state.ToBytes(), m_endPoints[clientEndPoint]);
+                m_threadLocker.ReleaseMutex();
+            }
         }
 
         // temporary
         private void FixedUpdate()
         {
-            m_threadLocker.WaitOne();
-            if (m_inputFrameIsReady)
+            foreach (IPEndPoint ep in m_endPoints.Keys)
             {
-                m_inputFrameIsReady = false;
-                m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
-                   m_currentInput.Movement * (m_currentInput.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * Time.fixedDeltaTime);
-                m_rigidBody.position += new Vector2(0, -1f);
-                m_serverPhysics.Simulate(Time.fixedDeltaTime);
+                ClientConnection conn = m_clientConnections[m_endPoints[ep]];
+                if (conn.InputFrameIsReady)
+                {
+                    conn.InputFrameIsReady = false;
+                    m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
+                       conn.CurrentInput.Movement * (conn.CurrentInput.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * Time.fixedDeltaTime);
+                    //m_rigidBody.position += new Vector2(0, -1f);
+
+                    ClientState state = new ClientState();
+                    state.Position = m_rigidBody.position;
+                    state.Tick = conn.CurrentInput.Tick;
+                    Send(state.ToBytes(), m_endPoints[ep]);
+                }
             }
-            m_threadLocker.ReleaseMutex();
+            m_serverPhysics.Simulate(Time.fixedDeltaTime);
         }
     }
 }

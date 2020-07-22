@@ -42,7 +42,6 @@ namespace UBV
 
         private void Start()
         {
-            // Wait for server to be ready?
             m_client.BeginReceive(EndReceiveCallback, m_client);
         }
 

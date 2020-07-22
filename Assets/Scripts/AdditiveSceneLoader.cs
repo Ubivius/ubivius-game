@@ -9,6 +9,6 @@ public class AdditiveSceneLoader : MonoBehaviour
 
     private void Start()
     {
-        SceneManager.LoadScene(m_sceneToLoad, LoadSceneMode.Additive);
+        SceneManager.LoadSceneAsync(m_sceneToLoad, new LoadSceneParameters { loadSceneMode = LoadSceneMode.Additive, localPhysicsMode = LocalPhysicsMode.Physics2D });
     }
 }

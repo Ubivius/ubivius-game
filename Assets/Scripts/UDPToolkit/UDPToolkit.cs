@@ -15,10 +15,10 @@ namespace UBV
     public class UDPToolkit
     {
         private static readonly byte[] UDP_PROTOCOL_ID = { 0xAA, 0x0C, 0xC0, 0xFF };
-        public const ushort UDP_PACKET_SIZE = 64; // size in bytes
-        public const ushort UDP_MAX_PAYLOAD_SIZE = 16;
+        public const ushort UDP_MAX_PAYLOAD_SIZE = 128;
         public const ushort UDP_HEADER_SIZE = 4 + 4 + 4 + 4;
-        
+        public const ushort UDP_PACKET_SIZE = UDP_HEADER_SIZE + UDP_MAX_PAYLOAD_SIZE ; // size in bytes
+
         /// <summary>
         /// Manages sequence numbers and packet acknowledgement, creates packets to be sent and deals with reception
         /// </summary>
@@ -102,7 +102,7 @@ namespace UBV
             public uint Sequence { get  { return System.BitConverter.ToUInt32(RawBytes, 4); }}
             public uint ACK { get { return System.BitConverter.ToUInt32(RawBytes, 8); } }
             public int ACK_Bitfield { get { return System.BitConverter.ToInt32(RawBytes, 12); } }
-            public byte[] Data { get { return RawBytes.SubArray(16, UDP_PACKET_SIZE - UDP_HEADER_SIZE); } }
+            public byte[] Data { get { return RawBytes.SubArray(UDP_HEADER_SIZE, UDP_PACKET_SIZE - UDP_HEADER_SIZE); } }
 
             private Packet(byte[] bytes)
             {

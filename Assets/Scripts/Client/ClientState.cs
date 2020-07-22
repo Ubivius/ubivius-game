@@ -29,17 +29,19 @@ namespace UBV
 
             byte[] tickBytes = System.BitConverter.GetBytes(Tick);
 
-            byte[] arr = new byte[4 + 4 + 4 + 4 + 4 + 4 + 4];
+            byte[] arr = new byte[1 + 4 + 4 + 4 + 4 + 4 + 4 + 4];
+            
+            arr[0] = (byte)Serialization.BYTE_TYPE.CLIENT_STATE;
 
             for (ushort i = 0; i < 4; i++)
             {
-                arr[i] = positionBytes_x[i];
-                arr[i + 4] = positionBytes_y[i];
-                arr[i + 8] = rotationBytes_w[i];
-                arr[i + 12] = rotationBytes_x[i];
-                arr[i + 16] = rotationBytes_y[i];
-                arr[i + 20] = rotationBytes_z[i];
-                arr[i + 24] = tickBytes[i];
+                arr[i + 1] = positionBytes_x[i];
+                arr[i + 4 + 1] = positionBytes_y[i];
+                arr[i + 8 + 1] = rotationBytes_w[i];
+                arr[i + 12 + 1] = rotationBytes_x[i];
+                arr[i + 16 + 1] = rotationBytes_y[i];
+                arr[i + 20 + 1] = rotationBytes_z[i];
+                arr[i + 24 + 1] = tickBytes[i];
             }
 
 
@@ -48,17 +50,20 @@ namespace UBV
 
         public static ClientState FromBytes(byte[] arr)
         {
+            if (arr[0] != (byte)Serialization.BYTE_TYPE.CLIENT_STATE)
+                return null;
+
             ClientState state = new ClientState
             {
-                Position = new Vector2(System.BitConverter.ToSingle(arr, 0),
-                System.BitConverter.ToSingle(arr, 4)),
+                Position = new Vector2(System.BitConverter.ToSingle(arr, 1),
+                System.BitConverter.ToSingle(arr, 4 + 1)),
 
-                Rotation = new Quaternion(System.BitConverter.ToSingle(arr, 12),
-                System.BitConverter.ToSingle(arr, 16),
-                System.BitConverter.ToSingle(arr, 20),
-                System.BitConverter.ToSingle(arr, 8)),
+                Rotation = new Quaternion(System.BitConverter.ToSingle(arr, 12 + 1),
+                System.BitConverter.ToSingle(arr, 16 + 1),
+                System.BitConverter.ToSingle(arr, 20 + 1),
+                System.BitConverter.ToSingle(arr, 8 + 1)),
 
-                Tick = System.BitConverter.ToUInt32(arr, 24)
+                Tick = System.BitConverter.ToUInt32(arr, 24 + 1)
             };
 
             return state;
@@ -78,7 +83,7 @@ namespace UBV
             m_updaters.Add(updater);
         }
 
-        static public void Step(ref ClientState state, InputFrame input, float deltaTime, PhysicsScene2D physics)
+        static public void Step(ref ClientState state, InputFrame input, float deltaTime, ref PhysicsScene2D physics)
         {
             for (int i = 0; i < m_updaters.Count; i++)
             {
