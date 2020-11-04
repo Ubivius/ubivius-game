@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace UBV
+namespace ubv
 {
     public class InputFrame
     {
@@ -11,33 +11,33 @@ namespace UBV
         public Vector2 Movement;
         public uint Tick;
 
-        private byte[] m_cachedBytes;
-        private byte[] m_cachedMove_x;
+        /*private byte[] m_cachedMove_x;
         private byte[] m_cachedMove_y;
-        private byte[] m_cachedTick;
-
-        static private InputFrame m_cachedFrame = new InputFrame();
+        private byte[] m_cachedTick;*/
 
         public byte[] ToBytes() // TODO: make it so every first byte automatically corresponds to the type?
         {
-            if(m_cachedBytes == null)
-               m_cachedBytes = new byte[1 + 4 + 4 + 4 + 1]; // 4 Bytes per float
+            byte[] bytes = new byte[1 + 4 + 4 + 4 + 1]; // 4 Bytes per float
 
-            m_cachedMove_x = System.BitConverter.GetBytes(Movement.x);
-            m_cachedMove_y = System.BitConverter.GetBytes(Movement.y);
-            m_cachedTick = System.BitConverter.GetBytes(Tick);
+            byte[] move_x;
+            byte[] move_y;
+            byte[] tick;
 
-            m_cachedBytes[0] = (byte)Serialization.BYTE_TYPE.INPUT_FRAME;
-            m_cachedBytes[1] = (byte)(Sprinting ? 1 : 0);
+            move_x = System.BitConverter.GetBytes(Movement.x);
+            move_y = System.BitConverter.GetBytes(Movement.y);
+            tick = System.BitConverter.GetBytes(Tick);
+
+            bytes[0] = (byte)Serialization.BYTE_TYPE.INPUT_FRAME;
+            bytes[1] = (byte)(Sprinting ? 1 : 0);
 
             for (ushort i = 0; i < 4; i++)
             {
-                m_cachedBytes[i + 1 + 1] = m_cachedMove_x[i];
-                m_cachedBytes[i + 1 + 4 + 1] = m_cachedMove_y[i];
-                m_cachedBytes[i + 1 + 4 + 4 + 1] = m_cachedTick[i];
+                bytes[i + 1 + 1] = move_x[i];
+                bytes[i + 1 + 4 + 1] = move_y[i];
+                bytes[i + 1 + 4 + 4 + 1] = tick[i];
             }
 
-            return m_cachedBytes;
+            return bytes;
         }
         
         static public byte[] ToBytes(InputFrame frame)
@@ -50,11 +50,12 @@ namespace UBV
             if (arr[0] != (byte)Serialization.BYTE_TYPE.INPUT_FRAME)
                 return null;
 
-            m_cachedFrame.Sprinting = arr[1] == 1;
-            m_cachedFrame.Movement.x = System.BitConverter.ToSingle(arr, 2);
-            m_cachedFrame.Movement.y = System.BitConverter.ToSingle(arr, 4 + 1 + 1);
-            m_cachedFrame.Tick = System.BitConverter.ToUInt32(arr, 4 + 4 + 1 + 1);
-            return m_cachedFrame;
+            InputFrame frame = new InputFrame();
+            frame.Sprinting = arr[1] == 1;
+            frame.Movement.x = System.BitConverter.ToSingle(arr, 2);
+            frame.Movement.y = System.BitConverter.ToSingle(arr, 4 + 1 + 1);
+            frame.Tick = System.BitConverter.ToUInt32(arr, 4 + 4 + 1 + 1);
+            return frame;
         }
     }
 
@@ -97,7 +98,7 @@ namespace UBV
         void Update()
         {
             // ...
-            m_clientSync.SetCurrentInputBuffer(m_currentInputFrame);
+            m_clientSync.AddInput(m_currentInputFrame);
         }
 
         private void FixedUpdate()
@@ -124,6 +125,11 @@ namespace UBV
         public void SaveClientState(ref ClientState state)
         {
             state.Position = m_rigidBody.position;
+        }
+
+        public bool NeedsCorrection(ref ClientState localState, ref ClientState remoteState)
+        {
+            return false;
         }
     }
 }

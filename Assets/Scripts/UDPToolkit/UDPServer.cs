@@ -6,7 +6,7 @@ using System.Net;
 using System.Threading;
 using UnityEngine.SceneManagement;
 
-namespace UBV {
+namespace ubv {
 
     // NOTE: Server and client must use same functions for client state simulation steps ?
 
@@ -27,6 +27,15 @@ namespace UBV {
 
         [SerializeField] int m_port = 9050;
         [SerializeField] float m_connectionTimeout = 10f;
+        [SerializeField] uint m_snapshotRate = 5; // We send back client data every m_snapshotRate tick
+
+        private uint m_tickAccumulator;
+        private uint m_localTick;
+
+        private Dictionary<IPEndPoint, UdpClient> m_endPoints;
+        private Dictionary<UdpClient, ClientConnection> m_clientConnections;
+        private UdpClient m_server;
+        private float m_serverUptime = 0;
 
         /// <summary>
         /// Manages a specific client connection 
@@ -36,19 +45,16 @@ namespace UBV {
             public float LastConnectionTime;
             public UDPToolkit.ConnectionData ConnectionData;
 
-            public InputFrame CurrentInput;
-            public bool InputFrameIsReady = false;
-
+            public ClientState State;
+            public Queue<InputFrame> InputFrames;
+            
             public ClientConnection()
             {
                 ConnectionData = new UDPToolkit.ConnectionData();
+                State = new ClientState();
+                InputFrames = new Queue<InputFrame>();
             }
         }
-        
-        private Dictionary<IPEndPoint, UdpClient> m_endPoints;
-        private Dictionary<UdpClient, ClientConnection> m_clientConnections;
-        UdpClient m_server;
-        private float m_serverUptime = 0;
         
         private void Awake()
         {
@@ -57,6 +63,8 @@ namespace UBV {
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
 
             m_serverPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
+            m_localTick = 0;
+            m_tickAccumulator = 0;
 
             m_server = new UdpClient(localEndPoint);
             m_server.BeginReceive(EndReceiveCallback, m_server);
@@ -64,6 +72,7 @@ namespace UBV {
 
         private void Update()
         {
+            // TODO: Adapt to use a better time tracking? System time?  
             m_serverUptime += Time.deltaTime;
             if(Time.frameCount % 10 == 0)
             {
@@ -100,14 +109,18 @@ namespace UBV {
             }
             catch (SocketException e)
             {
+#if DEBUG
                 Debug.Log("Server socket exception: " + e);
+#endif // DEBUG
             }
         }
 
         private void EndSendCallback(System.IAsyncResult ar)
         {
             UdpClient c = (UdpClient)ar.AsyncState;
-            //Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
+#if DEBUG
+            Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
+#endif // DEBUG
         }
 
         private void EndReceiveCallback(System.IAsyncResult ar)
@@ -131,13 +144,12 @@ namespace UBV {
             UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
             if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
             {
-                //Debug.Log("Server received");
-                //Debug.Log(packet.ToString());
+                //Debug.Log("Server received " + packet.ToString());
 
                 // Send back to client for ACK
 
                 // introdude random delay
-                Thread.Sleep(3);
+                //Thread.Sleep(50); // Latency of 50 ms
 
                 // design pattern decorator ?
 
@@ -150,40 +162,84 @@ namespace UBV {
 
         public void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
         {
+            m_threadLocker.WaitOne();
             //Debug.Log("Received in server " + packet.ToString());
 
             InputFrame input = InputFrame.FromBytes(packet.Data); 
             if (input != null)
             {
-                Debug.Log("Input received in server: " + input.Sprinting + ", " + input.Movement);
-                m_threadLocker.WaitOne();
-                m_clientConnections[m_endPoints[clientEndPoint]].InputFrameIsReady = true;
-                m_clientConnections[m_endPoints[clientEndPoint]].CurrentInput = input;
-
-                m_threadLocker.ReleaseMutex();
+#if DEBUG
+                Debug.Log("Input received in server: " + input.Sprinting + ", " + input.Movement + ", " + input.Tick);
+#endif // DEBUG
+                m_clientConnections[m_endPoints[clientEndPoint]].InputFrames.Enqueue(input);
             }
+            m_threadLocker.ReleaseMutex();
         }
-
-        // temporary
+        
         private void FixedUpdate()
         {
-            foreach (IPEndPoint ep in m_endPoints.Keys)
-            {
-                ClientConnection conn = m_clientConnections[m_endPoints[ep]];
-                if (conn.InputFrameIsReady)
-                {
-                    conn.InputFrameIsReady = false;
-                    m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
-                       conn.CurrentInput.Movement * (conn.CurrentInput.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * Time.fixedDeltaTime);
-                    //m_rigidBody.position += new Vector2(0, -1f);
+            // we update the state of the world server side
+            // at a reduced pace. Ex: 10 times/second
 
-                    ClientState state = new ClientState();
-                    state.Position = m_rigidBody.position;
-                    state.Tick = conn.CurrentInput.Tick;
-                    Send(state.ToBytes(), m_endPoints[ep]);
+            // move to different class: ServerSync?
+
+            if (++m_tickAccumulator >= m_snapshotRate)
+            {
+                m_threadLocker.WaitOne();
+                Debug.Log("Starting server snapshot at tick " + m_localTick);
+                // on retourne en arrière jusqu'au state qui date du dernier snapshot
+                // à partir de là, on applique les inputs reçus
+                // on veut appliquer les bons inputs:
+                //  on applique donc les inputs à partir de celui qui a un tick
+                //  correspondant à celui du state (m_localTick - m_tickAccumulator)
+                for (uint tick = 0; tick < m_tickAccumulator; tick++)
+                {
+                    foreach (ClientConnection conn in m_clientConnections.Values)
+                    {
+                        InputFrame frame = null;
+                        if (conn.InputFrames.Count > 0)
+                        {
+                            do
+                            {
+                                frame = conn.InputFrames.Dequeue();
+                                Debug.Log("Dequeuing frame with tick " + frame.Tick);
+                            }
+                            while (frame.Tick < m_localTick - m_tickAccumulator + tick && conn.InputFrames.Count > 0);
+                        }
+                        /*if (conn.InputFrames.Count > 0)
+                        {
+                            InputFrame frame = conn.InputFrames.Dequeue();
+                            m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
+                                frame.Movement * (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * Time.fixedDeltaTime);
+
+                            conn.State.Position = m_rigidBody.position;
+                            conn.State.Tick = frame.Tick;
+                        }*/
+                        if (frame != null)
+                        {
+                            m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
+                                    frame.Movement *
+                                    (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) *
+                                    Time.fixedDeltaTime);
+
+                            conn.State.Position = m_rigidBody.position;
+                            
+                            //conn.State.Tick = frame.Tick;
+                        }
+
+                    }
+                    m_serverPhysics.Simulate(Time.fixedDeltaTime);
+                }
+                
+                m_threadLocker.ReleaseMutex();
+
+                m_tickAccumulator = 0;
+                foreach (UdpClient client in m_endPoints.Values)
+                {
+                    Send(m_clientConnections[client].State.ToBytes(), client);
                 }
             }
-            m_serverPhysics.Simulate(Time.fixedDeltaTime);
+            m_localTick++;
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Net;
 
-namespace UBV
+namespace ubv
 {
     /// <summary>
     /// Wrapper around System.Net.Sockets.UdpClient. Manages client-side connection with server, with timeout and packet loss
@@ -64,6 +64,9 @@ namespace UBV
             
         }
 
+        // Idée : queue up le data à send et vérifier qu'on 
+        // n'en envoie pas trop à la fois. Envoyer moins fréquemment
+        // mais des plus gros paquets? 
         public void Send(byte[] data) // TODO: generic it then convert to bytes from T or overload with standard data types (int, float, etc)
         {
             try
@@ -118,8 +121,9 @@ namespace UBV
                 if (m_connectionData.Receive(packet))
                 {
                     m_connected = true;
+#if DEBUG
                     //Debug.Log("Client received (RTT = " + m_RTT.ToString() + ")");
-                    //Debug.Log(packet.ToString());
+#endif // DEBUG
                     ClientState.Receive(packet);
                 }
             }

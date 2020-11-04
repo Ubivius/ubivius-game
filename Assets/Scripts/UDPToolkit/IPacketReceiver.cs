@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace UBV
+namespace ubv
 {
     public interface IPacketReceiver
     {

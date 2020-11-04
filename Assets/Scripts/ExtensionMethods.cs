@@ -1,5 +1,5 @@
 ﻿using System;
-namespace UBV
+namespace ubv
 {
     public static class ExtensionMethods
     {

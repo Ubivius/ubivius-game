@@ -2,7 +2,7 @@
 using UnityEditor;
 using System.Collections.Generic;
 
-namespace UBV
+namespace ubv
 {
     /// <summary>
     /// Class reprensenting local client state, which will be simulated locally and synced with an authoritative server.
@@ -96,6 +96,13 @@ namespace UBV
             {
                 m_updaters[i].SaveClientState(ref state);
             }
+        }
+
+        static public bool NeedsCorrection(ref ClientState localState, ClientState remoteState)
+        {
+            bool needed = false;
+
+            return needed;
         }
 
         static public void Receive(UDPToolkit.Packet packet)

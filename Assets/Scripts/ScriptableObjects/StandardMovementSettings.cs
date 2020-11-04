@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace UBV
+namespace ubv
 {
     [CreateAssetMenu(fileName = "StandardMovementSettings", menuName = "ScriptableObjects/Settings/StandardMovementSettings", order = 1)]
     public class StandardMovementSettings : ScriptableObject
