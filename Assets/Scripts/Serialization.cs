@@ -7,8 +7,9 @@ namespace ubv
     {
         public enum BYTE_TYPE : byte
         {
-            INPUT_FRAME = 0x00,
-            CLIENT_STATE = 0x01
+            INPUT_FRAME =   0x00,
+            INPUT_MESSAGE = 0x01,
+            CLIENT_STATE =  0x02,
         }
     }
 }

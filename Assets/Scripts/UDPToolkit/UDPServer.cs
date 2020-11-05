@@ -30,10 +30,10 @@ namespace ubv {
         [SerializeField] uint m_snapshotRate = 5; // We send back client data every m_snapshotRate tick
 
         private uint m_tickAccumulator;
-        private uint m_localTick;
 
         private Dictionary<IPEndPoint, UdpClient> m_endPoints;
         private Dictionary<UdpClient, ClientConnection> m_clientConnections;
+        private List<ClientInputMessage> m_clientInputMessages;
         private UdpClient m_server;
         private float m_serverUptime = 0;
 
@@ -42,31 +42,38 @@ namespace ubv {
         /// </summary>
         private class ClientConnection
         {
-            public float LastConnectionTime;
-            public UDPToolkit.ConnectionData ConnectionData;
+            public float                        LastConnectionTime;
+            public uint                         ServerTick;
+            public UDPToolkit.ConnectionData    ConnectionData;
 
-            public ClientState State;
-            public Queue<InputFrame> InputFrames;
+            public ClientState          State;
             
             public ClientConnection()
             {
-                ConnectionData = new UDPToolkit.ConnectionData();
-                State = new ClientState();
-                InputFrames = new Queue<InputFrame>();
+                ConnectionData =    new UDPToolkit.ConnectionData();
+                State =             new ClientState();
             }
+        }
+
+        private class ClientInputMessage
+        {
+            public ClientConnection Client;
+            public InputMessage Message;
         }
         
         private void Awake()
         {
-            m_endPoints = new Dictionary<IPEndPoint, UdpClient>();
-            m_clientConnections = new Dictionary<UdpClient, ClientConnection>();
-            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
+            m_endPoints =               new Dictionary<IPEndPoint, UdpClient>();
+            m_clientConnections =       new Dictionary<UdpClient, ClientConnection>();
+            IPEndPoint localEndPoint =  new IPEndPoint(IPAddress.Any, m_port);
 
-            m_serverPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
-            m_localTick = 0;
+            m_serverPhysics =   SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
             m_tickAccumulator = 0;
 
+            m_clientInputMessages = new List<ClientInputMessage>();
+
             m_server = new UdpClient(localEndPoint);
+
             m_server.BeginReceive(EndReceiveCallback, m_server);
         }
 
@@ -146,10 +153,9 @@ namespace ubv {
             {
                 //Debug.Log("Server received " + packet.ToString());
 
-                // Send back to client for ACK
-
-                // introdude random delay
-                //Thread.Sleep(50); // Latency of 50 ms
+                // Send back to client for ACK ?
+                
+                // add packet loss to test?
 
                 // design pattern decorator ?
 
@@ -165,13 +171,14 @@ namespace ubv {
             m_threadLocker.WaitOne();
             //Debug.Log("Received in server " + packet.ToString());
 
-            InputFrame input = InputFrame.FromBytes(packet.Data); 
-            if (input != null)
+            InputMessage inputs = InputMessage.FromBytes(packet.Data); 
+            if (inputs != null)
             {
 #if DEBUG
-                Debug.Log("Input received in server: " + input.Sprinting + ", " + input.Movement + ", " + input.Tick);
+                Debug.Log("Input received in server: " + inputs.StartTick);
 #endif // DEBUG
-                m_clientConnections[m_endPoints[clientEndPoint]].InputFrames.Enqueue(input);
+                //m_clientConnections[m_endPoints[clientEndPoint]].InputMessages.Enqueue(inputs);
+                m_clientInputMessages.Add( new ClientInputMessage() { Client = m_clientConnections[m_endPoints[clientEndPoint]], Message = inputs });
             }
             m_threadLocker.ReleaseMutex();
         }
@@ -183,63 +190,102 @@ namespace ubv {
 
             // move to different class: ServerSync?
 
-            if (++m_tickAccumulator >= m_snapshotRate)
+            // pour tous les clients
+            // pour une frame: est-ce qu'ils ont envoyé de l'input pour cette frame?
+            // rendre tout ça tick-agnostique? 
+            // => faire que les clients n'aient à se baser que sur leurs ticks à eux
+
+            // ex:
+            /* 
+             On recoit, à l'intérieur d'une frame de FixedUpdate côté serveur:
+
+            C1 Input XYZ Tick 23
+            C2 Input XYZ Tick 41
+
+            On pose que le temps maître est celui du serveur, et que les deux joueurs
+            on envoyé leurs inputs en même temps (donc qu'ils ne sont pas synchros au
+            niveau de leurs ticks) et que leur RTT est ==.
+
+            On simule la position pour une master frame puis on renvoie ça aux clients.
+             
+             
+             */
+
+            // on recoit un message : input-client
+            // on stock dans une structure qui nous permet de faire le tour des inputs?
+            // foreach( lastInputsReceived ? )
+
+            // on veut savoir comment de frames on doit resimuler
+            // on parcourt les messages
+            /*
+             *
+             *  -3  -2  -1  0   
+             *  x   x   x   x   C1
+             *      x   x   x   C2
+             *              x   C3
+             *          x   x   C4
+             *  Donc on prends 4 frames à resimuler
+             *  On 
+             * */
+
+            uint framesToSimulate = 0;
+            Dictionary<uint, List<ClientInputMessage>> clientFrames = new Dictionary<uint, List<ClientInputMessage>>();
+            List<uint> sortedFrames = new List<uint>();
+            foreach (ClientInputMessage clientInputMessage in m_clientInputMessages)
             {
-                m_threadLocker.WaitOne();
-                Debug.Log("Starting server snapshot at tick " + m_localTick);
-                // on retourne en arrière jusqu'au state qui date du dernier snapshot
-                // à partir de là, on applique les inputs reçus
-                // on veut appliquer les bons inputs:
-                //  on applique donc les inputs à partir de celui qui a un tick
-                //  correspondant à celui du state (m_localTick - m_tickAccumulator)
-                for (uint tick = 0; tick < m_tickAccumulator; tick++)
-                {
-                    foreach (ClientConnection conn in m_clientConnections.Values)
-                    {
-                        InputFrame frame = null;
-                        if (conn.InputFrames.Count > 0)
-                        {
-                            do
-                            {
-                                frame = conn.InputFrames.Dequeue();
-                                Debug.Log("Dequeuing frame with tick " + frame.Tick);
-                            }
-                            while (frame.Tick < m_localTick - m_tickAccumulator + tick && conn.InputFrames.Count > 0);
-                        }
-                        /*if (conn.InputFrames.Count > 0)
-                        {
-                            InputFrame frame = conn.InputFrames.Dequeue();
-                            m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
-                                frame.Movement * (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * Time.fixedDeltaTime);
-
-                            conn.State.Position = m_rigidBody.position;
-                            conn.State.Tick = frame.Tick;
-                        }*/
-                        if (frame != null)
-                        {
-                            m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
-                                    frame.Movement *
-                                    (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) *
-                                    Time.fixedDeltaTime);
-
-                            conn.State.Position = m_rigidBody.position;
-                            
-                            //conn.State.Tick = frame.Tick;
-                        }
-
-                    }
-                    m_serverPhysics.Simulate(Time.fixedDeltaTime);
-                }
+                int messageCount = clientInputMessage.Message.InputFrames.Count;
+                uint maxTick =  clientInputMessage.Message.StartTick + (uint)(messageCount - 1);
                 
-                m_threadLocker.ReleaseMutex();
+                // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
+                uint missingFrames = (maxTick > clientInputMessage.Client.ServerTick) ? maxTick - clientInputMessage.Client.ServerTick : 0;
 
+                if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
+
+                if (!clientFrames.ContainsKey(missingFrames))
+                {
+                    clientFrames.Add(missingFrames, new List<ClientInputMessage>());
+                }
+                clientFrames[missingFrames].Add(clientInputMessage);
+
+                if(!sortedFrames.Contains(missingFrames))
+                    sortedFrames.Add(missingFrames);
+                
+            }
+
+            sortedFrames.Sort();
+            sortedFrames.Reverse();
+
+            foreach (uint key in sortedFrames)
+            {
+                foreach (ClientInputMessage inputs in clientFrames[key])
+                {
+                    InputFrame frame = inputs.Message.InputFrames[inputs.Message.InputFrames.Count - (int)key - 1];
+
+                    m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
+                        frame.Movement *
+                        (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) *
+                        Time.fixedDeltaTime);
+
+                    inputs.Client.State.Position = m_rigidBody.position;
+                    inputs.Client.ServerTick++;
+                    inputs.Client.State.Tick = inputs.Client.ServerTick;
+                }
+
+                m_serverPhysics.Simulate(Time.fixedDeltaTime);
+            }
+
+            m_clientInputMessages.Clear();
+
+            if (++m_tickAccumulator > m_snapshotRate)
+            {
                 m_tickAccumulator = 0;
                 foreach (UdpClient client in m_endPoints.Values)
                 {
                     Send(m_clientConnections[client].State.ToBytes(), client);
                 }
             }
-            m_localTick++;
+
+            // Lerp between wanted position and current position to smooth it?
         }
     }
 }
