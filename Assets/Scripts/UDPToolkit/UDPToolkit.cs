@@ -15,7 +15,7 @@ namespace ubv
     public class UDPToolkit
     {
         private static readonly byte[] UDP_PROTOCOL_ID = { 0xAA, 0x0C, 0xC0, 0xFF };
-        public const ushort UDP_MAX_PAYLOAD_SIZE = 128;
+        public const ushort UDP_MAX_PAYLOAD_SIZE = 256; // TODO: WARN WHEN EXCEEDING THIS
         public const ushort UDP_HEADER_SIZE = 4 + 4 + 4 + 4;
         public const ushort UDP_PACKET_SIZE = UDP_HEADER_SIZE + UDP_MAX_PAYLOAD_SIZE ; // size in bytes
 

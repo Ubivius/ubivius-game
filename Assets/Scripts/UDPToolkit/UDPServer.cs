@@ -33,7 +33,7 @@ namespace ubv {
 
         private Dictionary<IPEndPoint, UdpClient> m_endPoints;
         private Dictionary<UdpClient, ClientConnection> m_clientConnections;
-        private List<ClientInputMessage> m_clientInputMessages;
+        private Dictionary<ClientConnection, InputMessage> m_clientInputMessages;
         private UdpClient m_server;
         private float m_serverUptime = 0;
 
@@ -54,12 +54,6 @@ namespace ubv {
                 State =             new ClientState();
             }
         }
-
-        private class ClientInputMessage
-        {
-            public ClientConnection Client;
-            public InputMessage Message;
-        }
         
         private void Awake()
         {
@@ -70,7 +64,7 @@ namespace ubv {
             m_serverPhysics =   SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
             m_tickAccumulator = 0;
 
-            m_clientInputMessages = new List<ClientInputMessage>();
+            m_clientInputMessages = new Dictionary<ClientConnection, InputMessage>();
 
             m_server = new UdpClient(localEndPoint);
 
@@ -177,8 +171,7 @@ namespace ubv {
 #if DEBUG
                 Debug.Log("Input received in server: " + inputs.StartTick);
 #endif // DEBUG
-                //m_clientConnections[m_endPoints[clientEndPoint]].InputMessages.Enqueue(inputs);
-                m_clientInputMessages.Add( new ClientInputMessage() { Client = m_clientConnections[m_endPoints[clientEndPoint]], Message = inputs });
+                m_clientInputMessages[m_clientConnections[m_endPoints[clientEndPoint]]] = inputs;
             }
             m_threadLocker.ReleaseMutex();
         }
@@ -229,52 +222,46 @@ namespace ubv {
              * */
 
             uint framesToSimulate = 0;
-            Dictionary<uint, List<ClientInputMessage>> clientFrames = new Dictionary<uint, List<ClientInputMessage>>();
-            List<uint> sortedFrames = new List<uint>();
-            foreach (ClientInputMessage clientInputMessage in m_clientInputMessages)
+           
+            m_threadLocker.WaitOne();
+            foreach (ClientConnection client in m_clientInputMessages.Keys)
             {
-                int messageCount = clientInputMessage.Message.InputFrames.Count;
-                uint maxTick =  clientInputMessage.Message.StartTick + (uint)(messageCount - 1);
+                InputMessage message = m_clientInputMessages[client];
+                int messageCount = message.InputFrames.Count;
+                uint maxTick =  message.StartTick + (uint)(messageCount - 1);
                 
                 // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
-                uint missingFrames = (maxTick > clientInputMessage.Client.ServerTick) ? maxTick - clientInputMessage.Client.ServerTick : 0;
+                uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
 
                 if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
-
-                if (!clientFrames.ContainsKey(missingFrames))
-                {
-                    clientFrames.Add(missingFrames, new List<ClientInputMessage>());
-                }
-                clientFrames[missingFrames].Add(clientInputMessage);
-
-                if(!sortedFrames.Contains(missingFrames))
-                    sortedFrames.Add(missingFrames);
-                
             }
-
-            sortedFrames.Sort();
-            sortedFrames.Reverse();
-
-            foreach (uint key in sortedFrames)
+            
+            for(uint f = framesToSimulate; f > 0; f--)
             {
-                foreach (ClientInputMessage inputs in clientFrames[key])
+                foreach (ClientConnection client in m_clientInputMessages.Keys)
                 {
-                    InputFrame frame = inputs.Message.InputFrames[inputs.Message.InputFrames.Count - (int)key - 1];
+                    InputMessage message = m_clientInputMessages[client];
+                    int messageCount = message.InputFrames.Count;
+                    if (messageCount > f)
+                    {
+                        InputFrame frame = message.InputFrames[messageCount - (int)f - 1];
 
-                    m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
-                        frame.Movement *
-                        (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) *
-                        Time.fixedDeltaTime);
+                        m_rigidBody.MovePosition(m_rigidBody.position + // must be called in main unity thread
+                            frame.Movement *
+                            (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) *
+                            Time.fixedDeltaTime);
 
-                    inputs.Client.State.Position = m_rigidBody.position;
-                    inputs.Client.ServerTick++;
-                    inputs.Client.State.Tick = inputs.Client.ServerTick;
+                        client.State.Position = m_rigidBody.position;
+                        client.ServerTick++;
+                        client.State.Tick = client.ServerTick;
+                    }
                 }
 
                 m_serverPhysics.Simulate(Time.fixedDeltaTime);
             }
-
+            
             m_clientInputMessages.Clear();
+            m_threadLocker.ReleaseMutex();
 
             if (++m_tickAccumulator > m_snapshotRate)
             {

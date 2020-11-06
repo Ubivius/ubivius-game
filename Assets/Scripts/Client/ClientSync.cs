@@ -13,17 +13,19 @@ namespace ubv
 
         public byte[] ToBytes()
         {
-            byte[] bytes = new byte[1 + 4 + 4 + (InputFrames.Count * 14)]; // TODO: un-hardcode (14 bytes is the size of a frame)
+            byte[] bytes = new byte[1 + 4 + 4 + 4 + (InputFrames.Count * 14)]; // TODO: un-hardcode (14 bytes is the size of a frame)
 
             bytes[0] = (byte)Serialization.BYTE_TYPE.INPUT_MESSAGE;
 
             byte[] timeBytes = System.BitConverter.GetBytes(DeliveryTime);
             byte[] tickBytes = System.BitConverter.GetBytes(StartTick);
+            byte[] sizeBytes = System.BitConverter.GetBytes((uint)InputFrames.Count);
 
             for (ushort i = 0; i < 4; i++)
             {
                 bytes[i + 1] = tickBytes[i];
                 bytes[i + 1 + 4] = timeBytes[i];
+                bytes[i + 1 + 4 + 4] = sizeBytes[i];
             }
 
             for (ushort i = 0; i < InputFrames.Count; i++)
@@ -31,7 +33,9 @@ namespace ubv
                 byte[] frameBytes = InputFrames[i].ToBytes();
                 for (ushort n = 0; n < frameBytes.Length; n++)
                 {
-                    bytes[(i * frameBytes.Length) + n + 1 + 4 + 4] = frameBytes[n];
+                    int index = (i * frameBytes.Length) + n + 1 + 4 + 4 + 4;
+                    if(index < UDPToolkit.UDP_PACKET_SIZE)
+                        bytes[index] = frameBytes[n];
                 }
             }
 
@@ -49,13 +53,16 @@ namespace ubv
                 inputMessage.DeliveryTime = System.BitConverter.ToSingle(bytes, 1 + 4);
 
                 inputMessage.InputFrames = new List<InputFrame>();
-                int frameCount = (bytes.Length - 1 - 4 - 4) / 14;
+                uint frameCount = System.BitConverter.ToUInt32(bytes, 1 + 4 + 4);
                 for (int i = 0; i < frameCount; i++)
                 {
-                    int startIndex = 4 + 4 + 1 + (14 * i);
-                    InputFrame frame = InputFrame.FromBytes(bytes.SubArray(startIndex, 14));
-                    if (frame != null)
-                        inputMessage.InputFrames.Add(frame);
+                    int startIndex = 4 + 4 + 4 + 1 + (14 * i);
+                    if (startIndex + 14 < UDPToolkit.UDP_PACKET_SIZE)
+                    {
+                        InputFrame frame = InputFrame.FromBytes(bytes.SubArray(startIndex, 14));
+                        if (frame != null)
+                            inputMessage.InputFrames.Add(frame);
+                    }
                 }
             }
 
@@ -96,8 +103,8 @@ namespace ubv
         {
             m_localTick = 0;
             m_previousLocalTick = 0;
-            m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
-            m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
+            m_clientStateBuffer =   new ClientState[CLIENT_STATE_BUFFER_SIZE];
+            m_inputBuffer =         new InputFrame[CLIENT_STATE_BUFFER_SIZE];
             
             m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
             m_lastServerState = null;
@@ -115,22 +122,37 @@ namespace ubv
         {
             uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
 
-            m_inputBuffer[bufferIndex] =        m_lastInput ?? new InputFrame();
-            m_inputBuffer[bufferIndex].Tick =   m_localTick;
+            m_inputBuffer[bufferIndex] =            new InputFrame();
+            if ( m_lastInput != null )
+            {
+                m_inputBuffer[bufferIndex].Movement = m_lastInput.Movement;
+                m_inputBuffer[bufferIndex].Sprinting = m_lastInput.Sprinting;
+            }
+
+            m_inputBuffer[bufferIndex].Tick =       m_localTick;
 
             m_lastInput = null;
 
             InputMessage inputMessage = new InputMessage();
-            inputMessage.StartTick = m_remoteTick;
-            inputMessage.InputFrames = new List<InputFrame>();
+            inputMessage.StartTick =    m_remoteTick;
+            inputMessage.InputFrames =  new List<InputFrame>();
 
             for(uint tick = inputMessage.StartTick; tick <= m_localTick; tick++)
             {
                 inputMessage.InputFrames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
             }
 
+#if NETWORK_SIMULATE
+            if (Random.Range(0f, 1f) > 0.55f) // 25% de packet loss
+            {
+                m_udpClient.Send(inputMessage.ToBytes());
+            }
+            else
+                Debug.Log("SIMULATING PACKET LOSS");
+#else
             m_udpClient.Send(inputMessage.ToBytes());
-            
+#endif
+
             UpdateClientState(bufferIndex);
             
             ClientCorrection(bufferIndex);
