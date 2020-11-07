@@ -122,12 +122,17 @@ namespace ubv
                 input.Movement * (input.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * deltaTime);
         }
 
-        public void SaveClientState(ref ClientState state)
+        public void SetClientState(ref ClientState state)
         {
             state.Position = m_rigidBody.position;
         }
 
-        public bool NeedsCorrection(ref ClientState localState, ref ClientState remoteState)
+        public void UpdateFromState(ClientState state)
+        {
+            m_rigidBody.position = state.Position;
+        }
+
+        public bool NeedsCorrection(ClientState localState, ClientState remoteState)
         {
             return false;
         }

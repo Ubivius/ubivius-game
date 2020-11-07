@@ -143,7 +143,7 @@ namespace ubv
             }
 
 #if NETWORK_SIMULATE
-            if (Random.Range(0f, 1f) > 0.55f) // 25% de packet loss
+            if (Random.Range(0f, 1f) > 0.15f) // 15% de packet loss
             {
                 m_udpClient.Send(inputMessage.ToBytes());
             }
@@ -170,7 +170,7 @@ namespace ubv
             
             m_clientStateBuffer[bufferIndex].Tick = m_localTick;
 
-            ClientState.Step(ref m_clientStateBuffer[bufferIndex],
+            m_clientStateBuffer[bufferIndex].Step(
                 m_inputBuffer[bufferIndex],
                 Time.fixedDeltaTime,
                 ref m_clientPhysics);
@@ -186,17 +186,25 @@ namespace ubv
 
             if (m_lastServerState != null)
             {
-                uint rewindTicks = m_lastServerState.Tick;
-                uint rewindIndex = 0;
-                //m_clientStateBuffer[bufferIndex] = playerServerState;
 
                 // check if correction/rewind is needed (if local and remote state are too different)
-                if (ClientState.NeedsCorrection(ref m_clientStateBuffer[bufferIndex], m_lastServerState))
+                if (ClientState.NeedsCorrection(m_clientStateBuffer[bufferIndex], m_lastServerState))
                 {
+                    uint rewindTicks = m_remoteTick;
+#if DEBUG
+                    Debug.Log("Client: rewinding " + (m_localTick - rewindTicks) + " ticks");
+#endif // DEBUG
+                    
                     while (rewindTicks < m_localTick)
                     {
-                        rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
-                        ClientState.Step(ref m_clientStateBuffer[rewindIndex],
+                        uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
+
+                        // reset world state to last server-sent state
+                        ClientState.UpdateFromState(m_lastServerState);
+                        // save world state to current state
+                        m_clientStateBuffer[rewindIndex].SaveClientState();
+
+                        m_clientStateBuffer[rewindIndex].Step(
                             m_inputBuffer[rewindIndex],
                             Time.fixedDeltaTime,
                             ref m_clientPhysics);
@@ -213,8 +221,9 @@ namespace ubv
             ClientState state = ClientState.FromBytes(packet.Data);
             if (state != null)
                 m_lastServerState = state;
-
+#if DEBUG_LOG
             Debug.Log("Received server state tick " + state.Tick);
+#endif //DEBUG_LOG
             m_remoteTick = state.Tick;
         }
     }

@@ -119,9 +119,9 @@ namespace ubv {
         private void EndSendCallback(System.IAsyncResult ar)
         {
             UdpClient c = (UdpClient)ar.AsyncState;
-#if DEBUG
+#if DEBUG_LOG
             Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
-#endif // DEBUG
+#endif // DEBUG_LOG
         }
 
         private void EndReceiveCallback(System.IAsyncResult ar)
@@ -162,18 +162,18 @@ namespace ubv {
 
         public void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
         {
-            m_threadLocker.WaitOne();
             //Debug.Log("Received in server " + packet.ToString());
 
             InputMessage inputs = InputMessage.FromBytes(packet.Data); 
             if (inputs != null)
             {
-#if DEBUG
+#if DEBUG_LOG
                 Debug.Log("Input received in server: " + inputs.StartTick);
 #endif // DEBUG
+                m_threadLocker.WaitOne();
                 m_clientInputMessages[m_clientConnections[m_endPoints[clientEndPoint]]] = inputs;
+                m_threadLocker.ReleaseMutex();
             }
-            m_threadLocker.ReleaseMutex();
         }
         
         private void FixedUpdate()
