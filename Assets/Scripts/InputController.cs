@@ -116,17 +116,14 @@ namespace ubv
             m_controls.Gameplay.Disable();
         }
 
-        public void ClientStep(ref ClientState state, InputFrame input, float deltaTime)
+        public void ClientStoreAndStep(ref ClientState state, InputFrame input, float deltaTime)
         {
-            m_rigidBody.MovePosition(state.Position + 
+            SetClientState(ref state);
+
+            m_rigidBody.MovePosition(m_rigidBody.position + 
                 input.Movement * (input.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * deltaTime);
         }
-
-        public void SetClientState(ref ClientState state)
-        {
-            state.Position = m_rigidBody.position;
-        }
-
+        
         public void UpdateFromState(ClientState state)
         {
             m_rigidBody.position = state.Position;
@@ -135,6 +132,11 @@ namespace ubv
         public bool NeedsCorrection(ClientState localState, ClientState remoteState)
         {
             return false;
+        }
+
+        private void SetClientState(ref ClientState state)
+        {
+            state.Position = m_rigidBody.position;
         }
     }
 }

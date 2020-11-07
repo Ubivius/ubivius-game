@@ -83,42 +83,29 @@ namespace ubv
             m_updaters.Add(updater);
         }
 
-        static public void UpdateFromState(ClientState state)
+        static public void SetToState(ClientState state)
         {
             for (int i = 0; i < m_updaters.Count; i++)
             {
                 m_updaters[i].UpdateFromState(state);
             }
         }
-
-        public void SaveClientState()
+        
+        public void StoreCurrentStateAndStep(InputFrame input, float deltaTime, ref PhysicsScene2D physics)
         {
             ClientState _this = this;
+            
             for (int i = 0; i < m_updaters.Count; i++)
             {
-                m_updaters[i].SetClientState(ref _this);
-            }
-        }
-
-        public void Step(InputFrame input, float deltaTime, ref PhysicsScene2D physics)
-        {
-            ClientState _this = this;
-            for (int i = 0; i < m_updaters.Count; i++)
-            {
-                m_updaters[i].ClientStep(ref _this, input, deltaTime);
+                m_updaters[i].ClientStoreAndStep(ref _this, input, deltaTime);
             }
 
             physics.Simulate(deltaTime);
-
-            for (int i = 0; i < m_updaters.Count; i++)
-            {
-                m_updaters[i].SetClientState(ref _this);
-            }
         }
 
         static public bool NeedsCorrection(ClientState localState, ClientState remoteState)
         {
-            bool needed = false;
+            bool needed = true;
 
             return needed;
         }

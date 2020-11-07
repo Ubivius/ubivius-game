@@ -75,10 +75,13 @@ namespace ubv
     /// </summary>
     public class ClientSync : MonoBehaviour, IPacketReceiver
     {
-        
-
         // TO CHECK:: https://www.codeproject.com/Articles/311944/BinaryFormatter-or-Manual-serializing
         // https://github.com/spectre1989/unity_physics_csp/blob/master/Assets/Logic.cs
+
+
+#if NETWORK_SIMULATE
+        public float PacketLossChance = 0.15f;
+#endif // NETWORK_SIMULATE
 
         [SerializeField]
         private UDPClient m_udpClient;
@@ -109,6 +112,12 @@ namespace ubv
             m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
             m_lastServerState = null;
             ClientState.RegisterReceiver(this);
+
+            for(ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
+            {
+                m_clientStateBuffer[i] = new ClientState();
+                m_inputBuffer[i] = new InputFrame();
+            }
         }
 
         public void AddInput(InputFrame input)
@@ -122,14 +131,19 @@ namespace ubv
         {
             uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
 
-            m_inputBuffer[bufferIndex] =            new InputFrame();
             if ( m_lastInput != null )
             {
                 m_inputBuffer[bufferIndex].Movement = m_lastInput.Movement;
                 m_inputBuffer[bufferIndex].Sprinting = m_lastInput.Sprinting;
             }
+            else
+            {
+                // TODO: InputFrame.SetToNeutral();
+                m_inputBuffer[bufferIndex].Movement = Vector2.zero;
+                m_inputBuffer[bufferIndex].Sprinting = false;
+            }
 
-            m_inputBuffer[bufferIndex].Tick =       m_localTick;
+            m_inputBuffer[bufferIndex].Tick = m_localTick;
 
             m_lastInput = null;
 
@@ -143,7 +157,7 @@ namespace ubv
             }
 
 #if NETWORK_SIMULATE
-            if (Random.Range(0f, 1f) > 0.15f) // 15% de packet loss
+            if (Random.Range(0.001f, 1f) > PacketLossChance)
             {
                 m_udpClient.Send(inputMessage.ToBytes());
             }
@@ -153,30 +167,27 @@ namespace ubv
             m_udpClient.Send(inputMessage.ToBytes());
 #endif
 
+            ++m_localTick;
+
             UpdateClientState(bufferIndex);
             
-            ClientCorrection(bufferIndex);
+            ClientCorrection();
 
-            m_previousLocalTick = m_localTick++;
         }
+
+        // TODO: UpdateInput()
 
         private void UpdateClientState(uint bufferIndex)
         {
             // set current client state to last one before updating it
-            if (m_localTick == 0 && m_previousLocalTick == 0)
-                m_clientStateBuffer[bufferIndex] = new ClientState();
-            else
-                m_clientStateBuffer[bufferIndex] = m_clientStateBuffer[m_previousLocalTick % CLIENT_STATE_BUFFER_SIZE];
             
-            m_clientStateBuffer[bufferIndex].Tick = m_localTick;
-
-            m_clientStateBuffer[bufferIndex].Step(
+            m_clientStateBuffer[bufferIndex].StoreCurrentStateAndStep(
                 m_inputBuffer[bufferIndex],
                 Time.fixedDeltaTime,
                 ref m_clientPhysics);
         }
 
-        private void ClientCorrection(uint bufferIndex)
+        private void ClientCorrection()
         {
             // client correction 
             // receive a state from server
@@ -186,38 +197,36 @@ namespace ubv
 
             if (m_lastServerState != null)
             {
-
                 // check if correction/rewind is needed (if local and remote state are too different)
-                if (ClientState.NeedsCorrection(m_clientStateBuffer[bufferIndex], m_lastServerState))
+                if (ClientState.NeedsCorrection(m_clientStateBuffer[m_remoteTick % CLIENT_STATE_BUFFER_SIZE], m_lastServerState))
                 {
                     uint rewindTicks = m_remoteTick;
-#if DEBUG
+#if DEBUG_LOG
                     Debug.Log("Client: rewinding " + (m_localTick - rewindTicks) + " ticks");
-#endif // DEBUG
-                    
+#endif // DEBUG_LOG
+                    // reset world state to last server-sent state
+                    ClientState.SetToState(m_lastServerState);
+
                     while (rewindTicks < m_localTick)
                     {
                         uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
-
-                        // reset world state to last server-sent state
-                        ClientState.UpdateFromState(m_lastServerState);
-                        // save world state to current state
-                        m_clientStateBuffer[rewindIndex].SaveClientState();
-
-                        m_clientStateBuffer[rewindIndex].Step(
+                        
+                        m_clientStateBuffer[rewindIndex].StoreCurrentStateAndStep(
                             m_inputBuffer[rewindIndex],
                             Time.fixedDeltaTime,
                             ref m_clientPhysics);
                     }
+                    // hard reset to server position if error is too big 
                 }
 
-                // hard reset to server position if error is too big 
                 m_lastServerState = null;
             }
         }
         
         public void ReceivePacket(UDPToolkit.Packet packet)
         {
+            // TODO remove tick from ClientSTate and add it to custom server state packet?
+            // client doesnt need its own client state ticks
             ClientState state = ClientState.FromBytes(packet.Data);
             if (state != null)
                 m_lastServerState = state;
