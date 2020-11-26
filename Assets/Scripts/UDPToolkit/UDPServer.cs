@@ -130,32 +130,27 @@ namespace ubv {
             IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
             UdpClient server = (UdpClient)ar.AsyncState;
             byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
-            
+
+            m_threadLocker.WaitOne();
             // If client is not registered, create a new Socket 
-            if(!m_endPoints.ContainsKey(clientEndPoint))
+            if (!m_endPoints.ContainsKey(clientEndPoint))
             {
                 m_endPoints.Add(clientEndPoint, new UdpClient());
                 m_endPoints[clientEndPoint].Connect(clientEndPoint);
 
                 m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
             }
+            m_threadLocker.ReleaseMutex();
 
             m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
 
             UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
+            m_threadLocker.WaitOne();
             if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
             {
-                //Debug.Log("Server received " + packet.ToString());
-
-                // Send back to client for ACK ?
-                
-                // add packet loss to test?
-
-                // design pattern decorator ?
-
-
                 OnReceive(packet, clientEndPoint);
             }
+            m_threadLocker.ReleaseMutex();
 
             server.BeginReceive(EndReceiveCallback, server);
         }
@@ -229,10 +224,13 @@ namespace ubv {
                 InputMessage message = m_clientInputMessages[client];
                 int messageCount = message.InputFrames.Count;
                 uint maxTick =  message.StartTick + (uint)(messageCount - 1);
-                
+#if DEBUG_LOG
+                Debug.Log("max tick to simulate = " + maxTick.ToString());
+#endif // DEBUG_LOG
+
                 // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
                 uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
-
+                
                 if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
             }
             
@@ -261,7 +259,6 @@ namespace ubv {
             }
             
             m_clientInputMessages.Clear();
-            m_threadLocker.ReleaseMutex();
 
             if (++m_tickAccumulator > m_snapshotRate)
             {
@@ -271,6 +268,7 @@ namespace ubv {
                     Send(m_clientConnections[client].State.ToBytes(), client);
                 }
             }
+            m_threadLocker.ReleaseMutex();
 
             // Lerp between wanted position and current position to smooth it?
         }

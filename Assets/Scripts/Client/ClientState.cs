@@ -14,7 +14,7 @@ namespace ubv
         public Vector2 Position;
         public Quaternion Rotation;
         public uint Tick;
-
+    
         // add your data in the XYZBytes() functions to make them "network-able"
         // TODO: cache byte arrays to avoid GC.Alloc
         public byte[] ToBytes()
@@ -69,7 +69,7 @@ namespace ubv
             return state;
         }
 
-        #region UTILITY FUNCTIONS
+#region UTILITY FUNCTIONS
         private static List<IClientStateUpdater> m_updaters = new List<IClientStateUpdater>();
         private static List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
       
@@ -105,8 +105,7 @@ namespace ubv
 
         static public bool NeedsCorrection(ClientState localState, ClientState remoteState)
         {
-            bool needed = true;
-
+            bool needed = false;
             return needed;
         }
 
@@ -118,6 +117,6 @@ namespace ubv
             }
         }
 
-        #endregion
+#endregion
     }
 }

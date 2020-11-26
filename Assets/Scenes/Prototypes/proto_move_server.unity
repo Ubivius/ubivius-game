@@ -258,7 +258,7 @@ MonoBehaviour:
   m_physicsScene: proto_move_server
   m_port: 9050
   m_connectionTimeout: 10
-  m_snapshotRate: 5
+  m_snapshotRate: 8
 --- !u!4 &1538287031
 Transform:
   m_ObjectHideFlags: 0

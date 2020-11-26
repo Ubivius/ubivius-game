@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ubv
 {
@@ -57,7 +58,7 @@ namespace ubv
                 for (int i = 0; i < frameCount; i++)
                 {
                     int startIndex = 4 + 4 + 4 + 1 + (14 * i);
-                    if (startIndex + 14 < UDPToolkit.UDP_PACKET_SIZE)
+                    if (startIndex + 14 < bytes.Length)
                     {
                         InputFrame frame = InputFrame.FromBytes(bytes.SubArray(startIndex, 14));
                         if (frame != null)
@@ -82,6 +83,13 @@ namespace ubv
 #if NETWORK_SIMULATE
         public float PacketLossChance = 0.15f;
 #endif // NETWORK_SIMULATE
+
+
+#if PROTOTYPING
+        public bool AlwaysCorrectClient = true;
+#endif // PROTOTYPING
+
+        static private Mutex m_threadLocker = new Mutex();
 
         [SerializeField]
         private UDPClient m_udpClient;
@@ -198,7 +206,11 @@ namespace ubv
             if (m_lastServerState != null)
             {
                 // check if correction/rewind is needed (if local and remote state are too different)
-                if (ClientState.NeedsCorrection(m_clientStateBuffer[m_remoteTick % CLIENT_STATE_BUFFER_SIZE], m_lastServerState))
+                if (
+#if PROTOTYPING
+                    AlwaysCorrectClient || 
+#endif// PROTOTYPING
+                    ClientState.NeedsCorrection(m_clientStateBuffer[m_remoteTick % CLIENT_STATE_BUFFER_SIZE], m_lastServerState))
                 {
                     uint rewindTicks = m_remoteTick;
 #if DEBUG_LOG
@@ -229,11 +241,15 @@ namespace ubv
             // client doesnt need its own client state ticks
             ClientState state = ClientState.FromBytes(packet.Data);
             if (state != null)
+            {
+                m_threadLocker.WaitOne();
                 m_lastServerState = state;
 #if DEBUG_LOG
             Debug.Log("Received server state tick " + state.Tick);
 #endif //DEBUG_LOG
-            m_remoteTick = state.Tick;
+                m_remoteTick = state.Tick;
+                m_threadLocker.ReleaseMutex();
+            }
         }
     }
 }
