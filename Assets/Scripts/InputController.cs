@@ -93,11 +93,10 @@ namespace ubv
         {
 
         }
-
+        
         // Update is called once per frame
         void Update()
         {
-            // ...
             m_clientSync.AddInput(m_currentInputFrame);
         }
 
@@ -119,6 +118,11 @@ namespace ubv
         public void ClientStoreAndStep(ref ClientState state, InputFrame input, float deltaTime)
         {
             SetClientState(ref state);
+
+#if DEBUG_LOG
+
+#endif // DEBUG_LOG
+            //Debug.Log("Moving client at frame " + input.Tick); // + " with input " + input.Movement );
 
             m_rigidBody.MovePosition(m_rigidBody.position + 
                 input.Movement * (input.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * deltaTime);

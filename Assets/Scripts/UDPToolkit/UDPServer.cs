@@ -248,10 +248,10 @@ namespace ubv {
                             frame.Movement *
                             (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) *
                             Time.fixedDeltaTime);
-
+                        
                         client.State.Position = m_rigidBody.position;
-                        client.ServerTick++;
                         client.State.Tick = client.ServerTick;
+                        client.ServerTick++;
                     }
                 }
 

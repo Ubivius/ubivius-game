@@ -159,6 +159,8 @@ namespace ubv
             inputMessage.StartTick =    m_remoteTick;
             inputMessage.InputFrames =  new List<InputFrame>();
 
+            // TODO: Cap max input queue size
+            // (under the hood, send multiple packets?)
             for(uint tick = inputMessage.StartTick; tick <= m_localTick; tick++)
             {
                 inputMessage.InputFrames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
@@ -175,20 +177,19 @@ namespace ubv
             m_udpClient.Send(inputMessage.ToBytes());
 #endif
 
+            UpdateClientState(bufferIndex);
+
             ++m_localTick;
 
-            UpdateClientState(bufferIndex);
-            
             ClientCorrection();
-
+            
         }
 
         // TODO: UpdateInput()
 
         private void UpdateClientState(uint bufferIndex)
         {
-            // set current client state to last one before updating it
-            
+            // set current client state to last one then updating it
             m_clientStateBuffer[bufferIndex].StoreCurrentStateAndStep(
                 m_inputBuffer[bufferIndex],
                 Time.fixedDeltaTime,
@@ -202,7 +203,7 @@ namespace ubv
             // check what tick it corresponds to
             // rewind client state to the tick
             // replay up to local tick by stepping every tick
-
+            
             if (m_lastServerState != null)
             {
                 // check if correction/rewind is needed (if local and remote state are too different)
@@ -216,6 +217,8 @@ namespace ubv
 #if DEBUG_LOG
                     Debug.Log("Client: rewinding " + (m_localTick - rewindTicks) + " ticks");
 #endif // DEBUG_LOG
+                    
+                    
                     // reset world state to last server-sent state
                     ClientState.SetToState(m_lastServerState);
 
@@ -230,7 +233,7 @@ namespace ubv
                     }
                     // hard reset to server position if error is too big 
                 }
-
+                
                 m_lastServerState = null;
             }
         }
@@ -242,13 +245,11 @@ namespace ubv
             ClientState state = ClientState.FromBytes(packet.Data);
             if (state != null)
             {
-                m_threadLocker.WaitOne();
                 m_lastServerState = state;
 #if DEBUG_LOG
             Debug.Log("Received server state tick " + state.Tick);
 #endif //DEBUG_LOG
                 m_remoteTick = state.Tick;
-                m_threadLocker.ReleaseMutex();
             }
         }
     }

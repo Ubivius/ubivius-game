@@ -489,6 +489,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PacketLossChance: 0
+  AlwaysCorrectClient: 1
   m_udpClient: {fileID: 925986283}
   m_physicsScene: proto_move_client
 --- !u!4 &1668815430
@@ -4194,7 +4195,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8568193984628607416}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80bd15c789714c84dbcb072d413521bb, type: 3}
   m_Name: 
