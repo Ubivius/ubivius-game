@@ -5,19 +5,18 @@ using UnityEngine.InputSystem;
 
 namespace ubv
 {
-    public class InputFrame
+    public class InputFrame : Serializable
     {
         public bool Sprinting;
         public Vector2 Movement;
         public uint Tick;
-
-        /*private byte[] m_cachedMove_x;
-        private byte[] m_cachedMove_y;
-        private byte[] m_cachedTick;*/
-
-        public byte[] ToBytes() // TODO: make it so every first byte automatically corresponds to the type?
+        
+        protected override byte[] InternalToBytes() 
         {
-            byte[] bytes = new byte[1 + 4 + 4 + 4 + 1]; // 4 Bytes per float
+            // Sprinting 1
+            // Movement 8
+            // tick 4
+            byte[] bytes = new byte[13]; 
 
             byte[] move_x;
             byte[] move_y;
@@ -26,41 +25,54 @@ namespace ubv
             move_x = System.BitConverter.GetBytes(Movement.x);
             move_y = System.BitConverter.GetBytes(Movement.y);
             tick = System.BitConverter.GetBytes(Tick);
-
-            bytes[0] = (byte)Serialization.BYTE_TYPE.INPUT_FRAME;
-            bytes[1] = (byte)(Sprinting ? 1 : 0);
+            
+            bytes[0] = (byte)(Sprinting ? 1 : 0);
 
             for (ushort i = 0; i < 4; i++)
             {
-                bytes[i + 1 + 1] = move_x[i];
-                bytes[i + 1 + 4 + 1] = move_y[i];
-                bytes[i + 1 + 4 + 4 + 1] = tick[i];
+                bytes[i + 1] = move_x[i];
+                bytes[i + 1 + 4] = move_y[i];
+                bytes[i + 1 + 4 + 4] = tick[i];
             }
 
             return bytes;
         }
-        
-        static public byte[] ToBytes(InputFrame frame)
+
+        public void SetToNeutral()
         {
-            return frame.ToBytes();
+            Movement = Vector2.zero;
+            Sprinting = false;
+            Dirty();
         }
 
-        static public InputFrame FromBytes(byte[] arr)
+        public InputFrame()
         {
-            if (arr[0] != (byte)Serialization.BYTE_TYPE.INPUT_FRAME)
-                return null;
+            SetToNeutral();
+        }
 
-            InputFrame frame = new InputFrame();
-            frame.Sprinting = arr[1] == 1;
-            frame.Movement.x = System.BitConverter.ToSingle(arr, 2);
-            frame.Movement.y = System.BitConverter.ToSingle(arr, 4 + 1 + 1);
-            frame.Tick = System.BitConverter.ToUInt32(arr, 4 + 4 + 1 + 1);
-            return frame;
+        public InputFrame(byte[] arr)
+        {
+            Debug.Assert(arr[0] == SerializationID());
+
+            Sprinting = arr[1] == 1;
+            Movement.x = System.BitConverter.ToSingle(arr, 2);
+            Movement.y = System.BitConverter.ToSingle(arr, 4 + 1 + 1);
+            Tick = System.BitConverter.ToUInt32(arr, 4 + 4 + 1 + 1);
+
+            Dirty();
+            ToBytes();
+        }
+
+        protected override byte SerializationID()
+        {
+            return (byte)Serialization.BYTE_TYPE.INPUT_FRAME;
         }
     }
 
     public class InputController : MonoBehaviour, IClientStateUpdater
     {
+        // http://sbcgames.io/share-your-common-code-between-multiple-unity-projects/
+        // check http://devleader.ca/2015/02/08/multiple-c-projects-unity-3d-solution/ ?
         // TODO: make data and  behaviour available to server (to make it symetrical)
         [Header("Movement parameters")]
         [SerializeField] private StandardMovementSettings m_movementSettings;

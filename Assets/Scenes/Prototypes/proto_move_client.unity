@@ -488,7 +488,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad6e58ddc91bc2e41a1691bec489cc39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PacketLossChance: 0
+  PacketLossChance: 0.5
   AlwaysCorrectClient: 1
   m_udpClient: {fileID: 925986283}
   m_physicsScene: proto_move_client

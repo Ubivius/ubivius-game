@@ -14,7 +14,7 @@ namespace ubv
 
         public byte[] ToBytes()
         {
-            byte[] bytes = new byte[1 + 4 + 4 + 4 + (InputFrames.Count * 14)]; // TODO: un-hardcode (14 bytes is the size of a frame)
+            byte[] bytes = new byte[1 + 4 + 4 + 4 + (InputFrames.Count * InputFrames[0].ByteCount())];
 
             bytes[0] = (byte)Serialization.BYTE_TYPE.INPUT_MESSAGE;
 
@@ -60,9 +60,8 @@ namespace ubv
                     int startIndex = 4 + 4 + 4 + 1 + (14 * i);
                     if (startIndex + 14 < bytes.Length)
                     {
-                        InputFrame frame = InputFrame.FromBytes(bytes.SubArray(startIndex, 14));
-                        if (frame != null)
-                            inputMessage.InputFrames.Add(frame);
+                        InputFrame frame = new InputFrame(bytes.SubArray(startIndex, 14));
+                        inputMessage.InputFrames.Add(frame);
                     }
                 }
             }
@@ -139,29 +138,42 @@ namespace ubv
         {
             uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
 
-            if ( m_lastInput != null )
+            UpdateInput(bufferIndex);
+
+            UpdateClientState(bufferIndex);
+
+            ++m_localTick;
+
+            ClientCorrection();
+            
+        }
+
+        private void UpdateInput(uint bufferIndex)
+        {
+            if (m_lastInput != null)
             {
                 m_inputBuffer[bufferIndex].Movement = m_lastInput.Movement;
                 m_inputBuffer[bufferIndex].Sprinting = m_lastInput.Sprinting;
             }
             else
             {
-                // TODO: InputFrame.SetToNeutral();
-                m_inputBuffer[bufferIndex].Movement = Vector2.zero;
-                m_inputBuffer[bufferIndex].Sprinting = false;
+                m_inputBuffer[bufferIndex].SetToNeutral();
             }
 
             m_inputBuffer[bufferIndex].Tick = m_localTick;
+            m_inputBuffer[bufferIndex].Dirty();
 
             m_lastInput = null;
 
-            InputMessage inputMessage = new InputMessage();
-            inputMessage.StartTick =    m_remoteTick;
-            inputMessage.InputFrames =  new List<InputFrame>();
+            InputMessage inputMessage = new InputMessage
+            {
+                StartTick = m_remoteTick,
+                InputFrames = new List<InputFrame>()
+            };
 
             // TODO: Cap max input queue size
             // (under the hood, send multiple packets?)
-            for(uint tick = inputMessage.StartTick; tick <= m_localTick; tick++)
+            for (uint tick = inputMessage.StartTick; tick <= m_localTick; tick++)
             {
                 inputMessage.InputFrames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
             }
@@ -176,16 +188,7 @@ namespace ubv
 #else
             m_udpClient.Send(inputMessage.ToBytes());
 #endif
-
-            UpdateClientState(bufferIndex);
-
-            ++m_localTick;
-
-            ClientCorrection();
-            
         }
-
-        // TODO: UpdateInput()
 
         private void UpdateClientState(uint bufferIndex)
         {
