@@ -160,8 +160,7 @@ namespace ubv
                 m_inputBuffer[bufferIndex].SetToNeutral();
             }
 
-            m_inputBuffer[bufferIndex].Tick = m_localTick;
-            m_inputBuffer[bufferIndex].Dirty();
+            m_inputBuffer[bufferIndex].Tick.Set(m_localTick);
 
             m_lastInput = null;
 

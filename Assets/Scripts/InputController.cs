@@ -7,9 +7,9 @@ namespace ubv
 {
     public class InputFrame : Serializable
     {
-        public bool Sprinting;
-        public Vector2 Movement;
-        public uint Tick;
+        public Serializable.Cachable<bool> Sprinting;
+        public Serializable.Cachable<Vector2> Movement;
+        public Serializable.Cachable<uint> Tick;
         
         protected override byte[] InternalToBytes() 
         {
@@ -22,8 +22,8 @@ namespace ubv
             byte[] move_y;
             byte[] tick;
 
-            move_x = System.BitConverter.GetBytes(Movement.x);
-            move_y = System.BitConverter.GetBytes(Movement.y);
+            move_x = System.BitConverter.GetBytes(Movement.Value.x);
+            move_y = System.BitConverter.GetBytes(Movement.Value.y);
             tick = System.BitConverter.GetBytes(Tick);
             
             bytes[0] = (byte)(Sprinting ? 1 : 0);
@@ -40,27 +40,31 @@ namespace ubv
 
         public void SetToNeutral()
         {
-            Movement = Vector2.zero;
-            Sprinting = false;
-            Dirty();
+            Movement.Set(Vector2.zero);
+            Sprinting.Set(false);
         }
 
         public InputFrame()
         {
+            InitCachables();
             SetToNeutral();
+        }
+
+        private void InitCachables()
+        {
+            Sprinting = new Cachable<bool>(this);
+            Movement = new Cachable<Vector2>(this);
+            Tick = new Cachable<uint>(this);
         }
 
         public InputFrame(byte[] arr)
         {
+            InitCachables();
             Debug.Assert(arr[0] == SerializationID());
 
-            Sprinting = arr[1] == 1;
-            Movement.x = System.BitConverter.ToSingle(arr, 2);
-            Movement.y = System.BitConverter.ToSingle(arr, 4 + 1 + 1);
-            Tick = System.BitConverter.ToUInt32(arr, 4 + 4 + 1 + 1);
-
-            Dirty();
-            ToBytes();
+            Sprinting.Set(arr[1] == 1);
+            Movement.Set(new Vector2(System.BitConverter.ToSingle(arr, 2), System.BitConverter.ToSingle(arr, 4 + 1 + 1)));
+            Tick.Set(System.BitConverter.ToUInt32(arr, 4 + 4 + 1 + 1));
         }
 
         protected override byte SerializationID()
@@ -91,11 +95,11 @@ namespace ubv
 
             m_controls = new PlayerControls();
 
-            m_controls.Gameplay.Move.performed += context => m_currentInputFrame.Movement = context.ReadValue<Vector2>();
-            m_controls.Gameplay.Move.canceled += context => m_currentInputFrame.Movement = Vector2.zero;
+            m_controls.Gameplay.Move.performed += context => m_currentInputFrame.Movement.Set(context.ReadValue<Vector2>());
+            m_controls.Gameplay.Move.canceled += context => m_currentInputFrame.Movement.Set(Vector2.zero);
 
-            m_controls.Gameplay.Sprint.performed += context => m_currentInputFrame.Sprinting = true;
-            m_controls.Gameplay.Sprint.canceled += context => m_currentInputFrame.Sprinting = false;
+            m_controls.Gameplay.Sprint.performed += context => m_currentInputFrame.Sprinting.Set(true);
+            m_controls.Gameplay.Sprint.canceled += context => m_currentInputFrame.Sprinting.Set(false);
             
             ClientState.RegisterUpdater(this);
         }
@@ -137,7 +141,7 @@ namespace ubv
             //Debug.Log("Moving client at frame " + input.Tick); // + " with input " + input.Movement );
 
             m_rigidBody.MovePosition(m_rigidBody.position + 
-                input.Movement * (input.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * deltaTime);
+                input.Movement.Value * (input.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * deltaTime);
         }
         
         public void UpdateFromState(ClientState state)

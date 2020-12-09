@@ -246,7 +246,7 @@ namespace ubv {
                         
                         // must be called in main unity thread
                         m_rigidBody.MovePosition(m_rigidBody.position  + 
-                            frame.Movement *
+                            frame.Movement.Value *
                             (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) *
                             Time.fixedDeltaTime);
                         

@@ -5,10 +5,47 @@ namespace ubv
 {
     public abstract class Serializable
     {
+        public class Cachable<T> where T : new()
+        {
+            public T Value
+            {
+                get
+                {
+                    return m_value;
+                }
+                private set
+                {
+                    Set(value);
+                }
+            }
+
+            private Serializable m_owner;
+            private T m_value;
+
+            private Cachable() { }
+
+            public Cachable(Serializable owner)
+            {
+                m_value = new T();
+                m_owner = owner;
+            }
+
+            public static implicit operator T(Cachable<T> cachable)
+            {
+                return cachable.m_value;
+            }
+
+            public void Set(T value)
+            {
+                m_owner.Dirty();
+                m_value = value;
+            }
+        }
+
         protected byte[] m_bytes;
         private bool m_dirty;
 
-        public void Dirty()
+        private void Dirty()
         {
             m_dirty = true;
         }
@@ -17,12 +54,11 @@ namespace ubv
         {
             m_bytes = null;
             m_dirty = true;
-            ToBytes();
         }
 
-        public byte[] ToBytes()
+        public byte[] ToBytes(bool force = false)
         {
-            if (m_dirty)
+            if (m_dirty || force)
             {
                 byte[] bytes = InternalToBytes();
                 if (m_bytes == null)
@@ -41,6 +77,8 @@ namespace ubv
 
         public int ByteCount()
         {
+            if (m_bytes == null)
+                ToBytes(true);
             return m_bytes.Length;
         }
 
