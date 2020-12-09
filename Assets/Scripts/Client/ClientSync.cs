@@ -6,27 +6,46 @@ using System.Threading;
 
 namespace ubv
 {
-    public class InputMessage
+    public class InputMessage : Serializable
     {
         public float DeliveryTime;
         public uint StartTick;
         public List<InputFrame> InputFrames;
-
-        public byte[] ToBytes()
+        
+        protected override void CreateFromBytes(byte[] bytes)
         {
-            byte[] bytes = new byte[1 + 4 + 4 + 4 + (InputFrames.Count * InputFrames[0].ByteCount())];
+            StartTick = System.BitConverter.ToUInt32(bytes, 0);
+            DeliveryTime = System.BitConverter.ToSingle(bytes, 4);
+            InputFrames = new List<InputFrame>();
+                
+            uint frameCount = System.BitConverter.ToUInt32(bytes, 4 + 4);
+            for (int i = 0; i < frameCount; i++)
+            {
+                int startIndex = 4 + 4 + 4 + (14 * i);
+                if (startIndex + 14 < bytes.Length)
+                {
+                    InputFrame frame = Serializable.FromBytes<InputFrame>(bytes.SubArray(startIndex, 14));
+                    if (frame != null)
+                    {
+                        InputFrames.Add(frame);
+                    }
+                }
+            }
+        }
 
-            bytes[0] = (byte)Serialization.BYTE_TYPE.INPUT_MESSAGE;
-
+        protected override byte[] InternalToBytes()
+        {
+            byte[] bytes = new byte[4 + 4 + 4 + (InputFrames.Count * InputFrames[0].ByteCount())];
+            
             byte[] timeBytes = System.BitConverter.GetBytes(DeliveryTime);
             byte[] tickBytes = System.BitConverter.GetBytes(StartTick);
             byte[] sizeBytes = System.BitConverter.GetBytes((uint)InputFrames.Count);
 
             for (ushort i = 0; i < 4; i++)
             {
-                bytes[i + 1] = tickBytes[i];
-                bytes[i + 1 + 4] = timeBytes[i];
-                bytes[i + 1 + 4 + 4] = sizeBytes[i];
+                bytes[i] = tickBytes[i];
+                bytes[i + 4] = timeBytes[i];
+                bytes[i + 4 + 4] = sizeBytes[i];
             }
 
             for (ushort i = 0; i < InputFrames.Count; i++)
@@ -34,8 +53,8 @@ namespace ubv
                 byte[] frameBytes = InputFrames[i].ToBytes();
                 for (ushort n = 0; n < frameBytes.Length; n++)
                 {
-                    int index = (i * frameBytes.Length) + n + 1 + 4 + 4 + 4;
-                    if(index < UDPToolkit.UDP_PACKET_SIZE)
+                    int index = (i * frameBytes.Length) + n + 4 + 4 + 4;
+                    if (index < UDPToolkit.UDP_PACKET_SIZE)
                         bytes[index] = frameBytes[n];
                 }
             }
@@ -43,30 +62,9 @@ namespace ubv
             return bytes;
         }
 
-        static public InputMessage FromBytes(byte[] bytes)
+        protected override byte SerializationID()
         {
-            InputMessage inputMessage = null;
-
-            if (bytes[0] == (byte)Serialization.BYTE_TYPE.INPUT_MESSAGE)
-            {
-                inputMessage = new InputMessage();
-                inputMessage.StartTick = System.BitConverter.ToUInt32(bytes, 1);
-                inputMessage.DeliveryTime = System.BitConverter.ToSingle(bytes, 1 + 4);
-
-                inputMessage.InputFrames = new List<InputFrame>();
-                uint frameCount = System.BitConverter.ToUInt32(bytes, 1 + 4 + 4);
-                for (int i = 0; i < frameCount; i++)
-                {
-                    int startIndex = 4 + 4 + 4 + 1 + (14 * i);
-                    if (startIndex + 14 < bytes.Length)
-                    {
-                        InputFrame frame = new InputFrame(bytes.SubArray(startIndex, 14));
-                        inputMessage.InputFrames.Add(frame);
-                    }
-                }
-            }
-
-            return inputMessage;
+            return (byte)Serialization.BYTE_TYPE.INPUT_MESSAGE;
         }
     }
 
@@ -102,7 +100,6 @@ namespace ubv
 
         private uint m_remoteTick;
         private uint m_localTick;
-        private uint m_previousLocalTick;
 
         private const ushort CLIENT_STATE_BUFFER_SIZE = 256;
 
@@ -112,7 +109,6 @@ namespace ubv
         private void Awake()
         {
             m_localTick = 0;
-            m_previousLocalTick = 0;
             m_clientStateBuffer =   new ClientState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer =         new InputFrame[CLIENT_STATE_BUFFER_SIZE];
             
@@ -152,8 +148,8 @@ namespace ubv
         {
             if (m_lastInput != null)
             {
-                m_inputBuffer[bufferIndex].Movement = m_lastInput.Movement;
-                m_inputBuffer[bufferIndex].Sprinting = m_lastInput.Sprinting;
+                m_inputBuffer[bufferIndex].Movement.Set(m_lastInput.Movement.Value);
+                m_inputBuffer[bufferIndex].Sprinting.Set(m_lastInput.Sprinting.Value);
             }
             else
             {

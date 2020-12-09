@@ -159,7 +159,7 @@ namespace ubv {
         {
             //Debug.Log("Received in server " + packet.ToString());
 
-            InputMessage inputs = InputMessage.FromBytes(packet.Data); 
+            InputMessage inputs = Serializable.FromBytes<InputMessage>(packet.Data); 
             if (inputs != null)
             {
 #if DEBUG_LOG

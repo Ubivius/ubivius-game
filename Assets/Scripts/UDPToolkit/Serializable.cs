@@ -22,13 +22,16 @@ namespace ubv
             private Serializable m_owner;
             private T m_value;
 
-            private Cachable() { }
 
             public Cachable(Serializable owner)
             {
                 m_value = new T();
                 m_owner = owner;
             }
+
+            // Disable access to default and copy constructors
+            private Cachable() { }
+            private Cachable(Cachable<T> other) { }
 
             public static implicit operator T(Cachable<T> cachable)
             {
@@ -82,8 +85,28 @@ namespace ubv
             return m_bytes.Length;
         }
 
+
         protected abstract byte SerializationID();
         protected abstract byte[] InternalToBytes();
-        
+
+        protected abstract void CreateFromBytes(byte[] bytes);
+
+        static public T FromBytes<T>(byte[] bytes) where T : Serializable, new()
+        {
+            T newObject = new T();
+
+            // TODO find a way tonot waste memory by creating and destroying after
+            // maybe a switch and a case "is" ?
+            if(bytes[0] == newObject.SerializationID())
+            {
+                newObject.CreateFromBytes(bytes.SubArray(1, bytes.Length - 1));
+            }
+            else
+            {
+                newObject = null;
+            }
+
+            return newObject;
+        } 
     }
 }

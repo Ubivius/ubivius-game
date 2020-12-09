@@ -57,14 +57,11 @@ namespace ubv
             Tick = new Cachable<uint>(this);
         }
 
-        public InputFrame(byte[] arr)
+        protected override void CreateFromBytes(byte[] arr)
         {
-            InitCachables();
-            Debug.Assert(arr[0] == SerializationID());
-
-            Sprinting.Set(arr[1] == 1);
-            Movement.Set(new Vector2(System.BitConverter.ToSingle(arr, 2), System.BitConverter.ToSingle(arr, 4 + 1 + 1)));
-            Tick.Set(System.BitConverter.ToUInt32(arr, 4 + 4 + 1 + 1));
+             Sprinting.Set(arr[0] == 1);
+             Movement.Set(new Vector2(System.BitConverter.ToSingle(arr, 1), System.BitConverter.ToSingle(arr, 4 + 1)));
+             Tick.Set(System.BitConverter.ToUInt32(arr, 4 + 4 + 1));
         }
 
         protected override byte SerializationID()
