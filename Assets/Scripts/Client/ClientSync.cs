@@ -14,8 +14,8 @@ namespace ubv
         
         protected override void InitSerializableMembers()
         {
-            StartTick = new SerializableTypes.Uint32(this);
-            InputFrames = new SerializableTypes.List<InputFrame>(this);
+            StartTick = new SerializableTypes.Uint32(this, 0);
+            InputFrames = new SerializableTypes.List<InputFrame>(this, new List<InputFrame>());
         }
 
         protected override byte SerializationID()

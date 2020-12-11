@@ -9,6 +9,14 @@ namespace ubv
         void CreateFromBytes(byte[] sourceBytes);
     }
 
+    /// <summary>
+    /// Class containing a collection of serializable variables.
+    /// To use, inherit Serializable and make the members
+    /// you want to convert into bytes into one of the 
+    /// serializable types defined in the namespace 
+    /// SerializableTypes and implement the approriate functions
+    /// (SerializationID and InitSerializedMembers)
+    /// </summary>
     public abstract class Serializable : IConvertible
     {
         /// <summary>
@@ -17,7 +25,7 @@ namespace ubv
         /// computation.
         /// </summary>
         /// <typeparam name="T">The type of the value. Must be default-constructible.</typeparam>
-        public abstract class Variable<T> : IConvertible where T : new() 
+        public abstract class Variable<T> : IConvertible
         {
             private bool m_dirty;
             protected T m_value;
@@ -37,9 +45,7 @@ namespace ubv
                     Set(value);
                 }
             }
-
-            public Variable(Serializable owner) : this(owner, new T()) { }
-
+            
             public Variable(Serializable owner, T value)
             {
                 m_owner = owner;
@@ -146,10 +152,6 @@ namespace ubv
                 byte[] memberBytes = bc.GetBytes();
                 for (int i = 0; i < memberBytes.Length; i++)
                 {
-                    if(byteCount == m_bytes.Length)
-                    {
-                        int k = 0;
-                    }
                     m_bytes[byteCount++] = memberBytes[i];
                 }
             }
@@ -197,7 +199,7 @@ namespace ubv
     {
         public class Int32 : Serializable.Variable<int>
         {
-            public Int32(Serializable owner) : base(owner) { }
+            public Int32(Serializable owner, int value) : base(owner, value) { }
 
             protected override byte[] Bytes()
             {
@@ -217,7 +219,7 @@ namespace ubv
         
         public class Uint32 : Serializable.Variable<uint>
         {
-            public Uint32(Serializable owner) : base(owner) { } 
+            public Uint32(Serializable owner, uint value) : base(owner, value) { } 
 
             protected override byte[] Bytes()
             {
@@ -237,7 +239,7 @@ namespace ubv
 
         public class Bool : Serializable.Variable<bool>
         {
-            public Bool(Serializable owner) : base(owner) { }
+            public Bool(Serializable owner, bool value) : base(owner, value) { }
 
             protected override byte[] Bytes()
             {
@@ -257,7 +259,7 @@ namespace ubv
         
         public class Vector2 : Serializable.Variable<UnityEngine.Vector2>
         {
-            public Vector2(Serializable owner) : base(owner) { }
+            public Vector2(Serializable owner, UnityEngine.Vector2 value) : base(owner, value) { }
 
             protected override byte[] Bytes()
             {
@@ -292,7 +294,7 @@ namespace ubv
                 return this;
             }
 
-            public List(Serializable owner) : base(owner)
+            public List(Serializable owner, System.Collections.Generic.List<T> value) : base(owner, value)
             {
                 m_frameCount = null;
             }
@@ -362,6 +364,26 @@ namespace ubv
                     }
                 }
                 return bytes;
+            }
+        }
+
+        public class String : Serializable.Variable<string>
+        {
+            public String(Serializable owner, string value) : base(owner, value) { }
+
+            protected override byte[] Bytes()
+            {
+                return System.Text.Encoding.Unicode.GetBytes(m_value);
+            }
+
+            protected override int ByteCount(byte[] sourceBytes = null)
+            {
+                return sizeof(int);
+            }
+
+            protected override string BuildFromBytes(byte[] bytes)
+            {
+                return System.Text.Encoding.Unicode.GetString(bytes);
             }
         }
     }

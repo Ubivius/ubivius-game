@@ -46,20 +46,13 @@ namespace ubv
         
         protected override void InitSerializableMembers()
         {
-            Sprinting = new SerializableTypes.Bool(this);
-            Movement = new SerializableTypes.Vector2(this);
-            Tick = new SerializableTypes.Uint32(this);
+            Sprinting = new SerializableTypes.Bool(this, false);
+            Movement = new SerializableTypes.Vector2(this, Vector2.zero);
+            Tick = new SerializableTypes.Uint32(this, 0);
 
             SetToNeutral();
         }
-
-        /*protected override void CreateFromBytes(byte[] arr)
-        {
-             Sprinting.Set(arr[0] == 1);
-             Movement.Set(new Vector2(System.BitConverter.ToSingle(arr, 1), System.BitConverter.ToSingle(arr, 4 + 1)));
-             Tick.Set(System.BitConverter.ToUInt32(arr, 4 + 4 + 1));
-        }*/
-
+        
         protected override byte SerializationID()
         {
             return (byte)Serialization.BYTE_TYPE.INPUT_FRAME;
