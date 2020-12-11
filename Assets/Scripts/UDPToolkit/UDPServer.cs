@@ -21,6 +21,7 @@ namespace ubv {
         [SerializeField] private Rigidbody2D m_rigidBody;
 
         static private Mutex m_threadLocker = new Mutex();
+        private object lock_ = new object();
 
         [SerializeField] private string m_physicsScene; 
         private PhysicsScene2D m_serverPhysics;
@@ -131,26 +132,32 @@ namespace ubv {
             UdpClient server = (UdpClient)ar.AsyncState;
             byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
 
-            m_threadLocker.WaitOne();
+            //m_threadLocker.WaitOne();
             // If client is not registered, create a new Socket 
-            if (!m_endPoints.ContainsKey(clientEndPoint))
+            lock (lock_)
             {
-                m_endPoints.Add(clientEndPoint, new UdpClient());
-                m_endPoints[clientEndPoint].Connect(clientEndPoint);
+                if (!m_endPoints.ContainsKey(clientEndPoint))
+                {
+                    m_endPoints.Add(clientEndPoint, new UdpClient());
+                    m_endPoints[clientEndPoint].Connect(clientEndPoint);
 
-                m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
+                    m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
+                }
             }
-            m_threadLocker.ReleaseMutex();
+            //m_threadLocker.ReleaseMutex();
 
             m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
 
             UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
-            m_threadLocker.WaitOne();
-            if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
+            //m_threadLocker.WaitOne();
+            lock (lock_)
             {
-                OnReceive(packet, clientEndPoint);
+                if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
+                {
+                    OnReceive(packet, clientEndPoint);
+                }
             }
-            m_threadLocker.ReleaseMutex();
+            //m_threadLocker.ReleaseMutex();
 
             server.BeginReceive(EndReceiveCallback, server);
         }
@@ -158,16 +165,18 @@ namespace ubv {
         public void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
         {
             //Debug.Log("Received in server " + packet.ToString());
-
             InputMessage inputs = Serializable.FromBytes<InputMessage>(packet.Data); 
             if (inputs != null)
             {
 #if DEBUG_LOG
                 Debug.Log("Input received in server: " + inputs.StartTick);
 #endif // DEBUG
-                m_threadLocker.WaitOne();
-                m_clientInputMessages[m_clientConnections[m_endPoints[clientEndPoint]]] = inputs;
-                m_threadLocker.ReleaseMutex();
+                //m_threadLocker.WaitOne();
+                lock (lock_)
+                {
+                    m_clientInputMessages[m_clientConnections[m_endPoints[clientEndPoint]]] = inputs;
+                }
+               // m_threadLocker.ReleaseMutex();
             }
         }
         
@@ -217,59 +226,59 @@ namespace ubv {
              * */
 
             uint framesToSimulate = 0;
-           
-            m_threadLocker.WaitOne();
-            foreach (ClientConnection client in m_clientInputMessages.Keys)
-            {
-                InputMessage message = m_clientInputMessages[client];
-                int messageCount = message.InputFrames.Count;
-                uint maxTick =  message.StartTick + (uint)(messageCount - 1);
-#if DEBUG_LOG
-                Debug.Log("max tick to simulate = " + maxTick.ToString());
-#endif // DEBUG_LOG
-
-                // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
-                uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
-                
-                if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
-            }
-            
-            for(uint f = framesToSimulate; f > 0; f--)
+            lock (lock_)
             {
                 foreach (ClientConnection client in m_clientInputMessages.Keys)
                 {
                     InputMessage message = m_clientInputMessages[client];
-                    int messageCount = message.InputFrames.Count;
-                    if (messageCount > f)
+                    int messageCount = message.InputFrames.Value.Count;
+                    uint maxTick = message.StartTick + (uint)(messageCount - 1);
+#if DEBUG_LOG
+                Debug.Log("max tick to simulate = " + maxTick.ToString());
+#endif // DEBUG_LOG
+
+                    // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
+                    uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
+
+                    if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
+                }
+
+                for (uint f = framesToSimulate; f > 0; f--)
+                {
+                    foreach (ClientConnection client in m_clientInputMessages.Keys)
                     {
-                        InputFrame frame = message.InputFrames[messageCount - (int)f - 1];
-                        
-                        // must be called in main unity thread
-                        m_rigidBody.MovePosition(m_rigidBody.position  + 
-                            frame.Movement.Value *
-                            (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) *
-                            Time.fixedDeltaTime);
-                        
-                        client.State.Position = m_rigidBody.position;
-                        client.State.Tick = client.ServerTick;
-                        client.ServerTick++;
+                        InputMessage message = m_clientInputMessages[client];
+                        int messageCount = message.InputFrames.Value.Count;
+                        if (messageCount > f)
+                        {
+                            InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
+
+                            // must be called in main unity thread
+                            m_rigidBody.MovePosition(m_rigidBody.position +
+                                frame.Movement.Value *
+                                (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) *
+                                Time.fixedDeltaTime);
+
+                            client.State.Position = m_rigidBody.position;
+                            client.State.Tick = client.ServerTick;
+                            client.ServerTick++;
+                        }
+                    }
+
+                    m_serverPhysics.Simulate(Time.fixedDeltaTime);
+                }
+
+                m_clientInputMessages.Clear();
+
+                if (++m_tickAccumulator > m_snapshotRate)
+                {
+                    m_tickAccumulator = 0;
+                    foreach (UdpClient client in m_endPoints.Values)
+                    {
+                        Send(m_clientConnections[client].State.ToBytes(), client);
                     }
                 }
-
-                m_serverPhysics.Simulate(Time.fixedDeltaTime);
             }
-            
-            m_clientInputMessages.Clear();
-
-            if (++m_tickAccumulator > m_snapshotRate)
-            {
-                m_tickAccumulator = 0;
-                foreach (UdpClient client in m_endPoints.Values)
-                {
-                    Send(m_clientConnections[client].State.ToBytes(), client);
-                }
-            }
-            m_threadLocker.ReleaseMutex();
 
             // Lerp between wanted position and current position to smooth it?
         }

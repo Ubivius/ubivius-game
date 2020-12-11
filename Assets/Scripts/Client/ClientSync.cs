@@ -8,58 +8,14 @@ namespace ubv
 {
     public class InputMessage : Serializable
     {
-        public float DeliveryTime;
-        public uint StartTick;
-        public List<InputFrame> InputFrames;
+        // public float DeliveryTime;
+        public SerializableTypes.Uint32 StartTick;
+        public SerializableTypes.List<InputFrame> InputFrames;
         
-        protected override void CreateFromBytes(byte[] bytes)
+        protected override void InitSerializableMembers()
         {
-            StartTick = System.BitConverter.ToUInt32(bytes, 0);
-            DeliveryTime = System.BitConverter.ToSingle(bytes, 4);
-            InputFrames = new List<InputFrame>();
-                
-            uint frameCount = System.BitConverter.ToUInt32(bytes, 4 + 4);
-            for (int i = 0; i < frameCount; i++)
-            {
-                int startIndex = 4 + 4 + 4 + (14 * i);
-                if (startIndex + 14 < bytes.Length)
-                {
-                    InputFrame frame = Serializable.FromBytes<InputFrame>(bytes.SubArray(startIndex, 14));
-                    if (frame != null)
-                    {
-                        InputFrames.Add(frame);
-                    }
-                }
-            }
-        }
-
-        protected override byte[] InternalToBytes()
-        {
-            byte[] bytes = new byte[4 + 4 + 4 + (InputFrames.Count * InputFrames[0].ByteCount())];
-            
-            byte[] timeBytes = System.BitConverter.GetBytes(DeliveryTime);
-            byte[] tickBytes = System.BitConverter.GetBytes(StartTick);
-            byte[] sizeBytes = System.BitConverter.GetBytes((uint)InputFrames.Count);
-
-            for (ushort i = 0; i < 4; i++)
-            {
-                bytes[i] = tickBytes[i];
-                bytes[i + 4] = timeBytes[i];
-                bytes[i + 4 + 4] = sizeBytes[i];
-            }
-
-            for (ushort i = 0; i < InputFrames.Count; i++)
-            {
-                byte[] frameBytes = InputFrames[i].ToBytes();
-                for (ushort n = 0; n < frameBytes.Length; n++)
-                {
-                    int index = (i * frameBytes.Length) + n + 4 + 4 + 4;
-                    if (index < UDPToolkit.UDP_PACKET_SIZE)
-                        bytes[index] = frameBytes[n];
-                }
-            }
-
-            return bytes;
+            StartTick = new SerializableTypes.Uint32(this);
+            InputFrames = new SerializableTypes.List<InputFrame>(this);
         }
 
         protected override byte SerializationID()
@@ -160,23 +116,22 @@ namespace ubv
 
             m_lastInput = null;
 
-            InputMessage inputMessage = new InputMessage
-            {
-                StartTick = m_remoteTick,
-                InputFrames = new List<InputFrame>()
-            };
-
             // TODO: Cap max input queue size
             // (under the hood, send multiple packets?)
-            for (uint tick = inputMessage.StartTick; tick <= m_localTick; tick++)
+            List<InputFrame> frames = new List<InputFrame>();
+            for (uint tick = m_remoteTick; tick <= m_localTick; tick++)
             {
-                inputMessage.InputFrames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
+                frames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
             }
+
+            InputMessage inputMessage = new InputMessage();
+            inputMessage.StartTick.Set(m_remoteTick);
+            inputMessage.InputFrames.Set(frames);
 
 #if NETWORK_SIMULATE
             if (Random.Range(0.001f, 1f) > PacketLossChance)
             {
-                m_udpClient.Send(inputMessage.ToBytes());
+                m_udpClient.Send(inputMessage.GetBytes());
             }
             else
                 Debug.Log("SIMULATING PACKET LOSS");

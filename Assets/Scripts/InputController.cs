@@ -7,11 +7,11 @@ namespace ubv
 {
     public class InputFrame : Serializable
     {
-        public Serializable.Cachable<bool> Sprinting;
-        public Serializable.Cachable<Vector2> Movement;
-        public Serializable.Cachable<uint> Tick;
+        public SerializableTypes.Bool Sprinting;
+        public SerializableTypes.Vector2 Movement;
+        public SerializableTypes.Uint32 Tick;
         
-        protected override byte[] InternalToBytes() 
+        /*protected override byte[] InternalToBytes() 
         {
             // Sprinting 1
             // Movement 8
@@ -36,33 +36,29 @@ namespace ubv
             }
 
             return bytes;
-        }
+        }*/
 
         public void SetToNeutral()
         {
             Movement.Set(Vector2.zero);
             Sprinting.Set(false);
         }
-
-        public InputFrame()
+        
+        protected override void InitSerializableMembers()
         {
-            InitCachables();
+            Sprinting = new SerializableTypes.Bool(this);
+            Movement = new SerializableTypes.Vector2(this);
+            Tick = new SerializableTypes.Uint32(this);
+
             SetToNeutral();
         }
 
-        private void InitCachables()
-        {
-            Sprinting = new Cachable<bool>(this);
-            Movement = new Cachable<Vector2>(this);
-            Tick = new Cachable<uint>(this);
-        }
-
-        protected override void CreateFromBytes(byte[] arr)
+        /*protected override void CreateFromBytes(byte[] arr)
         {
              Sprinting.Set(arr[0] == 1);
              Movement.Set(new Vector2(System.BitConverter.ToSingle(arr, 1), System.BitConverter.ToSingle(arr, 4 + 1)));
              Tick.Set(System.BitConverter.ToUInt32(arr, 4 + 4 + 1));
-        }
+        }*/
 
         protected override byte SerializationID()
         {

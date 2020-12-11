@@ -16,7 +16,7 @@ namespace ubv
     {
         private static readonly byte[] UDP_PROTOCOL_ID = { 0xAA, 0x0C, 0xC0, 0xFF };
         public const ushort UDP_MAX_PAYLOAD_SIZE = 2048 * 2 * 2; // TODO: WARN WHEN EXCEEDING THIS AND FIND RIGHT SIZE
-        public const ushort UDP_HEADER_SIZE = 4 + 4 + 4 + 4;
+        public const ushort UDP_HEADER_SIZE = 5 * sizeof(int);
         public const ushort UDP_PACKET_SIZE = UDP_HEADER_SIZE + UDP_MAX_PAYLOAD_SIZE ; // size in bytes
 
         /// <summary>
@@ -102,7 +102,8 @@ namespace ubv
             public uint Sequence { get  { return System.BitConverter.ToUInt32(RawBytes, 4); }}
             public uint ACK { get { return System.BitConverter.ToUInt32(RawBytes, 8); } }
             public int ACK_Bitfield { get { return System.BitConverter.ToInt32(RawBytes, 12); } }
-            public byte[] Data { get { return RawBytes.SubArray(UDP_HEADER_SIZE, UDP_PACKET_SIZE - UDP_HEADER_SIZE); } }
+            public int DataSize { get { return System.BitConverter.ToInt32(RawBytes, 16); } }
+            public byte[] Data { get { return RawBytes.SubArray(UDP_HEADER_SIZE, DataSize); } }
 
             private Packet(byte[] bytes)
             {
@@ -125,6 +126,9 @@ namespace ubv
 
                 for (ushort i = 0; i < 4; i++, index++)
                     RawBytes[index] = System.BitConverter.GetBytes(ackBitfield)[i];
+
+                for (ushort i = 0; i < 4; i++, index++)
+                    RawBytes[index] = System.BitConverter.GetBytes(data.Length)[i];
 
                 for (ushort i = 0; i < UDP_MAX_PAYLOAD_SIZE; i++, index++)
                     RawBytes[index] = i < data.Length ? data[i] : (byte)0;
