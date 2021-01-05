@@ -24,6 +24,8 @@ June 27, 2020
     Idem pour les fonctions. Ça permet de se retrouver beaucoup plus facilement et de réutiliser des scripts aisément.
 2. ***Scriptable objects***  
     Les scriptables objects sont très utiles. Utilisez-les pour partager facilement des paramètres entre plusieurs objets et vous éviter du tweaking de variables redondantes.
+3. ***Namespaces***
+    On utilise le ***namespace*** UBV pour éviter les conflits entre les bases de code existantes (ex: `UDPClient` vs `UdpClient`).
 
 ## EDITOR GUIDE
 
@@ -142,3 +144,55 @@ B. Canvas (prendre le prefab DefaultUI)
 ## PROTOYPES
 
 A. [NOM] [But]
+
+## NETWORKING GUIDE
+
+**/!\ WIP /!\ WIP  /!\ WIP /!\\**
+
+Le client possède un *état* (```ClientState```) qui est influencé par des *inputs*. Ces *inputs* sont également envoyés au serveur, qui les mets à jour également, en tenant aussi compte des autres clients. Le serveur doit donc avoir le dernier mot sur l'état du client, puisqu'il est le seul à connaître l'état réel global de tous. Dans un monde idéal, le client envoie ses *inputs* au serveur, qui calcule son état en tenant compte de l'état des autres, puis retourne l'état approprié au client, tout ceci de manière instantanée.
+Or, dans la ***vraie vie*** c'pas d'même. Le délai du transfert entre le client le serveur rend cette option extrêmement désagréable pour le client. La solution est donc d'envoyer les *inputs* clients au fur et à mesure tout en les gardant en mémoire dans un *buffer*, mais de  **présumer** que le serveur ne changera pas (ou très peu) l'état du client. Ceci nous permets de mettre à jour l'état localement, puis de corriger l'état local sur réception de la mise à jour serveur.
+
+Pour partager de l'info entre le client et le serveur:
+1. Ajouter l'info à partager (ex: munitions en int) dans la classe ClientState
+```
+public class ClientState
+{
+    // Add here the stuff you need to share
+    public Vector3 Position;
+    public Quaternion Rotation;
+    ...
+    public int Ammo;
+    ...
+}
+```
+2. Implémenter l'interface ```IClientUpdater```, et y coder la façon dont vous voulez mettre à jour l'état.
+```
+public class GunClientUpdater : IClientUpdater
+{
+    bool JaiTire = false;
+    ...
+
+    void ClientStep(ClientState state, float deltaTime)
+    {
+        if(JaiTire)
+          state.Ammo--;
+        ...
+    }
+}
+```
+3. Enregistrer votre ```Updater``` afin qu'il soit appelé par la mise à jour de l'état local
+```
+public class Gun : MonoBehaviour, IClientUpdater
+{
+    
+    ...
+
+    void Awake()
+    {
+        ClientState.Register(this);
+    }
+    ...
+
+    void ClientStep(ClientState state, float deltaTime) { ... }
+}
+```
