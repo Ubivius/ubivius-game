@@ -16,7 +16,6 @@ namespace ubv
         public uint Tick;
     
         // add your data in the XYZBytes() functions to make them "network-able"
-        // TODO: cache byte arrays to avoid GC.Alloc
         public byte[] ToBytes()
         {
             byte[] positionBytes_x = System.BitConverter.GetBytes(Position.x);

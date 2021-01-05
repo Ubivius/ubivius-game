@@ -129,7 +129,7 @@ namespace ubv
             inputMessage.InputFrames.Set(frames);
 
 #if NETWORK_SIMULATE
-            if (Random.Range(0.001f, 1f) > PacketLossChance)
+            if (Random.Range(0f, 1f) > PacketLossChance)
             {
                 m_udpClient.Send(inputMessage.GetBytes());
             }
@@ -151,7 +151,6 @@ namespace ubv
 
         private void ClientCorrection()
         {
-            // client correction 
             // receive a state from server
             // check what tick it corresponds to
             // rewind client state to the tick
