@@ -164,6 +164,8 @@ namespace ubv {
 
         public void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
         {
+             // TODO (maybe) : give up ticks and use only packet sequence number?
+
             //Debug.Log("Received in server " + packet.ToString());
             InputMessage inputs = Serializable.FromBytes<InputMessage>(packet.Data); 
             if (inputs != null)
