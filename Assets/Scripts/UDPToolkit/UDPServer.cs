@@ -8,8 +8,6 @@ using UnityEngine.SceneManagement;
 
 namespace ubv {
 
-    // NOTE: Server and client must use same functions for client state simulation steps ?
-
     /// <summary>
     /// Wrapper around System.Net.Sockets.UdpClient. Manage server-side UDP connections with other clients
     /// https://www.winsocketdotnetworkprogramming.com/clientserversocketnetworkcommunication8d.html
@@ -17,14 +15,13 @@ namespace ubv {
     public class UDPServer : MonoBehaviour
     {
         // TEMPORARY, for test purposes because running on same program
-        [SerializeField] private StandardMovementSettings m_movementSettings;
-        [SerializeField] private Rigidbody2D m_rigidBody;
-
-        static private Mutex m_threadLocker = new Mutex();
+        [SerializeField] private StandardMovementSettings   m_movementSettings;
+        [SerializeField] private Rigidbody2D                m_rigidBody;
+        
         private object lock_ = new object();
 
         [SerializeField] private string m_physicsScene; 
-        private PhysicsScene2D m_serverPhysics;
+        private PhysicsScene2D          m_serverPhysics;
 
         [SerializeField] int m_port = 9050;
         [SerializeField] float m_connectionTimeout = 10f;
@@ -34,7 +31,7 @@ namespace ubv {
 
         private Dictionary<IPEndPoint, UdpClient> m_endPoints;
         private Dictionary<UdpClient, ClientConnection> m_clientConnections;
-        private Dictionary<ClientConnection, InputMessage> m_clientInputMessages;
+        private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputMessages;
         private UdpClient m_server;
         private float m_serverUptime = 0;
 
@@ -47,12 +44,12 @@ namespace ubv {
             public uint                         ServerTick;
             public UDPToolkit.ConnectionData    ConnectionData;
 
-            public ClientState          State;
+            public client.ClientState          State;
             
             public ClientConnection()
             {
                 ConnectionData =    new UDPToolkit.ConnectionData();
-                State =             new ClientState();
+                State =             new client.ClientState();
             }
         }
         
@@ -65,7 +62,7 @@ namespace ubv {
             m_serverPhysics =   SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
             m_tickAccumulator = 0;
 
-            m_clientInputMessages = new Dictionary<ClientConnection, InputMessage>();
+            m_clientInputMessages = new Dictionary<ClientConnection, common.data.InputMessage>();
 
             m_server = new UdpClient(localEndPoint);
 
@@ -131,8 +128,7 @@ namespace ubv {
             IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
             UdpClient server = (UdpClient)ar.AsyncState;
             byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
-
-            //m_threadLocker.WaitOne();
+            
             // If client is not registered, create a new Socket 
             lock (lock_)
             {
@@ -144,12 +140,11 @@ namespace ubv {
                     m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
                 }
             }
-            //m_threadLocker.ReleaseMutex();
 
             m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
 
             UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
-            //m_threadLocker.WaitOne();
+            
             lock (lock_)
             {
                 if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
@@ -157,28 +152,25 @@ namespace ubv {
                     OnReceive(packet, clientEndPoint);
                 }
             }
-            //m_threadLocker.ReleaseMutex();
 
             server.BeginReceive(EndReceiveCallback, server);
         }
 
         public void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
         {
-             // TODO (maybe) : give up ticks and use only packet sequence number?
+            // TODO (maybe) : give up ticks and use only packet sequence number?
 
             //Debug.Log("Received in server " + packet.ToString());
-            InputMessage inputs = Serializable.FromBytes<InputMessage>(packet.Data); 
+            common.data.InputMessage inputs = Serializable.FromBytes<common.data.InputMessage>(packet.Data); 
             if (inputs != null)
             {
 #if DEBUG_LOG
                 Debug.Log("Input received in server: " + inputs.StartTick);
 #endif // DEBUG
-                //m_threadLocker.WaitOne();
                 lock (lock_)
                 {
                     m_clientInputMessages[m_clientConnections[m_endPoints[clientEndPoint]]] = inputs;
                 }
-               // m_threadLocker.ReleaseMutex();
             }
         }
         
@@ -232,7 +224,7 @@ namespace ubv {
             {
                 foreach (ClientConnection client in m_clientInputMessages.Keys)
                 {
-                    InputMessage message = m_clientInputMessages[client];
+                    common.data.InputMessage message = m_clientInputMessages[client];
                     int messageCount = message.InputFrames.Value.Count;
                     uint maxTick = message.StartTick + (uint)(messageCount - 1);
 #if DEBUG_LOG
@@ -249,17 +241,14 @@ namespace ubv {
                 {
                     foreach (ClientConnection client in m_clientInputMessages.Keys)
                     {
-                        InputMessage message = m_clientInputMessages[client];
+                        common.data.InputMessage message = m_clientInputMessages[client];
                         int messageCount = message.InputFrames.Value.Count;
                         if (messageCount > f)
                         {
-                            InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
+                            common.data.InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
 
                             // must be called in main unity thread
-                            m_rigidBody.MovePosition(m_rigidBody.position +
-                                frame.Movement.Value *
-                                (frame.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) *
-                                Time.fixedDeltaTime);
+                            common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, frame, Time.fixedDeltaTime);
 
                             client.State.Position = m_rigidBody.position;
                             client.State.Tick = client.ServerTick;

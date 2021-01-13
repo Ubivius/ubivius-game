@@ -173,12 +173,11 @@ namespace ubv
 #if DEBUG
                     Debug.Log("Client received (RTT = " + m_RTT.ToString() + ")");
 #endif // DEBUG
-                    ClientState.Receive(packet);
+                    client.ClientState.Receive(packet);
                 }
             }
 
             c.BeginReceive(EndReceiveCallback, c);
         }
-        
     }
 }
