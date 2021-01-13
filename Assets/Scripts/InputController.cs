@@ -87,7 +87,7 @@ namespace ubv
 
         private void SetClientState(ref client.ClientState state)
         {
-            state.Position = m_rigidBody.position;
+            state.Position.Set(m_rigidBody.position);
         }
     }
 }

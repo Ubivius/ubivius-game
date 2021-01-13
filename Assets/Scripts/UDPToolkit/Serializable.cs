@@ -136,27 +136,30 @@ namespace ubv
         
         public byte[] GetBytes()
         {
-            int totalByteCount = 0;
-            foreach (IConvertible bc in m_serializableMembers)
+            if (m_dirty)
             {
-                totalByteCount += bc.GetByteCount();
-            }
-
-            m_bytes = new byte[totalByteCount + 1];
-            
-            int byteCount = 0;
-            m_bytes[byteCount++] = SerializationID();
-            
-            foreach (IConvertible bc in m_serializableMembers)
-            {
-                byte[] memberBytes = bc.GetBytes();
-                for (int i = 0; i < memberBytes.Length; i++)
+                int totalByteCount = 0;
+                foreach (IConvertible bc in m_serializableMembers)
                 {
-                    m_bytes[byteCount++] = memberBytes[i];
+                    totalByteCount += bc.GetByteCount();
                 }
-            }
 
-            m_dirty = false;
+                m_bytes = new byte[totalByteCount + 1];
+
+                int byteCount = 0;
+                m_bytes[byteCount++] = SerializationID();
+
+                foreach (IConvertible bc in m_serializableMembers)
+                {
+                    byte[] memberBytes = bc.GetBytes();
+                    for (int i = 0; i < memberBytes.Length; i++)
+                    {
+                        m_bytes[byteCount++] = memberBytes[i];
+                    }
+                }
+
+                m_dirty = false;
+            }
             
             return m_bytes;
         }
@@ -384,6 +387,37 @@ namespace ubv
             protected override string BuildFromBytes(byte[] bytes)
             {
                 return System.Text.Encoding.Unicode.GetString(bytes);
+            }
+        }
+
+        public class Quaternion : Serializable.Variable<UnityEngine.Quaternion>
+        {
+            public Quaternion(Serializable owner, UnityEngine.Quaternion value) : base(owner, value) { }
+
+            protected override byte[] Bytes()
+            {
+                byte[] bytes = new byte[sizeof(float) * 4];
+                for (int i = 0; i < sizeof(float); i++)
+                {
+                    bytes[i] = System.BitConverter.GetBytes(m_value.x)[i];
+                    bytes[i + sizeof(float)] = System.BitConverter.GetBytes(m_value.y)[i];
+                    bytes[i + sizeof(float) * 2] = System.BitConverter.GetBytes(m_value.z)[i];
+                    bytes[i + sizeof(float) * 3] = System.BitConverter.GetBytes(m_value.w)[i];
+                }
+                return bytes;
+            }
+
+            protected override int ByteCount(byte[] sourceBytes = null)
+            {
+                return sizeof(float) * 4;
+            }
+
+            protected override UnityEngine.Quaternion BuildFromBytes(byte[] bytes)
+            {
+                return new UnityEngine.Quaternion(System.BitConverter.ToSingle(bytes, 0), 
+                    System.BitConverter.ToSingle(bytes, 4), 
+                    System.BitConverter.ToSingle(bytes, 8), 
+                    System.BitConverter.ToSingle(bytes, 12));
             }
         }
     }

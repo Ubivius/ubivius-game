@@ -250,8 +250,8 @@ namespace ubv {
                             // must be called in main unity thread
                             common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, frame, Time.fixedDeltaTime);
 
-                            client.State.Position = m_rigidBody.position;
-                            client.State.Tick = client.ServerTick;
+                            client.State.Position.Set(m_rigidBody.position);
+                            client.State.Tick.Set(client.ServerTick);
                             client.ServerTick++;
                         }
                     }
@@ -266,7 +266,7 @@ namespace ubv {
                     m_tickAccumulator = 0;
                     foreach (UdpClient client in m_endPoints.Values)
                     {
-                        Send(m_clientConnections[client].State.ToBytes(), client);
+                        Send(m_clientConnections[client].State.GetBytes(), client);
                     }
                 }
             }

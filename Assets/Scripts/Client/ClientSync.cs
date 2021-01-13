@@ -178,7 +178,7 @@ namespace ubv
             {
                 // TODO remove tick from ClientSTate and add it to custom server state packet?
                 // client doesnt need its own client state ticks
-                ClientState state = ClientState.FromBytes(packet.Data);
+                ClientState state = ClientState.FromBytes<ClientState>(packet.Data);
                 if (state != null)
                 {
                     m_lastServerState = state;
