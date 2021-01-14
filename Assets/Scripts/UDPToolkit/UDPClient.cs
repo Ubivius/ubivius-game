@@ -170,9 +170,9 @@ namespace ubv
                 if (m_connectionData.Receive(packet))
                 {
                     m_connected = true;
-#if DEBUG
+#if DEBUG_LOG
                     Debug.Log("Client received (RTT = " + m_RTT.ToString() + ")");
-#endif // DEBUG
+#endif // DEBUG_LOG
                     client.ClientState.Receive(packet);
                 }
             }

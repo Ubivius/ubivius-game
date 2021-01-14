@@ -198,6 +198,10 @@ MonoBehaviour:
   m_port: 9050
   m_serverTimeOut: 10
   m_lostPacketTimeOut: 1
+  m_maximumGoodRTT: 0.15
+  m_minimumTimeToSwitchModes: 10
+  m_maximumPacketsPerSecond: 60
+  m_minimumPacketsPerSecond: 10
 --- !u!4 &925986284
 Transform:
   m_ObjectHideFlags: 0
@@ -489,7 +493,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PacketLossChance: 0.2
-  AlwaysCorrectClient: 1
+  AlwaysCorrectClient: 0
   m_udpClient: {fileID: 925986283}
   m_physicsScene: proto_move_client
 --- !u!4 &1668815430

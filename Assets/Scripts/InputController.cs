@@ -66,12 +66,6 @@ namespace ubv
         public void ClientStoreAndStep(ref client.ClientState state, common.data.InputFrame input, float deltaTime)
         {
             SetClientState(ref state);
-
-#if DEBUG_LOG
-
-#endif // DEBUG_LOG
-            //Debug.Log("Moving client at frame " + input.Tick); // + " with input " + input.Movement );
-
             common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, input, deltaTime);
         }
         
@@ -80,9 +74,9 @@ namespace ubv
             m_rigidBody.position = state.Position;
         }
 
-        public bool NeedsCorrection(client.ClientState localState, client.ClientState remoteState)
+        public bool NeedsCorrection(client.ClientState remoteState)
         {
-            return false;
+            return (m_rigidBody.position - remoteState.Position).sqrMagnitude > 0.1f;
         }
 
         private void SetClientState(ref client.ClientState state)

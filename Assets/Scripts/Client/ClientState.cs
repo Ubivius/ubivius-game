@@ -29,7 +29,7 @@ namespace ubv
                 return (byte)Serialization.BYTE_TYPE.CLIENT_STATE;
             }
 
-            #region UTILITY FUNCTIONS
+#region UTILITY FUNCTIONS
             private static List<IClientStateUpdater> m_updaters = new List<IClientStateUpdater>();
             private static List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
 
@@ -63,10 +63,24 @@ namespace ubv
                 physics.Simulate(deltaTime);
             }
 
-            static public bool NeedsCorrection(ClientState localState, ClientState remoteState)
+            /// <summary>
+            /// Checks if any updater needs to correct its internal state
+            /// </summary>
+            /// <param name="remoteState">The state to compare to</param>
+            /// <returns>Updaters needing to be corrected</returns>
+            static public List<IClientStateUpdater> StatesNeedingCorrection(ClientState remoteState)
             {
-                bool needed = false;
-                return needed;
+                List<IClientStateUpdater> needCorrection = new List<IClientStateUpdater>();
+
+                for (int i = 0; i < m_updaters.Count; i++)
+                {
+                    if (m_updaters[i].NeedsCorrection(remoteState))
+                    {
+                        needCorrection.Add(m_updaters[i]);
+                    }
+                }
+
+                return needCorrection;
             }
 
             static public void Receive(UDPToolkit.Packet packet)
@@ -77,7 +91,7 @@ namespace ubv
                 }
             }
 
-            #endregion
+#endregion
         }
     }
 }

@@ -65,8 +65,6 @@ namespace ubv
 
             public void AddInput(common.data.InputFrame input)
             {
-                // queue up plusieurs inputs pour un tick?
-                // pour pouvoir send plusieurs inputs dans un seul packet? si la vitesse de la connexion baisse
                 m_lastInput = input;
             }
 
@@ -140,21 +138,22 @@ namespace ubv
                 // rewind client state to the tick
                 // replay up to local tick by stepping every tick
 
+                // we reset every updater for now
+                // TODO maybe later: reset only those who need correcting?
+
                 if (m_lastServerState != null)
                 {
-                    // check if correction/rewind is needed (if local and remote state are too different)
                     if (
     #if PROTOTYPING
                     AlwaysCorrectClient ||
     #endif// PROTOTYPING
-                    ClientState.NeedsCorrection(m_clientStateBuffer[m_remoteTick % CLIENT_STATE_BUFFER_SIZE], m_lastServerState))
+                    ClientState.StatesNeedingCorrection(m_lastServerState).Count > 0)
                     {
                         uint rewindTicks = m_remoteTick;
     #if DEBUG_LOG
                     Debug.Log("Client: rewinding " + (m_localTick - rewindTicks) + " ticks");
     #endif // DEBUG_LOG
-
-
+                        
                         // reset world state to last server-sent state
                         ClientState.SetToState(m_lastServerState);
 
@@ -167,7 +166,8 @@ namespace ubv
                                 Time.fixedDeltaTime,
                                 ref m_clientPhysics);
                         }
-                        // hard reset to server position if error is too big 
+
+                        // hard reset to server state if error is too big  ?
                     }
 
                     m_lastServerState = null;

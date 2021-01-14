@@ -9,7 +9,9 @@ using UnityEngine.SceneManagement;
 namespace ubv {
 
     /// <summary>
-    /// Wrapper around System.Net.Sockets.UdpClient. Manage server-side UDP connections with other clients
+    /// Wrapper around System.Net.Sockets.UdpClient. 
+    /// Manages server-side UDP connections with other clients
+    /// + manages input messages from clients and computes their positions, then sends them back
     /// https://www.winsocketdotnetworkprogramming.com/clientserversocketnetworkcommunication8d.html
     /// </summary>
     public class UDPServer : MonoBehaviour
@@ -18,7 +20,7 @@ namespace ubv {
         [SerializeField] private StandardMovementSettings   m_movementSettings;
         [SerializeField] private Rigidbody2D                m_rigidBody;
         
-        private object lock_ = new object();
+        private readonly object lock_ = new object();
 
         [SerializeField] private string m_physicsScene; 
         private PhysicsScene2D          m_serverPhysics;
@@ -159,8 +161,7 @@ namespace ubv {
         public void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
         {
             // TODO (maybe) : give up ticks and use only packet sequence number?
-
-            //Debug.Log("Received in server " + packet.ToString());
+            
             common.data.InputMessage inputs = Serializable.FromBytes<common.data.InputMessage>(packet.Data); 
             if (inputs != null)
             {
@@ -180,44 +181,6 @@ namespace ubv {
             // at a reduced pace. Ex: 10 times/second
 
             // move to different class: ServerSync?
-
-            // pour tous les clients
-            // pour une frame: est-ce qu'ils ont envoyé de l'input pour cette frame?
-            // rendre tout ça tick-agnostique? 
-            // => faire que les clients n'aient à se baser que sur leurs ticks à eux
-
-            // ex:
-            /* 
-             On recoit, à l'intérieur d'une frame de FixedUpdate côté serveur:
-
-            C1 Input XYZ Tick 23
-            C2 Input XYZ Tick 41
-
-            On pose que le temps maître est celui du serveur, et que les deux joueurs
-            on envoyé leurs inputs en même temps (donc qu'ils ne sont pas synchros au
-            niveau de leurs ticks) et que leur RTT est ==.
-
-            On simule la position pour une master frame puis on renvoie ça aux clients.
-             
-             
-             */
-
-            // on recoit un message : input-client
-            // on stock dans une structure qui nous permet de faire le tour des inputs?
-            // foreach( lastInputsReceived ? )
-
-            // on veut savoir comment de frames on doit resimuler
-            // on parcourt les messages
-            /*
-             *
-             *  -3  -2  -1  0   
-             *  x   x   x   x   C1
-             *      x   x   x   C2
-             *              x   C3
-             *          x   x   C4
-             *  Donc on prends 4 frames à resimuler
-             *  On 
-             * */
 
             uint framesToSimulate = 0;
             lock (lock_)

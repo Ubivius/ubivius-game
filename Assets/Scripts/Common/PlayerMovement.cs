@@ -7,6 +7,9 @@ namespace ubv
     {
         namespace logic
         {
+            /// <summary>
+            /// Encapsulates player movement computation
+            /// </summary>
             public class PlayerMovement
             {
                 static public void Execute(ref Rigidbody2D rigidbody, StandardMovementSettings movementSettings, common.data.InputFrame input, float deltaTime)
