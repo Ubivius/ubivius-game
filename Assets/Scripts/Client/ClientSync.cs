@@ -35,12 +35,15 @@ namespace ubv
 
             private uint m_remoteTick;
             private uint m_localTick;
+            private bool m_isServerBind;
 
             private const ushort CLIENT_STATE_BUFFER_SIZE = 256;
 
             [SerializeField] private string m_physicsScene;
             private PhysicsScene2D m_clientPhysics;
             
+            public bool IsServerBind { get => m_isServerBind; set => m_isServerBind = value; }
+
             private void Awake()
             {
                 m_localTick = 0;
@@ -58,7 +61,6 @@ namespace ubv
                 }
             }
 
-
             public void AddInput(common.data.InputFrame input)
             {
                 m_lastInput = input;
@@ -66,15 +68,18 @@ namespace ubv
 
             private void FixedUpdate()
             {
-                uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
+                if (IsServerBind)
+                {
+                    uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
 
-                UpdateInput(bufferIndex);
+                    UpdateInput(bufferIndex);
 
-                UpdateClientState(bufferIndex);
+                    UpdateClientState(bufferIndex);
 
-                ++m_localTick;
+                    ++m_localTick;
 
-                ClientCorrection();
+                    ClientCorrection();
+                }
             }
 
             private void UpdateInput(uint bufferIndex)

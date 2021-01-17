@@ -249,6 +249,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_movementSettings: {fileID: 11400000, guid: a2974712f0687ee4f995c884f2948972, type: 2}
   m_clientSync: {fileID: 1668815429}
+  m_isServerBind: 1
 --- !u!212 &1146798266
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -522,7 +523,7 @@ GameObject:
   - component: {fileID: 1947781257}
   - component: {fileID: 1947781256}
   m_Layer: 0
-  m_Name: Tilemap
+  m_Name: Tilemap_base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4178,6 +4179,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_BackGroundColor.a
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
+        type: 3}
+      propertyPath: m_AllowDynamicResolution
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8568193985000567243, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
         type: 3}
