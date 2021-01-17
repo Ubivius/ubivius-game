@@ -44,6 +44,9 @@ namespace ubv
 
         static private Mutex m_threadLocker = new Mutex();
 
+
+        private bool m_isServerBind;
+
         [SerializeField]
         private UDPClient m_udpClient;
        
@@ -62,20 +65,25 @@ namespace ubv
         [SerializeField] private string m_physicsScene;
         private PhysicsScene2D m_clientPhysics;
 
+        public bool IsServerBind { get => m_isServerBind; set => m_isServerBind = value; }
+
         private void Awake()
         {
-            m_localTick = 0;
-            m_clientStateBuffer =   new ClientState[CLIENT_STATE_BUFFER_SIZE];
-            m_inputBuffer =         new InputFrame[CLIENT_STATE_BUFFER_SIZE];
-            
-            m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
-            m_lastServerState = null;
-            ClientState.RegisterReceiver(this);
-
-            for(ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
+            if(IsServerBind)
             {
-                m_clientStateBuffer[i] = new ClientState();
-                m_inputBuffer[i] = new InputFrame();
+                m_localTick = 0;
+                m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
+                m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
+
+                m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
+                m_lastServerState = null;
+                ClientState.RegisterReceiver(this);
+
+                for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
+                {
+                    m_clientStateBuffer[i] = new ClientState();
+                    m_inputBuffer[i] = new InputFrame();
+                }
             }
         }
 
@@ -88,16 +96,18 @@ namespace ubv
 
         private void FixedUpdate()
         {
-            uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
+            if (IsServerBind)
+            {
+                uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
 
-            UpdateInput(bufferIndex);
+                UpdateInput(bufferIndex);
 
-            UpdateClientState(bufferIndex);
+                UpdateClientState(bufferIndex);
 
-            ++m_localTick;
+                ++m_localTick;
 
-            ClientCorrection();
-            
+                ClientCorrection();
+            }      
         }
 
         private void UpdateInput(uint bufferIndex)

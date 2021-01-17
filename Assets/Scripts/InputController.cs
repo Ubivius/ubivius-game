@@ -67,12 +67,16 @@ namespace ubv
         [Header("Movement parameters")]
         [SerializeField] private StandardMovementSettings m_movementSettings;
         [SerializeField] private ClientSync m_clientSync;
+        [SerializeField] private bool m_isServerBind;
 
         private Rigidbody2D m_rigidBody;
 
         private PlayerControls m_controls;
         
         private InputFrame m_currentInputFrame;
+
+        private Vector2 m_move = Vector2.zero;
+        private bool m_IsSprinting = false;
         
         private void Awake()
         {
@@ -80,14 +84,28 @@ namespace ubv
             m_rigidBody = GetComponent<Rigidbody2D>();
 
             m_controls = new PlayerControls();
+            Debug.Log("INPUT AWAKE");
+            m_controls.Gameplay.Move.performed += context => MoveCaracter(context.ReadValue<Vector2>());
+            m_controls.Gameplay.Move.canceled += context => MoveCaracter(Vector2.zero);
 
-            m_controls.Gameplay.Move.performed += context => m_currentInputFrame.Movement.Set(context.ReadValue<Vector2>());
-            m_controls.Gameplay.Move.canceled += context => m_currentInputFrame.Movement.Set(Vector2.zero);
+            m_controls.Gameplay.Sprint.performed += context => SetSprinting(true);
+            m_controls.Gameplay.Sprint.canceled += context => SetSprinting(false);
 
-            m_controls.Gameplay.Sprint.performed += context => m_currentInputFrame.Sprinting.Set(true);
-            m_controls.Gameplay.Sprint.canceled += context => m_currentInputFrame.Sprinting.Set(false);
-            
+            m_clientSync.IsServerBind = m_isServerBind;
+
             ClientState.RegisterUpdater(this);
+        }
+
+        void MoveCaracter(Vector2 movement)
+        {
+            Debug.Log("Trying to apply this move -> " + movement.ToString());
+            m_move = movement;
+        }
+
+        void SetSprinting(bool isSprinting)
+        {
+            Debug.Log("Trying to apply this isSprinting -> " + isSprinting.ToString());
+            m_IsSprinting = isSprinting;
         }
 
         // Start is called before the first frame update
@@ -99,7 +117,13 @@ namespace ubv
         // Update is called once per frame
         void Update()
         {
-            m_clientSync.AddInput(m_currentInputFrame);
+            m_currentInputFrame.Movement.Set(m_move);
+            m_currentInputFrame.Sprinting.Set(m_IsSprinting);
+
+            if (m_isServerBind)
+            {
+                m_clientSync.AddInput(m_currentInputFrame);
+            }
         }
 
         private void FixedUpdate()
