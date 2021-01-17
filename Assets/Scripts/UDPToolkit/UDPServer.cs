@@ -14,222 +14,173 @@ namespace ubv {
     /// + manages input messages from clients and computes their positions, then sends them back
     /// https://www.winsocketdotnetworkprogramming.com/clientserversocketnetworkcommunication8d.html
     /// </summary>
-    public class UDPServer : MonoBehaviour
-    {
-        // TEMPORARY, for test purposes because running on same program
-        [SerializeField] private StandardMovementSettings   m_movementSettings;
-        [SerializeField] private Rigidbody2D                m_rigidBody;
-        
-        private readonly object lock_ = new object();
 
-        [SerializeField] private string m_physicsScene; 
-        private PhysicsScene2D          m_serverPhysics;
+    namespace server {
 
-        [SerializeField] int m_port = 9050;
-        [SerializeField] float m_connectionTimeout = 10f;
-        [SerializeField] uint m_snapshotRate = 5; // We send back client data every m_snapshotRate tick
-
-        private uint m_tickAccumulator;
-
-        private Dictionary<IPEndPoint, UdpClient> m_endPoints;
-        private Dictionary<UdpClient, ClientConnection> m_clientConnections;
-        private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputMessages;
-        private UdpClient m_server;
-        private float m_serverUptime = 0;
-
-        /// <summary>
-        /// Manages a specific client connection 
-        /// </summary>
-        private class ClientConnection
+        public class UDPServer : MonoBehaviour
         {
-            public float                        LastConnectionTime;
-            public uint                         ServerTick;
-            public UDPToolkit.ConnectionData    ConnectionData;
+            private readonly object lock_ = new object();
 
-            public client.ClientState          State;
-            
-            public ClientConnection()
+            [SerializeField] int m_port = 9050;
+            [SerializeField] float m_connectionTimeout = 10f;
+
+            private Dictionary<IPEndPoint, UdpClient> m_endPoints;
+            private Dictionary<UdpClient, ClientConnection> m_clientConnections;
+            private UdpClient m_server;
+            private float m_serverUptime = 0;
+
+            private List<IServerReceiver> m_receivers = new List<IServerReceiver>();
+
+            /// <summary>
+            /// Manages a specific client connection 
+            /// </summary>
+            private class ClientConnection
             {
-                ConnectionData =    new UDPToolkit.ConnectionData();
-                State =             new client.ClientState();
-            }
-        }
-        
-        private void Awake()
-        {
-            m_endPoints =               new Dictionary<IPEndPoint, UdpClient>();
-            m_clientConnections =       new Dictionary<UdpClient, ClientConnection>();
-            IPEndPoint localEndPoint =  new IPEndPoint(IPAddress.Any, m_port);
+                public float LastConnectionTime;
+                public UDPToolkit.ConnectionData ConnectionData;
 
-            m_serverPhysics =   SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
-            m_tickAccumulator = 0;
-
-            m_clientInputMessages = new Dictionary<ClientConnection, common.data.InputMessage>();
-
-            m_server = new UdpClient(localEndPoint);
-
-            m_server.BeginReceive(EndReceiveCallback, m_server);
-        }
-
-        private void Update()
-        {
-            // TODO: Adapt to use a better time tracking? System time?  
-            m_serverUptime += Time.deltaTime;
-            if(Time.frameCount % 10 == 0)
-            {
-                RemoveTimedOutClients();
-            }
-        }
-
-        private void RemoveTimedOutClients()
-        {
-            List<IPEndPoint> toRemove = new List<IPEndPoint>();
-            // check if any client has disconnected (has not sent a packet in TIMEOUT seconds)
-            foreach (IPEndPoint ep in m_endPoints.Keys)
-            {
-                if (m_serverUptime - m_clientConnections[m_endPoints[ep]].LastConnectionTime > m_connectionTimeout)
+                public ClientConnection()
                 {
-                    Debug.Log("Client timed out. Disconnecting.");
-                    toRemove.Add(ep);
+                    ConnectionData = new UDPToolkit.ConnectionData();
                 }
             }
 
-            for (int i = 0; i < toRemove.Count; i++)
+            private void Awake()
             {
-                m_clientConnections.Remove(m_endPoints[toRemove[i]]);
-                m_endPoints.Remove(toRemove[i]);
-            }
-        }
+                m_endPoints = new Dictionary<IPEndPoint, UdpClient>();
+                m_clientConnections = new Dictionary<UdpClient, ClientConnection>();
+                IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
+                
+                m_server = new UdpClient(localEndPoint);
 
-        private void Send(byte[] data, UdpClient clientConnection)
-        {
-            try
-            {
-                byte[] bytes = m_clientConnections[clientConnection].ConnectionData.Send(data).ToBytes();
-                clientConnection.BeginSend(bytes, bytes.Length, EndSendCallback, clientConnection);
+                m_server.BeginReceive(EndReceiveCallback, m_server);
             }
-            catch (SocketException e)
+
+            private void Update()
             {
+                // TODO: Adapt to use a better time tracking? System time?  
+                m_serverUptime += Time.deltaTime;
+                if (Time.frameCount % 10 == 0)
+                {
+                    RemoveTimedOutClients();
+                }
+            }
+
+            private void RemoveTimedOutClients()
+            {
+                List<IPEndPoint> toRemove = new List<IPEndPoint>();
+                // check if any client has disconnected (has not sent a packet in TIMEOUT seconds)
+                foreach (IPEndPoint ep in m_endPoints.Keys)
+                {
+                    if (m_serverUptime - m_clientConnections[m_endPoints[ep]].LastConnectionTime > m_connectionTimeout)
+                    {
+                        Debug.Log("Client timed out. Disconnecting.");
+                        toRemove.Add(ep);
+                    }
+                }
+
+                for (int i = 0; i < toRemove.Count; i++)
+                {
+                    m_clientConnections.Remove(m_endPoints[toRemove[i]]);
+                    OnClientDisconnect(toRemove[i]);
+                    m_endPoints.Remove(toRemove[i]);
+                }
+            }
+
+            public void Send(byte[]data, IPEndPoint clientIP)
+            {
+                Send(data, m_endPoints[clientIP]);
+            }
+
+            private void Send(byte[] data, UdpClient clientConnection)
+            {
+                try
+                {
+                    byte[] bytes = m_clientConnections[clientConnection].ConnectionData.Send(data).ToBytes();
+                    clientConnection.BeginSend(bytes, bytes.Length, EndSendCallback, clientConnection);
+                }
+                catch (SocketException e)
+                {
 #if DEBUG
-                Debug.Log("Server socket exception: " + e);
+                    Debug.Log("Server socket exception: " + e);
 #endif // DEBUG
+                }
             }
-        }
 
-        private void EndSendCallback(System.IAsyncResult ar)
-        {
-            UdpClient c = (UdpClient)ar.AsyncState;
+            private void EndSendCallback(System.IAsyncResult ar)
+            {
+                UdpClient c = (UdpClient)ar.AsyncState;
 #if DEBUG_LOG
             Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
 #endif // DEBUG_LOG
-        }
-
-        private void EndReceiveCallback(System.IAsyncResult ar)
-        {
-            // TODO: authentication
-            IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
-            UdpClient server = (UdpClient)ar.AsyncState;
-            byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
-            
-            // If client is not registered, create a new Socket 
-            lock (lock_)
-            {
-                if (!m_endPoints.ContainsKey(clientEndPoint))
-                {
-                    m_endPoints.Add(clientEndPoint, new UdpClient());
-                    m_endPoints[clientEndPoint].Connect(clientEndPoint);
-
-                    m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
-                }
             }
 
-            m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
-
-            UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
-            
-            lock (lock_)
+            private void EndReceiveCallback(System.IAsyncResult ar)
             {
-                if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
-                {
-                    OnReceive(packet, clientEndPoint);
-                }
-            }
+                // TODO: authentication
+                IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
+                UdpClient server = (UdpClient)ar.AsyncState;
+                byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
 
-            server.BeginReceive(EndReceiveCallback, server);
-        }
-
-        public void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
-        {
-            // TODO (maybe) : give up ticks and use only packet sequence number?
-            
-            common.data.InputMessage inputs = Serializable.FromBytes<common.data.InputMessage>(packet.Data); 
-            if (inputs != null)
-            {
-#if DEBUG_LOG
-                Debug.Log("Input received in server: " + inputs.StartTick);
-#endif // DEBUG
+                // If client is not registered, create a new Socket 
                 lock (lock_)
                 {
-                    m_clientInputMessages[m_clientConnections[m_endPoints[clientEndPoint]]] = inputs;
+                    if (!m_endPoints.ContainsKey(clientEndPoint))
+                    {
+                        m_endPoints.Add(clientEndPoint, new UdpClient());
+                        m_endPoints[clientEndPoint].Connect(clientEndPoint);
+
+                        m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
+
+                        OnClientConnect(clientEndPoint);
+                    }
                 }
+
+                m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
+
+                UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
+
+                lock (lock_)
+                {
+                    if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
+                    {
+                        OnReceive(packet, clientEndPoint);
+                    }
+                }
+
+                server.BeginReceive(EndReceiveCallback, server);
             }
-        }
-        
-        private void FixedUpdate()
-        {
-            uint framesToSimulate = 0;
-            lock (lock_)
+
+            private void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
             {
-                foreach (ClientConnection client in m_clientInputMessages.Keys)
+                // TODO (maybe) : give up ticks and use only packet sequence number?
+                
+                for (int i = 0; i < m_receivers.Count; i++)
                 {
-                    common.data.InputMessage message = m_clientInputMessages[client];
-                    int messageCount = message.InputFrames.Value.Count;
-                    uint maxTick = message.StartTick + (uint)(messageCount - 1);
-#if DEBUG_LOG
-                Debug.Log("max tick to simulate = " + maxTick.ToString());
-#endif // DEBUG_LOG
-
-                    // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
-                    uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
-
-                    if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
-                }
-
-                for (uint f = framesToSimulate; f > 0; f--)
-                {
-                    foreach (ClientConnection client in m_clientInputMessages.Keys)
-                    {
-                        common.data.InputMessage message = m_clientInputMessages[client];
-                        int messageCount = message.InputFrames.Value.Count;
-                        if (messageCount > f)
-                        {
-                            common.data.InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
-
-                            // must be called in main unity thread
-                            common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, frame, Time.fixedDeltaTime);
-
-                            client.State.Position.Set(m_rigidBody.position);
-                            client.State.Tick.Set(client.ServerTick);
-                            client.ServerTick++;
-                        }
-                    }
-
-                    m_serverPhysics.Simulate(Time.fixedDeltaTime);
-                }
-
-                m_clientInputMessages.Clear();
-
-                if (++m_tickAccumulator > m_snapshotRate)
-                {
-                    m_tickAccumulator = 0;
-                    foreach (UdpClient client in m_endPoints.Values)
-                    {
-                        Send(m_clientConnections[client].State.GetBytes(), client);
-                    }
+                    m_receivers[i].Receive(packet, clientEndPoint);
                 }
             }
 
-            // Lerp between wanted position and current position to smooth it?
+            public void AddReceiver(IServerReceiver receiver)
+            {
+                m_receivers.Add(receiver);
+            }
+            
+            private void OnClientConnect(IPEndPoint clientIP)
+            {
+                for (int i = 0; i < m_receivers.Count; i++)
+                {
+                    m_receivers[i].OnConnect(clientIP);
+                }
+            }
+
+            private void OnClientDisconnect(IPEndPoint clientIP)
+            {
+                for (int i = 0; i < m_receivers.Count; i++)
+                {
+                    m_receivers[i].OnDisconnect(clientIP);
+                }
+            }
         }
     }
 }
