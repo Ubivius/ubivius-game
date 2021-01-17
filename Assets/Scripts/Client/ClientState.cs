@@ -31,12 +31,6 @@ namespace ubv
 
 #region UTILITY FUNCTIONS
             private static List<IClientStateUpdater> m_updaters = new List<IClientStateUpdater>();
-            private static List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
-
-            static public void RegisterReceiver(IPacketReceiver receiver)
-            {
-                m_receivers.Add(receiver);
-            }
 
             static public void RegisterUpdater(IClientStateUpdater updater)
             {
@@ -82,15 +76,6 @@ namespace ubv
 
                 return needCorrection;
             }
-
-            static public void Receive(UDPToolkit.Packet packet)
-            {
-                for (int i = 0; i < m_receivers.Count; i++)
-                {
-                    m_receivers[i].ReceivePacket(packet);
-                }
-            }
-
 #endregion
         }
     }

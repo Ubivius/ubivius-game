@@ -177,11 +177,6 @@ namespace ubv {
         
         private void FixedUpdate()
         {
-            // we update the state of the world server side
-            // at a reduced pace. Ex: 10 times/second
-
-            // move to different class: ServerSync?
-
             uint framesToSimulate = 0;
             lock (lock_)
             {

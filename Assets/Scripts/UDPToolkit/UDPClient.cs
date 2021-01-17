@@ -37,6 +37,8 @@ namespace ubv
         private UdpClient m_client;
         private IPEndPoint m_server;
 
+        private static List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
+
         private void Awake()
         {
             m_timeOutTimer = 0;
@@ -107,8 +109,7 @@ namespace ubv
             {
                 UDPToolkit.Packet packet = m_connectionData.Send(data);
                 uint seq = packet.Sequence;
-
-                //Debug.Log("Sending (from client) packet with local seq. " + packet.Sequence);
+                
                 m_sequencesSendTime.Add(seq, Time.realtimeSinceStartup);
 
                 byte[] bytes = packet.ToBytes();
@@ -124,7 +125,6 @@ namespace ubv
         private void EndSendCallback(System.IAsyncResult ar)
         {
             UdpClient c = (UdpClient)ar.AsyncState;
-            //Debug.Log("Client sent " + c.EndSend(ar).ToString() + " bytes");
         }
         
         private void EndReceiveCallback(System.IAsyncResult ar)
@@ -173,11 +173,24 @@ namespace ubv
 #if DEBUG_LOG
                     Debug.Log("Client received (RTT = " + m_RTT.ToString() + ")");
 #endif // DEBUG_LOG
-                    client.ClientState.Receive(packet);
+                    Distribute(packet);
                 }
             }
 
             c.BeginReceive(EndReceiveCallback, c);
+        }
+        
+        static public void RegisterReceiver(IPacketReceiver receiver)
+        {
+            m_receivers.Add(receiver);
+        }
+        
+        static public void Distribute(UDPToolkit.Packet packet)
+        {
+            for (int i = 0; i < m_receivers.Count; i++)
+            {
+                m_receivers[i].ReceivePacket(packet);
+            }
         }
     }
 }

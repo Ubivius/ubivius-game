@@ -11,7 +11,8 @@ namespace ubv
         /// </summary>
         public class ServerUpdate : MonoBehaviour
         {
-            
+            // List of all players
+
             // Use this for initialization
             void Start()
             {
@@ -24,9 +25,12 @@ namespace ubv
 
             }
 
+            // Updates all players rewinds if necessary
             private void FixedUpdate()
             {
-
+                // for each player
+                // check if missing frames
+                // update frames
             }
 
         }

@@ -46,6 +46,7 @@ namespace ubv
             [SerializeField] private string m_physicsScene;
             private PhysicsScene2D m_clientPhysics;
 
+
             private void Awake()
             {
                 m_localTick = 0;
@@ -54,7 +55,7 @@ namespace ubv
 
                 m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
                 m_lastServerState = null;
-                ClientState.RegisterReceiver(this);
+                UDPClient.RegisterReceiver(this);
 
                 for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
                 {
@@ -62,6 +63,7 @@ namespace ubv
                     m_inputBuffer[i] = new common.data.InputFrame();
                 }
             }
+
 
             public void AddInput(common.data.InputFrame input)
             {
@@ -79,7 +81,6 @@ namespace ubv
                 ++m_localTick;
 
                 ClientCorrection();
-
             }
 
             private void UpdateInput(uint bufferIndex)
