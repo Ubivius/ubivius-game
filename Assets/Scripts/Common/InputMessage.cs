@@ -30,7 +30,7 @@ namespace ubv
 
                 protected override byte SerializationID()
                 {
-                    return (byte)Serialization.BYTE_TYPE.INPUT_FRAME;
+                    return (byte)udp.Serialization.BYTE_TYPE.INPUT_FRAME;
                 }
             }
 
@@ -47,7 +47,7 @@ namespace ubv
 
                 protected override byte SerializationID()
                 {
-                    return (byte)Serialization.BYTE_TYPE.INPUT_MESSAGE;
+                    return (byte)udp.Serialization.BYTE_TYPE.INPUT_MESSAGE;
                 }
             }
         }

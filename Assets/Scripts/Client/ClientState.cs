@@ -26,7 +26,7 @@ namespace ubv
 
             protected override byte SerializationID()
             {
-                return (byte)Serialization.BYTE_TYPE.CLIENT_STATE;
+                return (byte)udp.Serialization.BYTE_TYPE.CLIENT_STATE;
             }
 
 #region UTILITY FUNCTIONS
