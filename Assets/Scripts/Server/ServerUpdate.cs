@@ -10,16 +10,16 @@ namespace ubv
         /// <summary>
         /// Manages server specific update logic
         /// </summary>
-        public class ServerUpdate : MonoBehaviour, IServerReceiver
+        public class ServerUpdate : MonoBehaviour, udp.server.IServerReceiver
         {
-            // TEMPORARY, for test purposes because running on same program
-            [SerializeField] private StandardMovementSettings m_movementSettings;
+            // TEMPORARY for now, TODO: make work with multiple players
+            [SerializeField] private common.StandardMovementSettings m_movementSettings;
             [SerializeField] private Rigidbody2D m_rigidBody;
 
             [SerializeField] private string m_physicsScene;
             private PhysicsScene2D m_serverPhysics;
 
-            [SerializeField] private UDPServer m_server;
+            [SerializeField] private udp.server.UDPServer m_server;
 
             private Dictionary<IPEndPoint, ClientConnection> m_IPConnections;
             private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputs;
@@ -38,8 +38,6 @@ namespace ubv
                     State = new client.ClientState();
                 }
             }
-
-            // List of all players (ClientStates)
 
             private void Awake()
             {
@@ -118,9 +116,9 @@ namespace ubv
                 }
             }
             
-            public void Receive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
+            public void Receive(udp.UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
             {
-                common.data.InputMessage inputs = Serializable.FromBytes<common.data.InputMessage>(packet.Data);
+                common.data.InputMessage inputs = udp.Serializable.FromBytes<common.data.InputMessage>(packet.Data);
                 if (inputs != null)
                 {
 #if DEBUG_LOG

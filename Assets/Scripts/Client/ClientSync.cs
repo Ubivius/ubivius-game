@@ -11,25 +11,20 @@ namespace ubv
         /// <summary>
         /// Client-side synchronisation with server information
         /// </summary>
-        public class ClientSync : MonoBehaviour, IPacketReceiver
+        public class ClientSync : MonoBehaviour, udp.client.IPacketReceiver
         {
             // TO CHECK:: https://www.codeproject.com/Articles/311944/BinaryFormatter-or-Manual-serializing
             // https://github.com/spectre1989/unity_physics_csp/blob/master/Assets/Logic.cs
 
 
-    #if NETWORK_SIMULATE
+#if NETWORK_SIMULATE
             public float PacketLossChance = 0.15f;
-    #endif // NETWORK_SIMULATE
-
-
-    #if PROTOTYPING
-            public bool AlwaysCorrectClient = true;
-    #endif // PROTOTYPING
-
+#endif // NETWORK_SIMULATE
+            
             static private Mutex m_threadLocker = new Mutex();
 
             [SerializeField]
-            private UDPClient m_udpClient;
+            private udp.client.UDPClient m_udpClient;
 
             // has an input buffer to recreate inputs after server correction
             private ClientState[] m_clientStateBuffer;
@@ -45,8 +40,7 @@ namespace ubv
 
             [SerializeField] private string m_physicsScene;
             private PhysicsScene2D m_clientPhysics;
-
-
+            
             private void Awake()
             {
                 m_localTick = 0;
@@ -55,7 +49,7 @@ namespace ubv
 
                 m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
                 m_lastServerState = null;
-                UDPClient.RegisterReceiver(this);
+                udp.client.UDPClient.RegisterReceiver(this);
 
                 for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
                 {
@@ -144,16 +138,12 @@ namespace ubv
 
                 if (m_lastServerState != null)
                 {
-                    if (
-    #if PROTOTYPING
-                    AlwaysCorrectClient ||
-    #endif// PROTOTYPING
-                    ClientState.StatesNeedingCorrection(m_lastServerState).Count > 0)
+                    if (ClientState.StatesNeedingCorrection(m_lastServerState).Count > 0)
                     {
                         uint rewindTicks = m_remoteTick;
-    #if DEBUG_LOG
-                    Debug.Log("Client: rewinding " + (m_localTick - rewindTicks) + " ticks");
-    #endif // DEBUG_LOG
+#if DEBUG_LOG
+                        Debug.Log("Client: rewinding " + (m_localTick - rewindTicks) + " ticks");
+#endif // DEBUG_LOG
                         
                         // reset world state to last server-sent state
                         ClientState.SetToState(m_lastServerState);
@@ -175,7 +165,7 @@ namespace ubv
                 }
             }
 
-            public void ReceivePacket(UDPToolkit.Packet packet)
+            public void ReceivePacket(udp.UDPToolkit.Packet packet)
             {
                 // TODO remove tick from ClientSTate and add it to custom server state packet?
                 // client doesnt need its own client state ticks
@@ -183,9 +173,9 @@ namespace ubv
                 if (state != null)
                 {
                     m_lastServerState = state;
-    #if DEBUG_LOG
-            Debug.Log("Received server state tick " + state.Tick);
-    #endif //DEBUG_LOG
+#if DEBUG_LOG
+                    Debug.Log("Received server state tick " + state.Tick);
+#endif //DEBUG_LOG
                     m_remoteTick = state.Tick;
                 }
             }

@@ -7,11 +7,11 @@ namespace ubv
     {
         namespace data
         {
-            public class InputFrame : Serializable
+            public class InputFrame : udp.Serializable
             {
-                public SerializableTypes.Bool Sprinting;
-                public SerializableTypes.Vector2 Movement;
-                public SerializableTypes.Uint32 Tick;
+                public udp.SerializableTypes.Bool Sprinting;
+                public udp.SerializableTypes.Vector2 Movement;
+                public udp.SerializableTypes.Uint32 Tick;
 
                 public void SetToNeutral()
                 {
@@ -21,9 +21,9 @@ namespace ubv
 
                 protected override void InitSerializableMembers()
                 {
-                    Sprinting = new SerializableTypes.Bool(this, false);
-                    Movement = new SerializableTypes.Vector2(this, Vector2.zero);
-                    Tick = new SerializableTypes.Uint32(this, 0);
+                    Sprinting = new udp.SerializableTypes.Bool(this, false);
+                    Movement = new udp.SerializableTypes.Vector2(this, Vector2.zero);
+                    Tick = new udp.SerializableTypes.Uint32(this, 0);
 
                     SetToNeutral();
                 }
@@ -34,15 +34,15 @@ namespace ubv
                 }
             }
 
-            public class InputMessage : Serializable
+            public class InputMessage : udp.Serializable
             {
-                public SerializableTypes.Uint32 StartTick;
-                public SerializableTypes.List<InputFrame> InputFrames;
+                public udp.SerializableTypes.Uint32 StartTick;
+                public udp.SerializableTypes.List<InputFrame> InputFrames;
 
                 protected override void InitSerializableMembers()
                 {
-                    StartTick = new SerializableTypes.Uint32(this, 0);
-                    InputFrames = new SerializableTypes.List<InputFrame>(this, new List<InputFrame>());
+                    StartTick = new udp.SerializableTypes.Uint32(this, 0);
+                    InputFrames = new udp.SerializableTypes.List<InputFrame>(this, new List<InputFrame>());
                 }
 
                 protected override byte SerializationID()

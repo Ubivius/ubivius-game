@@ -11,7 +11,7 @@ namespace ubv
         // check http://devleader.ca/2015/02/08/multiple-c-projects-unity-3d-solution/ ?
         // TODO: make data and  behaviour available to server (to make it symetrical)
         [Header("Movement parameters")]
-        [SerializeField] private StandardMovementSettings m_movementSettings;
+        [SerializeField] private common.StandardMovementSettings m_movementSettings;
         [SerializeField] private client.ClientSync m_clientSync;
 
         private Rigidbody2D m_rigidBody;

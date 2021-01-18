@@ -10,18 +10,18 @@ namespace ubv
         /// Class reprensenting local client state, which will be simulated locally and synced with an authoritative server.
         /// Add here everything that needs to be shared with the server (and the other players).
         /// </summary>
-        public class ClientState : Serializable
+        public class ClientState : udp.Serializable
         {
             // Add here the stuff you need to share
-            public SerializableTypes.Vector2 Position;
-            public SerializableTypes.Quaternion Rotation;
-            public SerializableTypes.Uint32 Tick;
+            public udp.SerializableTypes.Vector2 Position;
+            public udp.SerializableTypes.Quaternion Rotation;
+            public udp.SerializableTypes.Uint32 Tick;
 
             protected override void InitSerializableMembers()
             {
-                Tick = new SerializableTypes.Uint32(this, 0);
-                Position = new SerializableTypes.Vector2(this, Vector2.zero);
-                Rotation = new SerializableTypes.Quaternion(this, Quaternion.identity);
+                Tick = new udp.SerializableTypes.Uint32(this, 0);
+                Position = new udp.SerializableTypes.Vector2(this, Vector2.zero);
+                Rotation = new udp.SerializableTypes.Quaternion(this, Quaternion.identity);
             }
 
             protected override byte SerializationID()

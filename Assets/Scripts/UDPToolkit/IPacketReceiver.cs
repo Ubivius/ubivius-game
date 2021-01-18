@@ -3,8 +3,14 @@ using UnityEditor;
 
 namespace ubv
 {
-    public interface IPacketReceiver
+    namespace udp
     {
-        void ReceivePacket(UDPToolkit.Packet packet);
+        namespace client
+        {
+            public interface IPacketReceiver
+            {
+                void ReceivePacket(UDPToolkit.Packet packet);
+            }
+        }
     }
 }

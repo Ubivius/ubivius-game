@@ -3,11 +3,14 @@ using UnityEditor;
 
 namespace ubv
 {
-    [CreateAssetMenu(fileName = "StandardMovementSettings", menuName = "ScriptableObjects/Settings/StandardMovementSettings", order = 1)]
-    public class StandardMovementSettings : ScriptableObject
+    namespace common
     {
-        public float WalkVelocity;
-        public float SprintVelocity;
-        public float Acceleration;
+        [CreateAssetMenu(fileName = "StandardMovementSettings", menuName = "ScriptableObjects/Settings/StandardMovementSettings", order = 1)]
+        public class StandardMovementSettings : ScriptableObject
+        {
+            public float WalkVelocity;
+            public float SprintVelocity;
+            public float Acceleration;
+        }
     }
 }
