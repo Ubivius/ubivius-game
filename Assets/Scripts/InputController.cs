@@ -98,13 +98,17 @@ namespace ubv
 
         void MoveCaracter(Vector2 movement)
         {
+#if DEBUG_LOG
             Debug.Log("Trying to apply this move -> " + movement.ToString());
+#endif // DEBUG 
             m_move = movement;
         }
 
         void SetSprinting(bool isSprinting)
         {
+#if DEBUG_LOG
             Debug.Log("Trying to apply this isSprinting -> " + isSprinting.ToString());
+#endif // DEBUG 
             m_IsSprinting = isSprinting;
         }
 
