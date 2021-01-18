@@ -5,144 +5,86 @@ using UnityEngine.InputSystem;
 
 namespace ubv
 {
-    public class InputFrame : Serializable
+    namespace client
     {
-        public SerializableTypes.Bool Sprinting;
-        public SerializableTypes.Vector2 Movement;
-        public SerializableTypes.Uint32 Tick;
-        
-        /*protected override byte[] InternalToBytes() 
+        public class InputController : MonoBehaviour, client.IClientStateUpdater
         {
-            // Sprinting 1
-            // Movement 8
-            // tick 4
-            byte[] bytes = new byte[13]; 
+            // http://sbcgames.io/share-your-common-code-between-multiple-unity-projects/
+            // check http://devleader.ca/2015/02/08/multiple-c-projects-unity-3d-solution/ ?
+            // TODO: make data and  behaviour available to server (to make it symetrical)
+            [Header("Movement parameters")]
+            [SerializeField] private common.StandardMovementSettings m_movementSettings;
+            [SerializeField] private client.ClientSync m_clientSync;
 
-            byte[] move_x;
-            byte[] move_y;
-            byte[] tick;
+            private Rigidbody2D m_rigidBody;
 
-            move_x = System.BitConverter.GetBytes(Movement.Value.x);
-            move_y = System.BitConverter.GetBytes(Movement.Value.y);
-            tick = System.BitConverter.GetBytes(Tick);
-            
-            bytes[0] = (byte)(Sprinting ? 1 : 0);
+            private PlayerControls m_controls;
 
-            for (ushort i = 0; i < 4; i++)
+            private common.data.InputFrame m_currentInputFrame;
+
+            private void Awake()
             {
-                bytes[i + 1] = move_x[i];
-                bytes[i + 1 + 4] = move_y[i];
-                bytes[i + 1 + 4 + 4] = tick[i];
+                m_currentInputFrame = new common.data.InputFrame();
+                m_rigidBody = GetComponent<Rigidbody2D>();
+
+                m_controls = new PlayerControls();
+
+                m_controls.Gameplay.Move.performed += context => m_currentInputFrame.Movement.Set(context.ReadValue<Vector2>());
+                m_controls.Gameplay.Move.canceled += context => m_currentInputFrame.Movement.Set(Vector2.zero);
+
+                m_controls.Gameplay.Sprint.performed += context => m_currentInputFrame.Sprinting.Set(true);
+                m_controls.Gameplay.Sprint.canceled += context => m_currentInputFrame.Sprinting.Set(false);
+
+                client.ClientState.RegisterUpdater(this);
             }
 
-            return bytes;
-        }*/
+            // Start is called before the first frame update
+            void Start()
+            {
 
-        public void SetToNeutral()
-        {
-            Movement.Set(Vector2.zero);
-            Sprinting.Set(false);
-        }
-        
-        protected override void InitSerializableMembers()
-        {
-            Sprinting = new SerializableTypes.Bool(this, false);
-            Movement = new SerializableTypes.Vector2(this, Vector2.zero);
-            Tick = new SerializableTypes.Uint32(this, 0);
+            }
 
-            SetToNeutral();
-        }
-        
-        protected override byte SerializationID()
-        {
-            return (byte)Serialization.BYTE_TYPE.INPUT_FRAME;
-        }
-    }
+            // Update is called once per frame
+            void Update()
+            {
+                m_clientSync.AddInput(m_currentInputFrame);
+            }
 
-    public class InputController : MonoBehaviour, IClientStateUpdater
-    {
-        // http://sbcgames.io/share-your-common-code-between-multiple-unity-projects/
-        // check http://devleader.ca/2015/02/08/multiple-c-projects-unity-3d-solution/ ?
-        // TODO: make data and  behaviour available to server (to make it symetrical)
-        [Header("Movement parameters")]
-        [SerializeField] private StandardMovementSettings m_movementSettings;
-        [SerializeField] private ClientSync m_clientSync;
+            private void FixedUpdate()
+            {
+                // ...
+            }
 
-        private Rigidbody2D m_rigidBody;
+            private void OnEnable()
+            {
+                m_controls.Gameplay.Enable();
+            }
 
-        private PlayerControls m_controls;
-        
-        private InputFrame m_currentInputFrame;
-        
-        private void Awake()
-        {
-            m_currentInputFrame = new InputFrame();
-            m_rigidBody = GetComponent<Rigidbody2D>();
+            private void OnDisable()
+            {
+                m_controls.Gameplay.Disable();
+            }
 
-            m_controls = new PlayerControls();
+            public void ClientStoreAndStep(ref client.ClientState state, common.data.InputFrame input, float deltaTime)
+            {
+                SetClientState(ref state);
+                common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, input, deltaTime);
+            }
 
-            m_controls.Gameplay.Move.performed += context => m_currentInputFrame.Movement.Set(context.ReadValue<Vector2>());
-            m_controls.Gameplay.Move.canceled += context => m_currentInputFrame.Movement.Set(Vector2.zero);
+            public void UpdateFromState(client.ClientState state)
+            {
+                m_rigidBody.position = state.Position;
+            }
 
-            m_controls.Gameplay.Sprint.performed += context => m_currentInputFrame.Sprinting.Set(true);
-            m_controls.Gameplay.Sprint.canceled += context => m_currentInputFrame.Sprinting.Set(false);
-            
-            ClientState.RegisterUpdater(this);
-        }
+            public bool NeedsCorrection(client.ClientState remoteState)
+            {
+                return (m_rigidBody.position - remoteState.Position).sqrMagnitude > 0.1f;
+            }
 
-        // Start is called before the first frame update
-        void Start()
-        {
-
-        }
-        
-        // Update is called once per frame
-        void Update()
-        {
-            m_clientSync.AddInput(m_currentInputFrame);
-        }
-
-        private void FixedUpdate()
-        {
-            // ...
-        }
-
-        private void OnEnable()
-        {
-            m_controls.Gameplay.Enable();
-        }
-
-        private void OnDisable()
-        {
-            m_controls.Gameplay.Disable();
-        }
-
-        public void ClientStoreAndStep(ref ClientState state, InputFrame input, float deltaTime)
-        {
-            SetClientState(ref state);
-
-#if DEBUG_LOG
-
-#endif // DEBUG_LOG
-            //Debug.Log("Moving client at frame " + input.Tick); // + " with input " + input.Movement );
-
-            m_rigidBody.MovePosition(m_rigidBody.position + 
-                input.Movement.Value * (input.Sprinting ? m_movementSettings.SprintVelocity : m_movementSettings.WalkVelocity) * deltaTime);
-        }
-        
-        public void UpdateFromState(ClientState state)
-        {
-            m_rigidBody.position = state.Position;
-        }
-
-        public bool NeedsCorrection(ClientState localState, ClientState remoteState)
-        {
-            return false;
-        }
-
-        private void SetClientState(ref ClientState state)
-        {
-            state.Position = m_rigidBody.position;
+            private void SetClientState(ref client.ClientState state)
+            {
+                state.Position.Set(m_rigidBody.position);
+            }
         }
     }
 }

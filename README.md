@@ -15,6 +15,9 @@ June 27, 2020
     * `MaFonctionQuelconque()`
     * `MaClasseQuelconque`
     * `IMonInterfaceQuelconque // notez bien le I au début`
+3. **Commentaires**
+    * Le code devrait être le plus explicite possible par lui-même (c'est à dire sans commentaires). Les commentaires devraient servir à complémenter le code plutôt que de l'expliquer.
+    * Il est recommandé de rédiger un ///summary au début des classes et, dans une moindre mesure, des fonctions de l'interface des classes.
 
 ## STRUCTURAL GUIDE
 
@@ -25,7 +28,18 @@ June 27, 2020
 2. ***Scriptable objects***  
     Les scriptables objects sont très utiles. Utilisez-les pour partager facilement des paramètres entre plusieurs objets et vous éviter du tweaking de variables redondantes.
 3. ***Namespaces***
-    On utilise le ***namespace*** UBV pour éviter les conflits entre les bases de code existantes (ex: `UDPClient` vs `UdpClient`).
+    On utilise le ***namespace*** ubv pour éviter les conflits entre les bases de code existantes (ex: `UDPClient` vs `UdpClient`).
+    On utilise également plusieurs autres ***namespaces*** pour clarifier la *separation of concerns* des différents morceaux du code. Si vous avez à inclure du code venant d'un     autre ***namespace***, soyez prudent. 
+   Les voici répertoriés: 
+   |Nom|Description|
+   |---|---|
+   |ubv|Englobe tous les autres namespace. Marque la responsabilité du code d'UbiviUs.|
+   |udp|Englobe tout ce qui a trait aux comms réseau.|
+   |udp.client|Englobe la gestion des comms réseau côté client.|
+   |udp.server|Englobe la gestion des comms réseau côté serveur.|
+   |common|Englobe toutes les données et la logique commune au serveur et au client.|
+   |client|Englobe les données et la logique propre au client.|
+   |server|Englobe les données et la logique propre au serveur.|
 
 ## EDITOR GUIDE
 

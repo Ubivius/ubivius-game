@@ -4,118 +4,79 @@ using System.Collections.Generic;
 
 namespace ubv
 {
-    /// <summary>
-    /// Class reprensenting local client state, which will be simulated locally and synced with an authoritative server.
-    /// Add here everything that needs to be shared with the server (and the other players).
-    /// </summary>
-    public class ClientState
+    namespace client
     {
-        // Add here the stuff you need to share
-        public Vector2 Position;
-        public Quaternion Rotation;
-        public uint Tick;
-    
-        // add your data in the XYZBytes() functions to make them "network-able"
-        public byte[] ToBytes()
+        /// <summary>
+        /// Class reprensenting local client state, which will be simulated locally and synced with an authoritative server.
+        /// Add here everything that needs to be shared with the server (and the other players).
+        /// </summary>
+        public class ClientState : udp.Serializable
         {
-            byte[] positionBytes_x = System.BitConverter.GetBytes(Position.x);
-            byte[] positionBytes_y = System.BitConverter.GetBytes(Position.y);
+            // Add here the stuff you need to share
+            public udp.SerializableTypes.Vector2 Position;
+            public udp.SerializableTypes.Quaternion Rotation;
+            public udp.SerializableTypes.Uint32 Tick;
 
-            byte[] rotationBytes_w = System.BitConverter.GetBytes(Rotation.w);
-            byte[] rotationBytes_x = System.BitConverter.GetBytes(Rotation.x);
-            byte[] rotationBytes_y = System.BitConverter.GetBytes(Rotation.y);
-            byte[] rotationBytes_z = System.BitConverter.GetBytes(Rotation.z);
-
-            byte[] tickBytes = System.BitConverter.GetBytes(Tick);
-
-            byte[] arr = new byte[1 + 4 + 4 + 4 + 4 + 4 + 4 + 4];
-            
-            arr[0] = (byte)Serialization.BYTE_TYPE.CLIENT_STATE;
-
-            for (ushort i = 0; i < 4; i++)
+            protected override void InitSerializableMembers()
             {
-                arr[i + 1] = positionBytes_x[i];
-                arr[i + 4 + 1] = positionBytes_y[i];
-                arr[i + 8 + 1] = rotationBytes_w[i];
-                arr[i + 12 + 1] = rotationBytes_x[i];
-                arr[i + 16 + 1] = rotationBytes_y[i];
-                arr[i + 20 + 1] = rotationBytes_z[i];
-                arr[i + 24 + 1] = tickBytes[i];
+                Tick = new udp.SerializableTypes.Uint32(this, 0);
+                Position = new udp.SerializableTypes.Vector2(this, Vector2.zero);
+                Rotation = new udp.SerializableTypes.Quaternion(this, Quaternion.identity);
             }
 
-
-            return arr;
-        }
-
-        public static ClientState FromBytes(byte[] arr)
-        {
-            if (arr[0] != (byte)Serialization.BYTE_TYPE.CLIENT_STATE)
-                return null;
-
-            ClientState state = new ClientState
+            protected override byte SerializationID()
             {
-                Position = new Vector2(System.BitConverter.ToSingle(arr, 1),
-                System.BitConverter.ToSingle(arr, 4 + 1)),
-
-                Rotation = new Quaternion(System.BitConverter.ToSingle(arr, 12 + 1),
-                System.BitConverter.ToSingle(arr, 16 + 1),
-                System.BitConverter.ToSingle(arr, 20 + 1),
-                System.BitConverter.ToSingle(arr, 8 + 1)),
-
-                Tick = System.BitConverter.ToUInt32(arr, 24 + 1)
-            };
-
-            return state;
-        }
+                return (byte)udp.Serialization.BYTE_TYPE.CLIENT_STATE;
+            }
 
 #region UTILITY FUNCTIONS
-        private static List<IClientStateUpdater> m_updaters = new List<IClientStateUpdater>();
-        private static List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
-      
-        static public void RegisterReceiver(IPacketReceiver receiver)
-        {
-            m_receivers.Add(receiver);
-        }
+            private static List<IClientStateUpdater> m_updaters = new List<IClientStateUpdater>();
 
-        static public void RegisterUpdater(IClientStateUpdater updater)
-        {
-            m_updaters.Add(updater);
-        }
-
-        static public void SetToState(ClientState state)
-        {
-            for (int i = 0; i < m_updaters.Count; i++)
+            static public void RegisterUpdater(IClientStateUpdater updater)
             {
-                m_updaters[i].UpdateFromState(state);
-            }
-        }
-        
-        public void StoreCurrentStateAndStep(InputFrame input, float deltaTime, ref PhysicsScene2D physics)
-        {
-            ClientState _this = this;
-            
-            for (int i = 0; i < m_updaters.Count; i++)
-            {
-                m_updaters[i].ClientStoreAndStep(ref _this, input, deltaTime);
+                m_updaters.Add(updater);
             }
 
-            physics.Simulate(deltaTime);
-        }
-
-        static public bool NeedsCorrection(ClientState localState, ClientState remoteState)
-        {
-            bool needed = false;
-            return needed;
-        }
-
-        static public void Receive(UDPToolkit.Packet packet)
-        {
-            for (int i = 0; i < m_receivers.Count; i++)
+            static public void SetToState(ClientState state)
             {
-                m_receivers[i].ReceivePacket(packet);
+                for (int i = 0; i < m_updaters.Count; i++)
+                {
+                    m_updaters[i].UpdateFromState(state);
+                }
             }
-        }
 
+            public void StoreCurrentStateAndStep(common.data.InputFrame input, float deltaTime, ref PhysicsScene2D physics)
+            {
+                ClientState _this = this;
+
+                for (int i = 0; i < m_updaters.Count; i++)
+                {
+                    m_updaters[i].ClientStoreAndStep(ref _this, input, deltaTime);
+                }
+
+                physics.Simulate(deltaTime);
+            }
+
+            /// <summary>
+            /// Checks if any updater needs to correct its internal state
+            /// </summary>
+            /// <param name="remoteState">The state to compare to</param>
+            /// <returns>Updaters needing to be corrected</returns>
+            static public List<IClientStateUpdater> StatesNeedingCorrection(ClientState remoteState)
+            {
+                List<IClientStateUpdater> needCorrection = new List<IClientStateUpdater>();
+
+                for (int i = 0; i < m_updaters.Count; i++)
+                {
+                    if (m_updaters[i].NeedsCorrection(remoteState))
+                    {
+                        needCorrection.Add(m_updaters[i]);
+                    }
+                }
+
+                return needCorrection;
+            }
 #endregion
+        }
     }
 }
