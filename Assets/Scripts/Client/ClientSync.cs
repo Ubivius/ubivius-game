@@ -68,18 +68,19 @@ namespace ubv
 
             private void FixedUpdate()
             {
+                
+                uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;<
+
+                UpdateInput(bufferIndex);
+
+                UpdateClientState(bufferIndex);
+
+                ++m_localTick;
+                
                 if (IsServerBind)
                 {
-                    uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
-
-                    UpdateInput(bufferIndex);
-
-                    UpdateClientState(bufferIndex);
-
-                    ++m_localTick;
-
                     ClientCorrection();
-                }
+                }                
             }
 
             private void UpdateInput(uint bufferIndex)
@@ -110,16 +111,21 @@ namespace ubv
                 inputMessage.StartTick.Set(m_remoteTick);
                 inputMessage.InputFrames.Set(frames);
 
-    #if NETWORK_SIMULATE
-                if (Random.Range(0f, 1f) > PacketLossChance)
+                if (IsServerBind)
                 {
-                    m_udpClient.Send(inputMessage.GetBytes());
+#if NETWORK_SIMULATE
+                    if (Random.Range(0f, 1f) > PacketLossChance)
+                    {
+                        m_udpClient.Send(inputMessage.GetBytes());
+                    }
+                    else
+                    {
+                        Debug.Log("SIMULATING PACKET LOSS");
+                    }
+#else
+                        m_udpClient.Send(inputMessage.ToBytes());
+#endif //NETWORK_SIMULATE       
                 }
-                else
-                    Debug.Log("SIMULATING PACKET LOSS");
-    #else
-            m_udpClient.Send(inputMessage.ToBytes());
-    #endif
             }
 
             private void UpdateClientState(uint bufferIndex)
