@@ -120,10 +120,7 @@ namespace ubv
             m_currentInputFrame.Movement.Set(m_move);
             m_currentInputFrame.Sprinting.Set(m_IsSprinting);
 
-            if (m_isServerBind)
-            {
-                m_clientSync.AddInput(m_currentInputFrame);
-            }
+            m_clientSync.AddInput(m_currentInputFrame);
         }
 
         private void FixedUpdate()
