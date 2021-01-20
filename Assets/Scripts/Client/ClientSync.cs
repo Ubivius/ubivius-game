@@ -23,8 +23,8 @@ namespace ubv
             [SerializeField]
             private udp.client.UDPClient m_udpClient;
 
-            [SerializeField]
-            private uint m_playerID; // temp while no auth
+            //[SerializeField]
+            public uint PlayerID { get; private set; } // temp while no auth
 
             // has an input buffer to recreate inputs after server correction
             private ClientState[] m_clientStateBuffer;
@@ -54,13 +54,13 @@ namespace ubv
                 m_lastServerState = null;
                 udp.client.UDPClient.RegisterReceiver(this);
 
+                PlayerID = 1;
+
                 for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
                 {
-                    m_clientStateBuffer[i] = new ClientState();
-                    m_clientStateBuffer[i].PlayerID.Set(m_playerID);
-
                     common.PlayerState player = new common.PlayerState();
-                    player.ID.Set(m_playerID);
+                    player.ID.Set(PlayerID);
+                    m_clientStateBuffer[i] = new ClientState();
                     m_clientStateBuffer[i].AddPlayer(player);
 
                     m_inputBuffer[i] = new common.data.InputFrame();
@@ -69,9 +69,55 @@ namespace ubv
 
             private void Start()
             {
-                m_currentState = new logic.ClientSyncInit(m_udpClient, 
-                    m_physicsScene, 
-                    m_inputController
+                m_lastInput = input;
+            }
+
+            private void FixedUpdate()
+            {
+                uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
+
+                UpdateInput(bufferIndex);
+
+                UpdateClientState(bufferIndex);
+
+                ++m_localTick;
+                if (m_isServerBound)
+                {
+                    ClientCorrection();
+                }      
+            }
+
+            private void UpdateInput(uint bufferIndex)
+            {
+                if (m_lastInput != null)
+                {
+                    m_inputBuffer[bufferIndex].Movement.Set(m_lastInput.Movement.Value);
+                    m_inputBuffer[bufferIndex].Sprinting.Set(m_lastInput.Sprinting.Value);
+                }
+                else
+                {
+                    m_inputBuffer[bufferIndex].SetToNeutral();
+                }
+
+                m_inputBuffer[bufferIndex].Tick.Set(m_localTick);
+
+                m_lastInput = null;
+
+                // TODO: Cap max input queue size
+                // (under the hood, send multiple packets?)
+                List<common.data.InputFrame> frames = new List<common.data.InputFrame>();
+                for (uint tick = m_remoteTick; tick <= m_localTick; tick++)
+                {
+                    frames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
+                }
+
+                common.data.InputMessage inputMessage = new common.data.InputMessage();
+                inputMessage.PlayerID.Set(PlayerID);
+                inputMessage.StartTick.Set(m_remoteTick);
+                inputMessage.InputFrames.Set(frames);
+
+                if (m_isServerBound)
+                {
 #if NETWORK_SIMULATE
                     , this
 #endif // NETWORK_SIMULATE
