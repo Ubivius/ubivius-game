@@ -7,7 +7,7 @@ namespace ubv
         internal interface IConvertible
         {
             byte[] GetBytes();
-            int GetByteCount(byte[] sourceBytes = null);
+            int GetByteCount();
             void CreateFromBytes(byte[] sourceBytes);
         }
 
@@ -29,9 +29,8 @@ namespace ubv
             /// <typeparam name="T">The type of the value. Must be default-constructible.</typeparam>
             public abstract class Variable<T> : IConvertible
             {
-                private bool m_dirty;
                 protected T m_value;
-                private byte[] m_cachedBytes;
+                protected byte[] m_cachedBytes;
 
                 private Serializable m_owner;
 
@@ -39,7 +38,6 @@ namespace ubv
                 {
                     get
                     {
-                        m_dirty = true;
                         return m_value;
                     }
                     set
@@ -87,28 +85,23 @@ namespace ubv
                 public virtual Variable<T> Set(T value)
                 {
                     m_owner.m_dirty = true;
-                    m_dirty = true;
                     m_value = value;
                     return this;
                 }
 
-                public int GetByteCount(byte[] sourceBytes = null)
+                public int GetByteCount()
                 {
-                    return ByteCount(sourceBytes);
+                    return ByteCount();
                 }
 
                 public byte[] GetBytes()
                 {
-                    if (m_dirty)
-                    {
-                        m_dirty = false;
-                        m_cachedBytes = Bytes();
-                    }
+                    m_cachedBytes = Bytes();
                     return m_cachedBytes;
                 }
 
                 protected abstract T BuildFromBytes(byte[] bytes);
-                protected abstract int ByteCount(byte[] sourceBytes = null);
+                protected abstract int ByteCount();
                 protected abstract byte[] Bytes();
 
                 // disable access to default and copy constructor
@@ -129,7 +122,7 @@ namespace ubv
                 InitSerializableMembers();
             }
 
-            public int GetByteCount(byte[] sourceBytes = null)
+            public int GetByteCount()
             {
                 if (m_dirty)
                     GetBytes();
@@ -160,7 +153,7 @@ namespace ubv
                         }
                     }
 
-                    m_dirty = false;
+                    //m_dirty = false;
                 }
 
                 return m_bytes;
@@ -172,7 +165,7 @@ namespace ubv
                 foreach (IConvertible ic in m_serializableMembers)
                 {
                     byte[] srcBytes = bytes.SubArray(convertedBytes, bytes.Length - convertedBytes);
-                    ic.CreateFromBytes(srcBytes.SubArray(0, ic.GetByteCount(srcBytes)));
+                    ic.CreateFromBytes(srcBytes);
                     convertedBytes += ic.GetByteCount();
                 }
                 m_bytes = bytes;
@@ -211,7 +204,7 @@ namespace ubv
                     return System.BitConverter.GetBytes(m_value);
                 }
 
-                protected override int ByteCount(byte[] sourceBytes = null)
+                protected override int ByteCount()
                 {
                     return sizeof(int);
                 }
@@ -231,7 +224,7 @@ namespace ubv
                     return System.BitConverter.GetBytes(m_value);
                 }
 
-                protected override int ByteCount(byte[] sourceBytes = null)
+                protected override int ByteCount()
                 {
                     return sizeof(uint);
                 }
@@ -251,7 +244,7 @@ namespace ubv
                     return System.BitConverter.GetBytes(m_value);
                 }
 
-                protected override int ByteCount(byte[] sourceBytes = null)
+                protected override int ByteCount()
                 {
                     return sizeof(bool);
                 }
@@ -277,7 +270,7 @@ namespace ubv
                     return bytes;
                 }
 
-                protected override int ByteCount(byte[] sourceBytes = null)
+                protected override int ByteCount()
                 {
                     return sizeof(float) * 2;
                 }
@@ -290,76 +283,51 @@ namespace ubv
 
             public class List<T> : Serializable.Variable<System.Collections.Generic.List<T>> where T : Serializable, new()
             {
-                private int? m_frameCount = null;
+                private int m_bytesPerElement;
 
                 public override Serializable.Variable<System.Collections.Generic.List<T>> Set(System.Collections.Generic.List<T> value)
                 {
-                    m_frameCount = value.Count;
+                    m_bytesPerElement = new T().GetByteCount();
                     base.Set(value);
                     return this;
                 }
 
                 public List(Serializable owner, System.Collections.Generic.List<T> value) : base(owner, value)
                 {
-                    m_frameCount = null;
+                    m_bytesPerElement = new T().GetByteCount();
                 }
-
+                
                 protected override System.Collections.Generic.List<T> BuildFromBytes(byte[] bytes)
                 {
-                    m_frameCount = System.BitConverter.ToInt32(bytes, 0);
+                    int frameCount = System.BitConverter.ToInt32(bytes, 0);
 
                     System.Collections.Generic.List<T> list = new System.Collections.Generic.List<T>();
-
-                    int byteCount = (bytes.Length - sizeof(int)) / m_frameCount.Value;
-                    for (int i = 0; i < m_frameCount; i++)
+                    
+                    for (int i = 0; i < frameCount; i++)
                     {
-                        T obj = Serializable.FromBytes<T>(bytes.SubArray(sizeof(int) + (i * byteCount), byteCount));
+                        T obj = Serializable.FromBytes<T>(bytes.SubArray(sizeof(int) + (i * m_bytesPerElement), m_bytesPerElement));
                         list.Add(obj);
                     }
                     return list;
                 }
 
-                protected override int ByteCount(byte[] sourceBytes = null)
+                protected override int ByteCount()
                 {
-                    if (sourceBytes != null)
-                    {
-                        m_frameCount = System.BitConverter.ToInt32(sourceBytes.SubArray(0, sizeof(int)), 0);
-                    }
-
-                    // hack to check type byte count
-                    // TODO : enforce constant byte count 
-                    // OR separate byte count into two methods
-                    // (one to compute how many bytes are needed)
-                    // (one to return the actual byte count)
-                    int typeByteCount = 0;
-                    if (m_value.Count == 0)
-                    {
-                        typeByteCount = new T().GetByteCount();
-                    }
-                    else
-                    {
-                        typeByteCount = m_value[0].GetByteCount();
-                    }
-
-                    if (m_frameCount.Value > 0)
-                    {
-                        return (m_frameCount.Value * typeByteCount) + sizeof(int);
-                    }
-                    return sizeof(int);
+                    return sizeof(int) + (m_value.Count * m_bytesPerElement);
                 }
 
                 protected override byte[] Bytes()
                 {
                     byte[] bytes = new byte[ByteCount()];
 
-                    byte[] frameCountBytes = System.BitConverter.GetBytes(m_frameCount.Value);
+                    byte[] frameCountBytes = System.BitConverter.GetBytes(m_value.Count);
 
                     for (int i = 0; i < sizeof(int); i++)
                     {
                         bytes[i] = frameCountBytes[i];
                     }
 
-                    for (int i = 0; i < m_frameCount; i++)
+                    for (int i = 0; i < m_value.Count; i++)
                     {
                         T obj = m_value[i];
                         byte[] objBytes = obj.GetBytes();
@@ -381,9 +349,9 @@ namespace ubv
                     return System.Text.Encoding.Unicode.GetBytes(m_value);
                 }
 
-                protected override int ByteCount(byte[] sourceBytes = null)
+                protected override int ByteCount()
                 {
-                    return sizeof(int);
+                    return Bytes().Length;
                 }
 
                 protected override string BuildFromBytes(byte[] bytes)
@@ -409,7 +377,7 @@ namespace ubv
                     return bytes;
                 }
 
-                protected override int ByteCount(byte[] sourceBytes = null)
+                protected override int ByteCount()
                 {
                     return sizeof(float) * 4;
                 }
