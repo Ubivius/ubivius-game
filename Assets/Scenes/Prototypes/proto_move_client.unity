@@ -465,9 +465,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad6e58ddc91bc2e41a1691bec489cc39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PacketLossChance: 0.2
+  PacketLossChance: 0
   m_udpClient: {fileID: 925986283}
-  m_isServerBound: 0
+  m_playerID: 0
   m_physicsScene: proto_move_client
 --- !u!4 &1668815430
 Transform:
