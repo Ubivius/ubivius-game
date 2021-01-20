@@ -421,7 +421,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PacketLossChance: 0
   m_udpClient: {fileID: 925986283}
-  m_playerID: 0
   m_physicsScene: proto_move_client
 --- !u!4 &1668815430
 Transform:
