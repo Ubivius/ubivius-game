@@ -26,8 +26,8 @@ namespace ubv
             [SerializeField]
             private udp.client.UDPClient m_udpClient;
 
-            [SerializeField]
-            private uint m_playerID; // temp while no auth
+            //[SerializeField]
+            public uint PlayerID { get; private set; } // temp while no auth
 
             // has an input buffer to recreate inputs after server correction
             private ClientState[] m_clientStateBuffer;
@@ -63,10 +63,6 @@ namespace ubv
                     common.PlayerState player = new common.PlayerState();
                     player.ID.Set(PlayerID);
                     m_clientStateBuffer[i] = new ClientState();
-                    m_clientStateBuffer[i].PlayerID.Set(m_playerID);
-
-                    common.PlayerState player = new common.PlayerState();
-                    player.ID.Set(m_playerID);
                     m_clientStateBuffer[i].AddPlayer(player);
 
                     m_inputBuffer[i] = new common.data.InputFrame();
