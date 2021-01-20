@@ -20,8 +20,6 @@ namespace ubv
             /// </summary>
             public class UDPServer : MonoBehaviour
             {
-                private readonly object lock_ = new object();
-
                 [SerializeField] int m_port = 9050;
                 [SerializeField] float m_connectionTimeout = 10f;
 
@@ -124,30 +122,27 @@ namespace ubv
                     byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
 
                     // If client is not registered, create a new Socket 
-                    lock (lock_)
+                    
+                    if (!m_endPoints.ContainsKey(clientEndPoint))
                     {
-                        if (!m_endPoints.ContainsKey(clientEndPoint))
-                        {
-                            m_endPoints.Add(clientEndPoint, new UdpClient());
-                            m_endPoints[clientEndPoint].Connect(clientEndPoint);
+                        m_endPoints.Add(clientEndPoint, new UdpClient());
+                        m_endPoints[clientEndPoint].Connect(clientEndPoint);
 
-                            m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
+                        m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
 
-                            OnClientConnect(clientEndPoint);
-                        }
+                        OnClientConnect(clientEndPoint);
                     }
-
+                    
                     m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
 
                     UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
 
-                    lock (lock_)
+                    
+                    if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
                     {
-                        if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
-                        {
-                            OnReceive(packet, clientEndPoint);
-                        }
+                        OnReceive(packet, clientEndPoint);
                     }
+                    
 
                     server.BeginReceive(EndReceiveCallback, server);
                 }
