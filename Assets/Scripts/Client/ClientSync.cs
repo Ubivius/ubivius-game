@@ -26,17 +26,21 @@ namespace ubv
             [SerializeField]
             private udp.client.UDPClient m_udpClient;
 
+            [SerializeField]
+            private uint m_playerID; // temp while no auth
+
             // has an input buffer to recreate inputs after server correction
             private ClientState[] m_clientStateBuffer;
             private common.data.InputFrame[] m_inputBuffer;
             private common.data.InputFrame m_lastInput;
 
+            private readonly object lock_ = new object();
             private ClientState m_lastServerState;
 
             private uint m_remoteTick;
             private uint m_localTick;
 
-            private const ushort CLIENT_STATE_BUFFER_SIZE = 256;
+            private const ushort CLIENT_STATE_BUFFER_SIZE = 64;
 
             [SerializeField] private string m_physicsScene;
             private PhysicsScene2D m_clientPhysics;
@@ -54,6 +58,12 @@ namespace ubv
                 for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
                 {
                     m_clientStateBuffer[i] = new ClientState();
+                    m_clientStateBuffer[i].PlayerID.Set(m_playerID);
+
+                    common.PlayerState player = new common.PlayerState();
+                    player.ID.Set(m_playerID);
+                    m_clientStateBuffer[i].AddPlayer(player);
+
                     m_inputBuffer[i] = new common.data.InputFrame();
                 }
             }
@@ -135,33 +145,35 @@ namespace ubv
 
                 // we reset every updater for now
                 // TODO maybe later: reset only those who need correcting?
-
-                if (m_lastServerState != null)
+                lock (lock_)
                 {
-                    if (ClientState.StatesNeedingCorrection(m_lastServerState).Count > 0)
+                    if (m_lastServerState != null)
                     {
-                        uint rewindTicks = m_remoteTick;
+                        if (ClientState.StatesNeedingCorrection(m_lastServerState).Count > 0)
+                        {
+                            uint rewindTicks = m_remoteTick;
 #if DEBUG_LOG
                         Debug.Log("Client: rewinding " + (m_localTick - rewindTicks) + " ticks");
 #endif // DEBUG_LOG
-                        
-                        // reset world state to last server-sent state
-                        ClientState.SetToState(m_lastServerState);
 
-                        while (rewindTicks < m_localTick)
-                        {
-                            uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
+                            // reset world state to last server-sent state
+                            ClientState.SetToState(m_lastServerState);
 
-                            m_clientStateBuffer[rewindIndex].StoreCurrentStateAndStep(
-                                m_inputBuffer[rewindIndex],
-                                Time.fixedDeltaTime,
-                                ref m_clientPhysics);
+                            while (rewindTicks < m_localTick)
+                            {
+                                uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
+
+                                m_clientStateBuffer[rewindIndex].StoreCurrentStateAndStep(
+                                    m_inputBuffer[rewindIndex],
+                                    Time.fixedDeltaTime,
+                                    ref m_clientPhysics);
+                            }
+
+                            // hard reset to server state if error is too big  ?
                         }
 
-                        // hard reset to server state if error is too big  ?
+                        m_lastServerState = null;
                     }
-
-                    m_lastServerState = null;
                 }
             }
 
@@ -169,14 +181,18 @@ namespace ubv
             {
                 // TODO remove tick from ClientSTate and add it to custom server state packet?
                 // client doesnt need its own client state ticks
-                ClientState state = ClientState.FromBytes<ClientState>(packet.Data);
-                if (state != null)
-                {
-                    m_lastServerState = state;
+                lock (lock_) {
+                    //Debug.Log("client bytes = " + System.BitConverter.ToString(packet.Data));
+                    ClientState state = udp.Serializable.FromBytes<ClientState>(packet.Data);
+                    if (state != null)
+                    {
+                        m_lastServerState = state;
+                        //Debug.Log("Received in client " + state.Player().Position.Value);
 #if DEBUG_LOG
                     Debug.Log("Received server state tick " + state.Tick);
 #endif //DEBUG_LOG
-                    m_remoteTick = state.Tick;
+                        m_remoteTick = state.Tick;
+                    }
                 }
             }
         }

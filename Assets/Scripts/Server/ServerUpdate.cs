@@ -12,9 +12,15 @@ namespace ubv
         /// </summary>
         public class ServerUpdate : MonoBehaviour, udp.server.IServerReceiver
         {
+            private readonly object lock_ = new object();
+
             // TEMPORARY for now, TODO: make work with multiple players
             [SerializeField] private common.StandardMovementSettings m_movementSettings;
             [SerializeField] private Rigidbody2D m_rigidBody;
+
+            // takes a player GameObject as a parameter 
+            // instantiates a player when it connects
+            // 
 
             [SerializeField] private string m_physicsScene;
             private PhysicsScene2D m_serverPhysics;
@@ -33,9 +39,13 @@ namespace ubv
                 public uint ServerTick;
                 public client.ClientState State;
 
-                public ClientConnection()
+                public ClientConnection(uint playerID)
                 {
                     State = new client.ClientState();
+                    State.PlayerID.Set(playerID);
+                    common.PlayerState player = new common.PlayerState();
+                    player.ID.Set(playerID);
+                    State.AddPlayer(player);
                 }
             }
 
@@ -67,50 +77,55 @@ namespace ubv
                 // update frames
 
                 uint framesToSimulate = 0;
-                foreach (ClientConnection client in m_clientInputs.Keys)
-                {
-                    common.data.InputMessage message = m_clientInputs[client];
-                    int messageCount = message.InputFrames.Value.Count;
-                    uint maxTick = message.StartTick + (uint)(messageCount - 1);
-#if DEBUG_LOG
-            Debug.Log("max tick to simulate = " + maxTick.ToString());
-#endif // DEBUG_LOG
-
-                    // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
-                    uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
-
-                    if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
-                }
-
-                for (uint f = framesToSimulate; f > 0; f--)
+                lock (lock_)
                 {
                     foreach (ClientConnection client in m_clientInputs.Keys)
                     {
                         common.data.InputMessage message = m_clientInputs[client];
                         int messageCount = message.InputFrames.Value.Count;
-                        if (messageCount > f)
-                        {
-                            common.data.InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
+                        uint maxTick = message.StartTick + (uint)(messageCount - 1);
+#if DEBUG_LOG
+            Debug.Log("max tick to simulate = " + maxTick.ToString());
+#endif // DEBUG_LOG
 
-                            // must be called in main unity thread
-                            common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, frame, Time.fixedDeltaTime);
+                        // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
+                        uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
 
-                            client.State.Position.Set(m_rigidBody.position);
-                            client.State.Tick.Set(client.ServerTick);
-                            client.ServerTick++;
-                        }
+                        if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
                     }
 
-                    m_serverPhysics.Simulate(Time.fixedDeltaTime);
-                }
+                    for (uint f = framesToSimulate; f > 0; f--)
+                    {
+                        foreach (ClientConnection client in m_clientInputs.Keys)
+                        {
+                            common.data.InputMessage message = m_clientInputs[client];
+                            int messageCount = message.InputFrames.Value.Count;
+                            if (messageCount > f)
+                            {
+                                common.data.InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
 
-                m_clientInputs.Clear();
+                                // must be called in main unity thread
+                                common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, frame, Time.fixedDeltaTime);
+
+                                client.State.Player().Position.Set(m_rigidBody.position);
+                                client.State.Tick.Set(client.ServerTick);
+                                client.ServerTick++;
+                            }
+                        }
+
+                        m_serverPhysics.Simulate(Time.fixedDeltaTime);
+                    }
+
+                    m_clientInputs.Clear();
+                }
 
                 if (++m_tickAccumulator > m_snapshotRate)
                 {
                     m_tickAccumulator = 0;
                     foreach (IPEndPoint ip in m_IPConnections.Keys)
                     {
+                        //Debug.Log("server bytes = " + System.BitConverter.ToString(m_IPConnections[ip].State.GetBytes()));
+                        //Debug.Log("Sent from server : " + m_IPConnections[ip].State.Player().Position.Value);
                         m_server.Send(m_IPConnections[ip].State.GetBytes(), ip);
                     }
                 }
@@ -124,14 +139,18 @@ namespace ubv
 #if DEBUG_LOG
                     Debug.Log("Input received in server: " + inputs.StartTick);
 #endif // DEBUG     
-                    m_clientInputs[m_IPConnections[clientEndPoint]] = inputs;
+                    lock (lock_)
+                    {
+                        m_clientInputs[m_IPConnections[clientEndPoint]] = inputs;
+                    }
 
                 }
             }
 
             public void OnConnect(IPEndPoint clientIP)
             {
-                m_IPConnections.Add(clientIP, new ClientConnection());
+                uint playerID = 0; // clientIP.Address.GetHashCode(); // for now
+                m_IPConnections.Add(clientIP, new ClientConnection(playerID));
             }
 
             public void OnDisconnect(IPEndPoint clientIP)

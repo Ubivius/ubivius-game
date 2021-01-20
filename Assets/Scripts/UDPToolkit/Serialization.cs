@@ -12,6 +12,7 @@ namespace ubv
                 INPUT_FRAME = 0x00,
                 INPUT_MESSAGE = 0x01,
                 CLIENT_STATE = 0x02,
+                PLAYER_STATE = 0x03,
             }
         }
     }

@@ -12,21 +12,43 @@ namespace ubv
         /// </summary>
         public class ClientState : udp.Serializable
         {
-            // Add here the stuff you need to share
-            public udp.SerializableTypes.Vector2 Position;
-            public udp.SerializableTypes.Quaternion Rotation;
+            private udp.SerializableTypes.List<common.PlayerState> m_allPlayerStates;
             public udp.SerializableTypes.Uint32 Tick;
+            public udp.SerializableTypes.Uint32 PlayerID;
 
+            private common.PlayerState m_playerState;
+             
             protected override void InitSerializableMembers()
             {
+                m_allPlayerStates = new udp.SerializableTypes.List<common.PlayerState>(this, new List<common.PlayerState>());
                 Tick = new udp.SerializableTypes.Uint32(this, 0);
-                Position = new udp.SerializableTypes.Vector2(this, Vector2.zero);
-                Rotation = new udp.SerializableTypes.Quaternion(this, Quaternion.identity);
+                PlayerID = new udp.SerializableTypes.Uint32(this, 0);
             }
 
             protected override byte SerializationID()
             {
                 return (byte)udp.Serialization.BYTE_TYPE.CLIENT_STATE;
+            }
+            
+            public common.PlayerState Player()
+            {
+                if(m_playerState == null)
+                {
+                    for(int i = 0;i < m_allPlayerStates.Value.Count; i++)
+                    {
+                        if (PlayerID.Value == m_allPlayerStates.Value[i].ID.Value)
+                        {
+                            m_playerState = m_allPlayerStates.Value[i];
+                            break;
+                        }
+                    }
+                }
+                return m_playerState;
+            }
+
+            public void AddPlayer(common.PlayerState playerState)
+            {
+                m_allPlayerStates.Value.Add(playerState);
             }
 
 #region UTILITY FUNCTIONS
