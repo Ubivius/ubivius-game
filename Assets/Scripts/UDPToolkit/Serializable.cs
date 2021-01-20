@@ -122,7 +122,7 @@ namespace ubv
                 InitSerializableMembers();
             }
 
-            protected void AddSerializableMember(Serializable member)
+            public int GetByteCount()
             {
                 m_serializableMembers.Add(member);
             }

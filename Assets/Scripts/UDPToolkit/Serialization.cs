@@ -13,7 +13,6 @@ namespace ubv
                 INPUT_MESSAGE = 0x01,
                 CLIENT_STATE = 0x02,
                 PLAYER_STATE = 0x03,
-                AUTH_MESSAGE = 0x04,
             }
         }
     }

@@ -12,28 +12,17 @@ namespace ubv
         /// </summary>
         public class ClientState : udp.Serializable
         {
-            private udp.SerializableTypes.List<common.data.PlayerState> m_playerStates;
+            private udp.SerializableTypes.List<common.PlayerState> m_allPlayerStates;
             public udp.SerializableTypes.Uint32 Tick;
+            public udp.SerializableTypes.Uint32 PlayerID;
 
-            private uint m_playerID;
-
-            public void SetPlayerID(uint id)
-            {
-                m_playerID = id;
-            }
-
-            public ClientState() : base() { }
-
-            public ClientState(ref ClientState state) : base()
-            {
-                Tick.Set(state.Tick);
-                SetPlayers(state.m_playerStates);
-            }
-            
+            private common.PlayerState m_playerState;
+             
             protected override void InitSerializableMembers()
             {
-                m_playerStates = new udp.SerializableTypes.List<common.data.PlayerState>(this, new List<common.data.PlayerState>());
+                m_allPlayerStates = new udp.SerializableTypes.List<common.PlayerState>(this, new List<common.PlayerState>());
                 Tick = new udp.SerializableTypes.Uint32(this, 0);
+                PlayerID = new udp.SerializableTypes.Uint32(this, 0);
             }
 
             protected override byte SerializationID()
@@ -41,29 +30,25 @@ namespace ubv
                 return (byte)udp.Serialization.BYTE_TYPE.CLIENT_STATE;
             }
             
-            public common.data.PlayerState GetPlayer()
+            public common.PlayerState Player()
             {
-                return m_playerStates.Value[(int)m_playerID];
-            }
-
-            public void AddPlayer(common.data.PlayerState playerState)
-            {
-                // TODO: ensure a unique player ID ?
-                m_playerStates.Value.Add(playerState);
-            }
-
-            public void SetPlayers(List<common.data.PlayerState> playerStates)
-            {
-                m_playerStates.Value.Clear();
-                foreach (common.data.PlayerState player in playerStates)
+                if(m_playerState == null)
                 {
-                    m_playerStates.Value.Add(new common.data.PlayerState(player));
+                    for(int i = 0;i < m_allPlayerStates.Value.Count; i++)
+                    {
+                        if (PlayerID.Value == m_allPlayerStates.Value[i].ID.Value)
+                        {
+                            m_playerState = m_allPlayerStates.Value[i];
+                            break;
+                        }
+                    }
                 }
+                return m_playerState;
             }
 
-            public IList<common.data.PlayerState> Players()
+            public void AddPlayer(common.PlayerState playerState)
             {
-                return m_playerStates.Value.AsReadOnly();
+                m_allPlayerStates.Value.Add(playerState);
             }
 
 #region UTILITY FUNCTIONS
