@@ -95,17 +95,17 @@ namespace ubv
 
             public void UpdateFromState(client.ClientState state)
             {
-                m_rigidBody.position = state.Player().Position;
+                m_rigidBody.position = state.GetPlayer(m_clientSync.PlayerID).Position;
             }
 
             public bool NeedsCorrection(client.ClientState remoteState)
             {
-                return (m_rigidBody.position - remoteState.Player().Position).sqrMagnitude > 0.01f;
+                return (m_rigidBody.position - remoteState.GetPlayer(m_clientSync.PlayerID).Position).sqrMagnitude > 0.01f;
             }
 
             private void SetState(ref client.ClientState state)
             {
-                state.Player().Position.Set(m_rigidBody.position);
+                state.GetPlayer(m_clientSync.PlayerID).Position.Set(m_rigidBody.position);
             }
         }
     }
