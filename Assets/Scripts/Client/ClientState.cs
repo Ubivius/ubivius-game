@@ -14,11 +14,15 @@ namespace ubv
         {
             private udp.SerializableTypes.List<common.PlayerState> m_allPlayerStates;
             public udp.SerializableTypes.Uint32 Tick;
-            
+            public udp.SerializableTypes.Uint32 PlayerID;
+
+            private common.PlayerState m_playerState;
+             
             protected override void InitSerializableMembers()
             {
                 m_allPlayerStates = new udp.SerializableTypes.List<common.PlayerState>(this, new List<common.PlayerState>());
                 Tick = new udp.SerializableTypes.Uint32(this, 0);
+                PlayerID = new udp.SerializableTypes.Uint32(this, 0);
             }
 
             protected override byte SerializationID()
@@ -26,21 +30,24 @@ namespace ubv
                 return (byte)udp.Serialization.BYTE_TYPE.CLIENT_STATE;
             }
             
-            public common.PlayerState GetPlayer(uint playerID)
+            public common.PlayerState Player()
             {
-                for(int i = 0; i < m_allPlayerStates.Value.Count; i++)
+                if(m_playerState == null)
                 {
-                    if(playerID == m_allPlayerStates.Value[i].ID.Value)
+                    for(int i = 0;i < m_allPlayerStates.Value.Count; i++)
                     {
-                        return m_allPlayerStates.Value[i];
+                        if (PlayerID.Value == m_allPlayerStates.Value[i].ID.Value)
+                        {
+                            m_playerState = m_allPlayerStates.Value[i];
+                            break;
+                        }
                     }
                 }
-                return null;
+                return m_playerState;
             }
 
             public void AddPlayer(common.PlayerState playerState)
             {
-                // TODO: ensure a unique player ID
                 m_allPlayerStates.Value.Add(playerState);
             }
 

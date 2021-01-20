@@ -20,23 +20,6 @@ namespace ubv
             // takes a player GameObject as a parameter 
             // instantiates a player when it connects
             // 
-            [SerializeField] GameObject m_playerPrefab;   
-            private Dictionary<uint, Rigidbody2D> m_bodies; 
-            private List<common.PlayerState> m_players;
-
-            private struct IPID
-            {
-                public IPEndPoint ClientIP;
-                public uint PlayerID;
-
-                public IPID(IPEndPoint clientIP, uint playerID) : this()
-                {
-                    this.ClientIP = clientIP;
-                    this.PlayerID = playerID;
-                }
-            }
-
-            private Queue<IPID> m_playersPending;
 
             [SerializeField] private string m_physicsScene;
             private PhysicsScene2D m_serverPhysics;
@@ -55,17 +38,13 @@ namespace ubv
                 public uint ServerTick;
                 public client.ClientState State;
 
-                public uint PlayerID { get; private set; }
-
-                public ClientConnection(List<common.PlayerState> players, uint playerID)
+                public ClientConnection(uint playerID)
                 {
                     State = new client.ClientState();
-                    PlayerID = playerID;
-                    // loop through all connection players and add them
-                    for(int i = 0; i < players.Count; i++)
-                    {
-                        State.AddPlayer(players[i]);
-                    }
+                    State.PlayerID.Set(playerID);
+                    common.PlayerState player = new common.PlayerState();
+                    player.ID.Set(playerID);
+                    State.AddPlayer(player);
                 }
             }
 
@@ -129,11 +108,9 @@ namespace ubv
                                 common.data.InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
 
                                 // must be called in main unity thread
-                                Rigidbody2D body = m_bodies[client.PlayerID];
+                                common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, frame, Time.fixedDeltaTime);
 
-                                common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
-
-                                client.State.GetPlayer(client.PlayerID).Position.Set(body.position);
+                                client.State.Player().Position.Set(m_rigidBody.position);
                                 client.State.Tick.Set(client.ServerTick);
                                 client.ServerTick++;
                             }
@@ -145,11 +122,13 @@ namespace ubv
                     m_clientInputs.Clear();
                 }
 
-                if (++m_tickAccumulator > m_snapshotDelay)
+                if (++m_tickAccumulator > m_snapshotRate)
                 {
                     m_tickAccumulator = 0;
                     foreach (IPEndPoint ip in m_IPConnections.Keys)
                     {
+                        //Debug.Log("server bytes = " + System.BitConverter.ToString(m_IPConnections[ip].State.GetBytes()));
+                        //Debug.Log("Sent from server : " + m_IPConnections[ip].State.Player().Position.Value);
                         m_server.Send(m_IPConnections[ip].State.GetBytes(), ip);
                     }
                 }
@@ -173,12 +152,8 @@ namespace ubv
 
             public void OnConnect(IPEndPoint clientIP)
             {
-                uint playerID = 1; //  (uint)clientIP.Address.GetHashCode(); // for now
-
-                lock (lock_) 
-                {
-                    m_playersPending.Enqueue( new IPID ( clientIP, playerID  ));
-                }
+                uint playerID = 0; // clientIP.Address.GetHashCode(); // for now
+                m_IPConnections.Add(clientIP, new ClientConnection(playerID));
             }
 
             public void OnDisconnect(IPEndPoint clientIP)

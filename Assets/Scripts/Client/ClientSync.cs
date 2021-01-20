@@ -26,8 +26,8 @@ namespace ubv
             [SerializeField]
             private udp.client.UDPClient m_udpClient;
 
-            //[SerializeField]
-            public uint PlayerID { get; private set; } // temp while no auth
+            [SerializeField]
+            private uint m_playerID; // temp while no auth
 
             // has an input buffer to recreate inputs after server correction
             private ClientState[] m_clientStateBuffer;
@@ -63,6 +63,10 @@ namespace ubv
                     common.PlayerState player = new common.PlayerState();
                     player.ID.Set(PlayerID);
                     m_clientStateBuffer[i] = new ClientState();
+                    m_clientStateBuffer[i].PlayerID.Set(m_playerID);
+
+                    common.PlayerState player = new common.PlayerState();
+                    player.ID.Set(m_playerID);
                     m_clientStateBuffer[i].AddPlayer(player);
 
                     m_inputBuffer[i] = new common.data.InputFrame();
@@ -150,29 +154,34 @@ namespace ubv
                 // check what tick it corresponds to
                 // rewind client state to the tick
                 // replay up to local tick by stepping every tick
-                
+
+                // we reset every updater for now
+                // TODO maybe later: reset only those who need correcting?
                 lock (lock_)
                 {
                     if (m_lastServerState != null)
                     {
-                        List<IClientStateUpdater> updaters = ClientState.UpdatersNeedingCorrection(m_lastServerState);
-                        for (int i = 0; i < updaters.Count; i++)
+                        if (ClientState.StatesNeedingCorrection(m_lastServerState).Count > 0)
                         {
                             uint rewindTicks = m_remoteTick;
+#if DEBUG_LOG
+                        Debug.Log("Client: rewinding " + (m_localTick - rewindTicks) + " ticks");
+#endif // DEBUG_LOG
 
                             // reset world state to last server-sent state
-                            updaters[i].UpdateFromState(m_lastServerState);
+                            ClientState.SetToState(m_lastServerState);
 
                             while (rewindTicks < m_localTick)
                             {
                                 uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
 
-                                updaters[i].SetStateAndStep(
-                                    ref m_clientStateBuffer[rewindIndex], 
+                                m_clientStateBuffer[rewindIndex].StoreCurrentStateAndStep(
                                     m_inputBuffer[rewindIndex],
-                                    Time.fixedDeltaTime);
-                                m_clientPhysics.Simulate(Time.fixedDeltaTime);
+                                    Time.fixedDeltaTime,
+                                    ref m_clientPhysics);
                             }
+
+                            // hard reset to server state if error is too big  ?
                         }
 
                         m_lastServerState = null;
@@ -184,12 +193,13 @@ namespace ubv
             {
                 // TODO remove tick from ClientSTate and add it to custom server state packet?
                 // client doesnt need its own client state ticks
-                lock (lock_)
-                {
+                lock (lock_) {
+                    //Debug.Log("client bytes = " + System.BitConverter.ToString(packet.Data));
                     ClientState state = udp.Serializable.FromBytes<ClientState>(packet.Data);
                     if (state != null)
                     {
                         m_lastServerState = state;
+                        //Debug.Log("Received in client " + state.Player().Position.Value);
 #if DEBUG_LOG
                     Debug.Log("Received server state tick " + state.Tick);
 #endif //DEBUG_LOG
