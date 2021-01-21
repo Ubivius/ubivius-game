@@ -68,7 +68,6 @@ namespace ubv
 
             private void FixedUpdate()
             {
-                
                 uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
 
                 UpdateInput(bufferIndex);
@@ -76,11 +75,10 @@ namespace ubv
                 UpdateClientState(bufferIndex);
 
                 ++m_localTick;
-                
                 if (IsServerBind)
                 {
                     ClientCorrection();
-                }                
+                }      
             }
 
             private void UpdateInput(uint bufferIndex)
