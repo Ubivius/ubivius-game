@@ -232,21 +232,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6058910025482233849, guid: f5db74dd4237e7b42b2ae1f11b3348a2,
-        type: 3}
-      propertyPath: m_Color.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6058910025482233849, guid: f5db74dd4237e7b42b2ae1f11b3348a2,
-        type: 3}
-      propertyPath: m_Color.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6058910025482233849, guid: f5db74dd4237e7b42b2ae1f11b3348a2,
-        type: 3}
-      propertyPath: m_Color.b
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5db74dd4237e7b42b2ae1f11b3348a2, type: 3}
 --- !u!1 &686843215 stripped
@@ -268,6 +253,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_movementSettings: {fileID: 11400000, guid: a2974712f0687ee4f995c884f2948972, type: 2}
+  m_clientSync: {fileID: 1668815429}
 --- !u!1 &925986282
 GameObject:
   m_ObjectHideFlags: 0

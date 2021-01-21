@@ -87,9 +87,9 @@ namespace ubv
                 m_controls.Gameplay.Disable();
             }
 
-            public void ClientStoreAndStep(ref client.ClientState state, common.data.InputFrame input, float deltaTime)
+            public void SetStateAndStep(ref client.ClientState state, common.data.InputFrame input, float deltaTime)
             {
-                SetClientState(ref state);
+                SetState(ref state);
                 common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, input, deltaTime);
             }
 
@@ -103,7 +103,7 @@ namespace ubv
                 return (m_rigidBody.position - remoteState.GetPlayer(m_clientSync.PlayerID).Position).sqrMagnitude > 0.01f;
             }
 
-            private void SetClientState(ref client.ClientState state)
+            private void SetState(ref client.ClientState state)
             {
                 state.GetPlayer(m_clientSync.PlayerID).Position.Set(m_rigidBody.position);
             }
