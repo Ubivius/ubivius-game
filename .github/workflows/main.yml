@@ -2,7 +2,7 @@ name: Actions
 
 on:
   pull_request: {}
-  push: { branches: [master, feature/add-ci-action] }
+  push: { branches: [master] }
 
 jobs:
   readmeWorkflow:
