@@ -150,34 +150,29 @@ namespace ubv
                 // check what tick it corresponds to
                 // rewind client state to the tick
                 // replay up to local tick by stepping every tick
-
-                // we reset every updater for now
-                // TODO maybe later: reset only those who need correcting?
+                
                 lock (lock_)
                 {
                     if (m_lastServerState != null)
                     {
-                        if (ClientState.StatesNeedingCorrection(m_lastServerState).Count > 0)
+                        List<IClientStateUpdater> updaters = ClientState.UpdatersNeedingCorrection(m_lastServerState);
+                        for (int i = 0; i < updaters.Count; i++)
                         {
                             uint rewindTicks = m_remoteTick;
-#if DEBUG_LOG
-                        Debug.Log("Client: rewinding " + (m_localTick - rewindTicks) + " ticks");
-#endif // DEBUG_LOG
 
                             // reset world state to last server-sent state
-                            ClientState.SetToState(m_lastServerState);
+                            updaters[i].UpdateFromState(m_lastServerState);
 
                             while (rewindTicks < m_localTick)
                             {
                                 uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
 
-                                m_clientStateBuffer[rewindIndex].StoreCurrentStateAndStep(
+                                updaters[i].SetStateAndStep(
+                                    ref m_clientStateBuffer[rewindIndex], 
                                     m_inputBuffer[rewindIndex],
-                                    Time.fixedDeltaTime,
-                                    ref m_clientPhysics);
+                                    Time.fixedDeltaTime);
+                                m_clientPhysics.Simulate(Time.fixedDeltaTime);
                             }
-
-                            // hard reset to server state if error is too big  ?
                         }
 
                         m_lastServerState = null;
@@ -189,13 +184,12 @@ namespace ubv
             {
                 // TODO remove tick from ClientSTate and add it to custom server state packet?
                 // client doesnt need its own client state ticks
-                lock (lock_) {
-                    //Debug.Log("client bytes = " + System.BitConverter.ToString(packet.Data));
+                lock (lock_)
+                {
                     ClientState state = udp.Serializable.FromBytes<ClientState>(packet.Data);
                     if (state != null)
                     {
                         m_lastServerState = state;
-                        //Debug.Log("Received in client " + state.Player().Position.Value);
 #if DEBUG_LOG
                     Debug.Log("Received server state tick " + state.Tick);
 #endif //DEBUG_LOG
