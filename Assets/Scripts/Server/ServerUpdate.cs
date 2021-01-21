@@ -46,7 +46,7 @@ namespace ubv
             private Dictionary<IPEndPoint, ClientConnection> m_IPConnections;
             private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputs;
 
-            [SerializeField] uint m_snapshotRate = 5; // We send back client data every m_snapshotRate tick
+            [SerializeField] uint m_snapshotDelay = 5; // We send back client data every m_snapshotRate tick
 
             private uint m_tickAccumulator;
 
@@ -145,13 +145,11 @@ namespace ubv
                     m_clientInputs.Clear();
                 }
 
-                if (++m_tickAccumulator > m_snapshotRate)
+                if (++m_tickAccumulator > m_snapshotDelay)
                 {
                     m_tickAccumulator = 0;
                     foreach (IPEndPoint ip in m_IPConnections.Keys)
                     {
-                        //Debug.Log("server bytes = " + System.BitConverter.ToString(m_IPConnections[ip].State.GetBytes()));
-                        //Debug.Log("Sent from server : " + m_IPConnections[ip].State.Player().Position.Value);
                         m_server.Send(m_IPConnections[ip].State.GetBytes(), ip);
                     }
                 }
