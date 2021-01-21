@@ -35,14 +35,12 @@ namespace ubv
 
             private uint m_remoteTick;
             private uint m_localTick;
-            private bool m_isServerBind;
+            [SerializeField] private bool m_isServerBound;
 
             private const ushort CLIENT_STATE_BUFFER_SIZE = 256;
 
             [SerializeField] private string m_physicsScene;
             private PhysicsScene2D m_clientPhysics;
-            
-            public bool IsServerBind { get => m_isServerBind; set => m_isServerBind = value; }
 
             private void Awake()
             {
@@ -75,7 +73,7 @@ namespace ubv
                 UpdateClientState(bufferIndex);
 
                 ++m_localTick;
-                if (IsServerBind)
+                if (m_isServerBound)
                 {
                     ClientCorrection();
                 }      
@@ -109,7 +107,7 @@ namespace ubv
                 inputMessage.StartTick.Set(m_remoteTick);
                 inputMessage.InputFrames.Set(frames);
 
-                if (IsServerBind)
+                if (m_isServerBound)
                 {
 #if NETWORK_SIMULATE
                     if (Random.Range(0f, 1f) > PacketLossChance)

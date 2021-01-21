@@ -14,8 +14,7 @@ namespace ubv
             // TODO: make data and  behaviour available to server (to make it symetrical)
             [Header("Movement parameters")]
             [SerializeField] private common.StandardMovementSettings m_movementSettings;
-            [SerializeField] private client.ClientSync m_clientSync;           
-            [SerializeField] private bool m_isServerBind;
+            [SerializeField] private client.ClientSync m_clientSync;  
 
             private Rigidbody2D m_rigidBody;
 
@@ -38,8 +37,6 @@ namespace ubv
 
                 m_controls.Gameplay.Sprint.performed += context => SetSprinting(true);
                 m_controls.Gameplay.Sprint.canceled += context => SetSprinting(false);
-
-                m_clientSync.IsServerBind = m_isServerBind;
 
                 client.ClientState.RegisterUpdater(this);
             }
