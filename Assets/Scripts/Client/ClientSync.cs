@@ -35,12 +35,13 @@ namespace ubv
 
             private uint m_remoteTick;
             private uint m_localTick;
+            [SerializeField] private bool m_isServerBound;
 
             private const ushort CLIENT_STATE_BUFFER_SIZE = 256;
 
             [SerializeField] private string m_physicsScene;
             private PhysicsScene2D m_clientPhysics;
-            
+
             private void Awake()
             {
                 m_localTick = 0;
@@ -58,7 +59,6 @@ namespace ubv
                 }
             }
 
-
             public void AddInput(common.data.InputFrame input)
             {
                 m_lastInput = input;
@@ -73,8 +73,10 @@ namespace ubv
                 UpdateClientState(bufferIndex);
 
                 ++m_localTick;
-
-                ClientCorrection();
+                if (m_isServerBound)
+                {
+                    ClientCorrection();
+                }      
             }
 
             private void UpdateInput(uint bufferIndex)
@@ -105,16 +107,21 @@ namespace ubv
                 inputMessage.StartTick.Set(m_remoteTick);
                 inputMessage.InputFrames.Set(frames);
 
-    #if NETWORK_SIMULATE
-                if (Random.Range(0f, 1f) > PacketLossChance)
+                if (m_isServerBound)
                 {
-                    m_udpClient.Send(inputMessage.GetBytes());
+#if NETWORK_SIMULATE
+                    if (Random.Range(0f, 1f) > PacketLossChance)
+                    {
+                        m_udpClient.Send(inputMessage.GetBytes());
+                    }
+                    else
+                    {
+                        Debug.Log("SIMULATING PACKET LOSS");
+                    }
+#else
+                        m_udpClient.Send(inputMessage.ToBytes());
+#endif //NETWORK_SIMULATE       
                 }
-                else
-                    Debug.Log("SIMULATING PACKET LOSS");
-    #else
-            m_udpClient.Send(inputMessage.ToBytes());
-    #endif
             }
 
             private void UpdateClientState(uint bufferIndex)
