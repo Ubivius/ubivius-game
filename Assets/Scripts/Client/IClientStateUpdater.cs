@@ -18,7 +18,7 @@ namespace ubv
             /// <param name="state">State to store and update</param>
             /// <param name="input">Input used to step state simulation</param>
             /// <param name="deltaTime"></param>
-            void ClientStoreAndStep(ref ClientState state, common.data.InputFrame input, float deltaTime);
+            void SetStateAndStep(ref ClientState state, common.data.InputFrame input, float deltaTime);
             
             /// <summary>
             /// Sets the current local client state to state

@@ -66,7 +66,7 @@ namespace ubv
 
                 for (int i = 0; i < m_updaters.Count; i++)
                 {
-                    m_updaters[i].ClientStoreAndStep(ref _this, input, deltaTime);
+                    m_updaters[i].SetStateAndStep(ref _this, input, deltaTime);
                 }
 
                 physics.Simulate(deltaTime);
@@ -77,7 +77,7 @@ namespace ubv
             /// </summary>
             /// <param name="remoteState">The state to compare to</param>
             /// <returns>Updaters needing to be corrected</returns>
-            static public List<IClientStateUpdater> StatesNeedingCorrection(ClientState remoteState)
+            static public List<IClientStateUpdater> UpdatersNeedingCorrection(ClientState remoteState)
             {
                 List<IClientStateUpdater> needCorrection = new List<IClientStateUpdater>();
 
