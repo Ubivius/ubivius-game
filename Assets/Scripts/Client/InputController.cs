@@ -14,7 +14,6 @@ namespace ubv
             // TODO: make data and  behaviour available to server (to make it symetrical)
             [Header("Movement parameters")]
             [SerializeField] private common.StandardMovementSettings m_movementSettings;
-            [SerializeField] private client.ClientSync m_clientSync;  
 
             private Rigidbody2D m_rigidBody;
 
@@ -68,8 +67,11 @@ namespace ubv
             {
                 m_currentInputFrame.Movement.Set(m_move);
                 m_currentInputFrame.Sprinting.Set(m_IsSprinting);
-
-                m_clientSync.AddInput(m_currentInputFrame);
+            }
+        
+            public common.data.InputFrame CurrentFrame()
+            {
+                return m_currentInputFrame;
             }
 
             private void FixedUpdate()
@@ -95,17 +97,17 @@ namespace ubv
 
             public void UpdateFromState(client.ClientState state)
             {
-                m_rigidBody.position = state.GetPlayer(m_clientSync.PlayerID).Position;
+                m_rigidBody.position = state.GetPlayer().Position;
             }
 
             public bool NeedsCorrection(client.ClientState remoteState)
             {
-                return (m_rigidBody.position - remoteState.GetPlayer(m_clientSync.PlayerID).Position).sqrMagnitude > 0.01f;
+                return (m_rigidBody.position - remoteState.GetPlayer().Position).sqrMagnitude > 0.01f;
             }
 
             private void SetState(ref client.ClientState state)
             {
-                state.GetPlayer(m_clientSync.PlayerID).Position.Set(m_rigidBody.position);
+                state.GetPlayer().Position.Set(m_rigidBody.position);
             }
         }
     }
