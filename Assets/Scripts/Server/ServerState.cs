@@ -54,46 +54,24 @@ namespace ubv
                 private common.StandardMovementSettings m_movementSettings;
                 private int m_snapshotDelay;
                 private GameObject m_playerPrefab;
-#if NETWORK_SIMULATE
-                private bool m_forceStartGame;
-#endif // NETWORK_SIMULATE
 
-                public GameCreationState(udp.server.UDPServer server, 
-                    GameObject playerPrefab, 
-                    common.StandardMovementSettings 
-                    movementSettings, 
-                    int snapshotDelay, 
-                    string physicsScene
-#if NETWORK_SIMULATE
-                    , ServerUpdate parent
-#endif // NETWORK_SIMULATE 
-                    ) : base(server)
+                public GameCreationState(udp.server.UDPServer server,  GameObject playerPrefab, common.StandardMovementSettings movementSettings, int snapshotDelay, string physicsScene) : base(server)
                 {
+                    m_server.AddReceiver(this);
                     m_clientConnections = new Dictionary<IPEndPoint, ClientConnection>();
 
                     m_movementSettings = movementSettings;
                     m_snapshotDelay = snapshotDelay;
                     m_physicsScene = physicsScene;
                     m_playerPrefab = playerPrefab;
-
-                    m_forceStartGame = false;
-
-#if NETWORK_SIMULATE
-                    parent.ForceStartGameButtonEvent.AddListener(() => { m_forceStartGame = true; });
-#endif // NETWORK_SIMULATE 
-
-                    m_server.AddReceiver(this);
                 }
 
                 public override ServerState Update()
                 {
+                    int i = 0; // temp
                     lock (m_lock)
                     {
-                        if (m_clientConnections.Count > 0
-#if NETWORK_SIMULATE
-                            || m_forceStartGame
-#endif // NETWORK_SIMULATE
-                        )
+                        if (i == 1 || m_clientConnections.Count > 2)
                         {
                             return new GameplayState(m_server, m_playerPrefab, m_clientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
                         }
@@ -115,15 +93,7 @@ namespace ubv
                 {
                     lock (m_lock)
                     {
-                        uint playerID = (uint)m_clientConnections.Count;
-                        m_clientConnections[clientIP] = new ClientConnection(playerID);
-
-                        common.data.IdentificationMessage idMessage = new common.data.IdentificationMessage();
-                        idMessage.PlayerID.Set(playerID);
-
-                        m_server.Send(idMessage.GetBytes(), clientIP);
-
-                        Debug.Log("Received connection request from " + clientIP.ToString());
+                        m_clientConnections[clientIP] = new ClientConnection((uint)m_clientConnections.Count);
                     }
                 }
 
@@ -165,8 +135,6 @@ namespace ubv
                     m_server.AddReceiver(this);
                     m_tickAccumulator = 0;
                     m_clientConnections = clientConnections;
-
-                    m_movementSettings = movementSettings;
 
                     m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(physicsScene).GetPhysicsScene2D();
                     m_playerPrefab = playerPrefab;
