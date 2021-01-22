@@ -109,7 +109,7 @@ namespace ubv
                 private Variable(Variable<T> other) { }
             }
 
-            List<IConvertible> m_serializableMembers;
+            private List<IConvertible> m_serializableMembers;
 
             private bool m_dirty;
             private byte[] m_bytes;
@@ -120,6 +120,11 @@ namespace ubv
                 m_serializableMembers = new List<IConvertible>();
                 m_bytes = null;
                 InitSerializableMembers();
+            }
+
+            protected void AddSerializableMember(Serializable member)
+            {
+                m_serializableMembers.Add(member);
             }
 
             public int GetByteCount()
@@ -172,7 +177,7 @@ namespace ubv
             }
 
             protected abstract byte SerializationID();
-            protected virtual void InitSerializableMembers() { }
+            protected abstract void InitSerializableMembers();
 
             static public T FromBytes<T>(byte[] bytes) where T : Serializable, new()
             {
