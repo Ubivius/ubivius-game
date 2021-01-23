@@ -22,11 +22,23 @@ namespace ubv
                 [SerializeField] private int m_snapshotDelay;
 
                 [SerializeField] private udp.server.UDPServer m_server;
-                
+
+#if NETWORK_SIMULATE
+                [HideInInspector] public UnityEngine.Events.UnityEvent ForceStartGameButtonEvent;
+#endif // NETWORK_SIMULATE
+
                 // Use this for initialization
                 void Start()
                 {
-                    m_currentState = new GameCreationState(m_server, m_playerPrefab, m_movementSettings, m_snapshotDelay, m_physicsScene);
+                    m_currentState = new GameCreationState(m_server, 
+                        m_playerPrefab, 
+                        m_movementSettings, 
+                        m_snapshotDelay, 
+                        m_physicsScene
+#if NETWORK_SIMULATE
+                        , this
+#endif // NETWORK_SIMULATE 
+                        );
                 }
 
                 // Update is called once per frame

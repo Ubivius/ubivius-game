@@ -13,7 +13,7 @@ namespace ubv
                 DrawDefaultInspector();
 
                 server.logic.ServerUpdate serverUpdate = (server.logic.ServerUpdate)target;
-                if (GUILayout.Button("Force Start Game"))
+                if (GUILayout.Button("Forpce Start Game"))
                 {
                     serverUpdate.ForceStartGameButtonEvent.Invoke();
                 }
