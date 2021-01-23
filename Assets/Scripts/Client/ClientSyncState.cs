@@ -31,11 +31,32 @@ namespace ubv
                 //tranfer to play
                 private readonly string m_physicsScene;
                 private readonly InputController m_inputController;
+                private int m_playerID;
 
-                public ClientSyncInit(udp.client.UDPClient client, string physicsScene, InputController inputController) : base(client)
+#if NETWORK_SIMULATE
+                private bool m_playWithoutServer;
+#endif // NETWORK_SIMULATE
+
+                public ClientSyncInit(udp.client.UDPClient client, 
+                    string physicsScene, 
+                    InputController inputController
+#if NETWORK_SIMULATE
+                    , ClientSync parent)
+#endif // NETWORK_SIMULATE
+                    : base(client)
                 {
                     m_physicsScene = physicsScene;
                     m_inputController = inputController;
+                    m_playerID = -1;
+
+                    m_playWithoutServer = false;
+
+                    m_client.RegisterReceiver(this);
+
+#if NETWORK_SIMULATE
+                    parent.ConnectButtonEvent.AddListener(SendConnectionRequestToServer);
+                    parent.PlayWithoutServerButtonEvent.AddListener(() => { m_playWithoutServer = true; });
+#endif // NETWORK_SIMULATE
                 }
 
                 public override ClientSyncState FixedUpdate()
@@ -43,17 +64,33 @@ namespace ubv
                     return this;
                 }
 
+                public void SendConnectionRequestToServer()
+                {
+                    m_client.Send(new IdentificationMessage().GetBytes()); // sends a ping to the server
+                }
+
                 public void ReceivePacket(UDPToolkit.Packet packet)
                 {
                     // receive auth message and set player id
+                    // UDP FOR NOW, TCP LATER (with auth)
+
+                    IdentificationMessage auth = udp.Serializable.FromBytes<IdentificationMessage>(packet.Data);
+                    if (auth != null)
+                    {
+                        m_playerID = (int)auth.PlayerID.Value;
+                        Debug.Log("Received connection confirmation, player ID is " + m_playerID);
+                    }
                 }
 
                 public override ClientSyncState Update()
                 {
-                    int i = 1, id = -1;
-                    if(i == 1)
+                    if(m_playerID > -1
+#if NETWORK_SIMULATE
+                    || m_playWithoutServer
+#endif // NETWORK_SIMULATE
+                    )
                     {
-                        return new ClientSyncPlay(m_client, id, m_physicsScene, m_inputController);
+                        return new ClientSyncPlay(m_client, m_playerID, m_physicsScene, m_inputController);
                     }
 
                     return this;

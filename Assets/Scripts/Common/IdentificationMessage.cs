@@ -7,7 +7,7 @@ namespace ubv
     {
         namespace data
         {
-            public class AuthenticationMessage : udp.Serializable
+            public class IdentificationMessage : udp.Serializable
             {
                 public udp.SerializableTypes.Uint32 PlayerID;
 

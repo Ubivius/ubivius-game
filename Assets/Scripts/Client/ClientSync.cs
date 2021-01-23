@@ -17,15 +17,16 @@ namespace ubv
             // https://github.com/spectre1989/unity_physics_csp/blob/master/Assets/Logic.cs
 
             client.logic.ClientSyncState m_currentState;
-
-#if NETWORK_SIMULATE
-            [SerializeField] private float m_packetLossChance = 0.15f;
-#endif // NETWORK_SIMULATE
             
             [SerializeField] private udp.client.UDPClient m_udpClient;
 
             [SerializeField] private InputController m_inputController;
             [SerializeField] private string m_physicsScene;
+
+#if NETWORK_SIMULATE
+            [HideInInspector] public UnityEngine.Events.UnityEvent ConnectButtonEvent;
+            [HideInInspector] public UnityEngine.Events.UnityEvent PlayWithoutServerButtonEvent;
+#endif // NETWORK_SIMULATE
 
             private void Awake()
             {
@@ -34,7 +35,13 @@ namespace ubv
 
             private void Start()
             {
-                m_currentState = new logic.ClientSyncInit(m_udpClient, m_physicsScene, m_inputController);
+                m_currentState = new logic.ClientSyncInit(m_udpClient, 
+                    m_physicsScene, 
+                    m_inputController
+#if NETWORK_SIMULATE
+                    , this
+#endif // NETWORK_SIMULATE
+                    );
             }
 
             private void Update()
