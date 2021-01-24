@@ -52,6 +52,8 @@ namespace ubv
 
                     m_server = new UdpClient(localEndPoint);
 
+                    Debug.Log("Launching server at " + localEndPoint.ToString());
+
                     m_server.BeginReceive(EndReceiveCallback, m_server);
                 }
 
