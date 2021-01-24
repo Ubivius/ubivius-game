@@ -1,0 +1,47 @@
+name: Actions
+
+on:
+  pull_request: {}
+  push: { branches: [master] }
+
+jobs:
+  readmeWorkflow:
+    name: Readme Workflow
+    runs-on: ubuntu-latest
+    steps:
+      
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: /home/runner/work/ubivius-game/ubivius-game/Library
+          key: test-project
+
+      # Test
+      # - name: Run tests
+      #   uses: webbertakken/unity-test-runner@v1.3
+      #   with:
+      #     projectPath: test-project
+      #     unityVersion: 2019.4.1f1
+
+      # Build
+      - name: Build project
+        uses: webbertakken/unity-builder@v1.5
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          unityVersion: 2019.4.1f1
+          targetPlatform: StandaloneWindows64
+
+      # Output
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Build
+          path: build
