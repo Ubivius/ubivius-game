@@ -11,7 +11,12 @@ namespace ubv
 
             [SerializeField] private int m_height;
             [SerializeField] private int m_width;
-            
+
+            Vector2Int GetDimension()
+            {
+                return new Vector2Int(m_width, m_height);
+            }
+
         }
     }
     
