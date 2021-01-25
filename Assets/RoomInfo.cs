@@ -8,7 +8,6 @@ namespace ubv
     {
         public class RoomInfo : MonoBehaviour
         {
-            // Start is called before the first frame update
 
             [SerializeField] private int m_height;
             [SerializeField] private int m_width;
