@@ -12,21 +12,57 @@ namespace ubv
         /// </summary>
         public class ClientState : udp.Serializable
         {
-            // Add here the stuff you need to share
-            public udp.SerializableTypes.Vector2 Position;
-            public udp.SerializableTypes.Quaternion Rotation;
+            private udp.SerializableTypes.HashMap<common.data.PlayerState> m_playerStates;
             public udp.SerializableTypes.Uint32 Tick;
 
+            private int m_playerID;
+
+            public void SetPlayerID(int id)
+            {
+                m_playerID = id;
+            }
+
+            public ClientState() : base() { }
+
+            public ClientState(ref ClientState state) : base()
+            {
+                Tick.Set(state.Tick);
+                SetPlayers(state.m_playerStates);
+            }
+            
             protected override void InitSerializableMembers()
             {
+                m_playerStates = new udp.SerializableTypes.HashMap<common.data.PlayerState>(this, new Dictionary<int, common.data.PlayerState>());
                 Tick = new udp.SerializableTypes.Uint32(this, 0);
-                Position = new udp.SerializableTypes.Vector2(this, Vector2.zero);
-                Rotation = new udp.SerializableTypes.Quaternion(this, Quaternion.identity);
             }
 
             protected override byte SerializationID()
             {
                 return (byte)udp.Serialization.BYTE_TYPE.CLIENT_STATE;
+            }
+            
+            public common.data.PlayerState GetPlayer()
+            {
+                return m_playerStates.Value[m_playerID];
+            }
+
+            public void AddPlayer(common.data.PlayerState playerState)
+            {
+                m_playerStates.Value[playerState.GUID] = playerState;
+            }
+
+            public void SetPlayers(Dictionary<int, common.data.PlayerState> playerStates)
+            {
+                m_playerStates.Value.Clear();
+                foreach (common.data.PlayerState player in playerStates.Values)
+                {
+                    m_playerStates.Value[player.GUID] = new common.data.PlayerState(player);
+                }
+            }
+
+            public Dictionary<int, common.data.PlayerState>.ValueCollection Players()
+            {
+                return m_playerStates.Value.Values;
             }
 
 #region UTILITY FUNCTIONS
@@ -51,7 +87,7 @@ namespace ubv
 
                 for (int i = 0; i < m_updaters.Count; i++)
                 {
-                    m_updaters[i].ClientStoreAndStep(ref _this, input, deltaTime);
+                    m_updaters[i].SetStateAndStep(ref _this, input, deltaTime);
                 }
 
                 physics.Simulate(deltaTime);
@@ -62,7 +98,7 @@ namespace ubv
             /// </summary>
             /// <param name="remoteState">The state to compare to</param>
             /// <returns>Updaters needing to be corrected</returns>
-            static public List<IClientStateUpdater> StatesNeedingCorrection(ClientState remoteState)
+            static public List<IClientStateUpdater> UpdatersNeedingCorrection(ClientState remoteState)
             {
                 List<IClientStateUpdater> needCorrection = new List<IClientStateUpdater>();
 

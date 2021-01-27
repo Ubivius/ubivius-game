@@ -14,7 +14,6 @@ namespace ubv
             // TODO: make data and  behaviour available to server (to make it symetrical)
             [Header("Movement parameters")]
             [SerializeField] private common.StandardMovementSettings m_movementSettings;
-            [SerializeField] private client.ClientSync m_clientSync;  
 
             private Rigidbody2D m_rigidBody;
 
@@ -68,8 +67,11 @@ namespace ubv
             {
                 m_currentInputFrame.Movement.Set(m_move);
                 m_currentInputFrame.Sprinting.Set(m_IsSprinting);
-
-                m_clientSync.AddInput(m_currentInputFrame);
+            }
+        
+            public common.data.InputFrame CurrentFrame()
+            {
+                return m_currentInputFrame;
             }
 
             private void FixedUpdate()
@@ -87,25 +89,25 @@ namespace ubv
                 m_controls.Gameplay.Disable();
             }
 
-            public void ClientStoreAndStep(ref client.ClientState state, common.data.InputFrame input, float deltaTime)
+            public void SetStateAndStep(ref client.ClientState state, common.data.InputFrame input, float deltaTime)
             {
-                SetClientState(ref state);
+                SetState(ref state);
                 common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, input, deltaTime);
             }
 
             public void UpdateFromState(client.ClientState state)
             {
-                m_rigidBody.position = state.Position;
+                m_rigidBody.position = state.GetPlayer().Position;
             }
 
             public bool NeedsCorrection(client.ClientState remoteState)
             {
-                return (m_rigidBody.position - remoteState.Position).sqrMagnitude > 0.1f;
+                return (m_rigidBody.position - remoteState.GetPlayer().Position).sqrMagnitude > 0.01f;
             }
 
-            private void SetClientState(ref client.ClientState state)
+            private void SetState(ref client.ClientState state)
             {
-                state.Position.Set(m_rigidBody.position);
+                state.GetPlayer().Position.Set(m_rigidBody.position);
             }
         }
     }
