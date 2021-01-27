@@ -6,27 +6,23 @@ using System.Net;
 using System.Threading;
 using UnityEngine.SceneManagement;
 
-namespace ubv
+namespace ubv.udp.server
 {
-    namespace udp
+    /// <summary>
+    /// Wrapper around System.Net.Sockets.UdpClient. 
+    /// Manages server-side UDP connections with other clients
+    /// + manages input messages from clients and computes their positions, then sends them back
+    /// https://www.winsocketdotnetworkprogramming.com/clientserversocketnetworkcommunication8d.html
+    /// </summary>
+    public class UDPServer : MonoBehaviour
     {
-        namespace server
-        {
-            /// <summary>
-            /// Wrapper around System.Net.Sockets.UdpClient. 
-            /// Manages server-side UDP connections with other clients
-            /// + manages input messages from clients and computes their positions, then sends them back
-            /// https://www.winsocketdotnetworkprogramming.com/clientserversocketnetworkcommunication8d.html
-            /// </summary>
-            public class UDPServer : MonoBehaviour
-            {
-                [SerializeField] int m_port = 9050;
-                [SerializeField] float m_connectionTimeout = 10f;
+        [SerializeField] int m_port = 9050;
+        [SerializeField] float m_connectionTimeout = 10f;
 
-                private Dictionary<IPEndPoint, UdpClient> m_endPoints;
-                private Dictionary<UdpClient, ClientConnection> m_clientConnections;
-                private UdpClient m_server;
-                private float m_serverUptime = 0;
+        private Dictionary<IPEndPoint, UdpClient> m_endPoints;
+        private Dictionary<UdpClient, ClientConnection> m_clientConnections;
+        private UdpClient m_server;
+        private float m_serverUptime = 0;
 
                 private List<IUDPServerReceiver> m_receivers = new List<IUDPServerReceiver>();
 
@@ -40,11 +36,11 @@ namespace ubv
                     public float LastConnectionTime;
                     public UDPToolkit.ConnectionData ConnectionData;
 
-                    public ClientConnection()
-                    {
-                        ConnectionData = new UDPToolkit.ConnectionData();
-                    }
-                }
+            public ClientConnection()
+            {
+                ConnectionData = new UDPToolkit.ConnectionData();
+            }
+        }
 
                 private void Awake()
                 {
@@ -71,7 +67,13 @@ namespace ubv
                     }
                 }
 
-                private void RemoveTimedOutClients()
+        private void RemoveTimedOutClients()
+        {
+            List<IPEndPoint> toRemove = new List<IPEndPoint>();
+            // check if any client has disconnected (has not sent a packet in TIMEOUT seconds)
+            foreach (IPEndPoint ep in m_endPoints.Keys)
+            {
+                if (m_serverUptime - m_clientConnections[m_endPoints[ep]].LastConnectionTime > m_connectionTimeout)
                 {
                     List<IPEndPoint> toRemove = new List<IPEndPoint>();
                     // check if any client has disconnected (has not sent a packet in TIMEOUT seconds)
@@ -90,6 +92,7 @@ namespace ubv
                         m_endPoints.Remove(toRemove[i]);
                     }
                 }
+            }
 
                 public void Send(byte[] data, IPEndPoint clientIP)
                 {
@@ -119,9 +122,9 @@ namespace ubv
                 {
                     UdpClient server = (UdpClient)ar.AsyncState;
 #if DEBUG_LOG
-            Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
+    Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
 #endif // DEBUG_LOG
-                }
+        }
 
                 public void RegisterClient(IPAddress client)
                 {
@@ -169,15 +172,15 @@ namespace ubv
                     server.BeginReceive(EndReceiveCallback, server);
                 }
 
-                private void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
-                {
-                    // TODO (maybe) : give up ticks and use only packet sequence number?
+        private void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
+        {
+            // TODO (maybe) : give up ticks and use only packet sequence number?
 
-                    for (int i = 0; i < m_receivers.Count; i++)
-                    {
-                        m_receivers[i].Receive(packet, clientEndPoint);
-                    }
-                }
+            for (int i = 0; i < m_receivers.Count; i++)
+            {
+                m_receivers[i].Receive(packet, clientEndPoint);
+            }
+        }
 
                 public void Subscribe(IUDPServerReceiver receiver)
                 {
