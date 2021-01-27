@@ -1,26 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace ubv
+namespace ubv.common.data
 {
-    namespace common
+    public class AuthenticationMessage : serialization.Serializable
     {
-        namespace data
+        public serialization.types.Uint32 PlayerID;
+
+        protected override void InitSerializableMembers()
         {
-            public class AuthenticationMessage : udp.Serializable
-            {
-                public udp.SerializableTypes.Uint32 PlayerID;
+            PlayerID = new serialization.types.Uint32(this, 0);
+        }
 
-                protected override void InitSerializableMembers()
-                {
-                    PlayerID = new udp.SerializableTypes.Uint32(this, 0);
-                }
-
-                protected override byte SerializationID()
-                {
-                    return (byte)udp.Serialization.BYTE_TYPE.AUTH_MESSAGE;
-                }
-            }
+        protected override byte SerializationID()
+        {
+            return (byte)serialization.ID.AUTH_MESSAGE;
         }
     }
 }

@@ -1,16 +1,10 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace ubv
+namespace ubv.udp.client
 {
-    namespace udp
+    public interface IPacketReceiver
     {
-        namespace client
-        {
-            public interface IPacketReceiver
-            {
-                void ReceivePacket(UDPToolkit.Packet packet);
-            }
-        }
+        void ReceivePacket(UDPToolkit.Packet packet);
     }
 }

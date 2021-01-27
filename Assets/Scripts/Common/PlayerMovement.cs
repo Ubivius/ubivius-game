@@ -1,25 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace ubv
+namespace ubv.common.logic
 {
-    namespace common
+    /// <summary>
+    /// Encapsulates player movement computation
+    /// </summary>
+    public class PlayerMovement
     {
-        namespace logic
+        static public void Execute(ref Rigidbody2D rigidbody, StandardMovementSettings movementSettings, data.InputFrame input, float deltaTime)
         {
-            /// <summary>
-            /// Encapsulates player movement computation
-            /// </summary>
-            public class PlayerMovement
-            {
-                static public void Execute(ref Rigidbody2D rigidbody, StandardMovementSettings movementSettings, common.data.InputFrame input, float deltaTime)
-                {
-                    rigidbody.MovePosition(rigidbody.position +
-                        input.Movement.Value *
-                        (input.Sprinting ? movementSettings.SprintVelocity : movementSettings.WalkVelocity) *
-                        deltaTime);
-                }
-            }
+            rigidbody.MovePosition(rigidbody.position +
+                input.Movement.Value *
+                (input.Sprinting ? movementSettings.SprintVelocity : movementSettings.WalkVelocity) *
+                deltaTime);
         }
     }
 }
