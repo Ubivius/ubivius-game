@@ -129,11 +129,6 @@ namespace ubv
 
             public int GetByteCount()
             {
-                m_serializableMembers.Add(member);
-            }
-
-            public int GetByteCount()
-            {
                 if (m_dirty)
                     GetBytes();
                 return m_bytes.Length;
