@@ -14,6 +14,7 @@ namespace ubv
                 CLIENT_STATE = 0x02,
                 PLAYER_STATE = 0x03,
                 AUTH_MESSAGE = 0x04,
+                START_MESSAGE = 0x05
             }
         }
     }

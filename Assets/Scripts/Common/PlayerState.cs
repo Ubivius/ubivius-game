@@ -15,6 +15,7 @@ namespace ubv
             {
                 public udp.SerializableTypes.Vector2 Position;
                 public udp.SerializableTypes.Quaternion Rotation;
+                public udp.SerializableTypes.Int32 GUID;
 
                 public PlayerState() : base() { }
 
@@ -22,12 +23,14 @@ namespace ubv
                 {
                     Position.Set(player.Position);
                     Rotation.Set(player.Rotation);
+                    GUID.Set(player.GUID);
                 }
 
                 protected override void InitSerializableMembers()
                 {
                     Position = new udp.SerializableTypes.Vector2(this, Vector2.zero);
                     Rotation = new udp.SerializableTypes.Quaternion(this, Quaternion.identity);
+                    GUID = new udp.SerializableTypes.Int32(this, -1);
                 }
 
                 protected override byte SerializationID()

@@ -30,13 +30,13 @@ namespace ubv
                 public uint ServerTick;
                 public client.ClientState State;
 
-                public uint PlayerIndex { get; private set; }
+                public int PlayerGUID { get; private set; }
 
-                public ClientConnection(uint playerIndex)
+                public ClientConnection(int playerGUID)
                 {
                     State = new client.ClientState();
-                    State.SetPlayerID(playerIndex);
-                    PlayerIndex = playerIndex;
+                    State.SetPlayerID(playerGUID);
+                    PlayerGUID = playerGUID;
                 }
             }
 
@@ -54,6 +54,9 @@ namespace ubv
                 private common.StandardMovementSettings m_movementSettings;
                 private int m_snapshotDelay;
                 private GameObject m_playerPrefab;
+
+                private List<common.data.PlayerState> m_players;
+
 #if NETWORK_SIMULATE
                 private bool m_forceStartGame;
 #endif // NETWORK_SIMULATE
@@ -69,6 +72,8 @@ namespace ubv
 #endif // NETWORK_SIMULATE 
                     ) : base(server)
                 {
+
+                    m_players = new List<common.data.PlayerState>();
                     m_clientConnections = new Dictionary<IPEndPoint, ClientConnection>();
 
                     m_movementSettings = movementSettings;
@@ -89,12 +94,19 @@ namespace ubv
                 {
                     lock (m_lock)
                     {
-                        if (m_clientConnections.Count > 0
+                        if (m_clientConnections.Count > 3
 #if NETWORK_SIMULATE
                             || m_forceStartGame
 #endif // NETWORK_SIMULATE
                         )
                         {
+                            common.data.GameStartMessage message = new common.data.GameStartMessage();
+                            message.Players.Set(m_players);
+                            foreach (IPEndPoint ip in m_clientConnections.Keys)
+                            {
+                                m_server.Send(message.GetBytes(), ip);
+                            }
+
                             return new GameplayState(m_server, m_playerPrefab, m_clientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
                         }
                     }
@@ -115,11 +127,18 @@ namespace ubv
                 {
                     lock (m_lock)
                     {
-                        uint playerID = (uint)m_clientConnections.Count;
+                        int playerID = System.Guid.NewGuid().GetHashCode();
                         m_clientConnections[clientIP] = new ClientConnection(playerID);
 
                         common.data.IdentificationMessage idMessage = new common.data.IdentificationMessage();
                         idMessage.PlayerID.Set(playerID);
+
+                        common.data.PlayerState playerState = new common.data.PlayerState();
+                        playerState.GUID.Set(playerID);
+
+                        // set rotation / position according to existing players?
+
+                        m_players.Add(playerState);
 
                         m_server.Send(idMessage.GetBytes(), clientIP);
 
@@ -144,7 +163,7 @@ namespace ubv
             {
                 private Dictionary<IPEndPoint, ClientConnection> m_clientConnections;
                 private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputs;
-                private Dictionary<uint, Rigidbody2D> m_bodies;
+                private Dictionary<int, Rigidbody2D> m_bodies;
                 
                 private common.StandardMovementSettings m_movementSettings;
                 private readonly int m_snapshotDelay;
@@ -171,18 +190,21 @@ namespace ubv
                     m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(physicsScene).GetPhysicsScene2D();
                     m_playerPrefab = playerPrefab;
 
-                    m_bodies = new Dictionary<uint, Rigidbody2D>();
+                    m_bodies = new Dictionary<int, Rigidbody2D>();
                     m_clientInputs = new Dictionary<ClientConnection, common.data.InputMessage>();
 
                     foreach(IPEndPoint ip in m_clientConnections.Keys)
                     {
-                        uint id = m_clientConnections[ip].PlayerIndex;
+                        int id = m_clientConnections[ip].PlayerGUID;
                         Rigidbody2D body = GameObject.Instantiate(playerPrefab).GetComponent<Rigidbody2D>();
                         m_bodies.Add(id, body);
 
                         for (int j = 0; j < m_clientConnections.Count; j++)
                         {
-                            m_clientConnections[ip].State.AddPlayer(new common.data.PlayerState());
+                            common.data.PlayerState player = new common.data.PlayerState();
+                            player.GUID.Set(id);
+                            m_clientConnections[ip].State.AddPlayer(player);
+                            m_clientConnections[ip].State.SetPlayerID(id);
                         }
                     }
                 }
@@ -227,7 +249,7 @@ namespace ubv
                                     common.data.InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
 
                                     // must be called in main unity thread
-                                    Rigidbody2D body = m_bodies[client.PlayerIndex];
+                                    Rigidbody2D body = m_bodies[client.PlayerGUID];
 
                                     common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
 
