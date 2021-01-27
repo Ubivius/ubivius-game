@@ -160,8 +160,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 1947781255}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -268,6 +267,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_movementSettings: {fileID: 11400000, guid: a2974712f0687ee4f995c884f2948972, type: 2}
+--- !u!4 &686843220 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6058910025482233848, guid: f5db74dd4237e7b42b2ae1f11b3348a2,
+    type: 3}
+  m_PrefabInstance: {fileID: 686843214}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &925986282
 GameObject:
   m_ObjectHideFlags: 0
@@ -433,10 +438,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad6e58ddc91bc2e41a1691bec489cc39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_packetLossChance: 0.15
   m_udpClient: {fileID: 925986283}
   m_inputController: {fileID: 686843216}
   m_physicsScene: proto_move_client
+  ConnectButtonEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  PlayWithoutServerButtonEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &1668815430
 Transform:
   m_ObjectHideFlags: 0
@@ -682,9 +692,9 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8568193984628607416}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80bd15c789714c84dbcb072d413521bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_playerTransform: {fileID: 0}
+  m_playerTransform: {fileID: 686843220}
