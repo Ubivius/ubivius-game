@@ -31,7 +31,8 @@ namespace ubv
                 //tranfer to play
                 private readonly string m_physicsScene;
                 private readonly InputController m_inputController;
-                private int m_playerID;
+                private List<common.data.PlayerState> m_playerStates;
+                private int? m_playerID;
 
 #if NETWORK_SIMULATE
                 private bool m_playWithoutServer;
@@ -47,7 +48,8 @@ namespace ubv
                 {
                     m_physicsScene = physicsScene;
                     m_inputController = inputController;
-                    m_playerID = -1;
+                    m_playerID = null;
+                    m_playerStates = null;
 
                     m_playWithoutServer = false;
 
@@ -77,21 +79,36 @@ namespace ubv
                     IdentificationMessage auth = udp.Serializable.FromBytes<IdentificationMessage>(packet.Data);
                     if (auth != null)
                     {
-                        m_playerID = (int)auth.PlayerID.Value;
+                        m_playerID = auth.PlayerID;
                         Debug.Log("Received connection confirmation, player ID is " + m_playerID);
+                    }
+                    else
+                    {
+                        GameStartMessage start = udp.Serializable.FromBytes<GameStartMessage>(packet.Data);
+                        if (start != null)
+                        {
+                            m_playerStates = start.Players;
+                            Debug.Log("Client received confirmation that server is about to start game");
+                        }
                     }
                 }
 
                 public override ClientSyncState Update()
                 {
-                    if(m_playerID > -1
-#if NETWORK_SIMULATE
-                    || m_playWithoutServer
-#endif // NETWORK_SIMULATE
-                    )
+                    if(m_playerStates != null)
                     {
-                        return new ClientSyncPlay(m_client, m_playerID, m_physicsScene, m_inputController);
+                        return new ClientSyncPlay(m_client, m_playerID.Value, m_physicsScene, m_inputController, m_playerStates);
                     }
+#if NETWORK_SIMULATE
+                    if(m_playWithoutServer)
+                    {
+                        PlayerState soloPlayer = new PlayerState();
+                        soloPlayer.GUID.Set(0);
+                        List<PlayerState> players = new List<PlayerState>();
+                        players.Add(soloPlayer);
+                        return new ClientSyncPlay(m_client, 0, m_physicsScene, m_inputController, players, m_playWithoutServer);
+                    }
+#endif // NETWORK_SIMULATE
 
                     return this;
                 }
@@ -110,8 +127,8 @@ namespace ubv
                 private const ushort CLIENT_STATE_BUFFER_SIZE = 64;
 
                 private ClientState[] m_clientStateBuffer;
-                private common.data.InputFrame[] m_inputBuffer;
-                private common.data.InputFrame m_lastInput;
+                private InputFrame[] m_inputBuffer;
+                private InputFrame m_lastInput;
                 private ClientState m_lastServerState;
 
                 private PhysicsScene2D m_clientPhysics;
@@ -120,36 +137,46 @@ namespace ubv
 
 #if NETWORK_SIMULATE
                 private readonly float m_packetLossChance = 0.15f;
+                private readonly bool m_noServer;
 #endif // NETWORK_SIMULATE
 
-                public ClientSyncPlay(udp.client.UDPClient client, int playerID, string physicsScene, InputController inputController) : base(client)
+                public ClientSyncPlay(udp.client.UDPClient client, 
+                    int playerID, 
+                    string physicsScene, 
+                    InputController inputController, 
+                    List<PlayerState> playerStates
+#if NETWORK_SIMULATE
+                    , bool startWithoutServer = false
+#endif // NETWORK_SIMULATE
+                    ) : base(client)
                 {
+#if NETWORK_SIMULATE
+                    m_noServer = startWithoutServer;
+#endif // NETWORK_SIMULATE
                     m_playerID = playerID;
                     m_localTick = 0;
                     m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
-                    m_inputBuffer = new common.data.InputFrame[CLIENT_STATE_BUFFER_SIZE];
+                    m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
 
                     m_clientPhysics = SceneManager.GetSceneByName(physicsScene).GetPhysicsScene2D();
                     m_lastServerState = null;
 
                     m_inputController = inputController;
 
-                    if (m_playerID > -1)
-                    {
-                        m_client.RegisterReceiver(this);
-                    }
-
+                    m_client.RegisterReceiver(this);
+                    
                     for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
                     {
-                        common.data.PlayerState player = new common.data.PlayerState();
                         m_clientStateBuffer[i] = new ClientState();
-
-                        if (m_playerID > -1)
+                        m_clientStateBuffer[i].SetPlayerID(m_playerID);
+                        
+                        foreach (PlayerState playerState in playerStates)
                         {
-                            m_clientStateBuffer[i].SetPlayerID((uint)m_playerID);
-                        }
+                            PlayerState player = new PlayerState(playerState);
 
-                        m_clientStateBuffer[i].AddPlayer(player);
+                            m_clientStateBuffer[i].AddPlayer(player);
+                        }
+                        
                         m_inputBuffer[i] = new common.data.InputFrame();
                     }
                 }
@@ -185,11 +212,7 @@ namespace ubv
                         ClientState state = udp.Serializable.FromBytes<ClientState>(packet.Data);
                         if (state != null)
                         {
-                            state = udp.Serializable.FromBytes<ClientState>(packet.Data);
-                        }
-
-                        if (state != null)
-                        {
+                            state.SetPlayerID(m_playerID);
                             m_lastServerState = state;
 #if DEBUG_LOG
                             Debug.Log("Received server state tick " + state.Tick);
@@ -215,35 +238,38 @@ namespace ubv
 
                     m_lastInput = null;
 
-                    if (m_playerID > -1)
-                    {
-                        // TODO: Cap max input queue size
-                        // (under the hood, send multiple packets?)
-                        List<common.data.InputFrame> frames = new List<common.data.InputFrame>();
-                        for (uint tick = m_remoteTick; tick <= m_localTick; tick++)
-                        {
-                            frames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
-                        }
-
-                        common.data.InputMessage inputMessage = new common.data.InputMessage();
-
-                        inputMessage.PlayerID.Set((uint)m_playerID);
-                        inputMessage.StartTick.Set(m_remoteTick);
-                        inputMessage.InputFrames.Set(frames);
 
 #if NETWORK_SIMULATE
-                        if (Random.Range(0f, 1f) > m_packetLossChance)
-                        {
-                            m_client.Send(inputMessage.GetBytes());
-                        }
-                        else
-                        {
-                            Debug.Log("SIMULATING PACKET LOSS");
-                        }
-#else
-                        m_udpClient.Send(inputMessage.ToBytes());
-#endif //NETWORK_SIMULATE       
+                    if (m_noServer)
+                        return;
+#endif // NETWORK_SIMULATE
+                    // TODO: Cap max input queue size
+                    // (under the hood, send multiple packets?)
+                    List<common.data.InputFrame> frames = new List<common.data.InputFrame>();
+                    for (uint tick = m_remoteTick; tick <= m_localTick; tick++)
+                    {
+                        frames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
                     }
+
+                    common.data.InputMessage inputMessage = new common.data.InputMessage();
+
+                    inputMessage.PlayerID.Set(m_playerID);
+                    inputMessage.StartTick.Set(m_remoteTick);
+                    inputMessage.InputFrames.Set(frames);
+
+#if NETWORK_SIMULATE
+                    if (Random.Range(0f, 1f) > m_packetLossChance)
+                    {
+                        m_client.Send(inputMessage.GetBytes());
+                    }
+                    else
+                    {
+                        Debug.Log("SIMULATING PACKET LOSS");
+                    }
+#else
+                    m_udpClient.Send(inputMessage.ToBytes());
+#endif //NETWORK_SIMULATE       
+                    
                 }
 
                 private void UpdateClientState(uint bufferIndex)
@@ -257,11 +283,10 @@ namespace ubv
 
                 private void ClientCorrection()
                 {
-                    if (m_playerID < 0)
-                    {
+#if NETWORK_SIMULATE
+                    if (m_noServer)
                         return;
-                    }
-
+#endif // NETWORK_SIMULATE
                     // receive a state from server
                     // check what tick it corresponds to
                     // rewind client state to the tick

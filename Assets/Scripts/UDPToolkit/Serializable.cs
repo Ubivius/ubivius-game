@@ -4,7 +4,7 @@ namespace ubv
 {
     namespace udp
     {
-        internal interface IConvertible
+        public interface IConvertible
         {
             byte[] GetBytes();
             int GetByteCount();
@@ -301,13 +301,13 @@ namespace ubv
                 {
                     m_bytesPerElement = new T().GetByteCount();
                 }
-                
+
                 protected override System.Collections.Generic.List<T> BuildFromBytes(byte[] bytes)
                 {
                     int frameCount = System.BitConverter.ToInt32(bytes, 0);
 
                     System.Collections.Generic.List<T> list = new System.Collections.Generic.List<T>();
-                    
+
                     for (int i = 0; i < frameCount; i++)
                     {
                         T obj = Serializable.FromBytes<T>(bytes.SubArray(sizeof(int) + (i * m_bytesPerElement), m_bytesPerElement));
@@ -395,7 +395,78 @@ namespace ubv
                         System.BitConverter.ToSingle(bytes, 12));
                 }
             }
-        }
 
+            public class HashMap<T> : Serializable.Variable<System.Collections.Generic.Dictionary<int, T>> where T : Serializable, new()
+            {
+                private int m_bytesPerPair;
+
+                public override Serializable.Variable<System.Collections.Generic.Dictionary<int, T>> Set(System.Collections.Generic.Dictionary<int, T> value)
+                {
+                    m_bytesPerPair = new T().GetByteCount() + sizeof(int);
+                    base.Set(value);
+                    return this;
+                }
+
+                public HashMap(Serializable owner, System.Collections.Generic.Dictionary<int, T> value) : base(owner, value)
+                {
+                    m_bytesPerPair = new T().GetByteCount() + sizeof(int);
+                }
+
+                protected override System.Collections.Generic.Dictionary<int, T> BuildFromBytes(byte[] bytes)
+                {
+                    int itemCount = System.BitConverter.ToInt32(bytes, 0);
+
+                    System.Collections.Generic.Dictionary<int, T> dict = new System.Collections.Generic.Dictionary<int, T>();
+                    
+                    for (int i = 0; i < itemCount; i++)
+                    {
+                        int index = sizeof(int) + (i * m_bytesPerPair);
+                        int key = System.BitConverter.ToInt32(bytes, index);
+                        int subIndex = index + sizeof(int);
+                        T obj = Serializable.FromBytes<T>(bytes.SubArray(subIndex, m_bytesPerPair - sizeof(int)));
+                        dict[key] = obj;
+                    }
+                    return dict;
+                }
+
+                protected override int ByteCount()
+                {
+                    int pairByteCount = pairByteCount = new T().GetByteCount() + sizeof(int);
+                    return (m_value.Count * pairByteCount) + sizeof(int);
+                }
+
+                protected override byte[] Bytes()
+                {
+                    byte[] bytes = new byte[ByteCount()];
+
+                    byte[] itemCountBytes = System.BitConverter.GetBytes(m_value.Count);
+
+                    for (int i = 0; i < sizeof(int); i++)
+                    {
+                        bytes[i] = itemCountBytes[i];
+                    }
+
+                    int index = 0;
+                    foreach (int key in m_value.Keys)
+                    {
+                        T obj = m_value[key];
+                        byte[] keyBytes = System.BitConverter.GetBytes(key);
+                        byte[] objBytes = obj.GetBytes();
+
+                        for (int b = 0; b < keyBytes.Length; b++)
+                        {
+                            bytes[sizeof(int) + (index * (objBytes.Length + keyBytes.Length)) + b] = keyBytes[b];
+                        }
+
+                        for (int b = 0; b < objBytes.Length; b++)
+                        {
+                            bytes[sizeof(int) + keyBytes.Length + (index * (objBytes.Length + keyBytes.Length)) + b] = objBytes[b];
+                        }
+                        ++index;
+                    }
+                    return bytes;
+                }
+            }
+        }
     }
 }

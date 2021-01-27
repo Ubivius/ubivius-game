@@ -36,7 +36,7 @@ namespace ubv
 
             public class InputMessage : udp.Serializable
             {
-                public udp.SerializableTypes.Uint32 PlayerID;
+                public udp.SerializableTypes.Int32 PlayerID;
                 public udp.SerializableTypes.Uint32 StartTick;
                 public udp.SerializableTypes.List<InputFrame> InputFrames;
 
@@ -44,7 +44,7 @@ namespace ubv
                 {
                     StartTick = new udp.SerializableTypes.Uint32(this, 0);
                     InputFrames = new udp.SerializableTypes.List<InputFrame>(this, new List<InputFrame>());
-                    PlayerID = new udp.SerializableTypes.Uint32(this, 0);
+                    PlayerID = new udp.SerializableTypes.Int32(this, 0);
                 }
 
                 protected override byte SerializationID()

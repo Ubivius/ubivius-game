@@ -12,12 +12,12 @@ namespace ubv
         /// </summary>
         public class ClientState : udp.Serializable
         {
-            private udp.SerializableTypes.List<common.data.PlayerState> m_playerStates;
+            private udp.SerializableTypes.HashMap<common.data.PlayerState> m_playerStates;
             public udp.SerializableTypes.Uint32 Tick;
 
-            private uint m_playerID;
+            private int m_playerID;
 
-            public void SetPlayerID(uint id)
+            public void SetPlayerID(int id)
             {
                 m_playerID = id;
             }
@@ -32,7 +32,7 @@ namespace ubv
             
             protected override void InitSerializableMembers()
             {
-                m_playerStates = new udp.SerializableTypes.List<common.data.PlayerState>(this, new List<common.data.PlayerState>());
+                m_playerStates = new udp.SerializableTypes.HashMap<common.data.PlayerState>(this, new Dictionary<int, common.data.PlayerState>());
                 Tick = new udp.SerializableTypes.Uint32(this, 0);
             }
 
@@ -43,27 +43,26 @@ namespace ubv
             
             public common.data.PlayerState GetPlayer()
             {
-                return m_playerStates.Value[(int)m_playerID];
+                return m_playerStates.Value[m_playerID];
             }
 
             public void AddPlayer(common.data.PlayerState playerState)
             {
-                // TODO: ensure a unique player ID ?
-                m_playerStates.Value.Add(playerState);
+                m_playerStates.Value[playerState.GUID] = playerState;
             }
 
-            public void SetPlayers(List<common.data.PlayerState> playerStates)
+            public void SetPlayers(Dictionary<int, common.data.PlayerState> playerStates)
             {
                 m_playerStates.Value.Clear();
-                foreach (common.data.PlayerState player in playerStates)
+                foreach (common.data.PlayerState player in playerStates.Values)
                 {
-                    m_playerStates.Value.Add(new common.data.PlayerState(player));
+                    m_playerStates.Value[player.GUID] = new common.data.PlayerState(player);
                 }
             }
 
-            public IList<common.data.PlayerState> Players()
+            public Dictionary<int, common.data.PlayerState>.ValueCollection Players()
             {
-                return m_playerStates.Value.AsReadOnly();
+                return m_playerStates.Value.Values;
             }
 
 #region UTILITY FUNCTIONS
