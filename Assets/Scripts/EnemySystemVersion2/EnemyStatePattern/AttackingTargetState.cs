@@ -17,7 +17,7 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
         {
             if (Time.time > nextShootTime)
             {
-                pathfindingMovement.StopMoving();
+                //pathfindingMovement.StopMoving();
 
                 float fireRate = .15f;
                 nextShootTime = Time.time + fireRate;

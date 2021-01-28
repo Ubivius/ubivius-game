@@ -15,7 +15,7 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
         // Update is called once per frame
         public EnemyState Update()
         {
-            pathfindingMovement.MoveToTimer(player.position/*Player.Instance.GetPosition()*/);
+            //pathfindingMovement.MoveToTimer(player.position/*Player.Instance.GetPosition()*/);
 
             //aimShootAnims.SetAimTarget(Player.Instance.GetPosition());
 

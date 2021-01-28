@@ -13,9 +13,6 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
         {
             startingPosition = transform.position;
             //SHould change to allow enemy to not necessarly start in this state 
-            pathfindingMovement = GetComponent<EnemyPathFindingMovement>();
-            //aimShootAnims = GetComponent<IAimShootAnims>();
-
             m_enemyState = new RoamingState();
         }
 

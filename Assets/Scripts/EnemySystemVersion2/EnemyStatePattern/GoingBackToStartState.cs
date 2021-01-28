@@ -15,7 +15,7 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
         // Update is called once per frame
         public EnemyState Update()
         {
-            pathfindingMovement.MoveToTimer(startingPosition);
+            //pathfindingMovement.MoveToTimer(startingPosition);
 
             reachedPositionDistance = 10f;
             if (Vector3.Distance(transform.position, startingPosition) < reachedPositionDistance)
