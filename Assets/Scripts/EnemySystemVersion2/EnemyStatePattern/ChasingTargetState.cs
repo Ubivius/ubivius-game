@@ -32,7 +32,7 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
                 return new GoingBackToStartState();
             }
 
-            return new ChasingTargetState();
+            return this;
         }
     }
 }

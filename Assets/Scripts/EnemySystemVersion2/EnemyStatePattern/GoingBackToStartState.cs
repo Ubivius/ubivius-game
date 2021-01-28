@@ -24,7 +24,7 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
                 return new RoamingState();
             }
 
-            return new GoingBackToStartState();
+            return this;
         }
     }
 }

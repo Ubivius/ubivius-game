@@ -29,7 +29,7 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
             if (Vector3.Distance(transform.position, player.position /*Player.Instance.GetPosition()*/) < attackRange)
             {
                 // Target within attack range
-                return new AttackingTargetState();
+                return this;
             }
             
             return new ChasingTargetState();

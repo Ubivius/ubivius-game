@@ -41,7 +41,7 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
                 return new ChasingTargetState();
             }
 
-            return new RoamingState();
+            return this; //return *this
         }
     }
 
