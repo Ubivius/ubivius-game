@@ -63,7 +63,7 @@ namespace ubv
                     m_serverUptime += Time.deltaTime;
                     if (Time.frameCount % 10 == 0)
                     {
-                        RemoveTimedOutClients();
+                        // RemoveTimedOutClients();
                     }
                 }
 
