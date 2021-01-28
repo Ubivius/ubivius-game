@@ -90,15 +90,10 @@ namespace ubv
 
                 public void Send(byte[] data, IPEndPoint clientIP)
                 {
-                    Send(data, m_endPoints[clientIP]);
-                }
-
-                private void Send(byte[] data, UdpClient clientConnection)
-                {
                     try
                     {
-                        byte[] bytes = m_clientConnections[clientConnection].ConnectionData.Send(data).ToBytes();
-                        clientConnection.BeginSend(bytes, bytes.Length, EndSendCallback, clientConnection);
+                        byte[] bytes = m_clientConnections[m_endPoints[clientIP]].ConnectionData.Send(data).ToBytes();
+                        m_server.BeginSend(bytes, bytes.Length, clientIP, EndReceiveCallback, m_clientConnections);
                     }
                     catch (SocketException e)
                     {
