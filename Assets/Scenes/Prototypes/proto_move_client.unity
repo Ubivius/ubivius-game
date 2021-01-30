@@ -177,7 +177,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d48f061af1d36404ca1a03eb4181349d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_bondaries: {x: 100, y: 100}
+  m_boundariesMap: {x: 500, y: 500}
   m_numberRandomRoom: 5
   m_roomPoolRandom:
   - {fileID: 1808768653936752115, guid: 3d468dc9c994ab64c8cbc88f0779d4a1, type: 3}
@@ -764,6 +764,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AllowDynamicResolution
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
+        type: 3}
+      propertyPath: orthographic size
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 8568193985000567243, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
         type: 3}
