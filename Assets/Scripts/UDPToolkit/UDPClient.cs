@@ -184,9 +184,14 @@ namespace ubv
                     c.BeginReceive(EndReceiveCallback, c);
                 }
 
-                public void RegisterReceiver(IPacketReceiver receiver)
+                public void Subscribe(IPacketReceiver receiver)
                 {
                     m_receivers.Add(receiver);
+                }
+
+                public void Unsubscribe(IPacketReceiver receiver)
+                {
+                    m_receivers.Remove(receiver);
                 }
 
                 public void Distribute(UDPToolkit.Packet packet)

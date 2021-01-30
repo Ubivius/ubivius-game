@@ -53,7 +53,7 @@ namespace ubv
 
                     m_playWithoutServer = false;
 
-                    m_client.RegisterReceiver(this);
+                    m_client.Subscribe(this);
 
 #if NETWORK_SIMULATE
                     parent.ConnectButtonEvent.AddListener(SendConnectionRequestToServer);
@@ -102,6 +102,7 @@ namespace ubv
 #if NETWORK_SIMULATE
                     if(m_playWithoutServer)
                     {
+                        m_client.Unsubscribe(this);
                         PlayerState soloPlayer = new PlayerState();
                         soloPlayer.GUID.Set(0);
                         List<PlayerState> players = new List<PlayerState>();
@@ -163,7 +164,7 @@ namespace ubv
 
                     m_inputController = inputController;
 
-                    m_client.RegisterReceiver(this);
+                    m_client.Subscribe(this);
                     
                     for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
                     {
