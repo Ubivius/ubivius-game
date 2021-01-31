@@ -177,7 +177,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d48f061af1d36404ca1a03eb4181349d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_boundariesMap: {x: 500, y: 500}
+  m_boundariesMap: {x: 400, y: 400}
   m_numberRandomRoom: 5
   m_roomPoolRandom:
   - {fileID: 1808768653936752115, guid: 3d468dc9c994ab64c8cbc88f0779d4a1, type: 3}

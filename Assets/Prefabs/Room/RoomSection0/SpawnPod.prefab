@@ -1631,6 +1631,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7a934db48f64e34c96dee8c04ea37a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_floor: {fileID: 4131869432792734248}
+  m_wall: {fileID: 4131869434609696681}
+  m_door: {fileID: 0}
+  m_interactable: {fileID: 0}
   m_height: 10
   m_width: 14
 --- !u!1 &4131869434609696677

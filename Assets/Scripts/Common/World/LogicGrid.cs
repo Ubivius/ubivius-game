@@ -10,12 +10,13 @@ namespace ubv.common.world
 {
     public class LogicGrid
     {
-        private Vector2Int m_boundaries;
         private cellType.LogicCell[,] m_masterLogicGrid;
 
-        public LogicGrid()
+        public LogicGrid(int x, int y)
         {
-            m_masterLogicGrid = new cellType.LogicCell[m_boundaries.x,m_boundaries.y];
+            MasterLogicGrid = new cellType.LogicCell[x, y];
         }
+
+        public LogicCell[,] MasterLogicGrid { get => m_masterLogicGrid; set => m_masterLogicGrid = value; }
     }
 }
