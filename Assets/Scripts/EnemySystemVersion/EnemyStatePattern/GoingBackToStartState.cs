@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace Assets.EnemyAISystem.EnemyStatePattern
+namespace ubv.server.logic.ai
 {
     public class GoingBackToStartState : EnemyState
     {

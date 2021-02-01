@@ -8,7 +8,7 @@ namespace Assets.EnemySystemVersion2
     using UnityEngine;
     
 
-    public class EnemyAI2 : MonoBehaviour
+    public class EnemyAI : MonoBehaviour
     {
         //Only for the moment, cause we'll have a class for the player
         public Transform player;

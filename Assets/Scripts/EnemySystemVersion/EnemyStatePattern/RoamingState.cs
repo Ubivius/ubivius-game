@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace Assets.EnemyAISystem.EnemyStatePattern
+namespace ubv.server.logic.ai
 {
     public class RoamingState : EnemyState
     {
@@ -18,7 +18,8 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
             //pathfindingMovement.MoveToTimer(roamPosition);
 
             float reachedPositionDistance = 10f;
-            if (Vector3.Distance(transform.position, roamPosition) < reachedPositionDistance)
+
+            if (Vector3.SqrMagnitude(transform.position - roamPosition) < Vector3.SqrMagnitude(reachedPositionDistance))
             {
                 // Reached Roam Position
                 roamPosition = GetRoamingPosition();
@@ -35,13 +36,13 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
         private EnemyState FindTarget()
         {
             float targetRange = 50f;
-            if (Vector3.Distance(transform.position, player.position /*Player.Instance.GetPosition()*/) < targetRange)
+            if (Vector3.SqrMagnitude(transform.position, player.position) < Vector3.SqrMagnitude(targetRange))
             {
                 // Player within target range
                 return new ChasingTargetState();
             }
 
-            return this; //return *this
+            return this;
         }
     }
 

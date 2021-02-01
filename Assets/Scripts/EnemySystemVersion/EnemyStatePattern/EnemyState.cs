@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace Assets.EnemyAISystem.EnemyStatePattern
+namespace ubv.server.logic.ai
 {
-    public class EnemyState : EnemyStateMachine
+    abstract public class EnemyState
     {
         // Use this for initialization
         public void Start()
@@ -14,7 +14,7 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
         // Update is called once per frame
         public EnemyState Update()
         {
-            return new EnemyState();
+            return this;
         }
     }
 }
