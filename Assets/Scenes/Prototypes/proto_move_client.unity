@@ -366,7 +366,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56f55256fc4a6704eafd0dd78732d19e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_serverAddress: 192.168.0.153
+  m_serverAddress: 127.0.0.1
   m_port: 9050
   m_serverTimeOut: 10
   m_lostPacketTimeOut: 1
