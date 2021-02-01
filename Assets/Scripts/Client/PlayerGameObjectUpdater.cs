@@ -22,6 +22,7 @@ namespace ubv.client.logic
             foreach(int id in playerStates.Keys)
             {
                 m_bodies[id] = GameObject.Instantiate(playerSettings.PlayerPrefab).GetComponent<Rigidbody2D>();
+                m_bodies[id].name = "Client player " + id.ToString();
             }
 
             m_localPlayerBody = m_bodies[localID];

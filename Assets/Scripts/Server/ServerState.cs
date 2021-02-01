@@ -199,6 +199,8 @@ namespace ubv
                     {
                         int id = m_clientConnections[ip].PlayerGUID;
                         Rigidbody2D body = GameObject.Instantiate(playerPrefab).GetComponent<Rigidbody2D>();
+                        body.position = m_bodies.Count * Vector2.left;
+                        body.name = "Server player " + id.ToString();
                         m_bodies.Add(id, body);
 
                         for (int j = 0; j < m_clientConnections.Count; j++)
