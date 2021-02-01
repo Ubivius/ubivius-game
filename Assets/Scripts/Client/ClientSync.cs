@@ -53,6 +53,18 @@ namespace ubv
             {
                 m_currentState = m_currentState.FixedUpdate();
             }
+
+#if NETWORK_SIMULATE
+            public void InvokeConnect()
+            {
+                ConnectButtonEvent.Invoke();
+            }
+
+            public void InvokeNoServerConnect()
+            {
+                PlayWithoutServerButtonEvent.Invoke();
+            }
+#endif // NETWORK_SIMULATE
         }
     }
 }

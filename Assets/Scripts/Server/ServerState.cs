@@ -87,7 +87,7 @@ namespace ubv
                     parent.ForceStartGameButtonEvent.AddListener(() => { m_forceStartGame = true; });
 #endif // NETWORK_SIMULATE 
 
-                    m_server.AddReceiver(this);
+                    m_server.Subscribe(this);
                 }
 
                 public override ServerState Update()
@@ -100,6 +100,8 @@ namespace ubv
 #endif // NETWORK_SIMULATE
                         )
                         {
+                            m_server.Unsubscribe(this);
+
                             common.data.GameStartMessage message = new common.data.GameStartMessage();
                             message.Players.Set(m_players);
                             foreach (IPEndPoint ip in m_clientConnections.Keys)
@@ -181,7 +183,7 @@ namespace ubv
                     int snapshotDelay, 
                     string physicsScene) : base(server)
                 {
-                    m_server.AddReceiver(this);
+                    m_server.Subscribe(this);
                     m_tickAccumulator = 0;
                     m_clientConnections = clientConnections;
 

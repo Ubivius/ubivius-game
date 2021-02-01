@@ -12,6 +12,7 @@ namespace ubv
             {
                 DrawDefaultInspector();
 
+#if NETWORK_SIMULATE
                 client.ClientSync targetClientSync = (client.ClientSync)target;
                 if( GUILayout.Button("Connect to server : Auto ID"))
                 {
@@ -22,6 +23,7 @@ namespace ubv
                 {
                     targetClientSync.PlayWithoutServerButtonEvent.Invoke();
                 }
+#endif // NETWORK_SIMULATE
             }
         }
     }

@@ -75,14 +75,14 @@ namespace ubv
                         m_timeOutTimer += Time.deltaTime;
                         m_connectionQualityTimer += Time.deltaTime;
 
-                        if (m_timeOutTimer > m_serverTimeOut)
+                        /*if (m_timeOutTimer > m_serverTimeOut)
                         {
                             m_connectionData = new UDPToolkit.ConnectionData();
                             m_sequencesSendTime.Clear();
                             Debug.Log("Server timed out. Disconnecting.");
                             m_connected = false;
                             m_timeOutTimer = 0;
-                        }
+                        }*/
                     }
 
                 }
@@ -184,9 +184,14 @@ namespace ubv
                     c.BeginReceive(EndReceiveCallback, c);
                 }
 
-                public void RegisterReceiver(IPacketReceiver receiver)
+                public void Subscribe(IPacketReceiver receiver)
                 {
                     m_receivers.Add(receiver);
+                }
+
+                public void Unsubscribe(IPacketReceiver receiver)
+                {
+                    m_receivers.Remove(receiver);
                 }
 
                 public void Distribute(UDPToolkit.Packet packet)

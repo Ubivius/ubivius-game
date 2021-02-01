@@ -6,11 +6,11 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Prototypes/proto_move_client.unity
-    guid: ce42f548dd5b2f147970832d5aeff2a5
-  - enabled: 1
     path: Assets/Scenes/Prototypes/proto_move_server.unity
     guid: 706d27000ceaad84f9c2a8dc6479f06b
+  - enabled: 1
+    path: Assets/Scenes/Prototypes/proto_move_client.unity
+    guid: ce42f548dd5b2f147970832d5aeff2a5
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: d88c0c3ed6c35a74290494c7afc3d357,
       type: 2}

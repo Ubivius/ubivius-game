@@ -63,7 +63,7 @@ namespace ubv
                     m_serverUptime += Time.deltaTime;
                     if (Time.frameCount % 10 == 0)
                     {
-                        RemoveTimedOutClients();
+                        // RemoveTimedOutClients();
                     }
                 }
 
@@ -90,15 +90,10 @@ namespace ubv
 
                 public void Send(byte[] data, IPEndPoint clientIP)
                 {
-                    Send(data, m_endPoints[clientIP]);
-                }
-
-                private void Send(byte[] data, UdpClient clientConnection)
-                {
                     try
                     {
-                        byte[] bytes = m_clientConnections[clientConnection].ConnectionData.Send(data).ToBytes();
-                        clientConnection.BeginSend(bytes, bytes.Length, EndSendCallback, clientConnection);
+                        byte[] bytes = m_clientConnections[m_endPoints[clientIP]].ConnectionData.Send(data).ToBytes();
+                        m_server.BeginSend(bytes, bytes.Length, clientIP, EndSendCallback, m_server);
                     }
                     catch (SocketException e)
                     {
@@ -110,7 +105,7 @@ namespace ubv
 
                 private void EndSendCallback(System.IAsyncResult ar)
                 {
-                    UdpClient c = (UdpClient)ar.AsyncState;
+                    UdpClient server = (UdpClient)ar.AsyncState;
 #if DEBUG_LOG
             Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
 #endif // DEBUG_LOG
@@ -122,9 +117,9 @@ namespace ubv
                     IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
                     UdpClient server = (UdpClient)ar.AsyncState;
                     byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
-
-                    // If client is not registered, create a new Socket 
                     
+                    // If client is not registered, create a new Socket 
+
                     if (!m_endPoints.ContainsKey(clientEndPoint))
                     {
                         m_endPoints.Add(clientEndPoint, new UdpClient());
@@ -159,9 +154,14 @@ namespace ubv
                     }
                 }
 
-                public void AddReceiver(IServerReceiver receiver)
+                public void Subscribe(IServerReceiver receiver)
                 {
                     m_receivers.Add(receiver);
+                }
+
+                public void Unsubscribe(IServerReceiver receiver)
+                {
+                    m_receivers.Remove(receiver);
                 }
 
                 private void OnClientConnect(IPEndPoint clientIP)
