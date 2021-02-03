@@ -130,6 +130,8 @@ namespace ubv
                     lock (m_lock)
                     {
                         int playerID = System.Guid.NewGuid().GetHashCode();
+
+                        // TODO get rid of client connection data and only use serializable list of int after serialize rework
                         m_clientConnections[clientIP] = new ClientConnection(playerID);
 
                         common.data.IdentificationMessage idMessage = new common.data.IdentificationMessage();
@@ -195,20 +197,37 @@ namespace ubv
                     m_bodies = new Dictionary<int, Rigidbody2D>();
                     m_clientInputs = new Dictionary<ClientConnection, common.data.InputMessage>();
 
+                    // instantiate each player
                     foreach(IPEndPoint ip in m_clientConnections.Keys)
                     {
                         int id = m_clientConnections[ip].PlayerGUID;
                         Rigidbody2D body = GameObject.Instantiate(playerPrefab).GetComponent<Rigidbody2D>();
-                        body.position = m_bodies.Count * Vector2.left;
+                        body.position = m_bodies.Count * Vector2.left * 3;
                         body.name = "Server player " + id.ToString();
                         m_bodies.Add(id, body);
+                    }
 
-                        for (int j = 0; j < m_clientConnections.Count; j++)
+                    // add each player to client states
+                    foreach (IPEndPoint ip in m_clientConnections.Keys)
+                    {
+                        common.data.PlayerState player = new common.data.PlayerState();
+                        player.GUID.Set(m_clientConnections[ip].PlayerGUID);
+                        player.Position.Set(m_bodies[m_clientConnections[ip].PlayerGUID].position);
+
+                        m_clientConnections[ip].State.AddPlayer(player);
+                        m_clientConnections[ip].State.SetPlayerID(player.GUID);
+                    }
+
+                    // add each player to each other client state
+                    foreach (ClientConnection baseConn in m_clientConnections.Values)
+                    {
+                        foreach (ClientConnection conn in m_clientConnections.Values)
                         {
-                            common.data.PlayerState player = new common.data.PlayerState();
-                            player.GUID.Set(id);
-                            m_clientConnections[ip].State.AddPlayer(player);
-                            m_clientConnections[ip].State.SetPlayerID(id);
+                            common.data.PlayerState currentPlayer = conn.State.GetPlayer();
+                            if (baseConn.PlayerGUID != conn.PlayerGUID)
+                            {
+                                baseConn.State.AddPlayer(currentPlayer);
+                            }
                         }
                     }
                 }
