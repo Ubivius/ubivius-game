@@ -6,13 +6,13 @@ namespace ubv.server.logic.ai
     abstract public class EnemyState
     {
         // Use this for initialization
-        public void Start()
+        public virtual EnemyState Init()
         {
-
+            return this;
         }
 
         // Update is called once per frame
-        public EnemyState Update()
+        public virtual EnemyState Update()
         {
             return this;
         }

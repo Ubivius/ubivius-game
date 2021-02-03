@@ -19,7 +19,7 @@ namespace ubv.server.logic.ai
         // Update is called once per frame
         void Update()
         {
-            m_currentEnemyState = m_currentEnemyState.Update();
+            //m_currentEnemyState = m_currentEnemyState.Update();
         }
     }
 }
