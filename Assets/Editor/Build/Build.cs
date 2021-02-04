@@ -10,7 +10,7 @@ public class Build
             "Assets/Scenes/ServerScene.unity",
             "Assets/Scenes/Prototypes/proto_move_server.unity"
         };
-        build.locationPathName = "serverBuild";
+        build.locationPathName = "ubivius_server";
         build.target = BuildTarget.StandaloneLinux64;
         build.options = BuildOptions.None;
         BuildPipeline.BuildPlayer(build);
@@ -23,7 +23,7 @@ public class Build
             "Assets/Scenes/ClientScene.unity",
             "Assets/Scenes/Prototypes/proto_move_client.unity"
         };
-        build.locationPathName = "clientBuild";
+        build.locationPathName = "ubivius_client";
         build.target = BuildTarget.StandaloneWindows64;
         build.options = BuildOptions.None;
         BuildPipeline.BuildPlayer(build);
