@@ -19,8 +19,8 @@ namespace ubv
             client.logic.ClientSyncState m_currentState;
             
             [SerializeField] private udp.client.UDPClient m_udpClient;
-
-            [SerializeField] private InputController m_inputController;
+            
+            [SerializeField] private PlayerSettings m_playerSettings;
             [SerializeField] private string m_physicsScene;
 
 #if NETWORK_SIMULATE
@@ -37,7 +37,7 @@ namespace ubv
             {
                 m_currentState = new logic.ClientSyncInit(m_udpClient, 
                     m_physicsScene, 
-                    m_inputController
+                    m_playerSettings
 #if NETWORK_SIMULATE
                     , this
 #endif // NETWORK_SIMULATE

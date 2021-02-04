@@ -30,8 +30,8 @@ namespace ubv
             {
                 //tranfer to play
                 private readonly string m_physicsScene;
-                private readonly InputController m_inputController;
-                private List<common.data.PlayerState> m_playerStates;
+                private readonly PlayerSettings m_playerSettings;
+                private List<PlayerState> m_playerStates;
                 private int? m_playerID;
 
 #if NETWORK_SIMULATE
@@ -40,16 +40,17 @@ namespace ubv
 
                 public ClientSyncInit(udp.client.UDPClient client, 
                     string physicsScene, 
-                    InputController inputController
+                    PlayerSettings playerSettings
 #if NETWORK_SIMULATE
                     , ClientSync parent)
 #endif // NETWORK_SIMULATE
                     : base(client)
                 {
                     m_physicsScene = physicsScene;
-                    m_inputController = inputController;
                     m_playerID = null;
                     m_playerStates = null;
+
+                    m_playerSettings = playerSettings;
 
                     m_playWithoutServer = false;
 
@@ -97,7 +98,7 @@ namespace ubv
                 {
                     if(m_playerStates != null)
                     {
-                        return new ClientSyncPlay(m_client, m_playerID.Value, m_physicsScene, m_inputController, m_playerStates);
+                        return new ClientSyncPlay(m_client, m_playerID.Value, m_physicsScene, m_playerSettings, m_playerStates);
                     }
 #if NETWORK_SIMULATE
                     if(m_playWithoutServer)
@@ -107,7 +108,7 @@ namespace ubv
                         soloPlayer.GUID.Set(0);
                         List<PlayerState> players = new List<PlayerState>();
                         players.Add(soloPlayer);
-                        return new ClientSyncPlay(m_client, 0, m_physicsScene, m_inputController, players, m_playWithoutServer);
+                        return new ClientSyncPlay(m_client, 0, m_physicsScene, m_playerSettings, players, m_playWithoutServer);
                     }
 #endif // NETWORK_SIMULATE
 
@@ -134,8 +135,8 @@ namespace ubv
 
                 private PhysicsScene2D m_clientPhysics;
 
-                private readonly InputController m_inputController;
-
+                private List<IClientStateUpdater> m_updaters;
+                
 #if NETWORK_SIMULATE
                 private readonly float m_packetLossChance = 0.15f;
                 private readonly bool m_noServer;
@@ -144,7 +145,7 @@ namespace ubv
                 public ClientSyncPlay(udp.client.UDPClient client, 
                     int playerID, 
                     string physicsScene, 
-                    InputController inputController, 
+                    PlayerSettings playerSettings,
                     List<PlayerState> playerStates
 #if NETWORK_SIMULATE
                     , bool startWithoutServer = false
@@ -162,8 +163,16 @@ namespace ubv
                     m_clientPhysics = SceneManager.GetSceneByName(physicsScene).GetPhysicsScene2D();
                     m_lastServerState = null;
 
-                    m_inputController = inputController;
+                    m_updaters = new List<IClientStateUpdater>();
 
+                    Dictionary<int, PlayerState> playerStateDict = new Dictionary<int, PlayerState>();
+                    foreach(PlayerState state in playerStates)
+                    {
+                        playerStateDict[state.GUID] = state;
+                    }
+
+                    m_updaters.Add(new PlayerGameObjectUpdater(this, playerSettings, playerStateDict, m_playerID));
+                    
                     m_client.Subscribe(this);
                     
                     for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
@@ -178,7 +187,7 @@ namespace ubv
                             m_clientStateBuffer[i].AddPlayer(player);
                         }
                         
-                        m_inputBuffer[i] = new common.data.InputFrame();
+                        m_inputBuffer[i] = new InputFrame();
                     }
                 }
 
@@ -199,9 +208,39 @@ namespace ubv
 
                 public override ClientSyncState Update()
                 {
-                    m_lastInput = m_inputController.CurrentFrame();
+                    m_lastInput = InputController.CurrentFrame();
 
                     return this;
+                }
+
+                public void RegisterUpdater(IClientStateUpdater updater)
+                {
+                    m_updaters.Add(updater);
+                }
+
+                private void StoreCurrentStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
+                {
+                    for (int i = 0; i < m_updaters.Count; i++)
+                    {
+                        m_updaters[i].SetStateAndStep(ref state, input, deltaTime);
+                    }
+
+                    m_clientPhysics.Simulate(deltaTime);
+                }
+                
+                private List<IClientStateUpdater> UpdatersNeedingCorrection(ClientState remoteState)
+                {
+                    List<IClientStateUpdater> needCorrection = new List<IClientStateUpdater>();
+
+                    for (int i = 0; i < m_updaters.Count; i++)
+                    {
+                        if (m_updaters[i].NeedsCorrection(remoteState))
+                        {
+                            needCorrection.Add(m_updaters[i]);
+                        }
+                    }
+
+                    return needCorrection;
                 }
 
                 public void ReceivePacket(UDPToolkit.Packet packet)
@@ -252,7 +291,7 @@ namespace ubv
                         frames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
                     }
 
-                    common.data.InputMessage inputMessage = new common.data.InputMessage();
+                    InputMessage inputMessage = new InputMessage();
 
                     inputMessage.PlayerID.Set(m_playerID);
                     inputMessage.StartTick.Set(m_remoteTick);
@@ -276,10 +315,10 @@ namespace ubv
                 private void UpdateClientState(uint bufferIndex)
                 {
                     // set current client state to last one then updating it
-                    m_clientStateBuffer[bufferIndex].StoreCurrentStateAndStep(
+                    StoreCurrentStateAndStep(
+                        ref m_clientStateBuffer[bufferIndex],
                         m_inputBuffer[bufferIndex],
-                        Time.fixedDeltaTime,
-                        ref m_clientPhysics);
+                        Time.fixedDeltaTime);
                 }
 
                 private void ClientCorrection()
@@ -296,7 +335,7 @@ namespace ubv
                     {
                         if (m_lastServerState != null)
                         {
-                            List<IClientStateUpdater> updaters = ClientState.UpdatersNeedingCorrection(m_lastServerState);
+                            List<IClientStateUpdater> updaters = UpdatersNeedingCorrection(m_lastServerState);
                             for (int i = 0; i < updaters.Count; i++)
                             {
                                 uint rewindTicks = m_remoteTick;
