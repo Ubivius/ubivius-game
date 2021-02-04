@@ -2,7 +2,7 @@ name: Actions
 
 on:
   pull_request: {}
-  push: { branches: [master] }
+  push: { branches: [master, build/ubi-172-client-server-split] }
 
 jobs:
   readmeWorkflow:
