@@ -38,7 +38,7 @@ jobs:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
           buildsPath: client-build
-          buildMethod: EditorNamespace.Build.ClientBuild
+          buildMethod: Build.ClientBuild
           unityVersion: 2019.4.1f1
       
       # Build
@@ -50,7 +50,7 @@ jobs:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
           buildsPath: server-build
-          buildMethod: EditorNamespace.Build.ServerBuild
+          buildMethod: Build.ServerBuild
           unityVersion: 2019.4.1f1
 
       # Output
