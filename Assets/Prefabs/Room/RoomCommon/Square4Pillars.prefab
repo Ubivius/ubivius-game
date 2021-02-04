@@ -2531,6 +2531,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7a934db48f64e34c96dee8c04ea37a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_name: Square4Pillars
   m_floor: {fileID: 648168482909649308}
   m_wall: {fileID: 648168484240186397}
   m_door: {fileID: 0}

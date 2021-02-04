@@ -4649,6 +4649,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7a934db48f64e34c96dee8c04ea37a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_name: MainButton
   m_floor: {fileID: 7375235167455180058}
   m_wall: {fileID: 7375235168223744155}
   m_door: {fileID: 0}

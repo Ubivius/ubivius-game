@@ -12,7 +12,12 @@ namespace ubv.common.world.cellType
 
         public DoorButtonCell(DoorCell linkedDoor)
         {
+            IsWalkable = false;
             m_linkedDoor = linkedDoor;
+        }
+        public DoorButtonCell()
+        {
+            IsWalkable = false;
         }
         public void CloseDoor()
         {
