@@ -3,13 +3,13 @@ using UnityEditor;
 
 namespace ubv
 {
-    namespace udp
+    namespace tcp
     {
         namespace client
         {
-            public interface IPacketReceiver
+            public interface ITCPClientReceiver
             {
-                void ReceivePacket(UDPToolkit.Packet packet);
+                //void ReceivePacket(udp.TCPToolkit.Packet packet);
             }
         }
     }

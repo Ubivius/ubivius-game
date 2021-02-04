@@ -41,7 +41,7 @@ namespace ubv
                 private UdpClient m_client;
                 private IPEndPoint m_server;
 
-                private List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
+                private List<IUDPPacketReceiver> m_receivers = new List<IUDPPacketReceiver>();
 
                 private void Awake()
                 {
@@ -184,12 +184,12 @@ namespace ubv
                     c.BeginReceive(EndReceiveCallback, c);
                 }
 
-                public void Subscribe(IPacketReceiver receiver)
+                public void Subscribe(IUDPPacketReceiver receiver)
                 {
                     m_receivers.Add(receiver);
                 }
 
-                public void Unsubscribe(IPacketReceiver receiver)
+                public void Unsubscribe(IUDPPacketReceiver receiver)
                 {
                     m_receivers.Remove(receiver);
                 }
