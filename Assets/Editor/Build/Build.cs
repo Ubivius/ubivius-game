@@ -7,7 +7,7 @@ public class Build
     {
         BuildPlayerOptions build = new BuildPlayerOptions();
         build.scenes = new[] {
-            "ServerScene",
+            "Assets/Scenes/ServerScene",
             "proto_move_server"
         };
         build.locationPathName = "ubivius_server";
@@ -20,7 +20,7 @@ public class Build
     {
         BuildPlayerOptions build = new BuildPlayerOptions();
         build.scenes = new[] {
-            "ClientScene",
+            "Assets/Scenes/ClientScene",
             "proto_move_client"
         };
         build.locationPathName = "ubivius_client";
