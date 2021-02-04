@@ -7,10 +7,10 @@ public class Build
     {
         BuildPlayerOptions build = new BuildPlayerOptions();
         build.scenes = new[] {
-            "Assets/Scenes/ServerScene",
-            "proto_move_server"
+            "Assets/Scenes/ServerScene.unity",
+            "Assets/Scenes/Prototypes/proto_move_server.unity"
         };
-        build.locationPathName = "ubivius_server";
+        build.locationPathName = "serverBuild";
         build.target = BuildTarget.StandaloneLinux64;
         build.options = BuildOptions.None;
         BuildPipeline.BuildPlayer(build);
@@ -20,10 +20,10 @@ public class Build
     {
         BuildPlayerOptions build = new BuildPlayerOptions();
         build.scenes = new[] {
-            "Assets/Scenes/ClientScene",
-            "proto_move_client"
+            "Assets/Scenes/ClientScene.unity",
+            "Assets/Scenes/Prototypes/proto_move_client.unity"
         };
-        build.locationPathName = "ubivius_client";
+        build.locationPathName = "clientBuild";
         build.target = BuildTarget.StandaloneWindows64;
         build.options = BuildOptions.None;
         BuildPipeline.BuildPlayer(build);
