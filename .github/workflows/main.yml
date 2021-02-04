@@ -49,6 +49,8 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
+          # Dirty because of client build operations
+          allowDirtyBuild: true
           buildsPath: server-build
           buildMethod: Build.ServerBuild
           unityVersion: 2019.4.1f1
