@@ -42,30 +42,30 @@ namespace ubv.common.world
         [SerializeField] private Vector2Int m_boundariesMap;
 
         // Section0
-        [SerializeField] private List<GameObject> m_randomRoomPoolSection0;
+        [SerializeField] private List<RoomInfo> m_randomRoomPoolSection0;
         [SerializeField] private int m_numberRandomRoomSection0;
         [SerializeField] private int m_numberofTrySection0;
-        [SerializeField] private List<GameObject> m_mandatoryRoomPoolSection0;
+        [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolSection0;
         // TopLeft
-        [SerializeField] private List<GameObject> m_randomRoomPoolTopLeft;
+        [SerializeField] private List<RoomInfo> m_randomRoomPoolTopLeft;
         [SerializeField] private int m_numberRandomRoomTopLeft;
         [SerializeField] private int m_numberofTryTopLeft;
-        [SerializeField] private List<GameObject> m_mandatoryRoomPoolTopLeft;
+        [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolTopLeft;
         // TopRight
-        [SerializeField] private List<GameObject> m_randomRoomPoolTopRight;
+        [SerializeField] private List<RoomInfo> m_randomRoomPoolTopRight;
         [SerializeField] private int m_numberRandomRoomTopRight;
         [SerializeField] private int m_numberofTryTopRight;
-        [SerializeField] private List<GameObject> m_mandatoryRoomPoolTopRight;
+        [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolTopRight;
         // BottomLeft
-        [SerializeField] private List<GameObject> m_randomRoomPoolBottomLeft;
+        [SerializeField] private List<RoomInfo> m_randomRoomPoolBottomLeft;
         [SerializeField] private int m_numberRandomRoomBottomLeft;
         [SerializeField] private int m_numberofTryBottomLeft;
-        [SerializeField] private List<GameObject> m_mandatoryRoomPoolBottomLeft;
+        [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolBottomLeft;
         // BottomRight
-        [SerializeField] private List<GameObject> m_randomRoomPoolBottomRight;
+        [SerializeField] private List<RoomInfo> m_randomRoomPoolBottomRight;
         [SerializeField] private int m_numberRandomRoomBottomRight;
         [SerializeField] private int m_numberofTryBottomRight;
-        [SerializeField] private List<GameObject> m_mandatoryRoomPoolBottomRight;
+        [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolBottomRight;
 
         private Grid m_grid;
 
@@ -73,24 +73,31 @@ namespace ubv.common.world
 
         private ubv.common.world.LogicGrid m_masterLogicGrid;
 
-        private void Start()
+        private void Awake()
         {
             m_grid = GetComponent<Grid>();
 
             m_masterLogicGrid = new ubv.common.world.LogicGrid(m_boundariesMap.x, m_boundariesMap.y);
 
-            foreach (GameObject room in m_mandatoryRoomPoolSection0)
+            foreach (RoomInfo room in m_mandatoryRoomPoolSection0)
             {
-                AddRoomToSection0(room, true);
-                break;
+                RoomInfo myRoom = Instantiate(room, new Vector3(-250, -250, 0), Quaternion.identity, m_grid.transform);
+                AddRoomToSection0(myRoom, true);
             }
-            
+            for (int i = 0; i < m_numberRandomRoomSection0; i++)
+            {
+                RoomInfo myRoom = Instantiate(
+                    m_randomRoomPoolSection0[Random.Range(0, m_randomRoomPoolSection0.Count)],
+                    new Vector3(-250, -250, 0), Quaternion.identity, m_grid.transform
+                    );
+                AddRoomToSection0(myRoom, false);
+            }
         }
 
-        private void AddRoom(GameObject room, Vector2Int roomOrigin)
+        private void AddRoom(RoomInfo room, Vector2Int roomOrigin)
         {
-            Instantiate(room, new Vector3(roomOrigin.x, roomOrigin.y, 0), Quaternion.identity, m_grid.transform);
-            AddToMasterGrid(room.GetComponent<RoomInfo>(), roomOrigin);
+            room.transform.position = new Vector3(roomOrigin.x, roomOrigin.y, 0); Instantiate(room, new Vector3(roomOrigin.x, roomOrigin.y, 0), Quaternion.identity, m_grid.transform);
+            AddToMasterGrid(room, roomOrigin);
         }
 
         private void AddToMasterGrid(RoomInfo roomInfo, Vector2Int coord)
@@ -104,16 +111,16 @@ namespace ubv.common.world
             }
         }
 
-        private void AddRoomToSection0(GameObject room, bool isMandatory)
+        private void AddRoomToSection0(RoomInfo room, bool isMandatory)
         {
             Vector2Int roomOrigin;
             if (isMandatory)
             {
-                roomOrigin = GetCoordInSection0(room.GetComponent<RoomInfo>());
+                roomOrigin = GetCoordInSection0(room);
             }
             else 
             {
-                roomOrigin = GetCoordInSection0(room.GetComponent<RoomInfo>(), m_numberofTrySection0);
+                roomOrigin = GetCoordInSection0(room, m_numberofTrySection0);
             }            
             if (roomOrigin.x != -1)
             {
@@ -123,16 +130,16 @@ namespace ubv.common.world
         }
 
 
-        private void AddRoomToTopLeft(GameObject room, bool isMandatory)
+        private void AddRoomToTopLeft(RoomInfo room, bool isMandatory)
         {
             Vector2Int roomOrigin;
             if (isMandatory)
             {
-                roomOrigin = GetCoordInTopLeft(room.GetComponent<RoomInfo>());
+                roomOrigin = GetCoordInTopLeft(room);
             }
             else
             {
-                roomOrigin = GetCoordInTopLeft(room.GetComponent<RoomInfo>(), m_numberofTryTopLeft);
+                roomOrigin = GetCoordInTopLeft(room, m_numberofTryTopLeft);
             }
             if (roomOrigin.x != -1)
             {
@@ -141,16 +148,16 @@ namespace ubv.common.world
             }
         }
 
-        private void AddRoomToTopRight(GameObject room, bool isMandatory)
+        private void AddRoomToTopRight(RoomInfo room, bool isMandatory)
         {
             Vector2Int roomOrigin;
             if (isMandatory)
             {
-                roomOrigin = GetCoordInTopRight(room.GetComponent<RoomInfo>());
+                roomOrigin = GetCoordInTopRight(room);
             }
             else
             {
-                roomOrigin = GetCoordInTopRight(room.GetComponent<RoomInfo>(), m_numberofTryTopRight);
+                roomOrigin = GetCoordInTopRight(room, m_numberofTryTopRight);
             }
             if (roomOrigin.x != -1)
             {
@@ -159,9 +166,9 @@ namespace ubv.common.world
             }
         }
 
-        private void AddRoomToBottomLeft(GameObject room, bool isMandatory)
+        private void AddRoomToBottomLeft(RoomInfo room, bool isMandatory)
         {
-            Vector2Int roomOrigin = GetCoordInBottomLeft(room.GetComponent<RoomInfo>());
+            Vector2Int roomOrigin = GetCoordInBottomLeft(room);
             if (roomOrigin.x != -1)
             {
                 AddRoom(room, roomOrigin);
@@ -169,9 +176,9 @@ namespace ubv.common.world
             }
         }
 
-        private void AddRoomToBottomRight(GameObject room)
+        private void AddRoomToBottomRight(RoomInfo room)
         {
-            Vector2Int roomOrigin = GetCoordInBottomRight(room.GetComponent<RoomInfo>());
+            Vector2Int roomOrigin = GetCoordInBottomRight(room);
             if (roomOrigin.x != -1)
             {
                 AddRoom(room, roomOrigin);
@@ -298,11 +305,12 @@ namespace ubv.common.world
                     );
         }
 
+        // Il doit y avoir 6 uniter de libre autour de la room, 2 pour mur, 3 pour corridor et 1 pour mur
         private bool SpaceIsFree(RoomInfo roomInfo, Vector2Int coord)
         {
-            for (int x = coord.x; x < coord.x + roomInfo.Width; x++)
+            for (int x = coord.x - 6; x < coord.x + roomInfo.Width + 6; x++)
             {
-                for (int y = coord.x; y < coord.y + roomInfo.Height; y++)
+                for (int y = coord.y - 6; y < coord.y + roomInfo.Height + 6; y++)
                 {
                     if(m_masterLogicGrid.Grid[x, y] != null)
                     {
