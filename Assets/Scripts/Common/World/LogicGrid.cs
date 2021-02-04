@@ -17,6 +17,6 @@ namespace ubv.common.world
             Grid = new cellType.LogicCell[x, y];
         }
 
-        public LogicCell[,] Grid { get => m_grid; set => m_grid = value; }
+        public LogicCell[,] Grid { get => m_grid; private set => m_grid = value; }
     }
 }

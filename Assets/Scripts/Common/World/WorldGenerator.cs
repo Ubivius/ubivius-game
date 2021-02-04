@@ -79,16 +79,19 @@ namespace ubv.common.world
 
             m_masterLogicGrid = new ubv.common.world.LogicGrid(m_boundariesMap.x, m_boundariesMap.y);
 
+            Vector3 positionUnusedRoom = new Vector3(-250, -250, 0);
             foreach (RoomInfo room in m_mandatoryRoomPoolSection0)
             {
-                RoomInfo myRoom = Instantiate(room, new Vector3(-250, -250, 0), Quaternion.identity, m_grid.transform);
+                RoomInfo myRoom = Instantiate(room, positionUnusedRoom, Quaternion.identity, m_grid.transform);
                 AddRoomToSection0(myRoom, true);
             }
             for (int i = 0; i < m_numberRandomRoomSection0; i++)
             {
                 RoomInfo myRoom = Instantiate(
                     m_randomRoomPoolSection0[Random.Range(0, m_randomRoomPoolSection0.Count)],
-                    new Vector3(-250, -250, 0), Quaternion.identity, m_grid.transform
+                    positionUnusedRoom, 
+                    Quaternion.identity, 
+                    m_grid.transform
                     );
                 AddRoomToSection0(myRoom, false);
             }
@@ -96,7 +99,7 @@ namespace ubv.common.world
 
         private void AddRoom(RoomInfo room, Vector2Int roomOrigin)
         {
-            room.transform.position = new Vector3(roomOrigin.x, roomOrigin.y, 0); Instantiate(room, new Vector3(roomOrigin.x, roomOrigin.y, 0), Quaternion.identity, m_grid.transform);
+            room.transform.position = new Vector3(roomOrigin.x, roomOrigin.y, 0);
             AddToMasterGrid(room, roomOrigin);
         }
 

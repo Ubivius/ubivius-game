@@ -2537,7 +2537,7 @@ MonoBehaviour:
   m_door: {fileID: 0}
   m_interactable: {fileID: 0}
   m_height: 15
-  m_width: 15
+  m_width: 16
 --- !u!1 &648168484240186385
 GameObject:
   m_ObjectHideFlags: 0

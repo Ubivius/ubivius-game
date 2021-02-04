@@ -19,9 +19,9 @@ namespace ubv.common.world
 
         private LogicGrid m_logicGrid;
 
-        public int Height { get => m_height; set => m_height = value; }
-        public int Width { get => m_width; set => m_width = value; }
-        public LogicGrid LogicGrid { get => m_logicGrid; set => m_logicGrid = value; }
+        public int Height { get => m_height; private set => m_height = value; }
+        public int Width { get => m_width; private set => m_width = value; }
+        public LogicGrid LogicGrid { get => m_logicGrid; private set => m_logicGrid = value; }
 
         private void Awake()
         {
@@ -37,7 +37,6 @@ namespace ubv.common.world
             InteractableManagement();
             WallManagement();
             FloorManagement();
-            Debug.Log("TEST ?");
         }
         private void RoomManagement()
         {

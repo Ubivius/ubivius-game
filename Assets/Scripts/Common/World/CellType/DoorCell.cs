@@ -34,6 +34,6 @@ namespace ubv.common.world.cellType
             m_IsClosed = false;
             IsWalkable = true;
         }
-        public DoorType DoorType { get => m_doorType; set => m_doorType = value; }
+        public DoorType DoorType { get => m_doorType; private set => m_doorType = value; }
     }
 }

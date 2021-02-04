@@ -10,6 +10,6 @@ namespace ubv.common.world.cellType
     {
         private bool m_isWalkable;
 
-        public bool IsWalkable { get => m_isWalkable; set => m_isWalkable = value; }
+        public bool IsWalkable { get => m_isWalkable; protected set => m_isWalkable = value; }
     }
 }
