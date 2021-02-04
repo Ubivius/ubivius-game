@@ -11,7 +11,7 @@ public class Build
             "proto_move_server"
         };
         build.locationPathName = "ubivius_server";
-        build.target = BuildTarget.StandaloneWindows64;
+        build.target = BuildTarget.StandaloneLinux64;
         build.options = BuildOptions.None;
         BuildPipeline.BuildPlayer(build);
     }

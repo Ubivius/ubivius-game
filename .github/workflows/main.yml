@@ -20,7 +20,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: /home/runner/work/ubivius-game/ubivius-game/Library
-          key: test-project
+          key: Library-cache
 
       # Test
       # - name: Run tests
@@ -30,18 +30,37 @@ jobs:
       #     unityVersion: 2019.4.1f1
 
       # Build
-      - name: Build project
+      - name: Client build
         uses: webbertakken/unity-builder@v1.5
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
+          buildsPath: client-build
+          buildMethod: EditorNamespace.Build.ClientBuild
           unityVersion: 2019.4.1f1
-          targetPlatform: StandaloneWindows64
+      
+      # Build
+      - name: Server build 
+        uses: webbertakken/unity-builder@v1.5
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          buildsPath: server-build
+          buildMethod: EditorNamespace.Build.ServerBuild
+          unityVersion: 2019.4.1f1
 
       # Output
       - uses: actions/upload-artifact@v1
         with:
-          name: Build
-          path: build
+          name: Client
+          path: client-build
+      
+      # Output
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Server
+          path: server-build
