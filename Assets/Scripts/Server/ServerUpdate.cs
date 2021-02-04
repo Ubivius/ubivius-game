@@ -7,138 +7,67 @@ namespace ubv
 {
     namespace server
     {
-        /// <summary>
-        /// Manages server specific update logic
-        /// </summary>
-        public class ServerUpdate : MonoBehaviour, udp.server.IServerReceiver
+        namespace logic
         {
-            // TEMPORARY for now, TODO: make work with multiple players
-            [SerializeField] private common.StandardMovementSettings m_movementSettings;
-            [SerializeField] private Rigidbody2D m_rigidBody;
-
-            [SerializeField] private string m_physicsScene;
-            private PhysicsScene2D m_serverPhysics;
-
-            [SerializeField] private udp.server.UDPServer m_server;
-
-            private Dictionary<IPEndPoint, ClientConnection> m_IPConnections;
-            private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputs;
-
-            [SerializeField] uint m_snapshotRate = 5; // We send back client data every m_snapshotRate tick
-
-            private uint m_tickAccumulator;
-
-            private class ClientConnection
+            /// <summary>
+            /// Manages server specific update logic
+            /// </summary>
+            public class ServerUpdate : MonoBehaviour
             {
-                public uint ServerTick;
-                public client.ClientState State;
+                private ServerState m_currentState;
 
-                public ClientConnection()
+                [SerializeField] private GameObject m_playerPrefab;
+                [SerializeField] private common.StandardMovementSettings m_movementSettings;
+                [SerializeField] private string m_physicsScene;
+                [SerializeField] private int m_snapshotDelay;
+
+                [SerializeField] private udp.server.UDPServer m_server;
+
+#if NETWORK_SIMULATE
+                [HideInInspector] public UnityEngine.Events.UnityEvent ForceStartGameButtonEvent;
+#endif // NETWORK_SIMULATE
+
+                // Use this for initialization
+                void Start()
                 {
-                    State = new client.ClientState();
-                }
-            }
-
-            private void Awake()
-            {
-                m_IPConnections = new Dictionary<IPEndPoint, ClientConnection>();
-                m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
-                m_tickAccumulator = 0;
-                m_clientInputs = new Dictionary<ClientConnection, common.data.InputMessage>();
-            }
-
-            // Use this for initialization
-            void Start()
-            {
-                m_server.AddReceiver(this);
-            }
-
-            // Update is called once per frame
-            void Update()
-            {
-
-            }
-
-            // Updates all players rewinds if necessary
-            private void FixedUpdate()
-            {
-                // for each player
-                // check if missing frames
-                // update frames
-
-                uint framesToSimulate = 0;
-                foreach (ClientConnection client in m_clientInputs.Keys)
-                {
-                    common.data.InputMessage message = m_clientInputs[client];
-                    int messageCount = message.InputFrames.Value.Count;
-                    uint maxTick = message.StartTick + (uint)(messageCount - 1);
-#if DEBUG_LOG
-            Debug.Log("max tick to simulate = " + maxTick.ToString());
-#endif // DEBUG_LOG
-
-                    // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
-                    uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
-
-                    if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
+                    m_currentState = new GameCreationState(m_server, 
+                        m_playerPrefab, 
+                        m_movementSettings, 
+                        m_snapshotDelay, 
+                        m_physicsScene
+#if NETWORK_SIMULATE
+                        , this
+#endif // NETWORK_SIMULATE 
+                        );
                 }
 
-                for (uint f = framesToSimulate; f > 0; f--)
+                // Update is called once per frame
+                void Update()
                 {
-                    foreach (ClientConnection client in m_clientInputs.Keys)
-                    {
-                        common.data.InputMessage message = m_clientInputs[client];
-                        int messageCount = message.InputFrames.Value.Count;
-                        if (messageCount > f)
-                        {
-                            common.data.InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
-
-                            // must be called in main unity thread
-                            common.logic.PlayerMovement.Execute(ref m_rigidBody, m_movementSettings, frame, Time.fixedDeltaTime);
-
-                            client.State.Position.Set(m_rigidBody.position);
-                            client.State.Tick.Set(client.ServerTick);
-                            client.ServerTick++;
-                        }
-                    }
-
-                    m_serverPhysics.Simulate(Time.fixedDeltaTime);
+                    m_currentState = m_currentState.Update();
                 }
 
-                m_clientInputs.Clear();
-
-                if (++m_tickAccumulator > m_snapshotRate)
+                // Updates all players rewinds if necessary
+                private void FixedUpdate()
                 {
-                    m_tickAccumulator = 0;
-                    foreach (IPEndPoint ip in m_IPConnections.Keys)
-                    {
-                        m_server.Send(m_IPConnections[ip].State.GetBytes(), ip);
-                    }
+                    m_currentState = m_currentState.FixedUpdate();
                 }
-            }
-            
-            public void Receive(udp.UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
-            {
-                common.data.InputMessage inputs = udp.Serializable.FromBytes<common.data.InputMessage>(packet.Data);
-                if (inputs != null)
-                {
-#if DEBUG_LOG
-                    Debug.Log("Input received in server: " + inputs.StartTick);
-#endif // DEBUG     
-                    m_clientInputs[m_IPConnections[clientEndPoint]] = inputs;
-
-                }
-            }
-
-            public void OnConnect(IPEndPoint clientIP)
-            {
-                m_IPConnections.Add(clientIP, new ClientConnection());
-            }
-
-            public void OnDisconnect(IPEndPoint clientIP)
-            {
-                m_IPConnections.Remove(clientIP);
+                
+                // DRAFT SUR AUTH:
+                /*
+                 * Client envoie un message d'auth en TCP, qui contient
+                 *  un "hello" + des credentials / un moyen de prouver 
+                 *  qui'il est legit
+                 * Serveur renvoie un message d'acknowledgement de
+                 * connexion, qui contient le playerID qu'il a attribué 
+                 * au joueur du client
+                 * 
+                 * En théorie, on connect et on disconnect vont être gérées par le TCP 
+                 * et pas par l'UDP
+                 * et OnConnect dans l'UDP/ici gérerait un nouveau joueur dont on connait
+                 * déjà l'ID (qui a été donné  par le TCP)
+                */
             }
         }
     }
 }
-

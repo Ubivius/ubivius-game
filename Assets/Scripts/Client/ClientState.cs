@@ -12,71 +12,58 @@ namespace ubv
         /// </summary>
         public class ClientState : udp.Serializable
         {
-            // Add here the stuff you need to share
-            public udp.SerializableTypes.Vector2 Position;
-            public udp.SerializableTypes.Quaternion Rotation;
+            private udp.SerializableTypes.HashMap<common.data.PlayerState> m_playerStates;
             public udp.SerializableTypes.Uint32 Tick;
 
+            private int m_playerID;
+
+            public void SetPlayerID(int id)
+            {
+                m_playerID = id;
+            }
+
+            public ClientState() : base() { }
+
+            public ClientState(ref ClientState state) : base()
+            {
+                Tick.Set(state.Tick);
+                SetPlayers(state.m_playerStates);
+            }
+            
             protected override void InitSerializableMembers()
             {
+                m_playerStates = new udp.SerializableTypes.HashMap<common.data.PlayerState>(this, new Dictionary<int, common.data.PlayerState>());
                 Tick = new udp.SerializableTypes.Uint32(this, 0);
-                Position = new udp.SerializableTypes.Vector2(this, Vector2.zero);
-                Rotation = new udp.SerializableTypes.Quaternion(this, Quaternion.identity);
             }
 
             protected override byte SerializationID()
             {
                 return (byte)udp.Serialization.BYTE_TYPE.CLIENT_STATE;
             }
-
-#region UTILITY FUNCTIONS
-            private static List<IClientStateUpdater> m_updaters = new List<IClientStateUpdater>();
-
-            static public void RegisterUpdater(IClientStateUpdater updater)
+            
+            public common.data.PlayerState GetPlayer()
             {
-                m_updaters.Add(updater);
+                return m_playerStates.Value[m_playerID];
             }
 
-            static public void SetToState(ClientState state)
+            public void AddPlayer(common.data.PlayerState playerState)
             {
-                for (int i = 0; i < m_updaters.Count; i++)
+                m_playerStates.Value[playerState.GUID] = playerState;
+            }
+
+            public void SetPlayers(Dictionary<int, common.data.PlayerState> playerStates)
+            {
+                m_playerStates.Value.Clear();
+                foreach (common.data.PlayerState player in playerStates.Values)
                 {
-                    m_updaters[i].UpdateFromState(state);
+                    m_playerStates.Value[player.GUID] = new common.data.PlayerState(player);
                 }
             }
 
-            public void StoreCurrentStateAndStep(common.data.InputFrame input, float deltaTime, ref PhysicsScene2D physics)
+            public Dictionary<int, common.data.PlayerState> Players()
             {
-                ClientState _this = this;
-
-                for (int i = 0; i < m_updaters.Count; i++)
-                {
-                    m_updaters[i].ClientStoreAndStep(ref _this, input, deltaTime);
-                }
-
-                physics.Simulate(deltaTime);
+                return m_playerStates.Value;
             }
-
-            /// <summary>
-            /// Checks if any updater needs to correct its internal state
-            /// </summary>
-            /// <param name="remoteState">The state to compare to</param>
-            /// <returns>Updaters needing to be corrected</returns>
-            static public List<IClientStateUpdater> StatesNeedingCorrection(ClientState remoteState)
-            {
-                List<IClientStateUpdater> needCorrection = new List<IClientStateUpdater>();
-
-                for (int i = 0; i < m_updaters.Count; i++)
-                {
-                    if (m_updaters[i].NeedsCorrection(remoteState))
-                    {
-                        needCorrection.Add(m_updaters[i]);
-                    }
-                }
-
-                return needCorrection;
-            }
-#endregion
         }
     }
 }

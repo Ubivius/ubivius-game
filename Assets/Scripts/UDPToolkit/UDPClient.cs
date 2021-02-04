@@ -41,7 +41,7 @@ namespace ubv
                 private UdpClient m_client;
                 private IPEndPoint m_server;
 
-                private static List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
+                private List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
 
                 private void Awake()
                 {
@@ -75,14 +75,14 @@ namespace ubv
                         m_timeOutTimer += Time.deltaTime;
                         m_connectionQualityTimer += Time.deltaTime;
 
-                        if (m_timeOutTimer > m_serverTimeOut)
+                        /*if (m_timeOutTimer > m_serverTimeOut)
                         {
                             m_connectionData = new UDPToolkit.ConnectionData();
                             m_sequencesSendTime.Clear();
                             Debug.Log("Server timed out. Disconnecting.");
                             m_connected = false;
                             m_timeOutTimer = 0;
-                        }
+                        }*/
                     }
 
                 }
@@ -184,12 +184,17 @@ namespace ubv
                     c.BeginReceive(EndReceiveCallback, c);
                 }
 
-                static public void RegisterReceiver(IPacketReceiver receiver)
+                public void Subscribe(IPacketReceiver receiver)
                 {
                     m_receivers.Add(receiver);
                 }
 
-                static public void Distribute(UDPToolkit.Packet packet)
+                public void Unsubscribe(IPacketReceiver receiver)
+                {
+                    m_receivers.Remove(receiver);
+                }
+
+                public void Distribute(UDPToolkit.Packet packet)
                 {
                     for (int i = 0; i < m_receivers.Count; i++)
                     {
