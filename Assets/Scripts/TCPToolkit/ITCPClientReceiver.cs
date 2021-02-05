@@ -1,16 +1,10 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace ubv
+namespace ubv.tcp.client
 {
-    namespace tcp
+    public interface ITCPClientReceiver
     {
-        namespace client
-        {
-            public interface ITCPClientReceiver
-            {
-                //void ReceivePacket(udp.TCPToolkit.Packet packet);
-            }
-        }
+        void ReceivePacket(TCPToolkit.Packet packet);
     }
 }

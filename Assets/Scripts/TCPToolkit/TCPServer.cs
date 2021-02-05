@@ -28,40 +28,62 @@ namespace ubv
                 [SerializeField] int m_maxConcurrentListeners = 6;
                 
                 private TcpListener m_tcpListener;
+                private TcpClient tcpClient; //temp
 
                 protected bool m_exitSignal;
 
-                // public delegate void ConnectionHandlerDelegate(NetworkStream connectedAutoDisposedNetStream);
+                private const int DATA_BUFFER_SIZE = 1024;
                 
                 protected List<Task> m_tcpClientTasks;
-
-                // protected ConnectionHandlerDelegate OnConnection;
                 
                 private void Awake()
                 {
                     // OnConnection = null
                     m_exitSignal = false;
                     m_tcpClientTasks = new List<Task>();
-                    m_tcpListener = new TcpListener(IPAddress.Any, m_port);
+
+                    IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
+
+                    Debug.Log("Launching TCP server at " + localEndPoint.ToString());
+
+                    m_tcpListener = new TcpListener(localEndPoint);
+                }
+
+                private void Start()
+                {
+                    m_tcpListener.Start();
+                    Thread t1 = new Thread(new ThreadStart(TestThread));
+                    t1.Start();
+                }
+
+                private void TestThread()
+                {
+                    //tcpClient = m_tcpListener.AcceptTcpClient();
+
+                    //ProcessMessagesFromClient(tcpClient);
+                    while (!m_exitSignal)
+                    {
+                        while (m_tcpClientTasks.Count < m_maxConcurrentListeners)
+                        {
+                            Task awaiterTask = Task.Run(async () =>
+                            {
+                                ProcessMessagesFromClient(await m_tcpListener.AcceptTcpClientAsync());
+                            });
+
+                            m_tcpClientTasks.Add(awaiterTask);
+                        }
+
+                        int removeAtIndex = Task.WaitAny(m_tcpClientTasks.ToArray(), m_connectionTimeoutInMS);
+                        if (removeAtIndex > 0)
+                        {
+                            m_tcpClientTasks.RemoveAt(removeAtIndex);
+                        }
+                    }
                 }
 
                 private void Update()
                 {
-                    while (m_tcpClientTasks.Count < m_maxConcurrentListeners)
-                    {
-                        Task awaiterTask = Task.Run(async () =>
-                        {
-                            ProcessMessagesFromClient(await m_tcpListener.AcceptTcpClientAsync());
-                        });
-
-                        m_tcpClientTasks.Add(awaiterTask);
-                    }
-
-                    int removeAtIndex = Task.WaitAny(m_tcpClientTasks.ToArray(), m_connectionTimeoutInMS);
-                    if (removeAtIndex > 0)
-                    {
-                        m_tcpClientTasks.RemoveAt(removeAtIndex);
-                    }
+                    
                 }
 
                 private void ProcessMessagesFromClient(TcpClient connection)
@@ -83,12 +105,21 @@ namespace ubv
                     if (!stream.CanRead && !stream.CanWrite)
                         return;
                     
-                    var startTime = DateTime.Now;
-                    int i = 0;
+                    int bytesRead = 0;
                     
+                    byte[] data = new byte[DATA_BUFFER_SIZE];
                     while (!m_exitSignal)
                     {
-                        //byte[] data = 
+                        bytesRead = stream.Read(data, 0, DATA_BUFFER_SIZE);
+                        if (bytesRead > 0)
+                        {
+                            TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromBytes(data.SubArray(0, bytesRead));
+                            //if (packet.HasValidProtocolID())
+                            {
+                                // broadcast reception to listeners
+                                Debug.Log("Received following in server : " + System.Text.Encoding.ASCII.GetString(data));
+                            }
+                        }
                     }
                 }
             }

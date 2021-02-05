@@ -45,7 +45,7 @@ namespace ubv
             /// In charge of regrouping player parties, and launching 
             /// the game with a fixed number of players
             /// </summary>
-            public class GameCreationState : ServerState, udp.server.IServerReceiver
+            public class GameCreationState : ServerState, udp.server.IUDPServerReceiver
             {
                 private Dictionary<IPEndPoint, ClientConnection> m_clientConnections;
 
@@ -163,7 +163,7 @@ namespace ubv
             /// <summary>
             /// Represents the state of the server during the game
             /// </summary>
-            public class GameplayState : ServerState, udp.server.IServerReceiver 
+            public class GameplayState : ServerState, udp.server.IUDPServerReceiver 
             {
                 private Dictionary<IPEndPoint, ClientConnection> m_clientConnections;
                 private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputs;

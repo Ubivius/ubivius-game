@@ -28,7 +28,7 @@ namespace ubv
                 private UdpClient m_server;
                 private float m_serverUptime = 0;
 
-                private List<IServerReceiver> m_receivers = new List<IServerReceiver>();
+                private List<IUDPServerReceiver> m_receivers = new List<IUDPServerReceiver>();
 
                 /// <summary>
                 /// Manages a specific client connection 
@@ -52,7 +52,7 @@ namespace ubv
 
                     m_server = new UdpClient(localEndPoint);
 
-                    Debug.Log("Launching server at " + localEndPoint.ToString());
+                    Debug.Log("Launching UDP server at " + localEndPoint.ToString());
 
                     m_server.BeginReceive(EndReceiveCallback, m_server);
                 }
@@ -113,9 +113,11 @@ namespace ubv
 
                 private void EndReceiveCallback(System.IAsyncResult ar)
                 {
-                    // TODO: authentication
+                    // TODO : authentication ?
                     IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
                     UdpClient server = (UdpClient)ar.AsyncState;
+
+                    // TODO : manage client disconnect
                     byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
                     
                     // If client is not registered, create a new Socket 
@@ -154,12 +156,12 @@ namespace ubv
                     }
                 }
 
-                public void Subscribe(IServerReceiver receiver)
+                public void Subscribe(IUDPServerReceiver receiver)
                 {
                     m_receivers.Add(receiver);
                 }
 
-                public void Unsubscribe(IServerReceiver receiver)
+                public void Unsubscribe(IUDPServerReceiver receiver)
                 {
                     m_receivers.Remove(receiver);
                 }
