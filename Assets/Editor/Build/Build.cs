@@ -18,7 +18,7 @@ public class Build
         BuildReport report = BuildPipeline.BuildPlayer(build);
         BuildSummary summary = report.summary;
 
-        Debug.Log("Build message: OutputPath - " + summary.outputPath + ", BuildSize - " + summary.totalSize.toString());
+        Debug.Log("Build message: OutputPath - " + summary.outputPath + ", BuildSize - " + summary.totalSize.ToString());
     }
 
     static void ServerBuild()
