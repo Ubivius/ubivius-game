@@ -26,7 +26,7 @@ namespace ubv
                 public abstract ClientSyncState FixedUpdate();
             }
 
-            public class ClientSyncInit : ClientSyncState, udp.client.IUDPPacketReceiver
+            public class ClientSyncInit : ClientSyncState, udp.client.IUDPClientReceiver
             {
                 //tranfer to play
                 private readonly string m_physicsScene;
@@ -119,7 +119,7 @@ namespace ubv
             /// <summary>
             /// Represents the state of the server during the game
             /// </summary>
-            public class ClientSyncPlay : ClientSyncState, udp.client.IUDPPacketReceiver
+            public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver
             {
                 private readonly int m_playerID;
 

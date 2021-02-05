@@ -900,6 +900,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: ClientNetworking
       objectReference: {fileID: 0}
+    - target: {fileID: 1584834601242082864, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_Name
+      value: UDPClient
+      objectReference: {fileID: 0}
+    - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_Name
+      value: TCPClient
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c732e1b58c017874bbf5da45531902cf, type: 3}
 --- !u!1001 &4639765598835359790

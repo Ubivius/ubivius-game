@@ -23,6 +23,33 @@ namespace ubv
                 private IPEndPoint m_server;
 
                 private List<ITCPClientReceiver> m_receivers = new List<ITCPClientReceiver>();
+
+                private void Awake()
+                {
+                    m_client = new TcpClient();
+                    m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
+                }
+
+                private void Start()
+                {
+                    try
+                    {
+                        m_client.Connect(m_server);
+                    }
+                    catch (SocketException ex)
+                    {
+                        Debug.Log(ex.Message);
+                    }
+
+                    if(m_client.Connected)
+                    {
+                        using (NetworkStream stream = m_client.GetStream())
+                        {
+                            byte[] bytes = System.Text.Encoding.ASCII.GetBytes("Hello TCP World!");
+                            stream.Write(bytes, 0, bytes.Length);
+                        }
+                    }
+                }
             }
         }
     }
