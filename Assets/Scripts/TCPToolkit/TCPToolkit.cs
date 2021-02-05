@@ -17,11 +17,24 @@ namespace ubv
             public class Packet : network.Packet
             {
                 public byte[] Data { get { return RawBytes.SubArray(NET_PROTOCOL_ID.Length, RawBytes.Length - NET_PROTOCOL_ID.Length); } }
-
+                
                 private Packet(byte[] bytes) : base(bytes)
                 {
                 }
                 
+                public static Packet PacketFromData(byte[] data)
+                {
+                    Packet packet = new Packet(new byte[NET_PROTOCOL_ID.Length + data.Length]);
+                    int index = 0;
+                    for (ushort i = 0; i < 4; i++, index++)
+                        packet.RawBytes[index] = NET_PROTOCOL_ID[i];
+
+                    for (ushort i = 0; i < data.Length; i++, index++)
+                        packet.RawBytes[index] = data[i];
+
+                    return packet;
+                }
+
                 public static Packet PacketFromBytes(byte[] bytes)
                 {
                     return new Packet(bytes);

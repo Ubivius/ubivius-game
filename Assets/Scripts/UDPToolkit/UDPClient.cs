@@ -116,7 +116,7 @@ namespace ubv
 
                         m_sequencesSendTime.Add(seq, Time.realtimeSinceStartup);
 
-                        byte[] bytes = packet.ToBytes();
+                        byte[] bytes = packet.RawBytes;
                         m_client.BeginSend(bytes, bytes.Length, m_server, EndSendCallback, m_client);
                         m_lastPacketSentTime = Time.realtimeSinceStartup;
                     }

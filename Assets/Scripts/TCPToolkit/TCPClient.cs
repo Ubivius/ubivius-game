@@ -40,13 +40,16 @@ namespace ubv
                     {
                         Debug.Log(ex.Message);
                     }
+                }
 
-                    if(m_client.Connected)
+                public void Send(byte[] data)
+                {
+                    if (m_client.Connected)
                     {
                         using (NetworkStream stream = m_client.GetStream())
                         {
-                            byte[] bytes = System.Text.Encoding.ASCII.GetBytes("Hello TCP World!");
-                            stream.Write(bytes, 0, bytes.Length);
+                            TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromData(data);
+                            stream.Write(packet.RawBytes, 0, data.Length);
                         }
                     }
                 }

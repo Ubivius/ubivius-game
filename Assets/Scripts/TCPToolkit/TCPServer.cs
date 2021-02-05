@@ -23,22 +23,35 @@ namespace ubv
             /// </summary>
             public class TCPServer : MonoBehaviour
             {
+                protected readonly object m_lock = new object();
+
                 [SerializeField] int m_port = 9051;
                 [SerializeField] int m_connectionTimeoutInMS;
                 [SerializeField] int m_maxConcurrentListeners = 6;
                 
                 private TcpListener m_tcpListener;
-                private TcpClient tcpClient; //temp
 
                 protected bool m_exitSignal;
 
                 private const int DATA_BUFFER_SIZE = 1024;
                 
                 protected List<Task> m_tcpClientTasks;
+
+                private Dictionary<IPEndPoint, TcpClient> m_clientConnections;
+                private Dictionary<IPEndPoint, Queue<byte[]>> m_dataToSend;
+
+                private List<ITCPServerReceiver> m_receivers;
                 
                 private void Awake()
                 {
-                    // OnConnection = null
+                    m_clientConnections = new Dictionary<IPEndPoint, TcpClient>();
+                    m_dataToSend = new Dictionary<IPEndPoint, Queue<byte[]>>();
+
+                    foreach(IPEndPoint ip in m_dataToSend.Keys)
+                    {
+                        m_dataToSend[ip] = new Queue<byte[]>();
+                    }
+
                     m_exitSignal = false;
                     m_tcpClientTasks = new List<Task>();
 
@@ -52,15 +65,12 @@ namespace ubv
                 private void Start()
                 {
                     m_tcpListener.Start();
-                    Thread t1 = new Thread(new ThreadStart(TestThread));
+                    Thread t1 = new Thread(new ThreadStart(ReceptionThread));
                     t1.Start();
                 }
 
-                private void TestThread()
+                private void ReceptionThread()
                 {
-                    //tcpClient = m_tcpListener.AcceptTcpClient();
-
-                    //ProcessMessagesFromClient(tcpClient);
                     while (!m_exitSignal)
                     {
                         while (m_tcpClientTasks.Count < m_maxConcurrentListeners)
@@ -93,33 +103,77 @@ namespace ubv
                         if (!connection.Connected)
                             return;
 
+                        IPEndPoint key = (IPEndPoint)(connection.Client.RemoteEndPoint);
+                        m_clientConnections[key] = connection;
+
                         using (NetworkStream stream = connection.GetStream())
                         {
-                            HandleConnection(stream);
+                            HandleConnection(stream, key);
                         }
+
+                        m_clientConnections.Remove(key);
                     }
                 }
 
-                private void HandleConnection(NetworkStream stream)
+                private void HandleConnection(NetworkStream stream, IPEndPoint source)
                 {
                     if (!stream.CanRead && !stream.CanWrite)
                         return;
                     
                     int bytesRead = 0;
                     
-                    byte[] data = new byte[DATA_BUFFER_SIZE];
+                    byte[] bytes = new byte[DATA_BUFFER_SIZE];
                     while (!m_exitSignal)
                     {
-                        bytesRead = stream.Read(data, 0, DATA_BUFFER_SIZE);
+                        // read from stream
+                        try
+                        {
+                            bytesRead = stream.Read(bytes, 0, DATA_BUFFER_SIZE);
+                        }
+                        catch(IOException ex)
+                        {
+                            Debug.Log(ex.Message);
+                            return;
+                        }
+
                         if (bytesRead > 0)
                         {
-                            TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromBytes(data.SubArray(0, bytesRead));
-                            //if (packet.HasValidProtocolID())
+                            TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromBytes(bytes.SubArray(0, bytesRead));
+                            if (packet.HasValidProtocolID())
                             {
                                 // broadcast reception to listeners
-                                Debug.Log("Received following in server : " + System.Text.Encoding.ASCII.GetString(data));
+                                foreach(ITCPServerReceiver receiver in m_receivers)
+                                {
+                                    receiver.Receive(packet, source);
+                                } 
                             }
                         }
+
+                        // write to stream (send to client)
+                        lock (m_lock)
+                        {
+                            while (m_dataToSend[source].Count > 0)
+                            {
+                                byte[] bytesToWrite = m_dataToSend[source].Dequeue();
+                                try
+                                {
+                                    stream.Write(bytesToWrite, 0, bytesToWrite.Length);
+                                }
+                                catch (IOException ex)
+                                {
+                                    Debug.Log(ex.Message);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                public void Send(byte[] bytes, IPEndPoint target)
+                {
+                    lock (m_lock)
+                    {
+                        m_dataToSend[target].Enqueue(bytes);
                     }
                 }
             }
