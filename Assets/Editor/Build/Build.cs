@@ -1,4 +1,5 @@
 ﻿using UnityEditor;
+using UnityEditor.Build.Reporting;
 using System;
 
 public class Build
@@ -13,7 +14,11 @@ public class Build
         build.locationPathName = "clientBuild";
         build.target = BuildTarget.StandaloneWindows64;
         build.options = BuildOptions.None;
-        BuildPipeline.BuildPlayer(build);
+
+        BuildReport report = BuildPipeline.BuildPlayer(build);
+        BuildSummary summary = report.summary;
+
+        Debug.Log("Build message: OutputPath - " + summary.outputPath + ", BuildSize - " + summary.totalSize.toString(summary.totalSize)));
     }
 
     static void ServerBuild()
