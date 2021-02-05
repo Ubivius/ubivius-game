@@ -12,12 +12,14 @@ namespace ubv
         {
             abstract public class ServerState
             {
-                protected udp.server.UDPServer m_server;
+                protected udp.server.UDPServer m_UDPserver;
+                protected tcp.server.TCPServer m_TCPServer;
                 protected readonly object m_lock = new object();
 
-                public ServerState(udp.server.UDPServer server)
+                public ServerState(udp.server.UDPServer UDPServer, tcp.server.TCPServer TCPServer)
                 {
-                    m_server = server;
+                    m_UDPserver = UDPServer;
+                    m_TCPServer = TCPServer;
                 }
 
                 public abstract ServerState Update();
@@ -61,7 +63,8 @@ namespace ubv
                 private bool m_forceStartGame;
 #endif // NETWORK_SIMULATE
 
-                public GameCreationState(udp.server.UDPServer server, 
+                public GameCreationState(udp.server.UDPServer UDPServer, 
+                    tcp.server.TCPServer TCPServer,
                     GameObject playerPrefab, 
                     common.StandardMovementSettings 
                     movementSettings, 
@@ -70,7 +73,7 @@ namespace ubv
 #if NETWORK_SIMULATE
                     , ServerUpdate parent
 #endif // NETWORK_SIMULATE 
-                    ) : base(server)
+                    ) : base(UDPServer, TCPServer)
                 {
 
                     m_players = new List<common.data.PlayerState>();
@@ -87,7 +90,7 @@ namespace ubv
                     parent.ForceStartGameButtonEvent.AddListener(() => { m_forceStartGame = true; });
 #endif // NETWORK_SIMULATE 
 
-                    m_server.Subscribe(this);
+                    m_UDPserver.Subscribe(this);
                 }
 
                 public override ServerState Update()
@@ -100,16 +103,16 @@ namespace ubv
 #endif // NETWORK_SIMULATE
                         )
                         {
-                            m_server.Unsubscribe(this);
+                            m_UDPserver.Unsubscribe(this);
 
                             common.data.GameStartMessage message = new common.data.GameStartMessage();
                             message.Players.Set(m_players);
                             foreach (IPEndPoint ip in m_clientConnections.Keys)
                             {
-                                m_server.Send(message.GetBytes(), ip);
+                                m_UDPserver.Send(message.GetBytes(), ip);
                             }
 
-                            return new GameplayState(m_server, m_playerPrefab, m_clientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
+                            return new GameplayState(m_UDPserver, m_TCPServer, m_playerPrefab, m_clientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
                         }
                     }
                     return this;
@@ -144,7 +147,7 @@ namespace ubv
 
                         m_players.Add(playerState);
 
-                        m_server.Send(idMessage.GetBytes(), clientIP);
+                        m_UDPserver.Send(idMessage.GetBytes(), clientIP);
 
                         Debug.Log("Received connection request from " + clientIP.ToString());
                     }
@@ -178,14 +181,15 @@ namespace ubv
 
                 private GameObject m_playerPrefab;
 
-                public GameplayState(udp.server.UDPServer server, 
+                public GameplayState(udp.server.UDPServer UDPServer,
+                    tcp.server.TCPServer TCPServer,
                     GameObject playerPrefab, Dictionary<IPEndPoint, 
                     ClientConnection> clientConnections, 
                     common.StandardMovementSettings movementSettings, 
                     int snapshotDelay, 
-                    string physicsScene) : base(server)
+                    string physicsScene) : base(UDPServer, TCPServer)
                 {
-                    m_server.Subscribe(this);
+                    m_UDPserver.Subscribe(this);
                     m_tickAccumulator = 0;
                     m_clientConnections = clientConnections;
 
@@ -293,7 +297,7 @@ namespace ubv
                         m_tickAccumulator = 0;
                         foreach (IPEndPoint ip in m_clientConnections.Keys)
                         {
-                            m_server.Send(m_clientConnections[ip].State.GetBytes(), ip);
+                            m_UDPserver.Send(m_clientConnections[ip].State.GetBytes(), ip);
                         }
                     }
                     return this;

@@ -92,7 +92,7 @@ namespace ubv
                 {
                     try
                     {
-                        byte[] bytes = m_clientConnections[m_endPoints[clientIP]].ConnectionData.Send(data).ToBytes();
+                        byte[] bytes = m_clientConnections[m_endPoints[clientIP]].ConnectionData.Send(data).RawBytes;
                         m_server.BeginSend(bytes, bytes.Length, clientIP, EndSendCallback, m_server);
                     }
                     catch (SocketException e)

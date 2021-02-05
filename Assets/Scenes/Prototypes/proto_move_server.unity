@@ -376,7 +376,8 @@ MonoBehaviour:
   m_movementSettings: {fileID: 11400000, guid: a2974712f0687ee4f995c884f2948972, type: 2}
   m_physicsScene: proto_move_server
   m_snapshotDelay: 5
-  m_server: {fileID: 1538287030}
+  m_UDPServer: {fileID: 1538287030}
+  m_TCPServer: {fileID: 1617214407}
   ForceStartGameButtonEvent:
     m_PersistentCalls:
       m_Calls: []

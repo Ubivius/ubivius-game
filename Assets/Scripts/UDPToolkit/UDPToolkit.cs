@@ -131,12 +131,7 @@ namespace ubv
                 {
                     return "Packet bytes: " + System.BitConverter.ToString(RawBytes);
                 }
-
-                public byte[] ToBytes()
-                {
-                    return RawBytes;
-                }
-
+                
                 public static Packet PacketFromBytes(byte[] bytes)
                 {
                     return new Packet(bytes);
