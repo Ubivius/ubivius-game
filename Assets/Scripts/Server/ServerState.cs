@@ -151,8 +151,9 @@ namespace ubv
 
                         m_TCPServer.Send(idMessage.GetBytes(), clientIP);
 
-
+#if DEBUG_LOG
                         Debug.Log("Received connection request from " + clientIP.ToString());
+#endif // DEBUG_LOG
                     }
                 }
 
@@ -168,7 +169,9 @@ namespace ubv
                 {
                     if (m_UDPClientConnections.ContainsKey(clientIP))
                     {
+#if DEBUG_LOG
                         Debug.Log("Client " + clientIP.ToString() + " already connected. Ignoring.");
+#endif // DEBUG_LOG
                         return;
                     }
 

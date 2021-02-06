@@ -49,7 +49,9 @@ namespace ubv.tcp.client
             {
                 try
                 {
+#if DEBUG_LOG
                     Debug.Log("Trying to connect to server...");
+#endif // DEBUG_LOG
                     m_client.Connect(m_server);
                 }
                 catch (SocketException ex)
@@ -60,7 +62,9 @@ namespace ubv.tcp.client
                 if (!m_client.Connected)
                         return;
 
+#if DEBUG_LOG
                 Debug.Log("Connected to server.");
+#endif // DEBUG_LOG
 
                 using (NetworkStream stream = m_client.GetStream())
                 {

@@ -54,8 +54,9 @@ namespace ubv
                     IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
 
                     m_server = new UdpClient(localEndPoint);
-
+#if DEBUG_LOG
                     Debug.Log("Launching UDP server at " + localEndPoint.ToString());
+#endif // DEBUG_LOG
 
                     m_server.BeginReceive(EndReceiveCallback, m_server);
                 }
@@ -101,14 +102,16 @@ namespace ubv
                         }
                         catch (SocketException e)
                         {
-#if DEBUG
+#if DEBUG_LOG
                             Debug.Log("Server socket exception: " + e);
-#endif // DEBUG
+#endif // DEBUG_LOG
                         }
                     }
                     else
                     {
+#if DEBUG_LOG
                         Debug.Log("Client " + clientIP.ToString() + " is not registered. Ignoring data send.");
+#endif // DEBUG_LOG
                     }
                 }
 
@@ -158,7 +161,9 @@ namespace ubv
                     }
                     else
                     {
+#if DEBUG_LOG
                         Debug.Log("Received data from unregistered client. Ignoring.");
+#endif // DEBUG_LOG
                     }
                     
                     server.BeginReceive(EndReceiveCallback, server);

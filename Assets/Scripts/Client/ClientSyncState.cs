@@ -82,7 +82,9 @@ namespace ubv
                     if (auth != null)
                     {
                         m_playerID = auth.PlayerID;
+#if DEBUG_LOG
                         Debug.Log("Received connection confirmation, player ID is " + m_playerID);
+#endif // DEBUG_LOG
 
                         // send a ping to the server to make it known
                         m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(auth.GetBytes()).RawBytes);
@@ -93,7 +95,9 @@ namespace ubv
                         if (start != null)
                         {
                             m_playerStates = start.Players;
+#if DEBUG_LOG
                             Debug.Log("Client received confirmation that server is about to start game");
+#endif // DEBUG_LOG
                         }
                     }
                 }

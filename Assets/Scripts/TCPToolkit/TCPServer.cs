@@ -48,8 +48,9 @@ namespace ubv.tcp.server
             m_tcpClientTasks = new List<Task>();
 
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
-
+#if DEBUG_LOG
             Debug.Log("Launching TCP server at " + localEndPoint.ToString());
+#endif // DEBUG_LOG
 
             m_tcpListener = new TcpListener(localEndPoint);
         }
@@ -118,15 +119,18 @@ namespace ubv.tcp.server
                 {
                     receiver.OnDisconnect(key);
                 }
-
+#if DEBUG_LOG
                 Debug.Log("Removing " + key.ToString() + " TCP connection");
+#endif // DEBUG_LOG
                 m_clientConnections.Remove(key);
             }
         }
 
         private void HandleConnection(NetworkStream stream, IPEndPoint source)
         {
+#if DEBUG_LOG
             Debug.Log("Starting to handle " + source.ToString() + " TCP connection");
+#endif // DEBUG_LOG
             Thread send = new Thread(SendingThread);
             send.Start(new Tuple<NetworkStream, IPEndPoint>(stream, source));
 
@@ -141,8 +145,9 @@ namespace ubv.tcp.server
         {
             NetworkStream stream = ((Tuple<NetworkStream, IPEndPoint>)streamSourcePair).Item1;
             IPEndPoint source = ((Tuple<NetworkStream, IPEndPoint>)streamSourcePair).Item2;
+#if DEBUG_LOG
             Debug.Log("Starting reception from " + source.ToString());
-
+#endif // DEBUG_LOG
             if (!stream.CanRead)
                 return;
 
@@ -181,8 +186,9 @@ namespace ubv.tcp.server
         {
             NetworkStream stream = ((Tuple<NetworkStream, IPEndPoint>)streamSourcePair).Item1;
             IPEndPoint source = ((Tuple<NetworkStream, IPEndPoint>)streamSourcePair).Item2;
+#if DEBUG_LOG
             Debug.Log("Starting sending to " + source.ToString());
-
+#endif
             if (!stream.CanWrite)
                 return;
 
