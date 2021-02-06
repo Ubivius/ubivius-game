@@ -304,6 +304,7 @@ GameObject:
   m_Component:
   - component: {fileID: 624650639}
   - component: {fileID: 624650638}
+  - component: {fileID: 624650640}
   m_Layer: 0
   m_Name: MasterGrid
   m_TagString: Untagged
@@ -337,6 +338,49 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &624650640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624650637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d48f061af1d36404ca1a03eb4181349d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_boundariesMap: {x: 350, y: 350}
+  m_randomRoomPoolSection0:
+  - {fileID: 2292421661394856297, guid: 3d468dc9c994ab64c8cbc88f0779d4a1, type: 3}
+  - {fileID: 1732814683923114780, guid: 2146b954d84975444985edc8f23e8c79, type: 3}
+  - {fileID: 1410954967039421410, guid: dc8b70697a5098b4cae0dda1f70658df, type: 3}
+  - {fileID: 8175273298408582779, guid: 0a58398403efe9544ac88c0ea5212b99, type: 3}
+  m_numberRandomRoomSection0: 7
+  m_numberofTrySection0: 50
+  m_mandatoryRoomPoolSection0:
+  - {fileID: 5150202267663487019, guid: 53d236ef3cac8d94f980759f252f34cc, type: 3}
+  - {fileID: 6958133529978521732, guid: dcf4c13dbfd5f2c4ab30f2fd1dd08476, type: 3}
+  - {fileID: 5161993595501163376, guid: 3928f1980e463394ea90c9a134d63319, type: 3}
+  - {fileID: 5161993595501163376, guid: 3928f1980e463394ea90c9a134d63319, type: 3}
+  - {fileID: 5161993595501163376, guid: 3928f1980e463394ea90c9a134d63319, type: 3}
+  - {fileID: 5161993595501163376, guid: 3928f1980e463394ea90c9a134d63319, type: 3}
+  m_randomRoomPoolTopLeft: []
+  m_numberRandomRoomTopLeft: 0
+  m_numberofTryTopLeft: 0
+  m_mandatoryRoomPoolTopLeft: []
+  m_randomRoomPoolTopRight: []
+  m_numberRandomRoomTopRight: 0
+  m_numberofTryTopRight: 0
+  m_mandatoryRoomPoolTopRight: []
+  m_randomRoomPoolBottomLeft: []
+  m_numberRandomRoomBottomLeft: 0
+  m_numberofTryBottomLeft: 0
+  m_mandatoryRoomPoolBottomLeft: []
+  m_randomRoomPoolBottomRight: []
+  m_numberRandomRoomBottomRight: 0
+  m_numberofTryBottomRight: 0
+  m_mandatoryRoomPoolBottomRight: []
 --- !u!1 &925986282
 GameObject:
   m_ObjectHideFlags: 0
@@ -815,8 +859,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_udpClient: {fileID: 925986283}
-  m_playerSettings: {fileID: 0}
-  m_physicsScene: proto_move_client
+  m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
+  m_physicsScene: proto_map
   ConnectButtonEvent:
     m_PersistentCalls:
       m_Calls: []
