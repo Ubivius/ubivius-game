@@ -85,7 +85,7 @@ namespace ubv
                         Debug.Log("Received connection confirmation, player ID is " + m_playerID);
 
                         // send a ping to the server to make it known
-                        m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(new byte[0]).RawBytes);
+                        m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(auth.GetBytes()).RawBytes);
                     }
                     else
                     {

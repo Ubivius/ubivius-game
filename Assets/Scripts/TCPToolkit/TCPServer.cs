@@ -95,7 +95,7 @@ namespace ubv.tcp.server
 
         private void ProcessMessagesFromClient(TcpClient connection)
         {
-            using (connection) // automatically disposes of the connection async
+            using (connection)
             {
                 if (!connection.Connected)
                     return;
@@ -119,6 +119,7 @@ namespace ubv.tcp.server
                     receiver.OnDisconnect(key);
                 }
 
+                Debug.Log("Removing " + key.ToString() + " TCP connection");
                 m_clientConnections.Remove(key);
             }
         }
