@@ -180,8 +180,8 @@ namespace ubv
                 private GameObject m_playerPrefab;
 
                 public GameplayState(udp.server.UDPServer UDPServer,
-                    GameObject playerPrefab, Dictionary<IPEndPoint, 
-                    ClientConnection> clientConnections, 
+                    GameObject playerPrefab, 
+                    Dictionary<IPEndPoint, ClientConnection> clientConnections, 
                     common.StandardMovementSettings movementSettings, 
                     int snapshotDelay, 
                     string physicsScene)
@@ -199,9 +199,16 @@ namespace ubv
                     m_bodies = new Dictionary<int, Rigidbody2D>();
                     m_clientInputs = new Dictionary<ClientConnection, common.data.InputMessage>();
 
-                    // instantiate each player
-                    foreach(IPEndPoint ip in m_clientConnections.Keys)
+                    // register each player connection
+                    foreach (IPEndPoint ip in m_clientConnections.Keys)
                     {
+                        m_UDPserver.RegisterClient(ip);
+                    }
+
+                    // instantiate each player
+                    foreach (IPEndPoint ip in m_clientConnections.Keys)
+                    {
+                        m_UDPserver.RegisterClient(ip);
                         int id = m_clientConnections[ip].PlayerGUID;
                         Rigidbody2D body = GameObject.Instantiate(playerPrefab).GetComponent<Rigidbody2D>();
                         body.position = m_bodies.Count * Vector2.left * 3;
