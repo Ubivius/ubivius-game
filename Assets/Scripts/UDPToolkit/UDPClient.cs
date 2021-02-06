@@ -194,7 +194,7 @@ namespace ubv
                     m_receivers.Remove(receiver);
                 }
 
-                public void Distribute(UDPToolkit.Packet packet)
+                private void Distribute(UDPToolkit.Packet packet)
                 {
                     for (int i = 0; i < m_receivers.Count; i++)
                     {

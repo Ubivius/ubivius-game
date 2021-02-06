@@ -22,10 +22,10 @@ namespace ubv
 
             public class ClientSyncInit : ClientSyncState, tcp.client.ITCPClientReceiver
             {
-                private tcp.client.TCPClient m_TCPClient;
+                private readonly tcp.client.TCPClient m_TCPClient;
+                private readonly udp.client.UDPClient m_UDPClient;
 
                 //tranfer to play
-                private readonly udp.client.UDPClient m_UDPClient;
                 private readonly string m_physicsScene;
                 private readonly PlayerSettings m_playerSettings;
                 private List<PlayerState> m_playerStates;

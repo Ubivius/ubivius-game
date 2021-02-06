@@ -209,7 +209,6 @@ namespace ubv.tcp.server
 
         public void Send(byte[] bytes, IPEndPoint target)
         {
-            Debug.Log("Queuing up " + bytes.ToString() + " to send to " + target.ToString());
             lock (m_lock)
             {
                 m_dataToSend[target].Enqueue(bytes);
