@@ -77,13 +77,15 @@ namespace ubv
                 public void ReceivePacket(tcp.TCPToolkit.Packet packet)
                 {
                     // receive auth message and set player id
-                    // UDP FOR NOW, TCP LATER (with auth)
 
                     IdentificationMessage auth = udp.Serializable.FromBytes<IdentificationMessage>(packet.Data);
                     if (auth != null)
                     {
                         m_playerID = auth.PlayerID;
                         Debug.Log("Received connection confirmation, player ID is " + m_playerID);
+
+                        // send a ping to the server to make it known
+                        m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(new byte[0]).RawBytes);
                     }
                     else
                     {

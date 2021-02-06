@@ -30,6 +30,8 @@ namespace ubv
 
                 private List<IUDPServerReceiver> m_receivers = new List<IUDPServerReceiver>();
 
+                private List<IPAddress> m_registeredClients;
+
                 /// <summary>
                 /// Manages a specific client connection 
                 /// </summary>
@@ -46,6 +48,7 @@ namespace ubv
 
                 private void Awake()
                 {
+                    m_registeredClients = new List<IPAddress>();
                     m_endPoints = new Dictionary<IPEndPoint, UdpClient>();
                     m_clientConnections = new Dictionary<UdpClient, ClientConnection>();
                     IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
@@ -117,21 +120,14 @@ namespace ubv
 #endif // DEBUG_LOG
                 }
 
-                public void RegisterClient(IPEndPoint clientEndPoint)
+                public void RegisterClient(IPAddress client)
                 {
-                    if (!m_endPoints.ContainsKey(clientEndPoint))
-                    {
-                        m_endPoints.Add(clientEndPoint, new UdpClient());
-                        m_endPoints[clientEndPoint].Connect(clientEndPoint);
-
-                        m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
-                    }
+                    m_registeredClients.Add(client);
                 }
 
-                public void UnregisterClient(IPEndPoint clientEndPoint)
+                public void UnregisterClient(IPAddress client)
                 {
-                    m_clientConnections.Remove(m_endPoints[clientEndPoint]);
-                    m_endPoints.Remove(clientEndPoint);
+                    m_registeredClients.Remove(client);
                 }
 
                 private void EndReceiveCallback(System.IAsyncResult ar)
@@ -140,8 +136,16 @@ namespace ubv
                     UdpClient server = (UdpClient)ar.AsyncState;
                     
                     byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
-                    
-                    if(m_endPoints.ContainsKey(clientEndPoint))
+
+                    if (!m_endPoints.ContainsKey(clientEndPoint) && m_registeredClients.Contains(clientEndPoint.Address))
+                    {
+                        m_endPoints.Add(clientEndPoint, new UdpClient());
+                        m_endPoints[clientEndPoint].Connect(clientEndPoint);
+
+                        m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
+                    }
+
+                    if (m_endPoints.ContainsKey(clientEndPoint))
                     {
                         m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
 
