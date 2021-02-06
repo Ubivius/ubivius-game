@@ -40,10 +40,11 @@ namespace ubv
             /// In charge of regrouping player parties, and launching 
             /// the game with a fixed number of players
             /// </summary>
-            public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver
+            public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver, udp.server.IUDPServerReceiver
             {
                 private tcp.server.TCPServer m_TCPServer;
-                private Dictionary<IPEndPoint, ClientConnection> m_clientConnections;
+                private Dictionary<IPEndPoint, ClientConnection> m_TCPClientConnections;
+                private Dictionary<IPEndPoint, ClientConnection> m_UDPClientConnections;
 
                 // transfer to gameplay
                 private readonly string m_physicsScene;
@@ -73,7 +74,8 @@ namespace ubv
                     m_UDPserver = UDPServer;
                     m_TCPServer = TCPServer;
                     m_players = new List<common.data.PlayerState>();
-                    m_clientConnections = new Dictionary<IPEndPoint, ClientConnection>();
+                    m_TCPClientConnections = new Dictionary<IPEndPoint, ClientConnection>();
+                    m_UDPClientConnections = new Dictionary<IPEndPoint, ClientConnection>();
 
                     m_movementSettings = movementSettings;
                     m_snapshotDelay = snapshotDelay;
@@ -93,7 +95,7 @@ namespace ubv
                 {
                     lock (m_lock)
                     {
-                        if (m_clientConnections.Count > 3
+                        if (m_TCPClientConnections.Count > 3
 #if NETWORK_SIMULATE
                             || m_forceStartGame
 #endif // NETWORK_SIMULATE
@@ -103,12 +105,8 @@ namespace ubv
 
                             common.data.GameStartMessage message = new common.data.GameStartMessage();
                             message.Players.Set(m_players);
-                            foreach (IPEndPoint ip in m_clientConnections.Keys)
-                            {
-                                m_TCPServer.Send(message.GetBytes(), ip);
-                            }
-
-                            return new GameplayState(m_UDPserver, m_playerPrefab, m_clientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
+                            
+                            return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
                         }
                     }
                     return this;
@@ -122,7 +120,6 @@ namespace ubv
                 public void ReceivePacket(TCPToolkit.Packet packet, IPEndPoint clientIP)
                 {
                     return;
-                    //throw new System.NotImplementedException();
                 }
 
                 public void OnConnect(IPEndPoint clientIP)
@@ -132,7 +129,7 @@ namespace ubv
                         int playerID = System.Guid.NewGuid().GetHashCode();
 
                         // TODO get rid of client connection data and only use serializable list of int after serialize rework
-                        m_clientConnections[clientIP] = new ClientConnection(playerID);
+                        m_TCPClientConnections[clientIP] = new ClientConnection(playerID);
 
                         common.data.IdentificationMessage idMessage = new common.data.IdentificationMessage();
                         idMessage.PlayerID.Set(playerID);
@@ -146,6 +143,8 @@ namespace ubv
 
                         m_TCPServer.Send(idMessage.GetBytes(), clientIP);
 
+                        m_UDPserver.RegisterClient(clientIP.Address);
+
                         Debug.Log("Received connection request from " + clientIP.ToString());
                     }
                 }
@@ -154,7 +153,22 @@ namespace ubv
                 {
                     lock (m_lock)
                     {
-                        m_clientConnections.Remove(clientIP);
+                        m_TCPClientConnections.Remove(clientIP);
+                    }
+                }
+
+                public void Receive(UDPToolkit.Packet packet, IPEndPoint clientIP)
+                {
+                    if (m_UDPClientConnections.ContainsKey(clientIP))
+                    {
+                        Debug.Log("Client " + clientIP.ToString() + " already connected. Ignoring.");
+                        return;
+                    }
+
+                    common.data.IdentificationMessage identification = udp.Serializable.FromBytes<common.data.IdentificationMessage>(packet.Data);
+                    if (identification != null)
+                    {
+                        m_UDPClientConnections[clientIP] = new ClientConnection(identification.PlayerID);
                     }
                 }
             }
@@ -166,7 +180,7 @@ namespace ubv
             {
                 private udp.server.UDPServer m_UDPserver;
 
-                private Dictionary<IPEndPoint, ClientConnection> m_clientConnections;
+                private Dictionary<IPEndPoint, ClientConnection> m_UDPClientConnections;
                 private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputs;
                 private Dictionary<int, Rigidbody2D> m_bodies;
                 
@@ -181,7 +195,7 @@ namespace ubv
 
                 public GameplayState(udp.server.UDPServer UDPServer,
                     GameObject playerPrefab, 
-                    Dictionary<IPEndPoint, ClientConnection> clientConnections, 
+                    Dictionary<IPEndPoint, ClientConnection> UDPClientConnections, 
                     common.StandardMovementSettings movementSettings, 
                     int snapshotDelay, 
                     string physicsScene)
@@ -189,7 +203,7 @@ namespace ubv
                     m_UDPserver = UDPServer;
                     m_UDPserver.Subscribe(this);
                     m_tickAccumulator = 0;
-                    m_clientConnections = clientConnections;
+                    m_UDPClientConnections = UDPClientConnections;
 
                     m_movementSettings = movementSettings;
 
@@ -198,18 +212,11 @@ namespace ubv
 
                     m_bodies = new Dictionary<int, Rigidbody2D>();
                     m_clientInputs = new Dictionary<ClientConnection, common.data.InputMessage>();
-
-                    // register each player connection
-                    foreach (IPEndPoint ip in m_clientConnections.Keys)
-                    {
-                        m_UDPserver.RegisterClient(ip);
-                    }
-
+                    
                     // instantiate each player
-                    foreach (IPEndPoint ip in m_clientConnections.Keys)
+                    foreach (IPEndPoint ip in m_UDPClientConnections.Keys)
                     {
-                        m_UDPserver.RegisterClient(ip);
-                        int id = m_clientConnections[ip].PlayerGUID;
+                        int id = m_UDPClientConnections[ip].PlayerGUID;
                         Rigidbody2D body = GameObject.Instantiate(playerPrefab).GetComponent<Rigidbody2D>();
                         body.position = m_bodies.Count * Vector2.left * 3;
                         body.name = "Server player " + id.ToString();
@@ -217,20 +224,20 @@ namespace ubv
                     }
 
                     // add each player to client states
-                    foreach (IPEndPoint ip in m_clientConnections.Keys)
+                    foreach (IPEndPoint ip in m_UDPClientConnections.Keys)
                     {
                         common.data.PlayerState player = new common.data.PlayerState();
-                        player.GUID.Set(m_clientConnections[ip].PlayerGUID);
-                        player.Position.Set(m_bodies[m_clientConnections[ip].PlayerGUID].position);
+                        player.GUID.Set(m_UDPClientConnections[ip].PlayerGUID);
+                        player.Position.Set(m_bodies[m_UDPClientConnections[ip].PlayerGUID].position);
 
-                        m_clientConnections[ip].State.AddPlayer(player);
-                        m_clientConnections[ip].State.SetPlayerID(player.GUID);
+                        m_UDPClientConnections[ip].State.AddPlayer(player);
+                        m_UDPClientConnections[ip].State.SetPlayerID(player.GUID);
                     }
 
                     // add each player to each other client state
-                    foreach (ClientConnection baseConn in m_clientConnections.Values)
+                    foreach (ClientConnection baseConn in m_UDPClientConnections.Values)
                     {
-                        foreach (ClientConnection conn in m_clientConnections.Values)
+                        foreach (ClientConnection conn in m_UDPClientConnections.Values)
                         {
                             common.data.PlayerState currentPlayer = conn.State.GetPlayer();
                             if (baseConn.PlayerGUID != conn.PlayerGUID)
@@ -300,9 +307,9 @@ namespace ubv
                     if (++m_tickAccumulator > m_snapshotDelay)
                     {
                         m_tickAccumulator = 0;
-                        foreach (IPEndPoint ip in m_clientConnections.Keys)
+                        foreach (IPEndPoint ip in m_UDPClientConnections.Keys)
                         {
-                            m_UDPserver.Send(m_clientConnections[ip].State.GetBytes(), ip);
+                            m_UDPserver.Send(m_UDPClientConnections[ip].State.GetBytes(), ip);
                         }
                     }
                     return this;
@@ -311,23 +318,13 @@ namespace ubv
                 public void Receive(udp.UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
                 {
                     common.data.InputMessage inputs = udp.Serializable.FromBytes<common.data.InputMessage>(packet.Data);
-                    if (inputs != null && m_clientConnections.ContainsKey(clientEndPoint))
+                    if (inputs != null && m_UDPClientConnections.ContainsKey(clientEndPoint))
                     {
                         lock (m_lock)
                         {
-                            m_clientInputs[m_clientConnections[clientEndPoint]] = inputs;
+                            m_clientInputs[m_UDPClientConnections[clientEndPoint]] = inputs;
                         }
                     }
-                }
-
-                public void OnConnect(IPEndPoint clientIP)
-                {
-                    //throw new System.NotImplementedException();
-                }
-                
-                public void OnDisconnect(IPEndPoint clientIP)
-                {
-                    //m_IPConnections.Remove(clientIP);
                 }
             }
         }
