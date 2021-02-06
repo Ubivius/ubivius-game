@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PathNode {
+public class PathNode
+{
 
-    private Grid<PathNode> grid;
+    private List<PathNode> neighbourList;
+
     public int x;
     public int y;
 
@@ -15,24 +17,59 @@ public class PathNode {
     public bool isWalkable;
     public PathNode cameFromNode;
 
-    public PathNode(Grid<PathNode> grid, int x, int y) {
-        this.grid = grid;
+    public PathNode(int x, int y)
+    {
         this.x = x;
         this.y = y;
+
         isWalkable = true;
     }
 
-    public void CalculateFCost() {
+    public void CalculateFCost()
+    {
         fCost = gCost + hCost;
     }
 
-    public void SetIsWalkable(bool isWalkable) {
+    public void SetIsWalkable(bool isWalkable)
+    {
         this.isWalkable = isWalkable;
-        grid.TriggerGridObjectChanged(x, y);
+    }
+    
+    public void SetNeighbourList(PathNode[,] pathnodeGrid, int pathNodeGridWidth, int pathNodeGridHeight) 
+    {
+        if (this.x - 1 >= 0)
+        {
+            // Left
+            neighbourList.Add(pathnodeGrid[this.x - 1, this.y]);
+            // Left Down
+            if (this.y - 1 >= 0) neighbourList.Add(pathnodeGrid[this.x - 1, this.y - 1]);
+            // Left Up
+            if (this.y + 1 < pathNodeGridHeight) neighbourList.Add(pathnodeGrid[this.x - 1, this.y + 1]);
+        }
+        if (this.x + 1 < pathNodeGridWidth)
+        {
+            // Right
+            neighbourList.Add(pathnodeGrid[this.x + 1, this.y]);
+            // Right Down
+            if (this.y - 1 >= 0) neighbourList.Add(pathnodeGrid[this.x + 1, this.y - 1]);
+            // Right Up
+            if (this.y + 1 < pathNodeGridHeight) neighbourList.Add(pathnodeGrid[this.x + 1, this.y + 1]);
+        }
+        // Down
+        if (this.y - 1 >= 0) neighbourList.Add(pathnodeGrid[this.x, this.y - 1]);
+        // Up
+        if (this.y + 1 < pathNodeGridHeight) neighbourList.Add(pathnodeGrid[this.x, this.y + 1]);
     }
 
-    public override string ToString() {
-        return x + "," + y;
+    public List<PathNode> GetNeighbourList()
+    {
+        return neighbourList;
     }
 
+    public List<PathNode> SetAndGetNeighbourList(PathNode[,] pathnodeGrid, int pathNodeGridWidth, int pathNodeGridHeight)
+    {
+        SetNeighbourList(pathnodeGrid,  pathNodeGridWidth, pathNodeGridHeight);
+
+        return GetNeighbourList();
+    }
 }
