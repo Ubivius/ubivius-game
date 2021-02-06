@@ -3,6 +3,7 @@ using System.Collections;
 using System.Net;
 using ubv.udp;
 using System.Collections.Generic;
+using ubv.tcp;
 
 namespace ubv
 {
@@ -12,16 +13,8 @@ namespace ubv
         {
             abstract public class ServerState
             {
-                protected udp.server.UDPServer m_UDPserver;
-                protected tcp.server.TCPServer m_TCPServer;
                 protected readonly object m_lock = new object();
-
-                public ServerState(udp.server.UDPServer UDPServer, tcp.server.TCPServer TCPServer)
-                {
-                    m_UDPserver = UDPServer;
-                    m_TCPServer = TCPServer;
-                }
-
+                
                 public abstract ServerState Update();
                 public abstract ServerState FixedUpdate();
             }
@@ -47,15 +40,17 @@ namespace ubv
             /// In charge of regrouping player parties, and launching 
             /// the game with a fixed number of players
             /// </summary>
-            public class GameCreationState : ServerState, udp.server.IUDPServerReceiver
+            public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver
             {
+                private tcp.server.TCPServer m_TCPServer;
                 private Dictionary<IPEndPoint, ClientConnection> m_clientConnections;
 
                 // transfer to gameplay
-                private string m_physicsScene;
-                private common.StandardMovementSettings m_movementSettings;
-                private int m_snapshotDelay;
-                private GameObject m_playerPrefab;
+                private readonly string m_physicsScene;
+                private readonly udp.server.UDPServer m_UDPserver;
+                private readonly common.StandardMovementSettings m_movementSettings;
+                private readonly int m_snapshotDelay;
+                private readonly GameObject m_playerPrefab;
 
                 private List<common.data.PlayerState> m_players;
 
@@ -73,9 +68,10 @@ namespace ubv
 #if NETWORK_SIMULATE
                     , ServerUpdate parent
 #endif // NETWORK_SIMULATE 
-                    ) : base(UDPServer, TCPServer)
+                    )
                 {
-
+                    m_UDPserver = UDPServer;
+                    m_TCPServer = TCPServer;
                     m_players = new List<common.data.PlayerState>();
                     m_clientConnections = new Dictionary<IPEndPoint, ClientConnection>();
 
@@ -89,8 +85,8 @@ namespace ubv
 #if NETWORK_SIMULATE
                     parent.ForceStartGameButtonEvent.AddListener(() => { m_forceStartGame = true; });
 #endif // NETWORK_SIMULATE 
-
-                    m_UDPserver.Subscribe(this);
+                    
+                    m_TCPServer.Subscribe(this);
                 }
 
                 public override ServerState Update()
@@ -103,16 +99,16 @@ namespace ubv
 #endif // NETWORK_SIMULATE
                         )
                         {
-                            m_UDPserver.Unsubscribe(this);
+                            m_TCPServer.Unsubscribe(this);
 
                             common.data.GameStartMessage message = new common.data.GameStartMessage();
                             message.Players.Set(m_players);
                             foreach (IPEndPoint ip in m_clientConnections.Keys)
                             {
-                                m_UDPserver.Send(message.GetBytes(), ip);
+                                m_TCPServer.Send(message.GetBytes(), ip);
                             }
 
-                            return new GameplayState(m_UDPserver, m_TCPServer, m_playerPrefab, m_clientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
+                            return new GameplayState(m_UDPserver, m_playerPrefab, m_clientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
                         }
                     }
                     return this;
@@ -123,8 +119,9 @@ namespace ubv
                     return this;
                 }
                 
-                public void Receive(UDPToolkit.Packet packet, IPEndPoint clientIP)
+                public void Receive(TCPToolkit.Packet packet, IPEndPoint clientIP)
                 {
+                    return;
                     //throw new System.NotImplementedException();
                 }
 
@@ -147,7 +144,7 @@ namespace ubv
 
                         m_players.Add(playerState);
 
-                        m_UDPserver.Send(idMessage.GetBytes(), clientIP);
+                        m_TCPServer.Send(idMessage.GetBytes(), clientIP);
 
                         Debug.Log("Received connection request from " + clientIP.ToString());
                     }
@@ -155,7 +152,6 @@ namespace ubv
 
                 public void OnDisconnect(IPEndPoint clientIP)
                 {
-                    //throw new System.NotImplementedException();
                     lock (m_lock)
                     {
                         m_clientConnections.Remove(clientIP);
@@ -166,8 +162,10 @@ namespace ubv
             /// <summary>
             /// Represents the state of the server during the game
             /// </summary>
-            public class GameplayState : ServerState, udp.server.IUDPServerReceiver 
+            public class GameplayState : ServerState, udp.server.IUDPServerReceiver
             {
+                private udp.server.UDPServer m_UDPserver;
+
                 private Dictionary<IPEndPoint, ClientConnection> m_clientConnections;
                 private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputs;
                 private Dictionary<int, Rigidbody2D> m_bodies;
@@ -182,13 +180,13 @@ namespace ubv
                 private GameObject m_playerPrefab;
 
                 public GameplayState(udp.server.UDPServer UDPServer,
-                    tcp.server.TCPServer TCPServer,
                     GameObject playerPrefab, Dictionary<IPEndPoint, 
                     ClientConnection> clientConnections, 
                     common.StandardMovementSettings movementSettings, 
                     int snapshotDelay, 
-                    string physicsScene) : base(UDPServer, TCPServer)
+                    string physicsScene)
                 {
+                    m_UDPserver = UDPServer;
                     m_UDPserver.Subscribe(this);
                     m_tickAccumulator = 0;
                     m_clientConnections = clientConnections;

@@ -3,57 +3,143 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Net;
+using System.Threading;
+using System.IO;
 
-namespace ubv
+namespace ubv.tcp.client
 {
-    namespace tcp
+    /// <summary>
+    /// Wrapper around System.Net.Sockets.TcpClient. Manages client-side connection with server, with timeout and packet loss
+    /// </summary>
+    public class TCPClient : MonoBehaviour
     {
-        namespace client
+        protected readonly object m_lock = new object();
+
+        [Header("Connection parameters")]
+        [SerializeField] private string m_serverAddress;
+        [SerializeField] private int m_port;
+
+        protected bool m_exitSignal;
+
+        private TcpClient m_client;
+        private IPEndPoint m_server;
+
+        private List<ITCPClientReceiver> m_receivers = new List<ITCPClientReceiver>();
+
+        private const int DATA_BUFFER_SIZE = 1024;
+        private Queue<byte[]> m_dataToSend;
+
+        private void Awake()
         {
-            /// <summary>
-            /// Wrapper around System.Net.Sockets.UdpClient. Manages client-side connection with server, with timeout and packet loss
-            /// </summary>
-            public class TCPClient : MonoBehaviour
+            m_receivers = new List<ITCPClientReceiver>();
+            m_exitSignal = false;
+            m_dataToSend = new Queue<byte[]>();
+            m_client = new TcpClient();
+            m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
+
+            Thread thread = new Thread(new ThreadStart(CommThread));
+            thread.Start();
+        }
+
+        private void Start()
+        {
+        }
+
+        private void CommThread()
+        {
+            using (m_client)
             {
-                [Header("Connection parameters")]
-                [SerializeField] private string m_serverAddress;
-                [SerializeField] private int m_port;
-                
-                private TcpClient m_client;
-                private IPEndPoint m_server;
-
-                private List<ITCPClientReceiver> m_receivers = new List<ITCPClientReceiver>();
-
-                private void Awake()
+                try
                 {
-                    m_client = new TcpClient();
-                    m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
+                    m_client.Connect(m_server);
+                }
+                catch (SocketException ex)
+                {
+                    Debug.Log(ex.Message);
                 }
 
-                private void Start()
+                if (!m_client.Connected)
+                        return;
+
+                using (NetworkStream stream = m_client.GetStream())
                 {
-                    try
-                    {
-                        m_client.Connect(m_server);
-                    }
-                    catch (SocketException ex)
-                    {
-                        Debug.Log(ex.Message);
-                    }
+                    HandleConnection(stream);
+                }
+            }
+        }
+
+        private void HandleConnection(NetworkStream stream)
+        {
+            if (!stream.CanRead && !stream.CanWrite)
+                return;
+
+            int bytesRead = 0;
+                    
+            byte[] bytes = new byte[DATA_BUFFER_SIZE];
+
+            while (!m_exitSignal)
+            {
+                // read from stream
+                try
+                {
+                    bytesRead = stream.Read(bytes, 0, DATA_BUFFER_SIZE);
+                }
+                catch (IOException ex)
+                {
+                    Debug.Log(ex.Message);
+                    return;
                 }
 
-                public void Send(byte[] data)
+                if (bytesRead > 0)
                 {
-                    if (m_client.Connected)
+                    TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromBytes(bytes.SubArray(0, bytesRead));
+                    if (packet.HasValidProtocolID())
                     {
-                        using (NetworkStream stream = m_client.GetStream())
+                        // broadcast reception to listeners
+                        foreach (ITCPClientReceiver receiver in m_receivers)
                         {
-                            TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromData(data);
-                            stream.Write(packet.RawBytes, 0, data.Length);
+                            receiver.ReceivePacket(packet);
+                        }
+                    }
+                }
+                // write to stream (send to client)
+                lock (m_lock)
+                {
+                    while (m_dataToSend.Count > 0)
+                    {
+                        byte[] bytesToWrite = m_dataToSend.Dequeue();
+                        try
+                        {
+                            stream.Write(bytesToWrite, 0, bytesToWrite.Length);
+                        }
+                        catch (IOException ex)
+                        {
+                            Debug.Log(ex.Message);
+                            return;
                         }
                     }
                 }
             }
+        }
+
+        private void OnDestroy()
+        {
+            m_exitSignal = true;
+        }
+
+        public void Send(byte[] data)
+        {
+            m_dataToSend.Enqueue(data);
+        }
+
+        public void Subscribe(ITCPClientReceiver receiver)
+        {
+            m_receivers.Add(receiver);
+        }
+
+        public void Unsubscribe(ITCPClientReceiver receiver)
+        {
+            m_receivers.Remove(receiver);
         }
     }
 }
