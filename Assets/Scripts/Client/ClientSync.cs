@@ -31,20 +31,20 @@ namespace ubv
 
             private void Awake()
             {
-
-            }
-
-            private void Start()
-            {
                 m_currentState = new logic.ClientSyncInit(
-                    m_TCPClient, 
+                    m_TCPClient,
                     m_UDPClient,
-                    m_physicsScene, 
+                    m_physicsScene,
                     m_playerSettings
 #if NETWORK_SIMULATE
                     , this
 #endif // NETWORK_SIMULATE
                     );
+            }
+
+            private void Start()
+            {
+                
             }
 
             private void Update()

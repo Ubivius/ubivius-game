@@ -37,8 +37,6 @@ namespace ubv.tcp.client
             m_client = new TcpClient();
             m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
 
-            Thread thread = new Thread(new ThreadStart(CommThread));
-            thread.Start();
         }
 
         private void Start()
@@ -51,6 +49,7 @@ namespace ubv.tcp.client
             {
                 try
                 {
+                    Debug.Log("Trying to connect to server...");
                     m_client.Connect(m_server);
                 }
                 catch (SocketException ex)
@@ -60,6 +59,8 @@ namespace ubv.tcp.client
 
                 if (!m_client.Connected)
                         return;
+
+                Debug.Log("Connected to server.");
 
                 using (NetworkStream stream = m_client.GetStream())
                 {
@@ -154,7 +155,10 @@ namespace ubv.tcp.client
 
         public void Send(byte[] data)
         {
-            m_dataToSend.Enqueue(data);
+            lock (m_lock)
+            {
+                m_dataToSend.Enqueue(data);
+            }
         }
 
         public void Subscribe(ITCPClientReceiver receiver)
@@ -165,6 +169,12 @@ namespace ubv.tcp.client
         public void Unsubscribe(ITCPClientReceiver receiver)
         {
             m_receivers.Remove(receiver);
+        }
+
+        public void Connect()
+        {
+            Thread thread = new Thread(new ThreadStart(CommThread));
+            thread.Start();
         }
     }
 }
