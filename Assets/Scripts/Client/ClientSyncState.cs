@@ -69,6 +69,8 @@ namespace ubv
 
                 public void SendConnectionRequestToServer()
                 {
+                    m_TCPClient.Connect();
+
                     m_TCPClient.Send(new IdentificationMessage().GetBytes()); // sends a ping to the server
                 }
 

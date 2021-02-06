@@ -28,19 +28,24 @@ namespace ubv
                 [HideInInspector] public UnityEngine.Events.UnityEvent ForceStartGameButtonEvent;
 #endif // NETWORK_SIMULATE
 
-                // Use this for initialization
-                void Start()
+                private void Awake()
                 {
-                    m_currentState = new GameCreationState(m_UDPServer, 
+                    m_currentState = new GameCreationState(m_UDPServer,
                         m_TCPServer,
-                        m_playerPrefab, 
-                        m_movementSettings, 
-                        m_snapshotDelay, 
+                        m_playerPrefab,
+                        m_movementSettings,
+                        m_snapshotDelay,
                         m_physicsScene
 #if NETWORK_SIMULATE
                         , this
 #endif // NETWORK_SIMULATE 
                         );
+                }
+
+                // Use this for initialization
+                void Start()
+                {
+                    
                 }
 
                 // Update is called once per frame
