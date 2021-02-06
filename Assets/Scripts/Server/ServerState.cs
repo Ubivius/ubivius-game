@@ -119,7 +119,7 @@ namespace ubv
                     return this;
                 }
                 
-                public void Receive(TCPToolkit.Packet packet, IPEndPoint clientIP)
+                public void ReceivePacket(TCPToolkit.Packet packet, IPEndPoint clientIP)
                 {
                     return;
                     //throw new System.NotImplementedException();

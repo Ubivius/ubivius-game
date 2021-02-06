@@ -43,12 +43,7 @@ namespace ubv.tcp.server
             m_receivers = new List<ITCPServerReceiver>();
             m_clientConnections = new Dictionary<IPEndPoint, TcpClient>();
             m_dataToSend = new Dictionary<IPEndPoint, Queue<byte[]>>();
-
-            foreach(IPEndPoint ip in m_dataToSend.Keys)
-            {
-                m_dataToSend[ip] = new Queue<byte[]>();
-            }
-
+            
             m_exitSignal = false;
             m_tcpClientTasks = new List<Task>();
 
@@ -107,8 +102,9 @@ namespace ubv.tcp.server
 
                 IPEndPoint key = (IPEndPoint)(connection.Client.RemoteEndPoint);
                 m_clientConnections[key] = connection;
+                m_dataToSend[key] = new Queue<byte[]>();
 
-                foreach(ITCPServerReceiver receiver in m_receivers)
+                foreach (ITCPServerReceiver receiver in m_receivers)
                 {
                     receiver.OnConnect(key);
                 }
@@ -129,11 +125,28 @@ namespace ubv.tcp.server
 
         private void HandleConnection(NetworkStream stream, IPEndPoint source)
         {
-            if (!stream.CanRead && !stream.CanWrite)
+            Debug.Log("Starting to handle " + source.ToString() + " TCP connection");
+            Thread send = new Thread(SendingThread);
+            send.Start(new Tuple<NetworkStream, IPEndPoint>(stream, source));
+
+            Thread receive = new Thread(ReceivingThread);
+            receive.Start(new Tuple<NetworkStream, IPEndPoint>(stream, source));
+
+            receive.Join();
+            send.Join();
+        }
+
+        private void ReceivingThread(object streamSourcePair)
+        {
+            NetworkStream stream = ((Tuple<NetworkStream, IPEndPoint>)streamSourcePair).Item1;
+            IPEndPoint source = ((Tuple<NetworkStream, IPEndPoint>)streamSourcePair).Item2;
+            Debug.Log("Starting reception from " + source.ToString());
+
+            if (!stream.CanRead)
                 return;
-                    
+
             int bytesRead = 0;
-                    
+
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
             while (!m_exitSignal)
             {
@@ -142,7 +155,7 @@ namespace ubv.tcp.server
                 {
                     bytesRead = stream.Read(bytes, 0, DATA_BUFFER_SIZE);
                 }
-                catch(IOException ex)
+                catch (IOException ex)
                 {
                     Debug.Log(ex.Message);
                     return;
@@ -154,19 +167,32 @@ namespace ubv.tcp.server
                     if (packet.HasValidProtocolID())
                     {
                         // broadcast reception to listeners
-                        foreach(ITCPServerReceiver receiver in m_receivers)
+                        foreach (ITCPServerReceiver receiver in m_receivers)
                         {
-                            receiver.Receive(packet, source);
-                        } 
+                            receiver.ReceivePacket(packet, source);
+                        }
                     }
                 }
+            }
+        }
 
-                // write to stream (send to client)
-                lock (m_lock)
+        private void SendingThread(object streamSourcePair)
+        {
+            NetworkStream stream = ((Tuple<NetworkStream, IPEndPoint>)streamSourcePair).Item1;
+            IPEndPoint source = ((Tuple<NetworkStream, IPEndPoint>)streamSourcePair).Item2;
+            Debug.Log("Starting sending to " + source.ToString());
+
+            if (!stream.CanWrite)
+                return;
+
+            while (!m_exitSignal)
+            {
+                // write to stream (send to client)lock (m_lock)
+                lock(m_lock)
                 {
                     while (m_dataToSend[source].Count > 0)
                     {
-                        byte[] bytesToWrite = m_dataToSend[source].Dequeue();
+                        byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend[source].Dequeue()).RawBytes;
                         try
                         {
                             stream.Write(bytesToWrite, 0, bytesToWrite.Length);
@@ -183,6 +209,7 @@ namespace ubv.tcp.server
 
         public void Send(byte[] bytes, IPEndPoint target)
         {
+            Debug.Log("Queuing up " + bytes.ToString() + " to send to " + target.ToString());
             lock (m_lock)
             {
                 m_dataToSend[target].Enqueue(bytes);

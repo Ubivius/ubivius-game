@@ -22,7 +22,7 @@ namespace ubv
                 {
                 }
                 
-                public static Packet PacketFromData(byte[] data)
+                public static Packet DataToPacket(byte[] data)
                 {
                     Packet packet = new Packet(new byte[NET_PROTOCOL_ID.Length + data.Length]);
                     int index = 0;

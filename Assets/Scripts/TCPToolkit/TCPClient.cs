@@ -70,13 +70,26 @@ namespace ubv.tcp.client
 
         private void HandleConnection(NetworkStream stream)
         {
-            if (!stream.CanRead && !stream.CanWrite)
+            Thread send = new Thread(SendingThread);
+            send.Start(stream);
+
+            Thread receive = new Thread(ReceivingThread);
+            receive.Start(stream);
+
+            receive.Join();
+            send.Join();
+        }
+
+        private void ReceivingThread(object streamObj)
+        {
+            NetworkStream stream = (NetworkStream)streamObj;
+
+            if (!stream.CanRead)
                 return;
 
             int bytesRead = 0;
-                    
-            byte[] bytes = new byte[DATA_BUFFER_SIZE];
 
+            byte[] bytes = new byte[DATA_BUFFER_SIZE];
             while (!m_exitSignal)
             {
                 // read from stream
@@ -102,12 +115,24 @@ namespace ubv.tcp.client
                         }
                     }
                 }
+            }
+        }
+
+        private void SendingThread(object streamObj)
+        {
+            NetworkStream stream = (NetworkStream)streamObj;
+
+            if (!stream.CanWrite)
+                return;
+
+            while (!m_exitSignal)
+            {
                 // write to stream (send to client)
                 lock (m_lock)
                 {
                     while (m_dataToSend.Count > 0)
                     {
-                        byte[] bytesToWrite = m_dataToSend.Dequeue();
+                        byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend.Dequeue()).RawBytes;
                         try
                         {
                             stream.Write(bytesToWrite, 0, bytesToWrite.Length);
