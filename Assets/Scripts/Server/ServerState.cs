@@ -102,10 +102,16 @@ namespace ubv
                         )
                         {
                             m_TCPServer.Unsubscribe(this);
+                            m_UDPserver.Unsubscribe(this);
 
                             common.data.GameStartMessage message = new common.data.GameStartMessage();
                             message.Players.Set(m_players);
-                            
+
+                            foreach (IPEndPoint ip in m_TCPClientConnections.Keys)
+                            {
+                                m_TCPServer.Send(message.GetBytes(), ip);
+                            }
+
                             return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
                         }
                     }
@@ -140,10 +146,11 @@ namespace ubv
                         // set rotation / position according to existing players?
 
                         m_players.Add(playerState);
+                        m_UDPserver.Subscribe(this);
+                        m_UDPserver.RegisterClient(clientIP.Address);
 
                         m_TCPServer.Send(idMessage.GetBytes(), clientIP);
 
-                        m_UDPserver.RegisterClient(clientIP.Address);
 
                         Debug.Log("Received connection request from " + clientIP.ToString());
                     }
