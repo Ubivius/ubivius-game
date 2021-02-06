@@ -69,7 +69,7 @@ namespace ubv
 
                 public void SendConnectionRequestToServer()
                 {
-                    m_UDPClient.Send(new IdentificationMessage().GetBytes()); // sends a ping to the server
+                    m_TCPClient.Send(new IdentificationMessage().GetBytes()); // sends a ping to the server
                 }
 
                 public void ReceivePacket(tcp.TCPToolkit.Packet packet)
