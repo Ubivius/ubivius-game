@@ -7,42 +7,16 @@ public class Pathfinding {
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 14;
 
-    private int pathNodeGridwidth;
-    private int pathnodeGridHeight; 
-    private PathNode[,] pathnodeGrid;
+    private List<PathNode> m_pathNodeList;
 
-    public Pathfinding(int width, int height) 
+    public Pathfinding(List<PathNode> pathNodeList) 
     {
-        this.pathNodeGridwidth = width;
-        this.pathnodeGridHeight = height;
+        this.m_pathNodeList = new List<PathNode>();
+        this.m_pathNodeList = pathNodeList;
     }
 
-    public List<Vector3> FindPath(Vector3 startWorldPosition, Vector3 endWorldPosition, Grid<PathNode> grid) 
+    public List<PathNode> FindPath(PathNode startNode, PathNode endNode) 
     {
-        grid.GetXY(startWorldPosition, out int startX, out int startY);
-        grid.GetXY(endWorldPosition, out int endX, out int endY);
-
-        List<PathNode> path = FindPath(startX, startY, endX, endY, grid.GetWidth(), grid.GetHeight());
-        if (path == null)
-        {
-            return null;
-        } 
-        else 
-        {
-            List<Vector3> vectorPath = new List<Vector3>();
-            foreach (PathNode pathNode in path)
-            {
-                vectorPath.Add(new Vector3(pathNode.x, pathNode.y) * grid.GetCellSize() + Vector3.one * grid.GetCellSize() * .5f);
-            }
-            return vectorPath;
-        }
-    }
-
-    public List<PathNode> FindPath(int startX, int startY, int endX, int endY, int width, int height) 
-    {
-        PathNode startNode = new PathNode(startX, startY);
-        PathNode endNode = new PathNode(endX, endY);
-
         List<PathNode> openList;
         List<PathNode> closedList;
 
@@ -55,16 +29,11 @@ public class Pathfinding {
         openList = new List<PathNode> { startNode };
         closedList = new List<PathNode>();
 
-        for (int x = 0; x < width; x++) 
+        foreach (PathNode pathNode in this.m_pathNodeList)
         {
-            for (int y = 0; y < height; y++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-            {
-                PathNode pathNode = new PathNode(x,y);
-                pathnodeGrid[x, y] = pathNode;
-                pathNode.gCost = 99999999;
-                pathNode.CalculateFCost();
-                pathNode.cameFromNode = null;
-            }
+            pathNode.gCost = 99999999;
+            pathNode.CalculateFCost();
+            pathNode.cameFromNode = null;
         }
 
         startNode.gCost = 0;
@@ -83,7 +52,7 @@ public class Pathfinding {
             openList.Remove(currentNode);
             closedList.Add(currentNode);
 
-            foreach (PathNode neighbourNode in currentNode.SetAndGetNeighbourList(pathnodeGrid, pathNodeGridwidth, pathnodeGridHeight)) 
+            foreach (PathNode neighbourNode in currentNode.GetNeighbourList()) 
             {
                 if (closedList.Contains(neighbourNode)) continue;
 
