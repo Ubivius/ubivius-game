@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Gab {
+namespace ubv.server.logic.health_system
+{
 
     public class HealthBar : MonoBehaviour 
     {
