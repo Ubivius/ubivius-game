@@ -28,7 +28,9 @@ namespace ubv
                 private UdpClient m_server;
                 private float m_serverUptime = 0;
 
-                private List<IServerReceiver> m_receivers = new List<IServerReceiver>();
+                private List<IUDPServerReceiver> m_receivers = new List<IUDPServerReceiver>();
+
+                private List<IPAddress> m_registeredClients;
 
                 /// <summary>
                 /// Manages a specific client connection 
@@ -46,13 +48,15 @@ namespace ubv
 
                 private void Awake()
                 {
+                    m_registeredClients = new List<IPAddress>();
                     m_endPoints = new Dictionary<IPEndPoint, UdpClient>();
                     m_clientConnections = new Dictionary<UdpClient, ClientConnection>();
                     IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
 
                     m_server = new UdpClient(localEndPoint);
-
-                    Debug.Log("Launching server at " + localEndPoint.ToString());
+#if DEBUG_LOG
+                    Debug.Log("Launching UDP server at " + localEndPoint.ToString());
+#endif // DEBUG_LOG
 
                     m_server.BeginReceive(EndReceiveCallback, m_server);
                 }
@@ -83,23 +87,31 @@ namespace ubv
                     for (int i = 0; i < toRemove.Count; i++)
                     {
                         m_clientConnections.Remove(m_endPoints[toRemove[i]]);
-                        OnClientDisconnect(toRemove[i]);
                         m_endPoints.Remove(toRemove[i]);
                     }
                 }
 
                 public void Send(byte[] data, IPEndPoint clientIP)
                 {
-                    try
+                    if (m_endPoints.ContainsKey(clientIP))
                     {
-                        byte[] bytes = m_clientConnections[m_endPoints[clientIP]].ConnectionData.Send(data).ToBytes();
-                        m_server.BeginSend(bytes, bytes.Length, clientIP, EndSendCallback, m_server);
+                        try
+                        {
+                            byte[] bytes = m_clientConnections[m_endPoints[clientIP]].ConnectionData.Send(data).RawBytes;
+                            m_server.BeginSend(bytes, bytes.Length, clientIP, EndSendCallback, m_server);
+                        }
+                        catch (SocketException e)
+                        {
+#if DEBUG_LOG
+                            Debug.Log("Server socket exception: " + e);
+#endif // DEBUG_LOG
+                        }
                     }
-                    catch (SocketException e)
+                    else
                     {
-#if DEBUG
-                        Debug.Log("Server socket exception: " + e);
-#endif // DEBUG
+#if DEBUG_LOG
+                        Debug.Log("Client " + clientIP.ToString() + " is not registered. Ignoring data send.");
+#endif // DEBUG_LOG
                     }
                 }
 
@@ -111,36 +123,49 @@ namespace ubv
 #endif // DEBUG_LOG
                 }
 
+                public void RegisterClient(IPAddress client)
+                {
+                    m_registeredClients.Add(client);
+                }
+
+                public void UnregisterClient(IPAddress client)
+                {
+                    m_registeredClients.Remove(client);
+                }
+
                 private void EndReceiveCallback(System.IAsyncResult ar)
                 {
-                    // TODO: authentication
                     IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
                     UdpClient server = (UdpClient)ar.AsyncState;
-                    byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
                     
-                    // If client is not registered, create a new Socket 
+                    byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
 
-                    if (!m_endPoints.ContainsKey(clientEndPoint))
+                    if (!m_endPoints.ContainsKey(clientEndPoint) && m_registeredClients.Contains(clientEndPoint.Address))
                     {
                         m_endPoints.Add(clientEndPoint, new UdpClient());
                         m_endPoints[clientEndPoint].Connect(clientEndPoint);
 
                         m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
-
-                        OnClientConnect(clientEndPoint);
                     }
-                    
-                    m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
 
-                    UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
-
-                    
-                    if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
+                    if (m_endPoints.ContainsKey(clientEndPoint))
                     {
-                        OnReceive(packet, clientEndPoint);
+                        m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
+
+                        UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
+                        
+                        if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
+                        {
+                            OnReceive(packet, clientEndPoint);
+                        }
+                    }
+                    else
+                    {
+#if DEBUG_LOG
+                        Debug.Log("Received data from unregistered client. Ignoring.");
+#endif // DEBUG_LOG
                     }
                     
-
                     server.BeginReceive(EndReceiveCallback, server);
                 }
 
@@ -154,30 +179,14 @@ namespace ubv
                     }
                 }
 
-                public void Subscribe(IServerReceiver receiver)
+                public void Subscribe(IUDPServerReceiver receiver)
                 {
                     m_receivers.Add(receiver);
                 }
 
-                public void Unsubscribe(IServerReceiver receiver)
+                public void Unsubscribe(IUDPServerReceiver receiver)
                 {
                     m_receivers.Remove(receiver);
-                }
-
-                private void OnClientConnect(IPEndPoint clientIP)
-                {
-                    for (int i = 0; i < m_receivers.Count; i++)
-                    {
-                        m_receivers[i].OnConnect(clientIP);
-                    }
-                }
-
-                private void OnClientDisconnect(IPEndPoint clientIP)
-                {
-                    for (int i = 0; i < m_receivers.Count; i++)
-                    {
-                        m_receivers[i].OnDisconnect(clientIP);
-                    }
                 }
             }
         }

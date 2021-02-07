@@ -7,7 +7,7 @@ namespace ubv
     {
         namespace client
         {
-            public interface IPacketReceiver
+            public interface IUDPClientReceiver
             {
                 void ReceivePacket(UDPToolkit.Packet packet);
             }

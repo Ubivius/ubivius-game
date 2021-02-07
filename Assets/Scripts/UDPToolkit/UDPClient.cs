@@ -41,7 +41,7 @@ namespace ubv
                 private UdpClient m_client;
                 private IPEndPoint m_server;
 
-                private List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
+                private List<IUDPClientReceiver> m_receivers = new List<IUDPClientReceiver>();
 
                 private void Awake()
                 {
@@ -116,7 +116,7 @@ namespace ubv
 
                         m_sequencesSendTime.Add(seq, Time.realtimeSinceStartup);
 
-                        byte[] bytes = packet.ToBytes();
+                        byte[] bytes = packet.RawBytes;
                         m_client.BeginSend(bytes, bytes.Length, m_server, EndSendCallback, m_client);
                         m_lastPacketSentTime = Time.realtimeSinceStartup;
                     }
@@ -184,17 +184,17 @@ namespace ubv
                     c.BeginReceive(EndReceiveCallback, c);
                 }
 
-                public void Subscribe(IPacketReceiver receiver)
+                public void Subscribe(IUDPClientReceiver receiver)
                 {
                     m_receivers.Add(receiver);
                 }
 
-                public void Unsubscribe(IPacketReceiver receiver)
+                public void Unsubscribe(IUDPClientReceiver receiver)
                 {
                     m_receivers.Remove(receiver);
                 }
 
-                public void Distribute(UDPToolkit.Packet packet)
+                private void Distribute(UDPToolkit.Packet packet)
                 {
                     for (int i = 0; i < m_receivers.Count; i++)
                     {

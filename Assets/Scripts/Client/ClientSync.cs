@@ -18,7 +18,8 @@ namespace ubv
 
             client.logic.ClientSyncState m_currentState;
             
-            [SerializeField] private udp.client.UDPClient m_udpClient;
+            [SerializeField] private udp.client.UDPClient m_UDPClient;
+            [SerializeField] private tcp.client.TCPClient m_TCPClient;
             
             [SerializeField] private PlayerSettings m_playerSettings;
             [SerializeField] private string m_physicsScene;
@@ -30,18 +31,20 @@ namespace ubv
 
             private void Awake()
             {
-
-            }
-
-            private void Start()
-            {
-                m_currentState = new logic.ClientSyncInit(m_udpClient, 
-                    m_physicsScene, 
+                m_currentState = new logic.ClientSyncInit(
+                    m_TCPClient,
+                    m_UDPClient,
+                    m_physicsScene,
                     m_playerSettings
 #if NETWORK_SIMULATE
                     , this
 #endif // NETWORK_SIMULATE
                     );
+            }
+
+            private void Start()
+            {
+                
             }
 
             private void Update()

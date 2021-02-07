@@ -14,20 +14,17 @@ namespace ubv
         {
             abstract public class ClientSyncState
             {
-                protected udp.client.UDPClient m_client;
                 protected readonly object m_lock = new object();
-
-                public ClientSyncState(udp.client.UDPClient client)
-                {
-                    m_client = client;
-                }
-
+                
                 public abstract ClientSyncState Update();
                 public abstract ClientSyncState FixedUpdate();
             }
 
-            public class ClientSyncInit : ClientSyncState, udp.client.IPacketReceiver
+            public class ClientSyncInit : ClientSyncState, tcp.client.ITCPClientReceiver
             {
+                private readonly tcp.client.TCPClient m_TCPClient;
+                private readonly udp.client.UDPClient m_UDPClient;
+
                 //tranfer to play
                 private readonly string m_physicsScene;
                 private readonly PlayerSettings m_playerSettings;
@@ -38,13 +35,14 @@ namespace ubv
                 private bool m_playWithoutServer;
 #endif // NETWORK_SIMULATE
 
-                public ClientSyncInit(udp.client.UDPClient client, 
+                public ClientSyncInit( 
+                    tcp.client.TCPClient TCPClient, 
+                    udp.client.UDPClient UDPClient,
                     string physicsScene, 
                     PlayerSettings playerSettings
 #if NETWORK_SIMULATE
                     , ClientSync parent)
 #endif // NETWORK_SIMULATE
-                    : base(client)
                 {
                     m_physicsScene = physicsScene;
                     m_playerID = null;
@@ -54,7 +52,9 @@ namespace ubv
 
                     m_playWithoutServer = false;
 
-                    m_client.Subscribe(this);
+                    m_UDPClient = UDPClient;
+                    m_TCPClient = TCPClient;
+                    m_TCPClient.Subscribe(this);
 
 #if NETWORK_SIMULATE
                     parent.ConnectButtonEvent.AddListener(SendConnectionRequestToServer);
@@ -69,19 +69,25 @@ namespace ubv
 
                 public void SendConnectionRequestToServer()
                 {
-                    m_client.Send(new IdentificationMessage().GetBytes()); // sends a ping to the server
+                    m_TCPClient.Connect();
+
+                    m_TCPClient.Send(new IdentificationMessage().GetBytes()); // sends a ping to the server
                 }
 
-                public void ReceivePacket(UDPToolkit.Packet packet)
+                public void ReceivePacket(tcp.TCPToolkit.Packet packet)
                 {
                     // receive auth message and set player id
-                    // UDP FOR NOW, TCP LATER (with auth)
 
                     IdentificationMessage auth = udp.Serializable.FromBytes<IdentificationMessage>(packet.Data);
                     if (auth != null)
                     {
                         m_playerID = auth.PlayerID;
+#if DEBUG_LOG
                         Debug.Log("Received connection confirmation, player ID is " + m_playerID);
+#endif // DEBUG_LOG
+
+                        // send a ping to the server to make it known
+                        m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(auth.GetBytes()).RawBytes);
                     }
                     else
                     {
@@ -89,7 +95,9 @@ namespace ubv
                         if (start != null)
                         {
                             m_playerStates = start.Players;
+#if DEBUG_LOG
                             Debug.Log("Client received confirmation that server is about to start game");
+#endif // DEBUG_LOG
                         }
                     }
                 }
@@ -98,17 +106,17 @@ namespace ubv
                 {
                     if(m_playerStates != null)
                     {
-                        return new ClientSyncPlay(m_client, m_playerID.Value, m_physicsScene, m_playerSettings, m_playerStates);
+                        return new ClientSyncPlay(m_UDPClient, m_playerID.Value, m_physicsScene, m_playerSettings, m_playerStates);
                     }
 #if NETWORK_SIMULATE
                     if(m_playWithoutServer)
                     {
-                        m_client.Unsubscribe(this);
+                        m_TCPClient.Unsubscribe(this);
                         PlayerState soloPlayer = new PlayerState();
                         soloPlayer.GUID.Set(0);
                         List<PlayerState> players = new List<PlayerState>();
                         players.Add(soloPlayer);
-                        return new ClientSyncPlay(m_client, 0, m_physicsScene, m_playerSettings, players, m_playWithoutServer);
+                        return new ClientSyncPlay(m_UDPClient, 0, m_physicsScene, m_playerSettings, players, m_playWithoutServer);
                     }
 #endif // NETWORK_SIMULATE
 
@@ -119,8 +127,9 @@ namespace ubv
             /// <summary>
             /// Represents the state of the server during the game
             /// </summary>
-            public class ClientSyncPlay : ClientSyncState, udp.client.IPacketReceiver
+            public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver
             {
+                private udp.client.UDPClient m_UDPClient;
                 private readonly int m_playerID;
 
                 private uint m_remoteTick;
@@ -142,7 +151,7 @@ namespace ubv
                 private readonly bool m_noServer;
 #endif // NETWORK_SIMULATE
 
-                public ClientSyncPlay(udp.client.UDPClient client, 
+                public ClientSyncPlay(udp.client.UDPClient UDPClient, 
                     int playerID, 
                     string physicsScene, 
                     PlayerSettings playerSettings,
@@ -150,7 +159,7 @@ namespace ubv
 #if NETWORK_SIMULATE
                     , bool startWithoutServer = false
 #endif // NETWORK_SIMULATE
-                    ) : base(client)
+                    )
                 {
 #if NETWORK_SIMULATE
                     m_noServer = startWithoutServer;
@@ -170,10 +179,11 @@ namespace ubv
                     {
                         playerStateDict[state.GUID] = state;
                     }
-
-                    m_updaters.Add(new PlayerGameObjectUpdater(this, playerSettings, playerStateDict, m_playerID));
                     
-                    m_client.Subscribe(this);
+                    m_updaters.Add(new PlayerGameObjectUpdater(this, playerSettings, playerStateDict, m_playerID));
+
+                    m_UDPClient = UDPClient;
+                    m_UDPClient.Subscribe(this);
                     
                     for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
                     {
@@ -300,7 +310,7 @@ namespace ubv
 #if NETWORK_SIMULATE
                     if (Random.Range(0f, 1f) > m_packetLossChance)
                     {
-                        m_client.Send(inputMessage.GetBytes());
+                        m_UDPClient.Send(inputMessage.GetBytes());
                     }
                     else
                     {
