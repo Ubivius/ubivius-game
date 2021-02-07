@@ -17,11 +17,6 @@ public class PathNode
         this.Y = y;
     }
 
-    public void SetTerrainCost(int terrainCost)
-    {
-        this.TerrainCost = terrainCost;
-    }
-
     public List<PathNode> GetNeighbourList()
     {
         return this.m_neighbourList;
