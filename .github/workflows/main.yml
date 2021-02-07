@@ -1,8 +1,10 @@
 name: Actions
 
 on:
-  pull_request: {}
-  push: { branches: [ master ] }
+  pull_request:
+    branches: [ master, main ]
+  push:
+    branches: [ master, main ]
 
 jobs:
   server-build:
