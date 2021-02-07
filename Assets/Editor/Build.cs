@@ -23,8 +23,8 @@ public class Build
             "Assets/Scenes/ServerScene.unity",
             "Assets/Scenes/Prototypes/proto_move_server.unity"
         };
-        build.locationPathName = "/github/workspace/build/Server/ubivius-server.x86_64";
-        build.target = BuildTarget.StandaloneLinux64;
+        build.locationPathName = "/github/workspace/build/Server/ubivius-server.exe";
+        build.target = BuildTarget.StandaloneWindows64;
         build.options = BuildOptions.None;
         BuildPipeline.BuildPlayer(build);
     }
