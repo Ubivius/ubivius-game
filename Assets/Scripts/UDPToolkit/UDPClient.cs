@@ -96,14 +96,14 @@ namespace ubv
                 {
                     if (m_connectionIsGood)
                     {
-                        if (Time.realtimeSinceStartup - m_lastPacketSentTime < 1.0f / m_maximumPacketsPerSecond)
+                        if (m_RTTTimer - m_lastPacketSentTime < 1.0f / m_maximumPacketsPerSecond)
                         {
                             return;
                         }
                     }
                     else
                     {
-                        if (Time.realtimeSinceStartup - m_lastPacketSentTime < 1.0f / m_minimumPacketsPerSecond)
+                        if (m_RTTTimer - m_lastPacketSentTime < 1.0f / m_minimumPacketsPerSecond)
                         {
                             return;
                         }
@@ -114,11 +114,11 @@ namespace ubv
                         UDPToolkit.Packet packet = m_connectionData.Send(data);
                         uint seq = packet.Sequence;
 
-                        m_sequencesSendTime.Add(seq, Time.realtimeSinceStartup);
+                        m_sequencesSendTime.Add(seq, m_RTTTimer);
 
                         byte[] bytes = packet.RawBytes;
                         m_client.BeginSend(bytes, bytes.Length, m_server, EndSendCallback, m_client);
-                        m_lastPacketSentTime = Time.realtimeSinceStartup;
+                        m_lastPacketSentTime = m_RTTTimer;
                     }
                     catch (SocketException e)
                     {
