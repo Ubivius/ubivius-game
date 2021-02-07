@@ -24,7 +24,7 @@ namespace ubv.tcp.client
         private TcpClient m_client;
         private IPEndPoint m_server;
 
-        private List<ITCPClientReceiver> m_receivers = new List<ITCPClientReceiver>();
+        private List<ITCPClientReceiver> m_receivers;
 
         private const int DATA_BUFFER_SIZE = 1024;
         private Queue<byte[]> m_dataToSend;
@@ -95,6 +95,7 @@ namespace ubv.tcp.client
             int bytesRead = 0;
 
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
+
             while (!m_exitSignal)
             {
                 // read from stream
@@ -129,7 +130,7 @@ namespace ubv.tcp.client
 
             if (!stream.CanWrite)
                 return;
-
+            
             while (!m_exitSignal)
             {
                 // write to stream (send to client)
