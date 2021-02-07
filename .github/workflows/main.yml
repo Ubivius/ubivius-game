@@ -1,4 +1,4 @@
-name: Actions
+name: CI for Pull-Request and Merge on master/main
 
 on:
   pull_request:
