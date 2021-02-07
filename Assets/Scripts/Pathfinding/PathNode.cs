@@ -4,31 +4,31 @@ using UnityEngine;
 
 public class PathNode
 {
+    private List<PathNode> m_neighbourList;
 
-    private List<PathNode> neighbourList;
-
-    public int x;
-    public int y;
-
-    public int gCost;
-    public int hCost;
-    public int fCost;
+    public readonly int m_x;
+    public readonly int m_y;
 
     public PathNode cameFromNode;
 
     public PathNode(int x, int y)
     {
-        this.x = x;
-        this.y = y;
-    }
-
-    public void CalculateFCost()
-    {
-        fCost = gCost + hCost;
+        this.m_x = x;
+        this.m_y = y;
     }
 
     public List<PathNode> GetNeighbourList()
     {
-        return neighbourList;
+        return this.m_neighbourList;
+    }
+
+    public void AddNeighbour(PathNode pathNode)
+    {
+        this.m_neighbourList.Add(pathNode);
+    }
+
+    public void RemoveNeighbour(PathNode pathNode)
+    {
+        this.m_neighbourList.Remove(pathNode);
     }
 }

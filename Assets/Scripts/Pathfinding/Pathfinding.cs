@@ -7,12 +7,25 @@ public class Pathfinding {
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 14;
 
-    private List<PathNode> m_pathNodeList;
+    private class Cost
+    {
+        public int gCost;
+        public int hCost;
+        public int fCost;
+        public int terrainCost;
+    }
+
+    Dictionary<PathNode, Cost> m_pathNodeDict;
 
     public Pathfinding(List<PathNode> pathNodeList) 
     {
-        this.m_pathNodeList = new List<PathNode>();
-        this.m_pathNodeList = pathNodeList;
+        this.m_pathNodeDict = new Dictionary<PathNode, Cost>();
+
+        foreach (PathNode pathNode in pathNodeList)
+        {
+            m_pathNodeDict.Add(pathNode, new Cost());
+        }
+        
     }
 
     public List<PathNode> FindPath(PathNode startNode, PathNode endNode) 
@@ -20,7 +33,7 @@ public class Pathfinding {
         List<PathNode> openList;
         List<PathNode> closedList;
 
-        if (startNode == null || endNode == null) 
+        if (startNode == null || endNode == null || !m_pathNodeDict.ContainsKey(startNode) || !m_pathNodeDict.ContainsKey(startNode)) 
         {
             // Invalid Path
             return null;
@@ -29,16 +42,16 @@ public class Pathfinding {
         openList = new List<PathNode> { startNode };
         closedList = new List<PathNode>();
 
-        foreach (PathNode pathNode in this.m_pathNodeList)
+        foreach (PathNode pathNode in this.m_pathNodeDict.Keys)
         {
-            pathNode.gCost = 99999999;
-            pathNode.CalculateFCost();
+            m_pathNodeDict[pathNode].gCost = int.MaxValue;
+            m_pathNodeDict[pathNode].fCost = CalculateFCost(pathNode);
             pathNode.cameFromNode = null;
         }
 
-        startNode.gCost = 0;
-        startNode.hCost = CalculateDistanceCost(startNode, endNode);
-        startNode.CalculateFCost();
+        m_pathNodeDict[startNode].gCost = 0;
+        m_pathNodeDict[startNode].hCost = CalculateDistanceCost(startNode, endNode);
+        m_pathNodeDict[startNode].fCost = CalculateFCost(startNode);
 
         while (openList.Count > 0)
         {
@@ -56,13 +69,13 @@ public class Pathfinding {
             {
                 if (closedList.Contains(neighbourNode)) continue;
 
-                int tentativeGCost = currentNode.gCost + CalculateDistanceCost(currentNode, neighbourNode);
-                if (tentativeGCost < neighbourNode.gCost) 
+                int tentativeGCost = m_pathNodeDict[currentNode].gCost + CalculateDistanceCost(currentNode, neighbourNode);
+                if (tentativeGCost < m_pathNodeDict[neighbourNode].gCost) 
                 {
                     neighbourNode.cameFromNode = currentNode;
-                    neighbourNode.gCost = tentativeGCost;
-                    neighbourNode.hCost = CalculateDistanceCost(neighbourNode, endNode);
-                    neighbourNode.CalculateFCost();
+                    m_pathNodeDict[neighbourNode].gCost = tentativeGCost;
+                    m_pathNodeDict[neighbourNode].hCost = CalculateDistanceCost(neighbourNode, endNode);
+                    m_pathNodeDict[neighbourNode].fCost = CalculateFCost(neighbourNode);
 
                     if (!openList.Contains(neighbourNode)) 
                     {
@@ -74,6 +87,13 @@ public class Pathfinding {
 
         // Out of nodes on the openList
         return null;
+    }
+
+    public int CalculateFCost(PathNode pathnode)
+    {
+        int fCost = m_pathNodeDict[pathnode].gCost + m_pathNodeDict[pathnode].hCost + m_pathNodeDict[pathnode].terrainCost;
+        return fCost;
+
     }
 
     private List<PathNode> CalculatePath(PathNode endNode) 
@@ -92,8 +112,8 @@ public class Pathfinding {
 
     private int CalculateDistanceCost(PathNode a, PathNode b) 
     {
-        int xDistance = Mathf.Abs(a.x - b.x);
-        int yDistance = Mathf.Abs(a.y - b.y);
+        int xDistance = Mathf.Abs(a.m_x - b.m_x);
+        int yDistance = Mathf.Abs(a.m_y - b.m_y);
         int remaining = Mathf.Abs(xDistance - yDistance);
         return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
     }
@@ -103,11 +123,12 @@ public class Pathfinding {
         PathNode lowestFCostNode = pathNodeList[0];
         for (int i = 1; i < pathNodeList.Count; i++) 
         {
-            if (pathNodeList[i].fCost < lowestFCostNode.fCost) 
+            if (m_pathNodeDict[pathNodeList[i]].fCost < m_pathNodeDict[lowestFCostNode].fCost) 
             {
                 lowestFCostNode = pathNodeList[i];
             }
         }
+
         return lowestFCostNode;
     }
 }
