@@ -119,7 +119,7 @@ namespace ubv
                 {
                     UdpClient server = (UdpClient)ar.AsyncState;
 #if DEBUG_LOG
-            Debug.Log("Server sent " + c.EndSend(ar).ToString() + " bytes");
+            Debug.Log("Server sent " + server.EndSend(ar).ToString() + " bytes");
 #endif // DEBUG_LOG
                 }
 
