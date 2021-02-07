@@ -30,6 +30,12 @@ namespace ubv
 
                 private void Awake()
                 {
+                    
+                }
+
+                // Use this for initialization
+                void Start()
+                {
                     m_currentState = new GameCreationState(m_UDPServer,
                         m_TCPServer,
                         m_playerPrefab,
@@ -40,12 +46,6 @@ namespace ubv
                         , this
 #endif // NETWORK_SIMULATE 
                         );
-                }
-
-                // Use this for initialization
-                void Start()
-                {
-                    
                 }
 
                 // Update is called once per frame

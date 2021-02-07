@@ -77,7 +77,7 @@ namespace ubv
                 public void ReceivePacket(tcp.TCPToolkit.Packet packet)
                 {
                     // receive auth message and set player id
-
+                    
                     IdentificationMessage auth = udp.Serializable.FromBytes<IdentificationMessage>(packet.Data);
                     if (auth != null)
                     {

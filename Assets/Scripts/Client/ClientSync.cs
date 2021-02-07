@@ -31,6 +31,11 @@ namespace ubv
 
             private void Awake()
             {
+                
+            }
+
+            private void Start()
+            {
                 m_currentState = new logic.ClientSyncInit(
                     m_TCPClient,
                     m_UDPClient,
@@ -40,11 +45,6 @@ namespace ubv
                     , this
 #endif // NETWORK_SIMULATE
                     );
-            }
-
-            private void Start()
-            {
-                
             }
 
             private void Update()
