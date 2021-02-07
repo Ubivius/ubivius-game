@@ -1,6 +1,4 @@
 ﻿using UnityEditor;
-using UnityEngine;
-using UnityEditor.Build.Reporting;
 using System;
 
 public class Build
@@ -12,14 +10,10 @@ public class Build
             "Assets/Scenes/ClientScene.unity",
             "Assets/Scenes/Prototypes/proto_move_client.unity"
         };
-        build.locationPathName = "clientBuild";
+        build.locationPathName = "Build/Win/clientBuild.exe";
         build.target = BuildTarget.StandaloneWindows64;
         build.options = BuildOptions.None;
-
-        BuildReport report = BuildPipeline.BuildPlayer(build);
-        BuildSummary summary = report.summary;
-
-        Debug.Log("Build message: OutputPath - " + summary.outputPath + ", BuildSize - " + summary.totalSize.ToString());
+        BuildPipeline.BuildPlayer(build);
     }
 
     static void ServerBuild()
