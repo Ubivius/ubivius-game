@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ master, main ]
   push:
-    branches: [ master, main ]
+    branches: [ master, main, hotfix/UBI-169-client-and-server-builds ]
 
 jobs:
   server-build:
@@ -89,4 +89,4 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           name: Client
-          path: build/Client
+          path: /github/workspace/build/Client
