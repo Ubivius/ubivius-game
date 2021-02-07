@@ -2,14 +2,56 @@ name: Actions
 
 on:
   pull_request: {}
-  push: { branches: [master, build/ubi-172-client-server-split] }
+  push: { branches: [ master, build/ubi-172-client-server-split ] }
 
 jobs:
-  readmeWorkflow:
+  server-build:
     name: Readme Workflow
     runs-on: ubuntu-latest
     steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
       
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: /home/runner/work/ubivius-game/ubivius-game/Library
+          key: Library-cache
+      
+      # Test
+      # - name: Run tests
+      #   uses: webbertakken/unity-test-runner@v1.3
+      #   with:
+      #     projectPath: test-project
+      #     unityVersion: 2019.4.1f1
+
+      # Build
+      - name: Server build 
+        uses: webbertakken/unity-builder@v1.5
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          # Dirty because of client build operations
+          allowDirtyBuild: true
+          buildMethod: Build.ServerBuild
+          targetPlatform: StandaloneLinux64
+          unityVersion: 2019.4.1f1
+      
+      # Output
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Server
+          path: build/Server
+
+  client-build:
+    name: Readme Workflow
+    runs-on: ubuntu-latest
+    steps:
       # Checkout
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -40,29 +82,9 @@ jobs:
           buildMethod: Build.ClientBuild
           targetPlatform: StandaloneWindows64
           unityVersion: 2019.4.1f1
-      
-      # Build
-      - name: Server build 
-        uses: webbertakken/unity-builder@v1.5
-        env:
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
-        with:
-          # Dirty because of client build operations
-          allowDirtyBuild: true
-          buildMethod: Build.ServerBuild
-          targetPlatform: StandaloneLinux64
-          unityVersion: 2019.4.1f1
 
       # Output
       - uses: actions/upload-artifact@v1
         with:
           name: Client
           path: build/Client
-      
-      # Output
-      - uses: actions/upload-artifact@v1
-        with:
-          name: Server
-          path: build/Server
