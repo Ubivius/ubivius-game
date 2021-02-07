@@ -5,14 +5,11 @@ using ubv.udp;
 using System.Collections.Generic;
 using ubv.tcp;
 
-namespace ubv.server.logic
+namespace ubv
 {
-    abstract public class ServerState
+    namespace server
     {
-        protected udp.server.UDPServer m_server;
-        protected readonly object m_lock = new object();
-
-        public ServerState(udp.server.UDPServer server)
+        namespace logic
         {
             abstract public class ServerState
             {
@@ -22,29 +19,21 @@ namespace ubv.server.logic
                 public abstract ServerState FixedUpdate();
             }
 
-    public class ClientConnection
-    {
-        public uint ServerTick;
-        public client.ClientState State;
 
-        public int PlayerGUID { get; private set; }
+            public class ClientConnection
+            {
+                public uint ServerTick;
+                public client.ClientState State;
 
-        public ClientConnection(int playerGUID)
-        {
-            State = new client.ClientState();
-            State.SetPlayerID(playerGUID);
-            PlayerGUID = playerGUID;
-        }
-    }
+                public int PlayerGUID { get; private set; }
 
-    /// <summary>
-    /// Represents the state of the server before the game.
-    /// In charge of regrouping player parties, and launching 
-    /// the game with a fixed number of players
-    /// </summary>
-    public class GameCreationState : ServerState, udp.server.IServerReceiver
-    {
-        private Dictionary<IPEndPoint, ClientConnection> m_clientConnections;
+                public ClientConnection(int playerGUID)
+                {
+                    State = new client.ClientState();
+                    State.SetPlayerID(playerGUID);
+                    PlayerGUID = playerGUID;
+                }
+            }
 
             /// <summary>
             /// Represents the state of the server before the game.
@@ -64,8 +53,10 @@ namespace ubv.server.logic
                 private readonly int m_snapshotDelay;
                 private readonly GameObject m_playerPrefab;
 
+                private List<common.data.PlayerState> m_players;
+
 #if NETWORK_SIMULATE
-        private bool m_forceStartGame;
+                private bool m_forceStartGame;
 #endif // NETWORK_SIMULATE
 
                 public GameCreationState(udp.server.UDPServer UDPServer, 
@@ -76,7 +67,7 @@ namespace ubv.server.logic
                     int snapshotDelay, 
                     string physicsScene
 #if NETWORK_SIMULATE
-            , ServerUpdate parent
+                    , ServerUpdate parent
 #endif // NETWORK_SIMULATE 
                     )
                 {
@@ -86,15 +77,15 @@ namespace ubv.server.logic
                     m_TCPClientConnections = new Dictionary<IPEndPoint, ClientConnection>();
                     m_UDPClientConnections = new Dictionary<IPEndPoint, ClientConnection>();
 
-            m_movementSettings = movementSettings;
-            m_snapshotDelay = snapshotDelay;
-            m_physicsScene = physicsScene;
-            m_playerPrefab = playerPrefab;
+                    m_movementSettings = movementSettings;
+                    m_snapshotDelay = snapshotDelay;
+                    m_physicsScene = physicsScene;
+                    m_playerPrefab = playerPrefab;
 
-            m_forceStartGame = false;
+                    m_forceStartGame = false;
 
 #if NETWORK_SIMULATE
-            parent.ForceStartGameButtonEvent.AddListener(() => { m_forceStartGame = true; });
+                    parent.ForceStartGameButtonEvent.AddListener(() => { m_forceStartGame = true; });
 #endif // NETWORK_SIMULATE 
                     
                     m_TCPServer.Subscribe(this);
@@ -106,7 +97,7 @@ namespace ubv.server.logic
                     {
                         if (m_TCPClientConnections.Count > 3
 #if NETWORK_SIMULATE
-                    || m_forceStartGame
+                            || m_forceStartGame
 #endif // NETWORK_SIMULATE
                         )
                         {
@@ -124,17 +115,13 @@ namespace ubv.server.logic
                             return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
                         }
                     }
-
-                    return new GameplayState(m_server, m_playerPrefab, m_clientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
+                    return this;
                 }
-            }
-            return this;
-        }
 
-        public override ServerState FixedUpdate()
-        {
-            return this;
-        }
+                public override ServerState FixedUpdate()
+                {
+                    return this;
+                }
                 
                 public void ReceivePacket(TCPToolkit.Packet packet, IPEndPoint clientIP)
                 {
@@ -153,10 +140,10 @@ namespace ubv.server.logic
                         common.data.IdentificationMessage idMessage = new common.data.IdentificationMessage();
                         idMessage.PlayerID.Set(playerID);
 
-                common.data.PlayerState playerState = new common.data.PlayerState();
-                playerState.GUID.Set(playerID);
+                        common.data.PlayerState playerState = new common.data.PlayerState();
+                        playerState.GUID.Set(playerID);
 
-                // set rotation / position according to existing players?
+                        // set rotation / position according to existing players?
 
                         m_players.Add(playerState);
                         m_UDPserver.Subscribe(this);
@@ -195,7 +182,6 @@ namespace ubv.server.logic
                     }
                 }
             }
-        }
 
             /// <summary>
             /// Represents the state of the server during the game
@@ -208,14 +194,14 @@ namespace ubv.server.logic
                 private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputs;
                 private Dictionary<int, Rigidbody2D> m_bodies;
                 
-        private common.StandardMovementSettings m_movementSettings;
-        private readonly int m_snapshotDelay;
+                private common.StandardMovementSettings m_movementSettings;
+                private readonly int m_snapshotDelay;
                 
-        private uint m_tickAccumulator;
+                private uint m_tickAccumulator;
 
-        private PhysicsScene2D m_serverPhysics;
+                private PhysicsScene2D m_serverPhysics;
 
-        private GameObject m_playerPrefab;
+                private GameObject m_playerPrefab;
 
                 public GameplayState(udp.server.UDPServer UDPServer,
                     GameObject playerPrefab, 
@@ -229,10 +215,10 @@ namespace ubv.server.logic
                     m_tickAccumulator = 0;
                     m_UDPClientConnections = UDPClientConnections;
 
-            m_movementSettings = movementSettings;
+                    m_movementSettings = movementSettings;
 
-            m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(physicsScene).GetPhysicsScene2D();
-            m_playerPrefab = playerPrefab;
+                    m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(physicsScene).GetPhysicsScene2D();
+                    m_playerPrefab = playerPrefab;
 
                     m_bodies = new Dictionary<int, Rigidbody2D>();
                     m_clientInputs = new Dictionary<ClientConnection, common.data.InputMessage>();
@@ -274,62 +260,58 @@ namespace ubv.server.logic
 
                 public override ServerState Update()
                 {
-                    common.data.PlayerState player = new common.data.PlayerState();
-                    player.GUID.Set(id);
-                    m_clientConnections[ip].State.AddPlayer(player);
-                    m_clientConnections[ip].State.SetPlayerID(id);
+                    return this;
                 }
-            }
-        }
 
-        public override ServerState Update()
-        {
-            return this;
-        }
-
-        public override ServerState FixedUpdate()
-        {
-            // for each player
-            // check if missing frames
-            // update frames
-
-            uint framesToSimulate = 0;
-            lock (m_lock)
-            {
-                foreach (ClientConnection client in m_clientInputs.Keys)
+                public override ServerState FixedUpdate()
                 {
-                    common.data.InputMessage message = m_clientInputs[client];
-                    int messageCount = message.InputFrames.Value.Count;
-                    uint maxTick = message.StartTick + (uint)(messageCount - 1);
+                    // for each player
+                    // check if missing frames
+                    // update frames
+
+                    uint framesToSimulate = 0;
+                    lock (m_lock)
+                    {
+                        foreach (ClientConnection client in m_clientInputs.Keys)
+                        {
+                            common.data.InputMessage message = m_clientInputs[client];
+                            int messageCount = message.InputFrames.Value.Count;
+                            uint maxTick = message.StartTick + (uint)(messageCount - 1);
 #if DEBUG_LOG
-    Debug.Log("max tick to simulate = " + maxTick.ToString());
+            Debug.Log("max tick to simulate = " + maxTick.ToString());
 #endif // DEBUG_LOG
 
-                    // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
-                    uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
+                            // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
+                            uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
 
-                    if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
-                }
-
-                for (uint f = framesToSimulate; f > 0; f--)
-                {
-                    foreach (ClientConnection client in m_clientInputs.Keys)
-                    {
-                        common.data.InputMessage message = m_clientInputs[client];
-                        int messageCount = message.InputFrames.Value.Count;
-                        if (messageCount > f)
-                        {
-                            common.data.InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
-
-                            // must be called in main unity thread
-                            Rigidbody2D body = m_bodies[client.PlayerGUID];
-
-                            common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
-
-                            client.State.GetPlayer().Position.Set(body.position);
-                            client.State.Tick.Set(client.ServerTick);
-                            client.ServerTick++;
+                            if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
                         }
+
+                        for (uint f = framesToSimulate; f > 0; f--)
+                        {
+                            foreach (ClientConnection client in m_clientInputs.Keys)
+                            {
+                                common.data.InputMessage message = m_clientInputs[client];
+                                int messageCount = message.InputFrames.Value.Count;
+                                if (messageCount > f)
+                                {
+                                    common.data.InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
+
+                                    // must be called in main unity thread
+                                    Rigidbody2D body = m_bodies[client.PlayerGUID];
+
+                                    common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
+
+                                    client.State.GetPlayer().Position.Set(body.position);
+                                    client.State.Tick.Set(client.ServerTick);
+                                    client.ServerTick++;
+                                }
+                            }
+
+                            m_serverPhysics.Simulate(Time.fixedDeltaTime);
+                        }
+
+                        m_clientInputs.Clear();
                     }
 
                     if (++m_tickAccumulator > m_snapshotDelay)
@@ -343,13 +325,7 @@ namespace ubv.server.logic
                     return this;
                 }
 
-                m_clientInputs.Clear();
-            }
-
-            if (++m_tickAccumulator > m_snapshotDelay)
-            {
-                m_tickAccumulator = 0;
-                foreach (IPEndPoint ip in m_clientConnections.Keys)
+                public void Receive(udp.UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
                 {
                     common.data.InputMessage inputs = udp.Serializable.FromBytes<common.data.InputMessage>(packet.Data);
                     if (inputs != null && m_UDPClientConnections.ContainsKey(clientEndPoint))
@@ -361,16 +337,6 @@ namespace ubv.server.logic
                     }
                 }
             }
-        }
-
-        public void OnConnect(IPEndPoint clientIP)
-        {
-            //throw new System.NotImplementedException();
-        }
-                
-        public void OnDisconnect(IPEndPoint clientIP)
-        {
-            //m_IPConnections.Remove(clientIP);
         }
     }
 }

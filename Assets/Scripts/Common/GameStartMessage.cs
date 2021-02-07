@@ -1,20 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace ubv.common.data
+namespace ubv
 {
-    public class GameStartMessage : serialization.Serializable
+    namespace common
     {
-        public serialization.types.List<PlayerState> Players;
-
-        protected override void InitSerializableMembers()
+        namespace data
         {
-            Players = new serialization.types.List<PlayerState>(this, new System.Collections.Generic.List<PlayerState>());
-        }
+            public class GameStartMessage : udp.Serializable
+            {
+                public udp.SerializableTypes.List<common.data.PlayerState> Players;
 
-        protected override byte SerializationID()
-        {
-            return (byte)serialization.ID.START_MESSAGE;
+                protected override void InitSerializableMembers()
+                {
+                    Players = new udp.SerializableTypes.List<PlayerState>(this, new System.Collections.Generic.List<PlayerState>());
+                }
+
+                protected override byte SerializationID()
+                {
+                    return (byte)udp.Serialization.BYTE_TYPE.START_MESSAGE;
+                }
+            }
         }
     }
 }

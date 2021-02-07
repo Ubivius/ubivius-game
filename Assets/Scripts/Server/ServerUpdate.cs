@@ -3,25 +3,29 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 
-namespace ubv.server.logic
+namespace ubv
 {
-    /// <summary>
-    /// Manages server specific update logic
-    /// </summary>
-    public class ServerUpdate : MonoBehaviour
+    namespace server
     {
-        private ServerState m_currentState;
+        namespace logic
+        {
+            /// <summary>
+            /// Manages server specific update logic
+            /// </summary>
+            public class ServerUpdate : MonoBehaviour
+            {
+                private ServerState m_currentState;
 
-        [SerializeField] private GameObject m_playerPrefab;
-        [SerializeField] private common.StandardMovementSettings m_movementSettings;
-        [SerializeField] private string m_physicsScene;
-        [SerializeField] private int m_snapshotDelay;
+                [SerializeField] private GameObject m_playerPrefab;
+                [SerializeField] private common.StandardMovementSettings m_movementSettings;
+                [SerializeField] private string m_physicsScene;
+                [SerializeField] private int m_snapshotDelay;
 
                 [SerializeField] private udp.server.UDPServer m_UDPServer;
                 [SerializeField] private tcp.server.TCPServer m_TCPServer;
 
 #if NETWORK_SIMULATE
-        [HideInInspector] public UnityEngine.Events.UnityEvent ForceStartGameButtonEvent;
+                [HideInInspector] public UnityEngine.Events.UnityEvent ForceStartGameButtonEvent;
 #endif // NETWORK_SIMULATE
 
                 private void Awake()
@@ -33,10 +37,10 @@ namespace ubv.server.logic
                         m_snapshotDelay,
                         m_physicsScene
 #if NETWORK_SIMULATE
-                , this
+                        , this
 #endif // NETWORK_SIMULATE 
-                );
-        }
+                        );
+                }
 
                 // Use this for initialization
                 void Start()
@@ -50,25 +54,27 @@ namespace ubv.server.logic
                     m_currentState = m_currentState.Update();
                 }
 
-        // Updates all players rewinds if necessary
-        private void FixedUpdate()
-        {
-            m_currentState = m_currentState.FixedUpdate();
-        }
+                // Updates all players rewinds if necessary
+                private void FixedUpdate()
+                {
+                    m_currentState = m_currentState.FixedUpdate();
+                }
                 
-        // DRAFT SUR AUTH:
-        /*
-            * Client envoie un message d'auth en TCP, qui contient
-            *  un "hello" + des credentials / un moyen de prouver 
-            *  qui'il est legit
-            * Serveur renvoie un message d'acknowledgement de
-            * connexion, qui contient le playerID qu'il a attribué 
-            * au joueur du client
-            * 
-            * En théorie, on connect et on disconnect vont être gérées par le TCP 
-            * et pas par l'UDP
-            * et OnConnect dans l'UDP/ici gérerait un nouveau joueur dont on connait
-            * déjà l'ID (qui a été donné  par le TCP)
-        */
+                // DRAFT SUR AUTH:
+                /*
+                 * Client envoie un message d'auth en TCP, qui contient
+                 *  un "hello" + des credentials / un moyen de prouver 
+                 *  qui'il est legit
+                 * Serveur renvoie un message d'acknowledgement de
+                 * connexion, qui contient le playerID qu'il a attribué 
+                 * au joueur du client
+                 * 
+                 * En théorie, on connect et on disconnect vont être gérées par le TCP 
+                 * et pas par l'UDP
+                 * et OnConnect dans l'UDP/ici gérerait un nouveau joueur dont on connait
+                 * déjà l'ID (qui a été donné  par le TCP)
+                */
+            }
+        }
     }
 }

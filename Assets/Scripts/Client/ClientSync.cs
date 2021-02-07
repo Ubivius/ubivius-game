@@ -4,17 +4,19 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace ubv.client
+namespace ubv
 {
-    /// <summary>
-    /// Client-side synchronisation with server information
-    /// </summary>
-    public class ClientSync : MonoBehaviour
+    namespace client
     {
-        // TO CHECK:: https://www.codeproject.com/Articles/311944/BinaryFormatter-or-Manual-serializing
-        // https://github.com/spectre1989/unity_physics_csp/blob/master/Assets/Logic.cs
+        /// <summary>
+        /// Client-side synchronisation with server information
+        /// </summary>
+        public class ClientSync : MonoBehaviour
+        {
+            // TO CHECK:: https://www.codeproject.com/Articles/311944/BinaryFormatter-or-Manual-serializing
+            // https://github.com/spectre1989/unity_physics_csp/blob/master/Assets/Logic.cs
 
-        client.logic.ClientSyncState m_currentState;
+            client.logic.ClientSyncState m_currentState;
             
             [SerializeField] private udp.client.UDPClient m_UDPClient;
             [SerializeField] private tcp.client.TCPClient m_TCPClient;
@@ -23,8 +25,8 @@ namespace ubv.client
             [SerializeField] private string m_physicsScene;
 
 #if NETWORK_SIMULATE
-        [HideInInspector] public UnityEngine.Events.UnityEvent ConnectButtonEvent;
-        [HideInInspector] public UnityEngine.Events.UnityEvent PlayWithoutServerButtonEvent;
+            [HideInInspector] public UnityEngine.Events.UnityEvent ConnectButtonEvent;
+            [HideInInspector] public UnityEngine.Events.UnityEvent PlayWithoutServerButtonEvent;
 #endif // NETWORK_SIMULATE
 
             private void Awake()
@@ -35,10 +37,10 @@ namespace ubv.client
                     m_physicsScene,
                     m_playerSettings
 #if NETWORK_SIMULATE
-                , this
+                    , this
 #endif // NETWORK_SIMULATE
-                );
-        }
+                    );
+            }
 
             private void Start()
             {

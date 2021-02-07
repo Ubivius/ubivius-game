@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace ubv.client
-{ 
-    public class InputController : MonoBehaviour, IClientStateUpdater
+namespace ubv
+{
+    namespace client
     {
         /// <summary>
-        /// Sets the input
+        /// Sets the 
         /// </summary>
         public class InputController : MonoBehaviour
         {
@@ -21,8 +21,8 @@ namespace ubv.client
             static private InputController m_instance;
             static private common.data.InputFrame m_currentInputFrame;
 
-        private Vector2 m_move = Vector2.zero;
-        private bool m_IsSprinting = false;
+            private Vector2 m_move = Vector2.zero;
+            private bool m_IsSprinting = false;
 
             private void Awake()
             {
@@ -33,7 +33,7 @@ namespace ubv.client
 
                 m_currentInputFrame = new common.data.InputFrame();
 
-            m_controls = new PlayerControls();
+                m_controls = new PlayerControls();
 
                 m_controls.Gameplay.Move.performed += context => MoveCharacter(context.ReadValue<Vector2>());
                 m_controls.Gameplay.Move.canceled += context => MoveCharacter(Vector2.zero);
@@ -42,49 +42,49 @@ namespace ubv.client
                 m_controls.Gameplay.Sprint.canceled += context => SetSprinting(false);
             }
 
-        // Start is called before the first frame update
-        void Start()
-        {
+            // Start is called before the first frame update
+            void Start()
+            {
 
-        }
+            }
 
             private void MoveCharacter(Vector2 movement)
             {
 #if DEBUG_LOG
-            Debug.Log("Trying to apply this move -> " + movement.ToString());
+                Debug.Log("Trying to apply this move -> " + movement.ToString());
 #endif //DEBUG_LOG
-            m_move = movement;
-        }
+                m_move = movement;
+            }
 
             private void SetSprinting(bool isSprinting)
             {
 #if DEBUG_LOG
-            Debug.Log("Trying to apply this isSprinting -> " + isSprinting.ToString());
+                Debug.Log("Trying to apply this isSprinting -> " + isSprinting.ToString());
 #endif //DEBUG_LOG
-            m_IsSprinting = isSprinting;
-        }
+                m_IsSprinting = isSprinting;
+            }
 
-        // Update is called once per frame
-        void Update()
-        {
-            m_currentInputFrame.Movement.Set(m_move);
-            m_currentInputFrame.Sprinting.Set(m_IsSprinting);
-        }
+            // Update is called once per frame
+            void Update()
+            {
+                m_currentInputFrame.Movement.Set(m_move);
+                m_currentInputFrame.Sprinting.Set(m_IsSprinting);
+            }
         
             static public common.data.InputFrame CurrentFrame()
             {
                 return m_currentInputFrame;
             }
 
-        private void FixedUpdate()
-        {
-            // ...
-        }
+            private void FixedUpdate()
+            {
+                // ...
+            }
 
-        private void OnEnable()
-        {
-            m_controls.Gameplay.Enable();
-        }
+            private void OnEnable()
+            {
+                m_controls.Gameplay.Enable();
+            }
 
             private void OnDisable()
             {
