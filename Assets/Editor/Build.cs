@@ -23,7 +23,7 @@ public class Build
             "Assets/Scenes/ServerScene.unity",
             "Assets/Scenes/Prototypes/proto_move_server.unity"
         };
-        build.locationPathName = "serverBuild";
+        build.locationPathName = "/github/workspace/build/StandaloneLinux64/serverBuild";
         build.target = BuildTarget.StandaloneLinux64;
         build.options = BuildOptions.None;
         BuildPipeline.BuildPlayer(build);
