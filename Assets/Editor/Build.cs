@@ -10,7 +10,7 @@ public class Build
             "Assets/Scenes/ClientScene.unity",
             "Assets/Scenes/Prototypes/proto_move_client.unity"
         };
-        build.locationPathName = "Build/Win/clientBuild.exe";
+        build.locationPathName = "/github/workspace/build/StandaloneWindows64/clientBuild.exe";
         build.target = BuildTarget.StandaloneWindows64;
         build.options = BuildOptions.None;
         BuildPipeline.BuildPlayer(build);
