@@ -59,10 +59,10 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           name: Client
-          path: clientBuild
+          path: build/StandaloneWindows64/StandaloneWindows64.exe
       
       # Output
       - uses: actions/upload-artifact@v1
         with:
           name: Server
-          path: serverBuild
+          path: build/StandaloneLinux64/StandaloneLinux64
