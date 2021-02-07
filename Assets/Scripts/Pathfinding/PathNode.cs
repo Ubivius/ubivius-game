@@ -6,15 +6,20 @@ public class PathNode
 {
     private List<PathNode> m_neighbourList;
 
-    public readonly int m_x;
-    public readonly int m_y;
+    public readonly int X;
+    public readonly int Y;
 
-    public PathNode cameFromNode;
+    public int TerrainCost;
 
     public PathNode(int x, int y)
     {
-        this.m_x = x;
-        this.m_y = y;
+        this.X = x;
+        this.Y = y;
+    }
+
+    public void SetTerrainCost(int terrainCost)
+    {
+        this.TerrainCost = terrainCost;
     }
 
     public List<PathNode> GetNeighbourList()
