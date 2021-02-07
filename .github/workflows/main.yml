@@ -59,10 +59,10 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           name: Client
-          path: /github/workspace/build/StandaloneWindows64
+          path: build/Client
       
       # Output
       - uses: actions/upload-artifact@v1
         with:
           name: Server
-          path: /github/workspace/build/StandaloneLinux64
+          path: build/Server
