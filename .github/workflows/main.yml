@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ master, main ]
   push:
-    branches: [ master, main, hotfix/UBI-169-client-and-server-builds ]
+    branches: [ master, main ]
 
 jobs:
   server-build:
