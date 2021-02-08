@@ -7,8 +7,8 @@ using UnityEngine.Events;
 public class HealthSystem : MonoBehaviour
 {
 
-    public UnityEvent onHealthChanged;
-    public UnityEvent onDead;
+    public UnityEvent OnHealthChanged;
+    public UnityEvent OnDead;
 
     private int m_healthMax;
     private int m_health;
@@ -32,17 +32,17 @@ public class HealthSystem : MonoBehaviour
             m_health = 0;
         }
 
-        if (onHealthChanged != null) onHealthChanged(this, EventArgs.Empty);
+        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke();
 
         if (m_health <= 0) 
         {
-            Die();
+            this.Die();
         }
     }
 
     public void Die() 
     {
-        if (onDead != null) onDead(this, EventArgs.Empty);
+        if (this.OnDead != null) this.OnDead.Invoke();
     }
 
     public void Heal(int amount) 
@@ -53,6 +53,6 @@ public class HealthSystem : MonoBehaviour
             m_health = m_healthMax;
         }
 
-        if (onHealthChanged != null) onHealthChanged(this, EventArgs.Empty);
+        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke();
     }
 }

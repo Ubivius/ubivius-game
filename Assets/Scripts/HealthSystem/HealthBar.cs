@@ -8,19 +8,19 @@ public class HealthBar : MonoBehaviour
 
     public void Setup(HealthSystem healthSystem) 
     {
-        this.m_healthSystem = healthSystem;
+        m_healthSystem = healthSystem;
+        m_healthSystem.OnHealthChanged.AddListener(HealthSystemOnHealthChanged);
 
-        this.m_healthSystem.onHealthChanged += HealthSystemOnHealthChanged;
         UpdateHealthBar();
     }
 
-    private void HealthSystemOnHealthChanged(object sender, System.EventArgs e) 
+    public void HealthSystemOnHealthChanged() 
     {
         UpdateHealthBar();
     }
 
     private void UpdateHealthBar() 
     {
-        transform.Find("Bar").localScale = new Vector3(m_healthSystem.GetHealthPercent(), 1);
+        //transform.Find("Bar").localScale = new Vector3(m_healthSystem.GetHealthPercent(), 1);
     }
 }
