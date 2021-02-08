@@ -181,7 +181,8 @@ namespace ubv
 
                 public void Subscribe(IUDPServerReceiver receiver)
                 {
-                    m_receivers.Add(receiver);
+                    if(!m_receivers.Contains(receiver))
+                        m_receivers.Add(receiver);
                 }
 
                 public void Unsubscribe(IUDPServerReceiver receiver)
