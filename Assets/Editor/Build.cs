@@ -25,7 +25,7 @@ public class Build
         };
         build.locationPathName = "/github/workspace/build/Server/ubivius-server.x86_64";
         build.target = BuildTarget.StandaloneLinux64;
-        build.options = BuildOptions.None;
+        build.options = BuildOptions.EnableHeadlessMode;
         BuildPipeline.BuildPlayer(build);
     }
 }
