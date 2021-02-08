@@ -89,6 +89,7 @@ namespace ubv
 #endif // NETWORK_SIMULATE 
                     
                     m_TCPServer.Subscribe(this);
+                    m_UDPserver.Subscribe(this);
                 }
 
                 public override ServerState Update()
@@ -146,7 +147,6 @@ namespace ubv
                         // set rotation / position according to existing players?
 
                         m_players.Add(playerState);
-                        m_UDPserver.Subscribe(this);
                         m_UDPserver.RegisterClient(clientIP.Address);
 
                         m_TCPServer.Send(idMessage.GetBytes(), clientIP);
