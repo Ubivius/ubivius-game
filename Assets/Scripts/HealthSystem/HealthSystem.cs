@@ -7,7 +7,7 @@ using UnityEngine.Events;
 public class HealthSystem : MonoBehaviour
 {
 
-    public UnityEvent OnHealthChanged;
+    public UnityEvent<int> OnHealthChanged;
     public UnityEvent OnDead;
 
     private int m_healthMax;
@@ -32,7 +32,7 @@ public class HealthSystem : MonoBehaviour
             m_health = 0;
         }
 
-        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke();
+        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke(amount);
 
         if (m_health <= 0) 
         {
@@ -53,6 +53,31 @@ public class HealthSystem : MonoBehaviour
             m_health = m_healthMax;
         }
 
-        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke();
+        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke(amount);
     }
 }
+
+//Example of use
+/*
+public class HealthBar : MonoBehaviour
+{
+    private HealthSystem m_healthSystem;
+
+    public void Setup(HealthSystem healthSystem)
+    {
+        m_healthSystem = healthSystem;
+        m_healthSystem.OnHealthChanged.AddListener(HealthSystemOnHealthChanged);
+
+        UpdateHealthBar();
+    }
+
+    public void HealthSystemOnHealthChanged()
+    {
+        UpdateHealthBar();
+    }
+
+    private void UpdateHealthBar()
+    {
+        //transform.Find("Bar").localScale = new Vector3(m_healthSystem.GetHealthPercent(), 1);
+    }
+}*/
