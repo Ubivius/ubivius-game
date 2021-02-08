@@ -41,7 +41,7 @@ namespace ubv
                 private UdpClient m_client;
                 private IPEndPoint m_server;
 
-                private List<IPacketReceiver> m_receivers = new List<IPacketReceiver>();
+                private List<IUDPClientReceiver> m_receivers = new List<IUDPClientReceiver>();
 
                 private void Awake()
                 {
@@ -96,14 +96,14 @@ namespace ubv
                 {
                     if (m_connectionIsGood)
                     {
-                        if (Time.realtimeSinceStartup - m_lastPacketSentTime < 1.0f / m_maximumPacketsPerSecond)
+                        if (m_RTTTimer - m_lastPacketSentTime < 1.0f / m_maximumPacketsPerSecond)
                         {
                             return;
                         }
                     }
                     else
                     {
-                        if (Time.realtimeSinceStartup - m_lastPacketSentTime < 1.0f / m_minimumPacketsPerSecond)
+                        if (m_RTTTimer - m_lastPacketSentTime < 1.0f / m_minimumPacketsPerSecond)
                         {
                             return;
                         }
@@ -114,11 +114,11 @@ namespace ubv
                         UDPToolkit.Packet packet = m_connectionData.Send(data);
                         uint seq = packet.Sequence;
 
-                        m_sequencesSendTime.Add(seq, Time.realtimeSinceStartup);
+                        m_sequencesSendTime.Add(seq, m_RTTTimer);
 
-                        byte[] bytes = packet.ToBytes();
+                        byte[] bytes = packet.RawBytes;
                         m_client.BeginSend(bytes, bytes.Length, m_server, EndSendCallback, m_client);
-                        m_lastPacketSentTime = Time.realtimeSinceStartup;
+                        m_lastPacketSentTime = m_RTTTimer;
                     }
                     catch (SocketException e)
                     {
@@ -184,17 +184,17 @@ namespace ubv
                     c.BeginReceive(EndReceiveCallback, c);
                 }
 
-                public void Subscribe(IPacketReceiver receiver)
+                public void Subscribe(IUDPClientReceiver receiver)
                 {
                     m_receivers.Add(receiver);
                 }
 
-                public void Unsubscribe(IPacketReceiver receiver)
+                public void Unsubscribe(IUDPClientReceiver receiver)
                 {
                     m_receivers.Remove(receiver);
                 }
 
-                public void Distribute(UDPToolkit.Packet packet)
+                private void Distribute(UDPToolkit.Packet packet)
                 {
                     for (int i = 0; i < m_receivers.Count; i++)
                     {
