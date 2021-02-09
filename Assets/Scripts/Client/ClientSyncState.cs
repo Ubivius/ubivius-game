@@ -211,7 +211,7 @@ namespace ubv
 
                     ++m_localTick;
 
-                    ClientCorrection();
+                    ClientCorrection(m_remoteTick % CLIENT_STATE_BUFFER_SIZE);
 
                     return this;
                 }
@@ -238,13 +238,13 @@ namespace ubv
                     m_clientPhysics.Simulate(deltaTime);
                 }
                 
-                private List<IClientStateUpdater> UpdatersNeedingCorrection(ClientState remoteState)
+                private List<IClientStateUpdater> UpdatersNeedingCorrection(ClientState localState, ClientState remoteState)
                 {
                     List<IClientStateUpdater> needCorrection = new List<IClientStateUpdater>();
 
                     for (int i = 0; i < m_updaters.Count; i++)
                     {
-                        if (m_updaters[i].NeedsCorrection(remoteState))
+                        if (m_updaters[i].NeedsCorrection(localState, remoteState))
                         {
                             needCorrection.Add(m_updaters[i]);
                         }
@@ -331,7 +331,7 @@ namespace ubv
                         Time.fixedDeltaTime);
                 }
 
-                private void ClientCorrection()
+                private void ClientCorrection(uint remoteIndex)
                 {
 #if NETWORK_SIMULATE
                     if (m_noServer)
@@ -345,7 +345,7 @@ namespace ubv
                     {
                         if (m_lastServerState != null)
                         {
-                            List<IClientStateUpdater> updaters = UpdatersNeedingCorrection(m_lastServerState);
+                            List<IClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastServerState);
                             for (int i = 0; i < updaters.Count; i++)
                             {
                                 uint rewindTicks = m_remoteTick;
@@ -363,6 +363,14 @@ namespace ubv
                                         Time.fixedDeltaTime);
                                     m_clientPhysics.Simulate(Time.fixedDeltaTime);
                                 }
+                            }
+
+                            // after we try, if it's still wrong, hard reset to server position
+                            updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastServerState);
+                            for (int i = 0; i < updaters.Count; i++)
+                            {
+                                // reset world state to last server-sent state
+                                updaters[i].UpdateFromState(m_lastServerState);
                             }
 
                             m_lastServerState = null;
