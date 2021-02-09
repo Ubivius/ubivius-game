@@ -34,8 +34,11 @@ namespace ubv.client.logic
             foreach(PlayerState state in remoteState.Players().Values)
             {
                 err = (m_bodies[state.GUID].position - state.Position).sqrMagnitude > 0.01f;
+                if (err)
+                {
+                    return true;
+                }
             }
-
             return err;
         }
 
