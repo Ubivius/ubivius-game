@@ -59,6 +59,7 @@ namespace ubv.client
             }
         }
 
+<<<<<<< HEAD
         public Dictionary<int, common.data.PlayerState>.ValueCollection Players()
         {
             return m_playerStates.Value.Values;
@@ -110,6 +111,12 @@ namespace ubv.client
             }
 
             return needCorrection;
+=======
+            public Dictionary<int, common.data.PlayerState> Players()
+            {
+                return m_playerStates.Value;
+            }
+>>>>>>> origin/master
         }
 #endregion
     }

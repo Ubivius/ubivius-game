@@ -17,12 +17,18 @@ namespace ubv.server.logic
         [SerializeField] private string m_physicsScene;
         [SerializeField] private int m_snapshotDelay;
 
+<<<<<<< HEAD
         [SerializeField] private udp.server.UDPServer m_server;
+=======
+                [SerializeField] private udp.server.UDPServer m_UDPServer;
+                [SerializeField] private tcp.server.TCPServer m_TCPServer;
+>>>>>>> origin/master
 
 #if NETWORK_SIMULATE
         [HideInInspector] public UnityEngine.Events.UnityEvent ForceStartGameButtonEvent;
 #endif // NETWORK_SIMULATE
 
+<<<<<<< HEAD
         // Use this for initialization
         void Start()
         {
@@ -31,6 +37,22 @@ namespace ubv.server.logic
                 m_movementSettings, 
                 m_snapshotDelay, 
                 m_physicsScene
+=======
+                private void Awake()
+                {
+                    
+                }
+
+                // Use this for initialization
+                void Start()
+                {
+                    m_currentState = new GameCreationState(m_UDPServer,
+                        m_TCPServer,
+                        m_playerPrefab,
+                        m_movementSettings,
+                        m_snapshotDelay,
+                        m_physicsScene
+>>>>>>> origin/master
 #if NETWORK_SIMULATE
                 , this
 #endif // NETWORK_SIMULATE 

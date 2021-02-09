@@ -23,9 +23,15 @@ namespace ubv.udp
         /// </summary>
         public class ConnectionData
         {
+<<<<<<< HEAD
             private uint m_localSequence;
             private uint m_remoteSequence;
             private Queue<uint> m_acknowledged; // packets we sent and know other side received
+=======
+            public const ushort UDP_MAX_PAYLOAD_SIZE = 512 * 2 * 2; // TODO: WARN WHEN EXCEEDING THIS AND FIND RIGHT SIZE
+            public const ushort UDP_HEADER_SIZE = 5 * sizeof(int);
+            public const ushort UDP_PACKET_SIZE = UDP_HEADER_SIZE + UDP_MAX_PAYLOAD_SIZE; // size in bytes
+>>>>>>> origin/master
 
             public ConnectionData()
             {
@@ -87,6 +93,7 @@ namespace ubv.udp
                 return false;
             }
 
+<<<<<<< HEAD
         }
 
         public class Packet
@@ -110,6 +117,27 @@ namespace ubv.udp
                 ushort index = 0;
                 for (; index < UDP_PROTOCOL_ID.Length; index++)
                     RawBytes[index] = UDP_PROTOCOL_ID[index];
+=======
+            public class Packet : network.Packet
+            {
+                public uint Sequence { get { return System.BitConverter.ToUInt32(RawBytes, 4); } }
+                public uint ACK { get { return System.BitConverter.ToUInt32(RawBytes, 8); } }
+                public int ACK_Bitfield { get { return System.BitConverter.ToInt32(RawBytes, 12); } }
+                public int DataSize { get { return System.BitConverter.ToInt32(RawBytes, 16); } }
+                public byte[] Data { get { return RawBytes.SubArray(UDP_HEADER_SIZE, DataSize); } }
+                
+                private Packet(byte[] bytes) : base(bytes)
+                {
+
+                }
+
+                internal Packet(byte[] data, uint seq, uint ack, int ackBitfield) : base(new byte[UDP_PACKET_SIZE])
+                {
+                    ushort index = 0;
+                    
+                    for (ushort i = 0; i < 4; i++, index++)
+                        RawBytes[index] = NET_PROTOCOL_ID[i];
+>>>>>>> origin/master
 
                 for (ushort i = 0; i < 4; i++, index++)
                     RawBytes[index] = System.BitConverter.GetBytes(seq)[i];
@@ -127,6 +155,7 @@ namespace ubv.udp
                     RawBytes[index] = i < data.Length ? data[i] : (byte)0;
             }
 
+<<<<<<< HEAD
             public bool HasValidProtocolID()
             {
                 bool valid = true;
@@ -147,6 +176,18 @@ namespace ubv.udp
             public byte[] ToBytes()
             {
                 return RawBytes;
+=======
+
+                public override string ToString()
+                {
+                    return "Packet bytes: " + System.BitConverter.ToString(RawBytes);
+                }
+                
+                public static Packet PacketFromBytes(byte[] bytes)
+                {
+                    return new Packet(bytes);
+                }
+>>>>>>> origin/master
             }
 
             public static Packet PacketFromBytes(byte[] bytes)
