@@ -14,10 +14,11 @@ namespace ubv
             {
                 static public void Execute(ref Rigidbody2D rigidbody, StandardMovementSettings movementSettings, common.data.InputFrame input, float deltaTime)
                 {
-                    rigidbody.MovePosition(rigidbody.position +
+                    rigidbody.velocity = input.Movement.Value * (input.Sprinting ? movementSettings.SprintVelocity : movementSettings.WalkVelocity);
+                    /*rigidbody.MovePosition(rigidbody.position +
                         input.Movement.Value *
                         (input.Sprinting ? movementSettings.SprintVelocity : movementSettings.WalkVelocity) *
-                        deltaTime);
+                        deltaTime);*/
                 }
             }
         }
