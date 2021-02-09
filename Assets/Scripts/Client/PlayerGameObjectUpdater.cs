@@ -15,7 +15,7 @@ namespace ubv.client.logic
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Rigidbody2D m_localPlayerBody;
 
-        public PlayerGameObjectUpdater(ClientSyncPlay playState, PlayerSettings playerSettings, Dictionary<int, PlayerState> playerStates, int localID)
+        public PlayerGameObjectUpdater(PlayerSettings playerSettings, Dictionary<int, PlayerState> playerStates, int localID)
         {
             m_playerSettings = playerSettings;
             m_bodies = new Dictionary<int, Rigidbody2D>();
@@ -26,8 +26,6 @@ namespace ubv.client.logic
             }
 
             m_localPlayerBody = m_bodies[localID];
-
-            playState.RegisterUpdater(this);
         }
 
         public bool NeedsCorrection(ClientState remoteState)

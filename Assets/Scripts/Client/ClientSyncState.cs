@@ -180,7 +180,7 @@ namespace ubv
                         playerStateDict[state.GUID] = state;
                     }
                     
-                    m_updaters.Add(new PlayerGameObjectUpdater(this, playerSettings, playerStateDict, m_playerID));
+                    m_updaters.Add(new PlayerGameObjectUpdater(playerSettings, playerStateDict, m_playerID));
 
                     m_UDPClient = UDPClient;
                     m_UDPClient.Subscribe(this);
