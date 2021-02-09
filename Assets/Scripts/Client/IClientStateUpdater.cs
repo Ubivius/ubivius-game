@@ -32,7 +32,7 @@ namespace ubv
             /// </summary>
             /// <param name="remoteState">The state as computed by the server</param>
             /// <returns>If the client states needs correction</returns>
-            bool NeedsCorrection(ClientState remoteState);
+            bool NeedsCorrection(ClientState localState, ClientState remoteState);
         }
     }
 }

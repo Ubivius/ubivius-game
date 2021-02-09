@@ -28,12 +28,12 @@ namespace ubv.client.logic
             m_localPlayerBody = m_bodies[localID];
         }
 
-        public bool NeedsCorrection(ClientState remoteState)
+        public bool NeedsCorrection(ClientState localState, ClientState remoteState)
         {
             bool err = false;
             foreach(PlayerState state in remoteState.Players().Values)
             {
-                err = (m_bodies[state.GUID].position - state.Position).sqrMagnitude > 0.01f;
+                err = (localState.Players()[state.GUID].Position.Value - state.Position).sqrMagnitude > 0.01f;
                 if (err)
                 {
                     return true;
