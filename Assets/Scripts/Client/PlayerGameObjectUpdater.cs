@@ -36,7 +36,7 @@ namespace ubv.client.logic
             bool err = false;
             foreach(PlayerState player in remoteState.Players().Values)
             {
-                err = (player.Position - remoteState.Players()[player.GUID].Position.Value).sqrMagnitude > 0.01f;
+                err = (player.Position - localState.Players()[player.GUID].Position.Value).sqrMagnitude > 0.01f;
                 if (err)
                 {
                     return true;
