@@ -302,7 +302,10 @@ namespace ubv
 
                                     common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
 
-                                    client.State.GetPlayer().Position.Set(body.position);
+                                    common.data.PlayerState player = client.State.GetPlayer();
+                                    player.Position.Set(body.position);
+                                    player.Rotation.Set(body.rotation);
+                                    player.Velocity.Set(body.velocity);
                                     client.State.Tick.Set(client.ServerTick);
                                     client.ServerTick++;
                                 }
@@ -310,6 +313,7 @@ namespace ubv
 
                             m_serverPhysics.Simulate(Time.fixedDeltaTime);
                         }
+                        
 
                         m_clientInputs.Clear();
                     }
