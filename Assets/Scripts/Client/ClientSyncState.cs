@@ -212,7 +212,7 @@ namespace ubv
                     ++m_localTick;
 
                     ClientCorrection(m_remoteTick % CLIENT_STATE_BUFFER_SIZE);
-
+                    
                     return this;
                 }
 
@@ -346,23 +346,30 @@ namespace ubv
                         if (m_lastServerState != null)
                         {
                             List<IClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastServerState);
-                            for (int i = 0; i < updaters.Count; i++)
+                            if (updaters.Count > 0)
                             {
                                 uint rewindTicks = m_remoteTick;
-
+                                
                                 // reset world state to last server-sent state
-                                updaters[i].UpdateFromState(m_lastServerState);
+                                for (int i = 0; i < updaters.Count; i++)
+                                {
+                                    updaters[i].UpdateFromState(m_lastServerState);
+                                }
 
                                 while (rewindTicks < m_localTick)
                                 {
                                     uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
 
-                                    updaters[i].SetStateAndStep(
+                                    for (int i = 0; i < updaters.Count; i++)
+                                    {
+                                        updaters[i].SetStateAndStep(
                                         ref m_clientStateBuffer[rewindIndex],
                                         m_inputBuffer[rewindIndex],
                                         Time.fixedDeltaTime);
-                                    m_clientPhysics.Simulate(Time.fixedDeltaTime);
+                                    }
+                                    m_clientPhysics.Simulate(Time.fixedDeltaTime); // really resimulate all updaters?
                                 }
+                                
                             }
 
                             // after we try, if it's still wrong, hard reset to server position

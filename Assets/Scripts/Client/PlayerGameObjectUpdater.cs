@@ -8,8 +8,10 @@ namespace ubv.client.logic
     /// <summary>
     /// Instantiate players and moves them according to their player states
     /// </summary>
-    public class PlayerGameObjectUpdater : IClientStateUpdater
+    public class PlayerGameObjectUpdater :  IClientStateUpdater
     {
+        private const bool SMOOTH_CLIENT_CORRECTION = true;
+
         private PlayerSettings m_playerSettings;
 
         private Dictionary<int, Rigidbody2D> m_bodies;
@@ -19,6 +21,7 @@ namespace ubv.client.logic
         {
             m_playerSettings = playerSettings;
             m_bodies = new Dictionary<int, Rigidbody2D>();
+
             foreach(int id in playerStates.Keys)
             {
                 m_bodies[id] = GameObject.Instantiate(playerSettings.PlayerPrefab).GetComponent<Rigidbody2D>();
@@ -31,9 +34,9 @@ namespace ubv.client.logic
         public bool NeedsCorrection(ClientState localState, ClientState remoteState)
         {
             bool err = false;
-            foreach(PlayerState state in remoteState.Players().Values)
+            foreach(PlayerState player in remoteState.Players().Values)
             {
-                err = (localState.Players()[state.GUID].Position.Value - state.Position).sqrMagnitude > 0.01f;
+                err = (player.Position - remoteState.Players()[player.GUID].Position.Value).sqrMagnitude > 0.01f;
                 if (err)
                 {
                     return true;
