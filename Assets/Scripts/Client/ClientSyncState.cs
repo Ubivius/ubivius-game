@@ -367,19 +367,10 @@ namespace ubv
                                         m_inputBuffer[rewindIndex],
                                         Time.fixedDeltaTime);
                                     }
-                                    m_clientPhysics.Simulate(Time.fixedDeltaTime); // really resimulate all updaters?
+                                    m_clientPhysics.Simulate(Time.fixedDeltaTime);
                                 }
-                                
                             }
-
-                            // after we try, if it's still wrong, hard reset to server position
-                            updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastServerState);
-                            for (int i = 0; i < updaters.Count; i++)
-                            {
-                                // reset world state to last server-sent state
-                                updaters[i].UpdateFromState(m_lastServerState);
-                            }
-
+                            
                             m_lastServerState = null;
                         }
                     }
