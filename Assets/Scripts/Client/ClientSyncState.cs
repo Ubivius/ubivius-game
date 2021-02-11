@@ -345,6 +345,7 @@ namespace ubv
                     {
                         if (m_lastServerState != null)
                         {
+                            Debug.Log(m_lastServerState.GetPlayer().Position.Value + " vs " + m_clientStateBuffer[remoteIndex].GetPlayer().Position.Value);
                             List<IClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastServerState);
                             if (updaters.Count > 0)
                             {
