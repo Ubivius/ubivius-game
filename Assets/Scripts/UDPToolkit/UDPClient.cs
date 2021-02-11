@@ -171,12 +171,9 @@ namespace ubv
                             }
                         }
 
-                        if (m_connectionData.Receive(packet))
+                        if (m_connectionData.Receive(packet, (UDPToolkit.Packet p) => { }))
                         {
                             m_connected = true;
-#if DEBUG_LOG
-                        Debug.Log("Client received (RTT = " + m_RTT.ToString() + ")");
-#endif // DEBUG_LOG
                             Distribute(packet);
                         }
                     }

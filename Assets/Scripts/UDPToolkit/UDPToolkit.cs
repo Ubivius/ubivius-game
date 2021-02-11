@@ -27,18 +27,22 @@ namespace ubv
                 private uint m_localSequence;
                 private uint m_remoteSequence;
                 private Queue<uint> m_acknowledged; // packets we sent and know other side received
+                private Dictionary<uint, Packet> m_sentPackets; // buffer of sent packets
+                private Dictionary<uint, Packet> m_receivedPackets; // buffer
 
                 public ConnectionData()
                 {
                     m_localSequence = 1;
                     m_remoteSequence = 0;
                     m_acknowledged = new Queue<uint>();
+                    m_sentPackets = new Dictionary<uint, Packet>();
+                    m_receivedPackets = new Dictionary<uint, Packet>();
                 }
 
                 private int GenerateACKBitfield()
                 {
                     int bitfield = 0;
-                    for (ushort i = 0; i < 32; i++)
+                    for (ushort i = 0; i < sizeof(int); i++)
                     {
                         if (m_remoteSequence > i && m_acknowledged.Contains(m_remoteSequence - i))
                             bitfield |= 1 << i;
@@ -53,14 +57,17 @@ namespace ubv
                 /// <returns></returns>
                 public Packet Send(byte[] Data)
                 {
-                    return new Packet(Data, m_localSequence++, m_remoteSequence, GenerateACKBitfield());
+                    Packet p = new Packet(Data, m_localSequence, m_remoteSequence, GenerateACKBitfield());
+                    m_sentPackets[m_localSequence] = p;
+                    ++m_localSequence;
+                    return p;
                 }
 
                 /// <summary>
                 /// Acknowledges packet and updates sequence numbers
                 /// </summary>
                 /// <param name="packet"></param>
-                public bool Receive(Packet packet)
+                public bool Receive(Packet packet, System.Action<Packet> OnPacketACK)
                 {
                     if (packet.HasValidProtocolID())
                     {
@@ -68,19 +75,35 @@ namespace ubv
                             m_remoteSequence = packet.Sequence;
 
                         uint ack = packet.ACK;
-                        // ack packet 
-                        if (ack > 0 && !m_acknowledged.Contains(ack))
-                            m_acknowledged.Enqueue(ack);
+
+                        m_receivedPackets[ack] = packet;
 
                         // ack bitfield
                         int bitfield = packet.ACK_Bitfield;
-                        for (ushort i = 0; i < 32; i++)
+                        m_acknowledged.Enqueue(ack);
+                        for (ushort i = 0; i < sizeof(int); i++)
                         {
                             if ((bitfield & (1 << i)) == 1 && !m_acknowledged.Contains(ack - i))
+                            {
                                 m_acknowledged.Enqueue(ack - i);
+                            }
+                        }
+                        
+                        for (int i = 0; i < m_receivedPackets.Count; i++)
+                        {
+                            if (m_sentPackets.ContainsKey(ack))
+                            {
+                                OnPacketACK(m_receivedPackets[ack]);
+                                m_sentPackets.Remove(ack);
+                            }
                         }
 
-                        while (m_acknowledged.Count > 32)
+                        if(ack == 0) // if it's the first packet we receive
+                        {
+                            OnPacketACK(packet);
+                        }
+
+                        while (m_acknowledged.Count > sizeof(int))
                             m_acknowledged.Dequeue();
 
                         return true;
