@@ -16,7 +16,9 @@ namespace ubv
             /// Wrapper around System.Net.Sockets.UdpClient. 
             /// Manages server-side UDP connections with other clients
             /// + manages input messages from clients and computes their positions, then sends them back
-            /// https://www.winsocketdotnetworkprogramming.com/clientserversocketnetworkcommunication8d.html
+            /// https://www.winsocketdotnetworkprogramming.com/clientserversocketnetworkcommunication8d.html<
+            /// https://gafferongames.com/ 
+            /// https://gafferongames.com/post/client_server_connection/
             /// </summary>
             public class UDPServer : MonoBehaviour
             {
@@ -153,8 +155,8 @@ namespace ubv
                         m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
 
                         UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
-                        
-                        if (m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet))
+
+                        if(m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet, (UDPToolkit.Packet p) => { }))
                         {
                             OnReceive(packet, clientEndPoint);
                         }
