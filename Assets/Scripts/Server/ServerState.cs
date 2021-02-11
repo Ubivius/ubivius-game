@@ -217,6 +217,8 @@ namespace ubv
 
                     m_movementSettings = movementSettings;
 
+                    m_snapshotDelay = snapshotDelay;
+
                     m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(physicsScene).GetPhysicsScene2D();
                     m_playerPrefab = playerPrefab;
 
@@ -301,11 +303,7 @@ namespace ubv
                                     Rigidbody2D body = m_bodies[client.PlayerGUID];
 
                                     common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
-
-                                    common.data.PlayerState player = client.State.GetPlayer();
-                                    player.Position.Set(body.position);
-                                    player.Rotation.Set(body.rotation);
-                                    player.Velocity.Set(body.velocity);
+                                    
                                     client.State.Tick.Set(client.ServerTick);
                                     client.ServerTick++;
                                 }
@@ -313,8 +311,16 @@ namespace ubv
 
                             m_serverPhysics.Simulate(Time.fixedDeltaTime);
                         }
-                        
 
+                        foreach (ClientConnection client in m_clientInputs.Keys)
+                        {
+                            Rigidbody2D body = m_bodies[client.PlayerGUID];
+                            common.data.PlayerState player = client.State.GetPlayer();
+                            player.Position.Set(body.position);
+                            player.Rotation.Set(body.rotation);
+                            player.Velocity.Set(body.velocity);
+                        }
+                        
                         m_clientInputs.Clear();
                     }
 
