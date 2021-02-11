@@ -304,8 +304,8 @@ namespace ubv
 
                                     common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
                                     
-                                    client.State.Tick.Set(client.ServerTick);
                                     client.ServerTick++;
+                                    client.State.Tick.Set(client.ServerTick);
                                 }
                             }
 
