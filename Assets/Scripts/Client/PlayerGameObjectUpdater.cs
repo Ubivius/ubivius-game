@@ -49,10 +49,6 @@ namespace ubv.client.logic
         {
             foreach (PlayerState player in state.Players().Values)
             {
-                if (player.GUID != state.GetPlayer().GUID)
-                { 
-                    player.Velocity.Set(m_bodies[player.GUID].velocity);
-                }
                 player.Rotation.Set(m_bodies[player.GUID].rotation);
                 player.Position.Set(m_bodies[player.GUID].position);
             }
@@ -66,10 +62,6 @@ namespace ubv.client.logic
             {
                 m_bodies[player.GUID].position = player.Position;
                 m_bodies[player.GUID].rotation = player.Rotation;
-                if (player.GUID != state.GetPlayer().GUID)
-                {
-                    m_bodies[player.GUID].velocity = player.Velocity;
-                }
             }
         }
     }

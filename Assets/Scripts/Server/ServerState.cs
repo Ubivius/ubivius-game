@@ -312,7 +312,6 @@ namespace ubv
                                 common.data.PlayerState player = client.State.GetPlayer();
                                 player.Position.Set(body.position);
                                 player.Rotation.Set(body.rotation);
-                                player.Velocity.Set(body.velocity);
                                 client.State.Tick.Set((uint)m_masterTick);
                             }
                         }
