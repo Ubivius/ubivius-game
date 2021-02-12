@@ -64,5 +64,10 @@ namespace ubv.client.logic
                 m_bodies[player.GUID].rotation = player.Rotation;
             }
         }
+
+        public void FixedUpdate(float deltaTime)
+        {
+
+        }
     }
 }

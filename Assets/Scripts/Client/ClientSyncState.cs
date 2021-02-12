@@ -188,7 +188,7 @@ namespace ubv
                     for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
                     {
                         m_clientStateBuffer[i] = new ClientState();
-                        m_clientStateBuffer[i].SetPlayerID(m_playerID);
+                        m_clientStateBuffer[i].PlayerGUID = m_playerID;
                         
                         foreach (PlayerState playerState in playerStates)
                         {
@@ -212,7 +212,12 @@ namespace ubv
                     ++m_localTick;
 
                     ClientCorrection(m_remoteTick % CLIENT_STATE_BUFFER_SIZE);
-                    
+
+                    for (int i = 0; i < m_updaters.Count; i++)
+                    {
+                        m_updaters[i].FixedUpdate(Time.deltaTime);
+                    }
+
                     return this;
                 }
 
@@ -262,7 +267,7 @@ namespace ubv
                         ClientState state = udp.Serializable.FromBytes<ClientState>(packet.Data);
                         if (state != null)
                         {
-                            state.SetPlayerID(m_playerID);
+                            state.PlayerGUID = m_playerID;
                             m_lastServerState = state;
 #if DEBUG_LOG
                             Debug.Log("Received server state tick " + state.Tick.Value);

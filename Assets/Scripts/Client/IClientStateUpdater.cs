@@ -33,6 +33,8 @@ namespace ubv
             /// <param name="remoteState">The state as computed by the server</param>
             /// <returns>If the client states needs correction</returns>
             bool NeedsCorrection(ClientState localState, ClientState remoteState);
+
+            void FixedUpdate(float deltaTime);
         }
     }
 }
