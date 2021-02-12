@@ -15,12 +15,7 @@ namespace ubv
             private udp.SerializableTypes.HashMap<common.data.PlayerState> m_playerStates;
             public udp.SerializableTypes.Uint32 Tick;
 
-            private int m_playerID;
-
-            public void SetPlayerID(int id)
-            {
-                m_playerID = id;
-            }
+            public int PlayerGUID;
 
             public ClientState() : base() { }
 
@@ -43,7 +38,7 @@ namespace ubv
             
             public common.data.PlayerState GetPlayer()
             {
-                return m_playerStates.Value[m_playerID];
+                return m_playerStates.Value[PlayerGUID];
             }
 
             public void AddPlayer(common.data.PlayerState playerState)

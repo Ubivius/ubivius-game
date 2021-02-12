@@ -32,7 +32,7 @@ namespace ubv
                 public ClientConnection(int playerGUID)
                 {
                     State = new client.ClientState();
-                    State.SetPlayerID(playerGUID);
+                    State.PlayerGUID = playerGUID;
                     PlayerGUID = playerGUID;
                 }
             }
@@ -253,7 +253,7 @@ namespace ubv
                         player.Position.Set(m_bodies[m_UDPClientConnections[ip].PlayerGUID].position);
 
                         m_UDPClientConnections[ip].State.AddPlayer(player);
-                        m_UDPClientConnections[ip].State.SetPlayerID(player.GUID);
+                        m_UDPClientConnections[ip].State.PlayerGUID = player.GUID;
                     }
 
                     // add each player to each other client state
