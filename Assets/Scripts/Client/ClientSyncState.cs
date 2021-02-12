@@ -234,7 +234,7 @@ namespace ubv
                     {
                         m_updaters[i].SetStateAndStep(ref state, input, deltaTime);
                     }
-
+                    
                     m_clientPhysics.Simulate(deltaTime);
                 }
                 
@@ -265,7 +265,7 @@ namespace ubv
                             state.SetPlayerID(m_playerID);
                             m_lastServerState = state;
 #if DEBUG_LOG
-                            Debug.Log("Received server state tick " + state.Tick);
+                            Debug.Log("Received server state tick " + state.Tick.Value);
 #endif //DEBUG_LOG
                             m_remoteTick = state.Tick;
                         }
@@ -345,7 +345,6 @@ namespace ubv
                     {
                         if (m_lastServerState != null)
                         {
-                            Debug.Log(m_lastServerState.GetPlayer().Position.Value + " vs " + m_clientStateBuffer[remoteIndex].GetPlayer().Position.Value);
                             List<IClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastServerState);
                             if (updaters.Count > 0)
                             {
@@ -368,6 +367,7 @@ namespace ubv
                                         m_inputBuffer[rewindIndex],
                                         Time.fixedDeltaTime);
                                     }
+
                                     m_clientPhysics.Simulate(Time.fixedDeltaTime);
                                 }
                             }

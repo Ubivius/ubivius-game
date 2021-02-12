@@ -14,7 +14,6 @@ namespace ubv
             public class PlayerState : udp.Serializable
             {
                 public udp.SerializableTypes.Vector2 Position;
-                public udp.SerializableTypes.Vector2 Velocity;
                 public udp.SerializableTypes.Float Rotation;
                 public udp.SerializableTypes.Int32 GUID;
 
@@ -23,7 +22,6 @@ namespace ubv
                 public PlayerState(PlayerState player) : base()
                 {
                     Position.Set(player.Position);
-                    Velocity.Set(player.Velocity);
                     Rotation.Set(player.Rotation);
                     GUID.Set(player.GUID);
                 }
@@ -31,7 +29,6 @@ namespace ubv
                 protected override void InitSerializableMembers()
                 {
                     Position = new udp.SerializableTypes.Vector2(this, Vector2.zero);
-                    Velocity = new udp.SerializableTypes.Vector2(this, Vector2.zero);
                     Rotation = new udp.SerializableTypes.Float(this, 0f);
                     GUID = new udp.SerializableTypes.Int32(this, -1);
                 }
