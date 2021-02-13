@@ -213,6 +213,8 @@ namespace ubv
                 private PhysicsScene2D m_serverPhysics;
 
                 private GameObject m_playerPrefab;
+                
+                List<int> m_toRemoveCache;
 
                 public GameplayState(udp.server.UDPServer UDPServer,
                     GameObject playerPrefab, 
@@ -233,6 +235,7 @@ namespace ubv
                     m_movementSettings = movementSettings;
 
                     m_snapshotTicks = snapshotDelay;
+                    m_toRemoveCache = new List<int>();
 
                     m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(physicsScene).GetPhysicsScene2D();
                     m_playerPrefab = playerPrefab;
@@ -306,7 +309,20 @@ namespace ubv
                                 // must be called in main unity thread
                                 Rigidbody2D body = m_bodies[client.PlayerGUID];
                                 common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
-                                m_clientInputBuffers[client].Remove(m_masterTick);
+                                
+                                m_toRemoveCache.Clear();
+                                foreach(int tick in m_clientInputBuffers[client].Keys)
+                                {
+                                    if(tick <= m_masterTick)
+                                    {
+                                        m_toRemoveCache.Add(tick);
+                                    }
+                                }
+
+                                for(int i = 0; i < m_toRemoveCache.Count; i++)
+                                {
+                                    m_clientInputBuffers[client].Remove(m_toRemoveCache[i]);
+                                }
                             }
                             
                             m_serverPhysics.Simulate(Time.fixedDeltaTime);
@@ -353,7 +369,7 @@ namespace ubv
                             for (int i = 0; i < inputFrames.Count; i++)
                             {
                                 frameIndex = (int)inputs.StartTick.Value + i;
-                                if (frameIndex >= m_clientInputBuffers[conn].Count + m_masterTick)
+                                if (frameIndex >= m_masterTick)
                                 {
                                     m_clientInputBuffers[conn][frameIndex] = inputFrames[i];
                                 }
