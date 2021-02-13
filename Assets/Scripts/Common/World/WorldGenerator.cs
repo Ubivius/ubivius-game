@@ -67,6 +67,10 @@ namespace ubv.common.world
         [SerializeField] private int m_numberofTryBottomRight;
         [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolBottomRight;
 
+        //Managers
+        PathfindingGridManager m_pathfindingGridManager;
+
+
         private Grid m_grid;
 
         private const int c_mandatoryTry = 1000;

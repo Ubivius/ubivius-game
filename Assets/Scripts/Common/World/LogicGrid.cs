@@ -18,5 +18,15 @@ namespace ubv.common.world
         }
 
         public LogicCell[,] Grid { get => m_grid; private set => m_grid = value; }
+
+        public int GetWidth()
+        {
+            return m_grid.GetLength(0);
+        }
+
+        public int GetHeight()
+        {
+            return m_grid.GetLength(1);
+        }
     }
 }
