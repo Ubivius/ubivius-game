@@ -26,6 +26,10 @@ namespace ubv.client.logic
             {
                 m_bodies[id] = GameObject.Instantiate(playerSettings.PlayerPrefab).GetComponent<Rigidbody2D>();
                 m_bodies[id].name = "Client player " + id.ToString();
+                if (id != localID)
+                {
+                    m_bodies[id].bodyType = RigidbodyType2D.Kinematic;
+                }
             }
 
             m_localPlayerBody = m_bodies[localID];
