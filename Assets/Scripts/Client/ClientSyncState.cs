@@ -30,6 +30,7 @@ namespace ubv
                 private readonly PlayerSettings m_playerSettings;
                 private List<PlayerState> m_playerStates;
                 private int? m_playerID;
+                private int m_simulationBuffer;
 
 #if NETWORK_SIMULATE
                 private bool m_playWithoutServer;
@@ -95,8 +96,9 @@ namespace ubv
                         if (start != null)
                         {
                             m_playerStates = start.Players;
+                            m_simulationBuffer = start.SimulationBuffer;
 #if DEBUG_LOG
-                            Debug.Log("Client received confirmation that server is about to start game");
+                            Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
                         }
                     }
@@ -106,7 +108,7 @@ namespace ubv
                 {
                     if(m_playerStates != null)
                     {
-                        return new ClientSyncPlay(m_UDPClient, m_playerID.Value, m_physicsScene, m_playerSettings, m_playerStates);
+                        return new ClientSyncPlay(m_UDPClient, m_playerID.Value, m_physicsScene, m_playerSettings, m_playerStates, m_simulationBuffer);
                     }
 #if NETWORK_SIMULATE
                     if(m_playWithoutServer)
@@ -116,7 +118,7 @@ namespace ubv
                         soloPlayer.GUID.Set(0);
                         List<PlayerState> players = new List<PlayerState>();
                         players.Add(soloPlayer);
-                        return new ClientSyncPlay(m_UDPClient, 0, m_physicsScene, m_playerSettings, players, m_playWithoutServer);
+                        return new ClientSyncPlay(m_UDPClient, 0, m_physicsScene, m_playerSettings, players, 0, m_playWithoutServer);
                     }
 #endif // NETWORK_SIMULATE
 
@@ -134,6 +136,7 @@ namespace ubv
 
                 private uint m_remoteTick;
                 private uint m_localTick;
+                private readonly int m_simulationBuffer;
 
                 private const ushort CLIENT_STATE_BUFFER_SIZE = 64;
 
@@ -155,7 +158,8 @@ namespace ubv
                     int playerID, 
                     string physicsScene, 
                     PlayerSettings playerSettings,
-                    List<PlayerState> playerStates
+                    List<PlayerState> playerStates,
+                    int simulationBuffer
 #if NETWORK_SIMULATE
                     , bool startWithoutServer = false
 #endif // NETWORK_SIMULATE
@@ -173,6 +177,7 @@ namespace ubv
                     m_lastServerState = null;
 
                     m_updaters = new List<IClientStateUpdater>();
+                    m_simulationBuffer = simulationBuffer;
 
                     Dictionary<int, PlayerState> playerStateDict = new Dictionary<int, PlayerState>();
                     foreach(PlayerState state in playerStates)

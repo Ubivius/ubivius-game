@@ -54,6 +54,7 @@ namespace ubv
                 private readonly common.StandardMovementSettings m_movementSettings;
                 private readonly int m_snapshotDelay;
                 private readonly GameObject m_playerPrefab;
+                private readonly int m_simulationBuffer;
 
                 private List<common.data.PlayerState> m_players;
 
@@ -67,6 +68,7 @@ namespace ubv
                     common.StandardMovementSettings 
                     movementSettings, 
                     int snapshotDelay, 
+                    int simulationBuffer,
                     string physicsScene
 #if NETWORK_SIMULATE
                     , ServerUpdate parent
@@ -81,6 +83,7 @@ namespace ubv
 
                     m_movementSettings = movementSettings;
                     m_snapshotDelay = snapshotDelay;
+                    m_simulationBuffer = simulationBuffer;
                     m_physicsScene = physicsScene;
                     m_playerPrefab = playerPrefab;
 
@@ -98,7 +101,7 @@ namespace ubv
                 {
                     lock (m_lock)
                     {
-                        if (m_TCPClientConnections.Count > 3
+                        if (m_TCPClientConnections.Count > 3 // TODO : Change here when matchmaking microservice is up
 #if NETWORK_SIMULATE
                             || m_forceStartGame
 #endif // NETWORK_SIMULATE
@@ -109,13 +112,14 @@ namespace ubv
 
                             common.data.GameStartMessage message = new common.data.GameStartMessage();
                             message.Players.Set(m_players);
+                            message.SimulationBuffer.Set(m_simulationBuffer);
 
                             foreach (IPEndPoint ip in m_TCPClientConnections.Keys)
                             {
                                 m_TCPServer.Send(message.GetBytes(), ip);
                             }
 
-                            return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
+                            return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_simulationBuffer, m_physicsScene);
                         }
                     }
                     return this;
@@ -215,6 +219,7 @@ namespace ubv
                     Dictionary<IPEndPoint, ClientConnection> UDPClientConnections, 
                     common.StandardMovementSettings movementSettings, 
                     int snapshotDelay, 
+                    int simulationBuffer,
                     string physicsScene)
                 {
                     m_UDPserver = UDPServer;
@@ -222,7 +227,7 @@ namespace ubv
                     m_tickAccumulator = 0;
                     m_masterTick = 0;
                     m_bufferedMasterTick = 0;
-                    m_simulationBuffer = 5; // 5 * 1/60 FPS = 83 ms de délai approx pour correction serveur
+                    m_simulationBuffer = simulationBuffer;
                     m_UDPClientConnections = UDPClientConnections;
 
                     m_movementSettings = movementSettings;
@@ -288,7 +293,9 @@ namespace ubv
                                 common.data.InputFrame frame = null;
                                 if(!m_clientInputBuffers[client].ContainsKey(m_masterTick))
                                 {
-                                    Debug.Log("Missed a player input from " + client.PlayerGUID);
+#if DEBUG_LOG
+                                    Debug.Log("Missed a player input from " + client.PlayerGUID + " for tick " + m_masterTick);
+#endif //DEBUG_LOG
                                     frame = new common.data.InputFrame(); // create a default frame to not move player
                                 }
                                 else
@@ -338,7 +345,9 @@ namespace ubv
                         {
                             ClientConnection conn = m_UDPClientConnections[clientEndPoint];
                             List<common.data.InputFrame> inputFrames = inputs.InputFrames.Value;
+#if DEBUG_LOG
                             Debug.Log("(NOW = " + m_masterTick + ") Received tick " + inputs.StartTick.Value + " to " +  (inputs.StartTick.Value + inputFrames.Count) +  " from " + conn.PlayerGUID);
+#endif //DEBUG_LOG
 
                             int frameIndex = 0;
                             for (int i = 0; i < inputFrames.Count; i++)
