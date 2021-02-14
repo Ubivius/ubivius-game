@@ -7,18 +7,18 @@ namespace ubv
     {
         namespace data
         {
-            public class IdentificationMessage : udp.Serializable
+            public class IdentificationMessage : serialization.Serializable
             {
-                public udp.SerializableTypes.Int32 PlayerID;
+                public serialization.types.Int32 PlayerID;
 
                 protected override void InitSerializableMembers()
                 {
-                    PlayerID = new udp.SerializableTypes.Int32(this, 0);
+                    PlayerID = new serialization.types.Int32(this, 0);
                 }
 
                 protected override byte SerializationID()
                 {
-                    return (byte)udp.Serialization.BYTE_TYPE.AUTH_MESSAGE;
+                    return (byte)serialization.ID.BYTE_TYPE.AUTH_MESSAGE;
                 }
             }
         }

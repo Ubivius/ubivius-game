@@ -8,14 +8,21 @@ namespace ubv.common.world.cellType
 {
     public enum DoorType
     {
-        Standart,
+        Standard,
         Section
     }
 
     public class DoorCell : LogicCell
     {
-        private DoorType m_doorType;
-        private bool m_IsClosed;
+        private serialization.types.Int32 m_doorType;
+        private serialization.types.Bool m_IsClosed;
+
+        protected override void InitSerializableMembers()
+        {
+            base.InitSerializableMembers();
+            m_IsClosed = new serialization.types.Bool(this, false);
+            m_doorType = new serialization.types.Int32(this, (int)DoorType.Standard);
+        }
 
         public DoorCell(DoorType doorType)
         {
@@ -25,15 +32,20 @@ namespace ubv.common.world.cellType
 
         public void CloseDoor()
         {
-            m_IsClosed = true;
+            m_IsClosed.Set(true);
             IsWalkable = false;
         }
 
         public void OpenDoor()
         {
-            m_IsClosed = false;
+            m_IsClosed.Set(false);
             IsWalkable = true;
         }
-        public DoorType DoorType { get => m_doorType; private set => m_doorType = value; }
+        public DoorType DoorType { get => (DoorType)m_doorType.Value; private set => m_doorType.Set((int)value); }
+
+        protected override byte SerializationID()
+        {
+            return (byte)serialization.ID.BYTE_TYPE.LOGIC_CELL_DOOR;
+        }
     }
 }

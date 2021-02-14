@@ -11,11 +11,11 @@ namespace ubv
             /// Class reprensenting individual player state 
             /// Add here the data of a single player
             /// </summary>
-            public class PlayerState : udp.Serializable
+            public class PlayerState : serialization.Serializable
             {
-                public udp.SerializableTypes.Vector2 Position;
-                public udp.SerializableTypes.Float Rotation;
-                public udp.SerializableTypes.Int32 GUID;
+                public serialization.types.Vector2 Position;
+                public serialization.types.Float Rotation;
+                public serialization.types.Int32 GUID;
 
                 public PlayerState() : base() { }
 
@@ -28,14 +28,14 @@ namespace ubv
 
                 protected override void InitSerializableMembers()
                 {
-                    Position = new udp.SerializableTypes.Vector2(this, Vector2.zero);
-                    Rotation = new udp.SerializableTypes.Float(this, 0f);
-                    GUID = new udp.SerializableTypes.Int32(this, -1);
+                    Position = new serialization.types.Vector2(this, Vector2.zero);
+                    Rotation = new serialization.types.Float(this, 0f);
+                    GUID = new serialization.types.Int32(this, -1);
                 }
 
                 protected override byte SerializationID()
                 {
-                    return (byte)udp.Serialization.BYTE_TYPE.PLAYER_STATE;
+                    return (byte)serialization.ID.BYTE_TYPE.PLAYER_STATE;
                 }
 
             }

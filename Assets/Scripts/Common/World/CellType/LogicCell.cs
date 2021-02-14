@@ -6,10 +6,20 @@ using System.Threading.Tasks;
 
 namespace ubv.common.world.cellType
 {
-    abstract public class LogicCell
+    abstract public class LogicCell : serialization.Serializable
     {
-        private bool m_isWalkable;
+        private serialization.types.Bool m_isWalkable;
 
-        public bool IsWalkable { get => m_isWalkable; protected set => m_isWalkable = value; }
+        protected override void InitSerializableMembers()
+        {
+            m_isWalkable = new serialization.types.Bool(this, false);
+        }
+
+        protected override byte SerializationID()
+        {
+            return (byte)serialization.ID.BYTE_TYPE.LOGIC_CELL;
+        }
+
+        public bool IsWalkable { get => m_isWalkable; protected set => m_isWalkable.Set(value); }
     }
 }

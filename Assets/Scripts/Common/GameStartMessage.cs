@@ -7,20 +7,20 @@ namespace ubv
     {
         namespace data
         {
-            public class GameStartMessage : udp.Serializable
+            public class GameStartMessage : serialization.Serializable
             {
-                public udp.SerializableTypes.Int32 SimulationBuffer;
-                public udp.SerializableTypes.List<common.data.PlayerState> Players;
+                public serialization.types.Int32 SimulationBuffer;
+                public serialization.types.List<common.data.PlayerState> Players;
 
                 protected override void InitSerializableMembers()
                 {
-                    Players = new udp.SerializableTypes.List<PlayerState>(this, new System.Collections.Generic.List<PlayerState>());
-                    SimulationBuffer = new udp.SerializableTypes.Int32(this, 0);
+                    Players = new serialization.types.List<PlayerState>(this, new System.Collections.Generic.List<PlayerState>());
+                    SimulationBuffer = new serialization.types.Int32(this, 0);
                 }
 
                 protected override byte SerializationID()
                 {
-                    return (byte)udp.Serialization.BYTE_TYPE.START_MESSAGE;
+                    return (byte)serialization.ID.BYTE_TYPE.START_MESSAGE;
                 }
             }
         }

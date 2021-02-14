@@ -100,7 +100,7 @@ namespace ubv.common.world
                         {
                             if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
                             {
-                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.DoorCell(cellType.DoorType.Standart);
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.DoorCell(cellType.DoorType.Standard);
                             }                        
                         }
                     }

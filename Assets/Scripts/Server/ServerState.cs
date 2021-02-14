@@ -181,7 +181,7 @@ namespace ubv
                         return;
                     }
 
-                    common.data.IdentificationMessage identification = udp.Serializable.FromBytes<common.data.IdentificationMessage>(packet.Data);
+                    common.data.IdentificationMessage identification = common.serialization.Serializable.FromBytes<common.data.IdentificationMessage>(packet.Data);
                     if (identification != null)
                     {
                         m_UDPClientConnections[clientIP] = new ClientConnection(identification.PlayerID);
@@ -354,7 +354,7 @@ namespace ubv
 
                 public void Receive(udp.UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
                 {
-                    common.data.InputMessage inputs = udp.Serializable.FromBytes<common.data.InputMessage>(packet.Data);
+                    common.data.InputMessage inputs = common.serialization.Serializable.FromBytes<common.data.InputMessage>(packet.Data);
                     if (inputs != null && m_UDPClientConnections.ContainsKey(clientEndPoint))
                     {
                         lock (m_lock)

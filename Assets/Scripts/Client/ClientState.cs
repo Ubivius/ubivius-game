@@ -10,10 +10,10 @@ namespace ubv
         /// Class reprensenting local client state, which will be simulated locally and synced with an authoritative server.
         /// Add here everything that needs to be shared with the server (and the other players).
         /// </summary>
-        public class ClientState : udp.Serializable
+        public class ClientState : common.serialization.Serializable
         {
-            private udp.SerializableTypes.HashMap<common.data.PlayerState> m_playerStates;
-            public udp.SerializableTypes.Uint32 Tick;
+            private common.serialization.types.HashMap<common.data.PlayerState> m_playerStates;
+            public common.serialization.types.Uint32 Tick;
 
             public int PlayerGUID;
 
@@ -27,13 +27,13 @@ namespace ubv
             
             protected override void InitSerializableMembers()
             {
-                m_playerStates = new udp.SerializableTypes.HashMap<common.data.PlayerState>(this, new Dictionary<int, common.data.PlayerState>());
-                Tick = new udp.SerializableTypes.Uint32(this, 0);
+                m_playerStates = new common.serialization.types.HashMap<common.data.PlayerState>(this, new Dictionary<int, common.data.PlayerState>());
+                Tick = new common.serialization.types.Uint32(this, 0);
             }
 
             protected override byte SerializationID()
             {
-                return (byte)udp.Serialization.BYTE_TYPE.CLIENT_STATE;
+                return (byte)common.serialization.ID.BYTE_TYPE.CLIENT_STATE;
             }
             
             public common.data.PlayerState GetPlayer()

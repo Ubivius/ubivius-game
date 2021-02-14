@@ -14,5 +14,10 @@ namespace ubv.common.world.cellType
         {
             IsWalkable = true;
         }
+
+        protected override byte SerializationID()
+        {
+            return (byte)serialization.ID.BYTE_TYPE.LOGIC_CELL_FLOOR;
+        }
     }
 }

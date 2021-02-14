@@ -7,11 +7,11 @@ namespace ubv
     {
         namespace data
         {
-            public class InputFrame : udp.Serializable
+            public class InputFrame : serialization.Serializable
             {
-                public udp.SerializableTypes.Bool Sprinting;
-                public udp.SerializableTypes.Vector2 Movement;
-                public udp.SerializableTypes.Uint32 Tick;
+                public serialization.types.Bool Sprinting;
+                public serialization.types.Vector2 Movement;
+                public serialization.types.Uint32 Tick;
 
                 public void SetToNeutral()
                 {
@@ -21,35 +21,35 @@ namespace ubv
 
                 protected override void InitSerializableMembers()
                 {
-                    Sprinting = new udp.SerializableTypes.Bool(this, false);
-                    Movement = new udp.SerializableTypes.Vector2(this, Vector2.zero);
-                    Tick = new udp.SerializableTypes.Uint32(this, 0);
+                    Sprinting = new serialization.types.Bool(this, false);
+                    Movement = new serialization.types.Vector2(this, Vector2.zero);
+                    Tick = new serialization.types.Uint32(this, 0);
 
                     SetToNeutral();
                 }
 
                 protected override byte SerializationID()
                 {
-                    return (byte)udp.Serialization.BYTE_TYPE.INPUT_FRAME;
+                    return (byte)serialization.ID.BYTE_TYPE.INPUT_FRAME;
                 }
             }
 
-            public class InputMessage : udp.Serializable
+            public class InputMessage : serialization.Serializable
             {
-                public udp.SerializableTypes.Int32 PlayerID;
-                public udp.SerializableTypes.Uint32 StartTick;
-                public udp.SerializableTypes.List<InputFrame> InputFrames;
+                public serialization.types.Int32 PlayerID;
+                public serialization.types.Uint32 StartTick;
+                public serialization.types.List<InputFrame> InputFrames;
 
                 protected override void InitSerializableMembers()
                 {
-                    StartTick = new udp.SerializableTypes.Uint32(this, 0);
-                    InputFrames = new udp.SerializableTypes.List<InputFrame>(this, new List<InputFrame>());
-                    PlayerID = new udp.SerializableTypes.Int32(this, 0);
+                    StartTick = new serialization.types.Uint32(this, 0);
+                    InputFrames = new serialization.types.List<InputFrame>(this, new List<InputFrame>());
+                    PlayerID = new serialization.types.Int32(this, 0);
                 }
 
                 protected override byte SerializationID()
                 {
-                    return (byte)udp.Serialization.BYTE_TYPE.INPUT_MESSAGE;
+                    return (byte)serialization.ID.BYTE_TYPE.INPUT_MESSAGE;
                 }
             }
         }

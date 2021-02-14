@@ -15,10 +15,12 @@ namespace ubv.common.world.cellType
             IsWalkable = false;
             m_linkedDoor = linkedDoor;
         }
+
         public DoorButtonCell()
         {
             IsWalkable = false;
         }
+
         public void CloseDoor()
         {
             m_linkedDoor.CloseDoor();

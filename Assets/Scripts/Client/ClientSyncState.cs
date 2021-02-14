@@ -79,7 +79,7 @@ namespace ubv
                 {
                     // receive auth message and set player id
                     
-                    IdentificationMessage auth = udp.Serializable.FromBytes<IdentificationMessage>(packet.Data);
+                    IdentificationMessage auth = common.serialization.Serializable.FromBytes<IdentificationMessage>(packet.Data);
                     if (auth != null)
                     {
                         m_playerID = auth.PlayerID;
@@ -92,7 +92,7 @@ namespace ubv
                     }
                     else
                     {
-                        GameStartMessage start = udp.Serializable.FromBytes<GameStartMessage>(packet.Data);
+                        GameStartMessage start = common.serialization.Serializable.FromBytes<GameStartMessage>(packet.Data);
                         if (start != null)
                         {
                             m_playerStates = start.Players;
@@ -269,7 +269,7 @@ namespace ubv
                     // client doesnt need its own client state ticks
                     lock (m_lock)
                     {
-                        ClientState state = udp.Serializable.FromBytes<ClientState>(packet.Data);
+                        ClientState state = common.serialization.Serializable.FromBytes<ClientState>(packet.Data);
                         if (state != null)
                         {
                             state.PlayerGUID = m_playerID;
