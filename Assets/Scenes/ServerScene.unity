@@ -151,6 +151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_sceneToLoad: proto_move_server
+  m_loadAdditive: 0
 --- !u!4 &487330921
 Transform:
   m_ObjectHideFlags: 0

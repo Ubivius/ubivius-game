@@ -168,7 +168,8 @@ namespace ubv.tcp.client
 
         public void Subscribe(ITCPClientReceiver receiver)
         {
-            m_receivers.Add(receiver);
+            if (!m_receivers.Contains(receiver))
+                m_receivers.Add(receiver);
         }
 
         public void Unsubscribe(ITCPClientReceiver receiver)
