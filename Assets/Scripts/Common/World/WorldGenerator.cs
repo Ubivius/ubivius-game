@@ -68,7 +68,7 @@ namespace ubv.common.world
         [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolBottomRight;
 
         //Managers
-        PathfindingGridManager m_pathfindingGridManager;
+        private PathfindingGridManager m_pathfindingGridManager;
 
 
         private Grid m_grid;
@@ -99,6 +99,8 @@ namespace ubv.common.world
                     );
                 AddRoomToSection0(myRoom, false);
             }
+
+            m_pathfindingGridManager = new PathfindingGridManager(m_masterLogicGrid);
         }
 
         private void AddRoom(RoomInfo room, Vector2Int roomOrigin)
