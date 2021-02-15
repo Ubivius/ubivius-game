@@ -14,7 +14,7 @@ namespace ubv
             {
                 static public void Execute(ref Rigidbody2D rigidbody, StandardMovementSettings movementSettings, common.data.InputFrame input, float deltaTime)
                 {
-                    rigidbody.velocity = input.Movement.Value * (input.Sprinting ? movementSettings.SprintVelocity : movementSettings.WalkVelocity);
+                    rigidbody.velocity = input.Movement.Value * (input.Sprinting.Value ? movementSettings.SprintVelocity : movementSettings.WalkVelocity);
                 }
             }
         }

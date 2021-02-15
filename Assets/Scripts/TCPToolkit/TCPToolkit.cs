@@ -16,7 +16,7 @@ namespace ubv
         {
             public class Packet : network.Packet
             {
-                public byte[] Data { get { return RawBytes.SubArray(NET_PROTOCOL_ID.Length, RawBytes.Length - NET_PROTOCOL_ID.Length); } }
+                public byte[] Data { get { return RawBytes.ArrayFrom(NET_PROTOCOL_ID.Length); } }
                 
                 private Packet(byte[] bytes) : base(bytes)
                 {

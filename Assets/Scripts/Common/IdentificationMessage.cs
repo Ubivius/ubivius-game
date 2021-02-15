@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using ubv.common.serialization;
 
 namespace ubv
 {
@@ -7,18 +8,25 @@ namespace ubv
     {
         namespace data
         {
-            public class IdentificationMessage : serialization.Serializable
+            public class IdentificationMessage : Serializable
             {
                 public serialization.types.Int32 PlayerID;
-
-                protected override void InitSerializableMembers()
+                
+                public IdentificationMessage()
                 {
-                    PlayerID = new serialization.types.Int32(this, 0);
+                    PlayerID = new serialization.types.Int32(0);
+                    InitSerializableMembers(PlayerID);
                 }
 
-                protected override byte SerializationID()
+                public IdentificationMessage(int playerID)
                 {
-                    return (byte)serialization.ID.BYTE_TYPE.AUTH_MESSAGE;
+                    PlayerID = new serialization.types.Int32(playerID);
+                    InitSerializableMembers(PlayerID);
+                }
+
+                protected override ID.BYTE_TYPE SerializationID()
+                {
+                    return ID.BYTE_TYPE.AUTH_MESSAGE;
                 }
             }
         }

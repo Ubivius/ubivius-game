@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ubv.common.serialization;
 
 namespace ubv.common.world.cellType
 {
@@ -15,18 +16,12 @@ namespace ubv.common.world.cellType
         {
             IsWalkable = false;
             m_linkedDoor = linkedDoor;
-            m_linkedDoorCellID.Set(m_linkedDoor.CellID);
+            m_linkedDoorCellID = new serialization.types.Int32(m_linkedDoor.CellID);
         }
-
-        protected override void InitSerializableMembers()
+        
+        protected override ID.BYTE_TYPE SerializationID()
         {
-            base.InitSerializableMembers();
-            m_linkedDoorCellID = new serialization.types.Int32(this, 0);
-        }
-
-        protected override byte SerializationID()
-        {
-            return (byte)serialization.ID.BYTE_TYPE.LOGIC_CELL_INTERACTABLE;
+            return  ID.BYTE_TYPE.LOGIC_CELL_INTERACTABLE;
         }
 
         public DoorButtonCell()

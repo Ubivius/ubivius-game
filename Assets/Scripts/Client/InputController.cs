@@ -67,8 +67,8 @@ namespace ubv
             // Update is called once per frame
             void Update()
             {
-                m_currentInputFrame.Movement.Set(m_move);
-                m_currentInputFrame.Sprinting.Set(m_IsSprinting);
+                m_currentInputFrame.Movement.Value = m_move;
+                m_currentInputFrame.Sprinting.Value = m_IsSprinting;
             }
         
             static public common.data.InputFrame CurrentFrame()

@@ -1,12 +1,63 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace ubv.common.serialization
 {
-    public interface IConvertible
+    public abstract class IConvertible
     {
-        byte[] GetBytes();
-        int GetByteCount();
-        void CreateFromBytes(byte[] sourceBytes);
+        public byte[] GetBytes()
+        {
+            byte[] bytes = new byte[GetByteCount()];
+
+            bytes[0] = (byte)SerializationID();
+            
+            byte[] sourceBytes = GetSourceBytes();
+
+            for(int i = 1; i < bytes.Length; i++)
+            {
+                bytes[i] = sourceBytes[i - 1];
+            }
+
+            return bytes;
+        }
+
+        public int GetByteCount()
+        {
+            return GetSourceByteCount() + 1;
+        }
+
+        public bool CreateFromBytes(byte[] bytes)
+        {
+            if (bytes[0] == (byte)SerializationID())
+            {
+                if (CreateFromSourceBytes(bytes.ArrayFrom(1)))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        static public T CreateFromBytes<T>(byte[] bytes) where T : IConvertible, new()
+        {
+            T obj = new T();
+            if (obj.CreateFromBytes(bytes))
+            {
+                return obj;
+            }
+            return null;
+            
+        }
+
+        static public byte[] GetBytesFrom<T>(T convertible) where T : IConvertible 
+        {
+            return convertible.GetBytes();
+        }
+        
+        protected abstract byte[] GetSourceBytes();
+        protected abstract int GetSourceByteCount();
+        protected abstract bool CreateFromSourceBytes(byte[] sourceBytes);
+        protected abstract ID.BYTE_TYPE SerializationID();
     }
 
     /// <summary>
@@ -14,275 +65,209 @@ namespace ubv.common.serialization
     /// To use, inherit Serializable and make the members
     /// you want to convert into bytes into one of the 
     /// serializable types defined in the namespace 
-    /// SerializableTypes and implement the approriate functions
-    /// (SerializationID and InitSerializedMembers)
+    /// SerializableTypes and add your serialized members
+    /// with AddSerializedMember()
     /// </summary>
     public abstract class Serializable : IConvertible
     {
-        /// <summary>
-        /// Contains a value that can be converted to bytes and back
-        /// The value is cached under the hood to avoir superfluous 
-        /// computation.
-        /// </summary>
-        /// <typeparam name="T">The type of the value. Must be default-constructible.</typeparam>
-        public abstract class Variable<T> : IConvertible
-        {
-            protected T m_value;
-            protected byte[] m_cachedBytes;
-
-            private Serializable m_owner;
-
-            public T Value
-            {
-                get
-                {
-                    return m_value;
-                }
-                set
-                {
-                    Set(value);
-                }
-            }
-
-            public Variable(Serializable owner, T value)
-            {
-                m_owner = owner;
-                m_owner.m_serializableMembers.Add(this);
-                Set(value);
-                m_cachedBytes = Bytes();
-            }
-
-            public void CreateFromBytes(byte[] bytes)
-            {
-                bool mustRebuild = m_cachedBytes.Length != bytes.Length;
-
-                if (!mustRebuild)
-                {
-                    for (int i = 0; i < m_cachedBytes.Length; i++)
-                    {
-                        if (bytes[i] != m_cachedBytes[i])
-                        {
-                            mustRebuild = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (mustRebuild)
-                {
-                    m_cachedBytes = bytes;
-                    Set(BuildFromBytes(bytes));
-                }
-            }
-
-            public static implicit operator T(Variable<T> variable)
-            {
-                return variable.Value;
-            }
-
-            public virtual Variable<T> Set(T value)
-            {
-                m_owner.m_dirty = true;
-                m_value = value;
-                return this;
-            }
-
-            public int GetByteCount()
-            {
-                return ByteCount();
-            }
-
-            public byte[] GetBytes()
-            {
-                m_cachedBytes = Bytes();
-                return m_cachedBytes;
-            }
-
-            protected abstract T BuildFromBytes(byte[] bytes);
-            protected abstract int ByteCount();
-            protected abstract byte[] Bytes();
-
-            // disable access to default and copy constructor
-            private Variable() { }
-            private Variable(Variable<T> other) { }
-        }
-
         private List<IConvertible> m_serializableMembers;
-
-        private bool m_dirty;
-        private byte[] m_bytes;
-
-        public Serializable()
+        
+        protected void InitSerializableMembers(params IConvertible[] convertibles)
         {
-            m_dirty = true;
             m_serializableMembers = new List<IConvertible>();
-            m_bytes = null;
-            InitSerializableMembers();
-        }
-
-        protected void AddSerializableMember(Serializable member)
-        {
-            m_serializableMembers.Add(member);
-        }
-
-        public int GetByteCount()
-        {
-            if (m_dirty)
-                GetBytes();
-            return m_bytes.Length;
-        }
-
-        public byte[] GetBytes()
-        {
-            if (m_dirty)
+            for(int i = 0; i < convertibles.Length; i++)
             {
-                int totalByteCount = 0;
-                foreach (IConvertible bc in m_serializableMembers)
+                m_serializableMembers.Add(convertibles[i]);
+            }
+        }
+
+        protected override int GetSourceByteCount()
+        {
+            int total = 0;
+            for(int i = 0; i < m_serializableMembers.Count; i++)
+            {
+                total += m_serializableMembers[i].GetByteCount();
+            }
+            return total;
+        }
+
+        protected override byte[] GetSourceBytes()
+        {
+            byte[] bytes = new byte[GetSourceByteCount()];
+
+            int byteCount = 0;
+            foreach (IConvertible convertible in m_serializableMembers)
+            {
+                byte[] memberBytes = convertible.GetBytes();
+                for (int i = 0; i < memberBytes.Length; i++)
                 {
-                    totalByteCount += bc.GetByteCount();
+                    bytes[byteCount++] = memberBytes[i];
                 }
+            }
+            return bytes;
+        }
 
-                m_bytes = new byte[totalByteCount + 1];
-
-                int byteCount = 0;
-                m_bytes[byteCount++] = SerializationID();
-
-                foreach (IConvertible bc in m_serializableMembers)
+        protected override bool CreateFromSourceBytes(byte[] bytes)
+        {
+            int index = 0;
+            for(int i = 0; i < m_serializableMembers.Count; i++)
+            {
+                if (!m_serializableMembers[i].CreateFromBytes(bytes.ArrayFrom(index)))
                 {
-                    byte[] memberBytes = bc.GetBytes();
-                    for (int i = 0; i < memberBytes.Length; i++)
-                    {
-                        m_bytes[byteCount++] = memberBytes[i];
-                    }
+                    return false;
                 }
-
-                //m_dirty = false;
+                index += m_serializableMembers[i].GetByteCount();
             }
-
-            return m_bytes;
+            return true;
         }
 
-        public void CreateFromBytes(byte[] bytes)
-        {
-            int convertedBytes = 0;
-            foreach (IConvertible ic in m_serializableMembers)
-            {
-                byte[] srcBytes = bytes.SubArray(convertedBytes, bytes.Length - convertedBytes);
-                ic.CreateFromBytes(srcBytes);
-                convertedBytes += ic.GetByteCount();
-            }
-            m_bytes = bytes;
-        }
-
-        protected abstract byte SerializationID();
-        protected abstract void InitSerializableMembers();
-
-        static public T FromBytes<T>(byte[] bytes) where T : Serializable
-        {
-            T newObject = default;
-
-            // TODO find a way tonot waste memory by creating and destroying after
-            // maybe a switch and a case "is" ?
-            if (bytes[0] == newObject.SerializationID())
-            {
-                newObject.CreateFromBytes(bytes.SubArray(1, bytes.Length - 1));
-            }
-            else
-            {
-                newObject = null;
-            }
-
-            return newObject;
-        }
+        protected abstract override ID.BYTE_TYPE SerializationID();
     }
 
     namespace types
     {
-        public class Int32 : Serializable.Variable<int>
+        public abstract class Serialized<T> : IConvertible
         {
-            public Int32(Serializable owner, int value) : base(owner, value) { }
+            protected T m_value;
 
-            protected override byte[] Bytes()
+            public Serialized()
+            {
+                m_value = default;
+            }
+
+            public Serialized(T value)
+            {
+                m_value = value;
+            }
+            
+            public T Value
+            {
+                get => m_value;
+                set => m_value = value;
+            }
+
+            protected abstract override byte[] GetSourceBytes();
+            protected abstract override int GetSourceByteCount();
+            protected abstract override bool CreateFromSourceBytes(byte[] sourceBytes);
+
+            protected abstract override ID.BYTE_TYPE SerializationID();
+        }
+
+        public class Int32 : Serialized<int>
+        {
+            public Int32(int value) : base(value) { }
+            
+            protected override byte[] GetSourceBytes()
             {
                 return System.BitConverter.GetBytes(m_value);
             }
 
-            protected override int ByteCount()
+            protected override int GetSourceByteCount()
             {
                 return sizeof(int);
             }
 
-            protected override int BuildFromBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(byte[] bytes)
             {
-                return System.BitConverter.ToInt32(bytes, 0);
+                m_value =  System.BitConverter.ToInt32(bytes, 0);
+                return true;
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.INT32;
             }
         }
 
-        public class Float : Serializable.Variable<float>
+        public class Float : Serialized<float>
         {
-            public Float(Serializable owner, float value) : base(owner, value) { }
+            public Float(float value) : base(value)
+            {
+            }
 
-            protected override byte[] Bytes()
+            protected override byte[] GetSourceBytes()
             {
                 return System.BitConverter.GetBytes(m_value);
             }
 
-            protected override int ByteCount()
+            protected override int GetSourceByteCount()
+            {
+                return sizeof(float);
+            }
+
+            protected override bool CreateFromSourceBytes(byte[] bytes)
+            {
+                m_value = System.BitConverter.ToSingle(bytes, 0);
+                return true;
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return serialization.ID.BYTE_TYPE.FLOAT;
+            }
+        }
+
+        public class Uint32 : Serialized<uint>
+        {
+            public Uint32(uint value) : base(value)  { }
+
+            protected override byte[] GetSourceBytes()
+            {
+                return System.BitConverter.GetBytes(m_value);
+            }
+
+            protected override int GetSourceByteCount()
             {
                 return sizeof(int);
             }
 
-            protected override float BuildFromBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(byte[] bytes)
             {
-                return System.BitConverter.ToSingle(bytes, 0);
+                m_value = System.BitConverter.ToUInt32(bytes, 0);
+                return true;
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.UINT32;
             }
         }
 
-        public class Uint32 : Serializable.Variable<uint>
+        public class Bool : Serialized<bool>
         {
-            public Uint32(Serializable owner, uint value) : base(owner, value) { }
+            public Bool(bool value) : base(value)
+            {
+            }
 
-            protected override byte[] Bytes()
+            protected override byte[] GetSourceBytes()
             {
                 return System.BitConverter.GetBytes(m_value);
             }
 
-            protected override int ByteCount()
-            {
-                return sizeof(uint);
-            }
-
-            protected override uint BuildFromBytes(byte[] bytes)
-            {
-                return System.BitConverter.ToUInt32(bytes, 0);
-            }
-        }
-
-        public class Bool : Serializable.Variable<bool>
-        {
-            public Bool(Serializable owner, bool value) : base(owner, value) { }
-
-            protected override byte[] Bytes()
-            {
-                return System.BitConverter.GetBytes(m_value);
-            }
-
-            protected override int ByteCount()
+            protected override int GetSourceByteCount()
             {
                 return sizeof(bool);
             }
 
-            protected override bool BuildFromBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(byte[] bytes)
             {
-                return System.BitConverter.ToBoolean(bytes, 0);
+                m_value = System.BitConverter.ToBoolean(bytes, 0);
+                return true;
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.BOOL;
             }
         }
 
-        public class Vector2 : Serializable.Variable<UnityEngine.Vector2>
+        public class Vector2 : Serialized<UnityEngine.Vector2>
         {
-            public Vector2(Serializable owner, UnityEngine.Vector2 value) : base(owner, value) { }
+            public Vector2(UnityEngine.Vector2 value) : base(value)
+            {
+            }
 
-            protected override byte[] Bytes()
+            protected override byte[] GetSourceBytes()
             {
                 byte[] bytes = new byte[sizeof(float) * 2];
                 for (int i = 0; i < sizeof(float); i++)
@@ -293,22 +278,26 @@ namespace ubv.common.serialization
                 return bytes;
             }
 
-            protected override int ByteCount()
+            protected override int GetSourceByteCount()
             {
                 return sizeof(float) * 2;
             }
 
-            protected override UnityEngine.Vector2 BuildFromBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(byte[] bytes)
             {
-                return new UnityEngine.Vector2(System.BitConverter.ToSingle(bytes, 0), System.BitConverter.ToSingle(bytes, 4));
+                m_value = new UnityEngine.Vector2(System.BitConverter.ToSingle(bytes, 0), System.BitConverter.ToSingle(bytes, 4));
+                return true;
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.VECTOR2;
             }
         }
 
-        public class Vector2Int : Serializable.Variable<UnityEngine.Vector2Int>
+        public class Vector2Int : Serialized<UnityEngine.Vector2Int>
         {
-            public Vector2Int(Serializable owner, UnityEngine.Vector2Int value) : base(owner, value) { }
-
-            protected override byte[] Bytes()
+            protected override byte[] GetSourceBytes()
             {
                 byte[] bytes = new byte[sizeof(int) * 2];
                 for (int i = 0; i < sizeof(int); i++)
@@ -319,101 +308,26 @@ namespace ubv.common.serialization
                 return bytes;
             }
 
-            protected override int ByteCount()
+            protected override int GetSourceByteCount()
             {
                 return sizeof(int) * 2;
             }
 
-            protected override UnityEngine.Vector2Int BuildFromBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(byte[] bytes)
             {
-                return new UnityEngine.Vector2Int(System.BitConverter.ToInt32(bytes, 0), System.BitConverter.ToInt32(bytes, 4));
+                m_value = new UnityEngine.Vector2Int(System.BitConverter.ToInt32(bytes, 0), System.BitConverter.ToInt32(bytes, 4));
+                return true;
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.VECTOR2INT;
             }
         }
 
-        public class List<T> : Serializable.Variable<System.Collections.Generic.List<T>> where T : Serializable, new()
+        public class Quaternion : Serialized<UnityEngine.Quaternion>
         {
-            private int m_bytesPerElement;
-
-            public override Serializable.Variable<System.Collections.Generic.List<T>> Set(System.Collections.Generic.List<T> value)
-            {
-                m_bytesPerElement = new T().GetByteCount();
-                base.Set(value);
-                return this;
-            }
-
-            public List(Serializable owner, System.Collections.Generic.List<T> value) : base(owner, value)
-            {
-                m_bytesPerElement = new T().GetByteCount();
-            }
-
-            protected override System.Collections.Generic.List<T> BuildFromBytes(byte[] bytes)
-            {
-                int frameCount = System.BitConverter.ToInt32(bytes, 0);
-
-                System.Collections.Generic.List<T> list = new System.Collections.Generic.List<T>();
-
-                for (int i = 0; i < frameCount; i++)
-                {
-                    T obj = Serializable.FromBytes<T>(bytes.SubArray(sizeof(int) + (i * m_bytesPerElement), m_bytesPerElement));
-                    list.Add(obj);
-                }
-                return list;
-            }
-
-            protected override int ByteCount()
-            {
-                return sizeof(int) + (m_value.Count * m_bytesPerElement);
-            }
-
-            protected override byte[] Bytes()
-            {
-                byte[] bytes = new byte[ByteCount()];
-
-                byte[] frameCountBytes = System.BitConverter.GetBytes(m_value.Count);
-
-                for (int i = 0; i < sizeof(int); i++)
-                {
-                    bytes[i] = frameCountBytes[i];
-                }
-
-                for (int i = 0; i < m_value.Count; i++)
-                {
-                    T obj = m_value[i];
-                    byte[] objBytes = obj.GetBytes();
-                    for (int b = 0; b < objBytes.Length; b++)
-                    {
-                        bytes[sizeof(int) + (i * objBytes.Length) + b] = objBytes[b];
-                    }
-                }
-                return bytes;
-            }
-        }
-
-        public class String : Serializable.Variable<string>
-        {
-            public String(Serializable owner, string value) : base(owner, value) { }
-
-            protected override byte[] Bytes()
-            {
-                return System.Text.Encoding.Unicode.GetBytes(m_value);
-            }
-
-            protected override int ByteCount()
-            {
-                return Bytes().Length;
-            }
-
-            protected override string BuildFromBytes(byte[] bytes)
-            {
-                return System.Text.Encoding.Unicode.GetString(bytes);
-            }
-        }
-
-        public class Quaternion : Serializable.Variable<UnityEngine.Quaternion>
-        {
-            public Quaternion(Serializable owner, UnityEngine.Quaternion value) : base(owner, value) { }
-
-            protected override byte[] Bytes()
+            protected override byte[] GetSourceBytes()
             {
                 byte[] bytes = new byte[sizeof(float) * 4];
                 for (int i = 0; i < sizeof(float); i++)
@@ -426,70 +340,185 @@ namespace ubv.common.serialization
                 return bytes;
             }
 
-            protected override int ByteCount()
+            protected override int GetSourceByteCount()
             {
                 return sizeof(float) * 4;
             }
 
-            protected override UnityEngine.Quaternion BuildFromBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(byte[] bytes)
             {
-                return new UnityEngine.Quaternion(System.BitConverter.ToSingle(bytes, 0),
+                m_value = new UnityEngine.Quaternion(System.BitConverter.ToSingle(bytes, 0),
                     System.BitConverter.ToSingle(bytes, 4),
                     System.BitConverter.ToSingle(bytes, 8),
                     System.BitConverter.ToSingle(bytes, 12));
+                return true;
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.QUATERNION;
             }
         }
 
-        public class HashMap<T> : Serializable.Variable<System.Collections.Generic.Dictionary<int, T>> where T : Serializable, new()
+        public class String : Serialized<string>
         {
-            private int m_bytesPerPair;
-
-            public override Serializable.Variable<System.Collections.Generic.Dictionary<int, T>> Set(System.Collections.Generic.Dictionary<int, T> value)
+            protected override byte[] GetSourceBytes()
             {
-                m_bytesPerPair = new T().GetByteCount() + sizeof(int);
-                base.Set(value);
-                return this;
+                return System.Text.Encoding.Unicode.GetBytes(m_value);
             }
 
-            public HashMap(Serializable owner, System.Collections.Generic.Dictionary<int, T> value) : base(owner, value)
+            protected override int GetSourceByteCount()
             {
-                m_bytesPerPair = new T().GetByteCount() + sizeof(int);
+                return GetBytes().Length;
             }
 
-            protected override System.Collections.Generic.Dictionary<int, T> BuildFromBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(byte[] bytes)
+            {
+                m_value = System.Text.Encoding.Unicode.GetString(bytes);
+                return true;
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.STRING;
+            }
+        }
+
+        /// <summary>
+        /// The following container classes are abstract.
+        /// To use a serialized container class :
+        /// - Create a child class with the type of data to contain
+        /// - Implement SerializationID with that data type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        abstract public class List<T> : Serialized<System.Collections.Generic.List<T>> where T : IConvertible, new()
+        {
+            public T this[int key]
+            {
+                get => m_value[key];
+                set => m_value[key] = value;
+            }
+
+            public List()
+            {
+                m_value = new System.Collections.Generic.List<T>();
+            }
+            
+            public List(System.Collections.Generic.List<T> list) : base(list) { }
+
+            protected override bool CreateFromSourceBytes(byte[] bytes)
             {
                 int itemCount = System.BitConverter.ToInt32(bytes, 0);
 
-                System.Collections.Generic.Dictionary<int, T> dict = new System.Collections.Generic.Dictionary<int, T>();
-                    
+                m_value.Clear();
+
+                int header = sizeof(int); // item count
+                int subIndex = header;
                 for (int i = 0; i < itemCount; i++)
                 {
-                    int index = sizeof(int) + (i * m_bytesPerPair);
-                    int key = System.BitConverter.ToInt32(bytes, index);
-                    int subIndex = index + sizeof(int);
-                    T obj = Serializable.FromBytes<T>(bytes.SubArray(subIndex, m_bytesPerPair - sizeof(int)));
-                    dict[key] = obj;
+                    T obj = new T();
+                    if(!obj.CreateFromBytes(bytes.ArrayFrom(subIndex)))
+                    {
+                        m_value.Clear();
+                        return false;
+                    }
+                    subIndex += obj.GetByteCount();
+                    m_value.Add(obj);
                 }
-                return dict;
+
+                return true;
             }
 
-            protected override int ByteCount()
+            protected override int GetSourceByteCount()
             {
-                int pairByteCount = pairByteCount = new T().GetByteCount() + sizeof(int);
-                return (m_value.Count * pairByteCount) + sizeof(int);
+                int total = sizeof(int); // item count
+                for(int i = 0; i < m_value.Count; i++)
+                {
+                    total += m_value[i].GetByteCount();
+                }
+
+                return total;
             }
 
-            protected override byte[] Bytes()
+            protected override byte[] GetSourceBytes()
             {
-                byte[] bytes = new byte[ByteCount()];
+                byte[] bytes = new byte[GetSourceByteCount()];
 
                 byte[] itemCountBytes = System.BitConverter.GetBytes(m_value.Count);
+                int byteCount = 0;
+                for (int i = 0; i < itemCountBytes.Length; i++)
+                {
+                    bytes[byteCount++] = itemCountBytes[i];
+                }
 
-                for (int i = 0; i < sizeof(int); i++)
+                for(int i = 0; i < m_value.Count; i++)
+                {
+                    byte[] itemBytes = m_value[i].GetBytes();
+                    for (int b = 0; b < itemBytes.Length; b++)
+                    {
+                        bytes[byteCount++] = itemBytes[b];
+                    }
+                }
+                return bytes;
+            }
+
+            protected abstract override ID.BYTE_TYPE SerializationID();
+        }
+        
+        abstract public class HashMap<T> : Serialized<Dictionary<int, T>> where T : IConvertible, new()
+        {
+            public HashMap(Dictionary<int, T> dict) : base(dict) { }
+
+            protected override bool CreateFromSourceBytes(byte[] bytes)
+            {
+                int itemCount = System.BitConverter.ToInt32(bytes, 0);
+
+                Dictionary<int, T> dict = new Dictionary<int, T>();
+
+                int header = sizeof(int); // item count
+                int index = header;
+                for (int i = 0; i < itemCount; i++)
+                {
+                    int key = System.BitConverter.ToInt32(bytes, 0);
+                    index += sizeof(int);
+
+                    T obj = new T();
+                    if(!obj.CreateFromBytes(bytes.ArrayFrom(index)))
+                    {
+                        m_value.Clear();
+                        return false;
+                    }
+
+                    dict[key] = obj;
+                }
+                m_value = dict;
+                return true;
+            }
+
+            protected override int GetSourceByteCount()
+            {
+                int total = sizeof(int); // item count;
+                
+                foreach(int key in m_value.Keys)
+                {
+                    total += sizeof(int); // key is int
+                    total += m_value[key].GetByteCount();
+                }
+
+                return total;
+            }
+
+            protected override byte[] GetSourceBytes()
+            {
+                byte[] bytes = new byte[GetByteCount()];
+
+                byte[] itemCountBytes = System.BitConverter.GetBytes(m_value.Count);
+                for (int i = 0; i < itemCountBytes.Length; i++)
                 {
                     bytes[i] = itemCountBytes[i];
                 }
 
+                int header = itemCountBytes.Length;
                 int index = 0;
                 foreach (int key in m_value.Keys)
                 {
@@ -499,97 +528,178 @@ namespace ubv.common.serialization
 
                     for (int b = 0; b < keyBytes.Length; b++)
                     {
-                        bytes[sizeof(int) + (index * (objBytes.Length + keyBytes.Length)) + b] = keyBytes[b];
+                        bytes[header + (index * (objBytes.Length + keyBytes.Length)) + b] = keyBytes[b];
                     }
 
                     for (int b = 0; b < objBytes.Length; b++)
                     {
-                        bytes[sizeof(int) + keyBytes.Length + (index * (objBytes.Length + keyBytes.Length)) + b] = objBytes[b];
+                        bytes[header + keyBytes.Length + (index * (objBytes.Length + keyBytes.Length)) + b] = objBytes[b];
                     }
                     ++index;
                 }
                 return bytes;
             }
+
+            protected abstract override ID.BYTE_TYPE SerializationID();
         }
 
-        public class Array2D<T> : Serializable.Variable<T[,]> where T : Serializable, new()
+        abstract public class Array<T> : Serialized<T[]> where T : IConvertible, new()
         {
-            // convention : 
-            /*
-             4 bytes    size x
-             4 bytes    size y
-             4 bytes    size of one element
-                 */
-
-            private int m_width;
-            private int m_length;
-            private int m_bytesPerElement;
-
-            public Array2D(Serializable owner, T[,] value) : base(owner, value)
+            public T this[int key]
             {
-                m_bytesPerElement = new T().GetByteCount();
-                m_width = value.GetLength(0);
-                m_length = value.GetLength(1);
+                get => m_value[key];
+                set => m_value[key] = value;
             }
 
-            public override Serializable.Variable<T[,]> Set(T[,] value)
+            public Array(int size)
             {
-                m_bytesPerElement = new T().GetByteCount();
-                m_width = value.GetLength(0);
-                m_length = value.GetLength(1);
-                base.Set(value);
-                return this;
+                m_value = new T[size];
             }
 
-            protected override T[,] BuildFromBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(byte[] bytes)
             {
-                m_width = System.BitConverter.ToInt32(bytes, 0);
-                m_length = System.BitConverter.ToInt32(bytes, sizeof(int));
-                m_bytesPerElement = System.BitConverter.ToInt32(bytes, 2 * sizeof(int));
+                int itemCount = System.BitConverter.ToInt32(bytes, 0);
 
-                T[,] array = new T[m_width, m_length];
+                m_value = new T[itemCount];
 
+                int header = sizeof(int); // item count
+                int subIndex = header;
+                for (int i = 0; i < itemCount; i++)
+                {
+                    T obj = new T();
+                    if (!obj.CreateFromBytes(bytes.ArrayFrom(subIndex)))
+                    {
+                        m_value = null;
+                        return false;
+                    }
+                    subIndex += obj.GetByteCount();
+                    m_value[i] = obj;
+                }
+
+                return true;
+            }
+
+            protected override int GetSourceByteCount()
+            {
+                int total = sizeof(int); // item count
+                for (int i = 0; i < m_value.Length; i++)
+                {
+                    total += m_value[i].GetByteCount();
+                }
+
+                return total;
+            }
+
+            protected override byte[] GetSourceBytes()
+            {
+                byte[] bytes = new byte[GetSourceByteCount()];
+
+                int byteCount = 0;
+
+                byte[] itemCountBytes = System.BitConverter.GetBytes(m_value.Length);
+                for (int i = 0; i < itemCountBytes.Length; i++)
+                {
+                    bytes[byteCount++] = itemCountBytes[i];
+                }
+
+                for (int i = 0; i < m_value.Length; i++)
+                {
+                    byte[] itemBytes = m_value[i].GetBytes();
+                    for (int b = 0; b < itemBytes.Length; b++)
+                    {
+                        bytes[byteCount++] = itemBytes[b];
+                    }
+                }
+                return bytes;
+            }
+
+            protected abstract override ID.BYTE_TYPE SerializationID();
+        }
+
+        abstract public class Array2D<T> : Serialized<T[,]> where T : IConvertible, new()
+        {
+            public T this[int x, int y]
+            {
+                get => m_value[x, y];
+                set => m_value[x, y] = value;
+            }
+
+            public Array2D(int width, int length) : base()
+            {
+                m_value = new T[width, length];
+            }
+
+            public Array2D(T[,] array) : base(array) { }
+
+            protected override bool CreateFromSourceBytes(byte[] bytes)
+            {
+                int width = System.BitConverter.ToInt32(bytes, 0);
+                int length = System.BitConverter.ToInt32(bytes, sizeof(int));
+
+                m_value = new T[width, length];
+
+                int header = sizeof(int) * 2; // item count
+                int index = header;
                 int x = 0;
                 int y = 0;
-                for(int i = 0; i < m_width * m_length; i++)
+                for (int i = 0; i < width * length; i++)
                 {
-                    x = i % m_width;
-                    y = i / m_width;
-                    array[x, y] = Serializable.FromBytes<T>(bytes.SubArray((sizeof(int) * 3) + i, m_bytesPerElement));
+                    x = i % width;
+                    y = i / width;
+                    T obj = new T();
+                    if (!obj.CreateFromBytes(bytes.ArrayFrom(index)))
+                    {
+                        m_value = null;
+                        return false;
+                    }
+                    index += obj.GetByteCount();
+                    m_value[x, y] = obj;
+                }
+                
+                return true;
+            }
+
+            protected override int GetSourceByteCount()
+            {
+                int total = sizeof(int) * 2; // item count
+                int itemCount = m_value.GetLength(0) * m_value.GetLength(1);
+                for (int i = 0; i < itemCount; i++)
+                {
+                    total += m_value[i  % itemCount, i / itemCount].GetByteCount();
                 }
 
-                return array;
+                return total;
             }
 
-            protected override int ByteCount()
+            protected override byte[] GetSourceBytes()
             {
-                return (3 * sizeof(int)) + (m_bytesPerElement * m_width * m_length);
-            }
+                byte[] bytes = new byte[GetSourceByteCount()];
 
-            protected override byte[] Bytes()
-            {
-                byte[] bytes = new byte[ByteCount()];
-
-                byte[] widthBytes = System.BitConverter.GetBytes(m_width);
-                byte[] lengthBytes = System.BitConverter.GetBytes(m_length);
-                byte[] elementSizeBytes = System.BitConverter.GetBytes(m_bytesPerElement);
-
-                for (int i = 0; i < sizeof(int); i++)
+                int width = m_value.GetLength(0);
+                int length = m_value.GetLength(0);
+                
+                byte[] widthBytes = System.BitConverter.GetBytes(width);
+                for (int i = 0; i < widthBytes.Length; i++)
                 {
                     bytes[i] = widthBytes[i];
-                    bytes[i + sizeof(int)] = lengthBytes[i];
-                    bytes[i + (2 * sizeof(int))] = elementSizeBytes[i];
                 }
 
-                int header = 3 * sizeof(int);
-                int index = 0;
-                for (int x = 0; x < m_width; x++)
+                byte[] lengthBytes = System.BitConverter.GetBytes(length);
+                for (int i = 0; i < widthBytes.Length; i++)
                 {
-                    for (int y = 0; y < m_length; y++)
+                    bytes[i + widthBytes.Length] = lengthBytes[i];
+                }
+
+                int header = sizeof(int) * 2; // item count
+                int index = 0;
+                
+                for (int x = 0; x < width; x++)
+                {
+                    for (int y = 0; y < length; y++)
                     {
                         T obj = m_value[x, y];
                         byte[] objBytes = obj.GetBytes();
-                        index = (m_width * x) + y; 
+                        index = (width * x) + y;
                         for (int b = 0; b < objBytes.Length; b++)
                         {
                             bytes[header + (index * objBytes.Length) + b] = objBytes[b];
@@ -598,6 +708,8 @@ namespace ubv.common.serialization
                 }
                 return bytes;
             }
+
+            protected abstract override ID.BYTE_TYPE SerializationID();
         }
     }
 }

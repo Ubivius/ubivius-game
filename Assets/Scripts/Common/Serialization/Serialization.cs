@@ -17,7 +17,21 @@ namespace ubv.common.serialization
             LOGIC_CELL_DOOR,
             LOGIC_CELL_FLOOR,
             LOGIC_CELL_WALL,
-            LOGIC_CELL_INTERACTABLE // 0xA0, ou 10
+            LOGIC_CELL_INTERACTABLE,
+            LOGIC_GRID,
+            INT32,
+            FLOAT,
+            UINT32,
+            BOOL,
+            VECTOR2,
+            VECTOR2INT,
+            QUATERNION,
+            STRING,
+            LIST_PLAYERSTATE,
+            HASHMAP_INT_PLAYERSTATE,
+            LIST_INPUTFRAME,
+            LOGIC_CELL_INFO,
+            ARRAY2D_CELLINFO
         }
     }
 }

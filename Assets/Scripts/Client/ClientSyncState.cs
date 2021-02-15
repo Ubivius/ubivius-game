@@ -72,17 +72,17 @@ namespace ubv
                 {
                     m_TCPClient.Connect();
 
-                    m_TCPClient.Send(new IdentificationMessage().GetBytes()); // sends a ping to the server
+                    m_TCPClient.Send(new IdentificationMessage(0).GetBytes()); // sends a ping to the server
                 }
 
                 public void ReceivePacket(tcp.TCPToolkit.Packet packet)
                 {
                     // receive auth message and set player id
                     
-                    IdentificationMessage auth = common.serialization.Serializable.FromBytes<IdentificationMessage>(packet.Data);
+                    IdentificationMessage auth = common.serialization.IConvertible.CreateFromBytes<IdentificationMessage>(packet.Data);
                     if (auth != null)
                     {
-                        m_playerID = auth.PlayerID;
+                        m_playerID = auth.PlayerID.Value;
 #if DEBUG_LOG
                         Debug.Log("Received connection confirmation, player ID is " + m_playerID);
 #endif // DEBUG_LOG
@@ -92,11 +92,11 @@ namespace ubv
                     }
                     else
                     {
-                        GameStartMessage start = common.serialization.Serializable.FromBytes<GameStartMessage>(packet.Data);
+                        GameStartMessage start = common.serialization.IConvertible.CreateFromBytes<GameStartMessage>(packet.Data);
                         if (start != null)
                         {
-                            m_playerStates = start.Players;
-                            m_simulationBuffer = start.SimulationBuffer;
+                            m_playerStates = start.Players.Value;
+                            m_simulationBuffer = start.SimulationBuffer.Value;
 #if DEBUG_LOG
                             Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
@@ -115,7 +115,7 @@ namespace ubv
                     {
                         m_TCPClient.Unsubscribe(this);
                         PlayerState soloPlayer = new PlayerState();
-                        soloPlayer.GUID.Set(0);
+                        soloPlayer.GUID.Value = 0;
                         List<PlayerState> players = new List<PlayerState>();
                         players.Add(soloPlayer);
                         return new ClientSyncPlay(m_UDPClient, 0, m_physicsScene, m_playerSettings, players, 0, m_playWithoutServer);
@@ -182,7 +182,7 @@ namespace ubv
                     Dictionary<int, PlayerState> playerStateDict = new Dictionary<int, PlayerState>();
                     foreach(PlayerState state in playerStates)
                     {
-                        playerStateDict[state.GUID] = state;
+                        playerStateDict[state.GUID.Value] = state;
                     }
                     
                     m_updaters.Add(new PlayerGameObjectUpdater(playerSettings, playerStateDict, m_playerID));
@@ -269,7 +269,7 @@ namespace ubv
                     // client doesnt need its own client state ticks
                     lock (m_lock)
                     {
-                        ClientState state = common.serialization.Serializable.FromBytes<ClientState>(packet.Data);
+                        ClientState state = common.serialization.IConvertible.CreateFromBytes<ClientState>(packet.Data);
                         if (state != null)
                         {
                             state.PlayerGUID = m_playerID;
@@ -277,7 +277,7 @@ namespace ubv
 #if DEBUG_LOG
                             Debug.Log("Received server state tick " + state.Tick.Value);
 #endif //DEBUG_LOG
-                            m_remoteTick = state.Tick;
+                            m_remoteTick = state.Tick.Value;
                         }
                     }
                 }
@@ -286,15 +286,15 @@ namespace ubv
                 {
                     if (m_lastInput != null)
                     {
-                        m_inputBuffer[bufferIndex].Movement.Set(m_lastInput.Movement.Value);
-                        m_inputBuffer[bufferIndex].Sprinting.Set(m_lastInput.Sprinting.Value);
+                        m_inputBuffer[bufferIndex].Movement.Value = m_lastInput.Movement.Value;
+                        m_inputBuffer[bufferIndex].Sprinting.Value = m_lastInput.Sprinting.Value;
                     }
                     else
                     {
                         m_inputBuffer[bufferIndex].SetToNeutral();
                     }
 
-                    m_inputBuffer[bufferIndex].Tick.Set(m_localTick);
+                    m_inputBuffer[bufferIndex].Tick.Value = m_localTick;
 
                     m_lastInput = null;
 
@@ -313,9 +313,9 @@ namespace ubv
 
                     InputMessage inputMessage = new InputMessage();
 
-                    inputMessage.PlayerID.Set(m_playerID);
-                    inputMessage.StartTick.Set(m_remoteTick);
-                    inputMessage.InputFrames.Set(frames);
+                    inputMessage.PlayerID.Value = m_playerID;
+                    inputMessage.StartTick.Value = m_remoteTick;
+                    inputMessage.InputFrames.Value = frames;
 
 #if NETWORK_SIMULATE
                     if (Random.Range(0f, 1f) > m_packetLossChance)

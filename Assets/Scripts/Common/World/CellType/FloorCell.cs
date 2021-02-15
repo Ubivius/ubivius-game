@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ubv.common.serialization;
 
 namespace ubv.common.world.cellType
 {
@@ -15,9 +16,9 @@ namespace ubv.common.world.cellType
             IsWalkable = true;
         }
 
-        protected override byte SerializationID()
+        protected override ID.BYTE_TYPE SerializationID()
         {
-            return (byte)serialization.ID.BYTE_TYPE.LOGIC_CELL_FLOOR;
+            return ID.BYTE_TYPE.LOGIC_CELL_FLOOR;
         }
     }
 }
