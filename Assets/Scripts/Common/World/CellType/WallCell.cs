@@ -8,7 +8,7 @@ namespace ubv.common.world.cellType
 {
     class WallCell : LogicCell
     {
-        public WallCell()
+        public WallCell() : base()
         {
             IsWalkable = false;
         }

@@ -10,7 +10,7 @@ namespace ubv.common.world.cellType
     {
         // TODO: floor item and if there's one
         
-        public FloorCell()
+        public FloorCell() : base()
         {
             IsWalkable = true;
         }

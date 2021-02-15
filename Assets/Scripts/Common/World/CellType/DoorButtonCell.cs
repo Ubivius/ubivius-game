@@ -9,11 +9,24 @@ namespace ubv.common.world.cellType
     class DoorButtonCell : LogicCell
     {
         private ubv.common.world.cellType.DoorCell m_linkedDoor;
+        private serialization.types.Int32 m_linkedDoorCellID;
 
-        public DoorButtonCell(DoorCell linkedDoor)
+        public DoorButtonCell(DoorCell linkedDoor) : base()
         {
             IsWalkable = false;
             m_linkedDoor = linkedDoor;
+            m_linkedDoorCellID.Set(m_linkedDoor.CellID);
+        }
+
+        protected override void InitSerializableMembers()
+        {
+            base.InitSerializableMembers();
+            m_linkedDoorCellID = new serialization.types.Int32(this, 0);
+        }
+
+        protected override byte SerializationID()
+        {
+            return (byte)serialization.ID.BYTE_TYPE.LOGIC_CELL_INTERACTABLE;
         }
 
         public DoorButtonCell()

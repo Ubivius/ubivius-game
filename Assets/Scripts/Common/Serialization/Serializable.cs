@@ -304,6 +304,32 @@ namespace ubv.common.serialization
             }
         }
 
+        public class Vector2Int : Serializable.Variable<UnityEngine.Vector2Int>
+        {
+            public Vector2Int(Serializable owner, UnityEngine.Vector2Int value) : base(owner, value) { }
+
+            protected override byte[] Bytes()
+            {
+                byte[] bytes = new byte[sizeof(int) * 2];
+                for (int i = 0; i < sizeof(int); i++)
+                {
+                    bytes[i] = System.BitConverter.GetBytes(m_value.x)[i];
+                    bytes[i + sizeof(int)] = System.BitConverter.GetBytes(m_value.y)[i];
+                }
+                return bytes;
+            }
+
+            protected override int ByteCount()
+            {
+                return sizeof(int) * 2;
+            }
+
+            protected override UnityEngine.Vector2Int BuildFromBytes(byte[] bytes)
+            {
+                return new UnityEngine.Vector2Int(System.BitConverter.ToInt32(bytes, 0), System.BitConverter.ToInt32(bytes, 4));
+            }
+        }
+
         public class List<T> : Serializable.Variable<System.Collections.Generic.List<T>> where T : Serializable, new()
         {
             private int m_bytesPerElement;
@@ -481,6 +507,94 @@ namespace ubv.common.serialization
                         bytes[sizeof(int) + keyBytes.Length + (index * (objBytes.Length + keyBytes.Length)) + b] = objBytes[b];
                     }
                     ++index;
+                }
+                return bytes;
+            }
+        }
+
+        public class Array2D<T> : Serializable.Variable<T[,]> where T : Serializable, new()
+        {
+            // convention : 
+            /*
+             4 bytes    size x
+             4 bytes    size y
+             4 bytes    size of one element
+                 */
+
+            private int m_width;
+            private int m_length;
+            private int m_bytesPerElement;
+
+            public Array2D(Serializable owner, T[,] value) : base(owner, value)
+            {
+                m_bytesPerElement = new T().GetByteCount();
+                m_width = value.GetLength(0);
+                m_length = value.GetLength(1);
+            }
+
+            public override Serializable.Variable<T[,]> Set(T[,] value)
+            {
+                m_bytesPerElement = new T().GetByteCount();
+                m_width = value.GetLength(0);
+                m_length = value.GetLength(1);
+                base.Set(value);
+                return this;
+            }
+
+            protected override T[,] BuildFromBytes(byte[] bytes)
+            {
+                m_width = System.BitConverter.ToInt32(bytes, 0);
+                m_length = System.BitConverter.ToInt32(bytes, sizeof(int));
+                m_bytesPerElement = System.BitConverter.ToInt32(bytes, 2 * sizeof(int));
+
+                T[,] array = new T[m_width, m_length];
+
+                int x = 0;
+                int y = 0;
+                for(int i = 0; i < m_width * m_length; i++)
+                {
+                    x = i % m_width;
+                    y = i / m_width;
+                    array[x, y] = Serializable.FromBytes<T>(bytes.SubArray((sizeof(int) * 3) + i, m_bytesPerElement));
+                }
+
+                return array;
+            }
+
+            protected override int ByteCount()
+            {
+                return (3 * sizeof(int)) + (m_bytesPerElement * m_width * m_length);
+            }
+
+            protected override byte[] Bytes()
+            {
+                byte[] bytes = new byte[ByteCount()];
+
+                byte[] widthBytes = System.BitConverter.GetBytes(m_width);
+                byte[] lengthBytes = System.BitConverter.GetBytes(m_length);
+                byte[] elementSizeBytes = System.BitConverter.GetBytes(m_bytesPerElement);
+
+                for (int i = 0; i < sizeof(int); i++)
+                {
+                    bytes[i] = widthBytes[i];
+                    bytes[i + sizeof(int)] = lengthBytes[i];
+                    bytes[i + (2 * sizeof(int))] = elementSizeBytes[i];
+                }
+
+                int header = 3 * sizeof(int);
+                int index = 0;
+                for (int x = 0; x < m_width; x++)
+                {
+                    for (int y = 0; y < m_length; y++)
+                    {
+                        T obj = m_value[x, y];
+                        byte[] objBytes = obj.GetBytes();
+                        index = (m_width * x) + y; 
+                        for (int b = 0; b < objBytes.Length; b++)
+                        {
+                            bytes[header + (index * objBytes.Length) + b] = objBytes[b];
+                        }
+                    }
                 }
                 return bytes;
             }
