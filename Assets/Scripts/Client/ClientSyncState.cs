@@ -30,6 +30,7 @@ namespace ubv
                 private readonly PlayerSettings m_playerSettings;
                 private List<PlayerState> m_playerStates;
                 private int? m_playerID;
+                private int m_simulationBuffer;
 
 #if NETWORK_SIMULATE
                 private bool m_playWithoutServer;
@@ -95,8 +96,9 @@ namespace ubv
                         if (start != null)
                         {
                             m_playerStates = start.Players;
+                            m_simulationBuffer = start.SimulationBuffer;
 #if DEBUG_LOG
-                            Debug.Log("Client received confirmation that server is about to start game");
+                            Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
                         }
                     }
@@ -106,7 +108,7 @@ namespace ubv
                 {
                     if(m_playerStates != null)
                     {
-                        return new ClientSyncPlay(m_UDPClient, m_playerID.Value, m_physicsScene, m_playerSettings, m_playerStates);
+                        return new ClientSyncPlay(m_UDPClient, m_playerID.Value, m_physicsScene, m_playerSettings, m_playerStates, m_simulationBuffer);
                     }
 #if NETWORK_SIMULATE
                     if(m_playWithoutServer)
@@ -116,7 +118,7 @@ namespace ubv
                         soloPlayer.GUID.Set(0);
                         List<PlayerState> players = new List<PlayerState>();
                         players.Add(soloPlayer);
-                        return new ClientSyncPlay(m_UDPClient, 0, m_physicsScene, m_playerSettings, players, m_playWithoutServer);
+                        return new ClientSyncPlay(m_UDPClient, 0, m_physicsScene, m_playerSettings, players, 0, m_playWithoutServer);
                     }
 #endif // NETWORK_SIMULATE
 
@@ -134,6 +136,7 @@ namespace ubv
 
                 private uint m_remoteTick;
                 private uint m_localTick;
+                private readonly int m_simulationBuffer;
 
                 private const ushort CLIENT_STATE_BUFFER_SIZE = 64;
 
@@ -155,7 +158,8 @@ namespace ubv
                     int playerID, 
                     string physicsScene, 
                     PlayerSettings playerSettings,
-                    List<PlayerState> playerStates
+                    List<PlayerState> playerStates,
+                    int simulationBuffer
 #if NETWORK_SIMULATE
                     , bool startWithoutServer = false
 #endif // NETWORK_SIMULATE
@@ -173,6 +177,7 @@ namespace ubv
                     m_lastServerState = null;
 
                     m_updaters = new List<IClientStateUpdater>();
+                    m_simulationBuffer = simulationBuffer;
 
                     Dictionary<int, PlayerState> playerStateDict = new Dictionary<int, PlayerState>();
                     foreach(PlayerState state in playerStates)
@@ -180,7 +185,7 @@ namespace ubv
                         playerStateDict[state.GUID] = state;
                     }
                     
-                    m_updaters.Add(new PlayerGameObjectUpdater(this, playerSettings, playerStateDict, m_playerID));
+                    m_updaters.Add(new PlayerGameObjectUpdater(playerSettings, playerStateDict, m_playerID));
 
                     m_UDPClient = UDPClient;
                     m_UDPClient.Subscribe(this);
@@ -188,7 +193,7 @@ namespace ubv
                     for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
                     {
                         m_clientStateBuffer[i] = new ClientState();
-                        m_clientStateBuffer[i].SetPlayerID(m_playerID);
+                        m_clientStateBuffer[i].PlayerGUID = m_playerID;
                         
                         foreach (PlayerState playerState in playerStates)
                         {
@@ -211,7 +216,12 @@ namespace ubv
 
                     ++m_localTick;
 
-                    ClientCorrection();
+                    ClientCorrection(m_remoteTick % CLIENT_STATE_BUFFER_SIZE);
+
+                    for (int i = 0; i < m_updaters.Count; i++)
+                    {
+                        m_updaters[i].FixedUpdate(Time.deltaTime);
+                    }
 
                     return this;
                 }
@@ -234,17 +244,17 @@ namespace ubv
                     {
                         m_updaters[i].SetStateAndStep(ref state, input, deltaTime);
                     }
-
+                    
                     m_clientPhysics.Simulate(deltaTime);
                 }
                 
-                private List<IClientStateUpdater> UpdatersNeedingCorrection(ClientState remoteState)
+                private List<IClientStateUpdater> UpdatersNeedingCorrection(ClientState localState, ClientState remoteState)
                 {
                     List<IClientStateUpdater> needCorrection = new List<IClientStateUpdater>();
 
                     for (int i = 0; i < m_updaters.Count; i++)
                     {
-                        if (m_updaters[i].NeedsCorrection(remoteState))
+                        if (m_updaters[i].NeedsCorrection(localState, remoteState))
                         {
                             needCorrection.Add(m_updaters[i]);
                         }
@@ -262,10 +272,10 @@ namespace ubv
                         ClientState state = udp.Serializable.FromBytes<ClientState>(packet.Data);
                         if (state != null)
                         {
-                            state.SetPlayerID(m_playerID);
+                            state.PlayerGUID = m_playerID;
                             m_lastServerState = state;
 #if DEBUG_LOG
-                            Debug.Log("Received server state tick " + state.Tick);
+                            Debug.Log("Received server state tick " + state.Tick.Value);
 #endif //DEBUG_LOG
                             m_remoteTick = state.Tick;
                         }
@@ -331,7 +341,7 @@ namespace ubv
                         Time.fixedDeltaTime);
                 }
 
-                private void ClientCorrection()
+                private void ClientCorrection(uint remoteIndex)
                 {
 #if NETWORK_SIMULATE
                     if (m_noServer)
@@ -345,26 +355,33 @@ namespace ubv
                     {
                         if (m_lastServerState != null)
                         {
-                            List<IClientStateUpdater> updaters = UpdatersNeedingCorrection(m_lastServerState);
-                            for (int i = 0; i < updaters.Count; i++)
+                            List<IClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastServerState);
+                            if (updaters.Count > 0)
                             {
                                 uint rewindTicks = m_remoteTick;
-
+                                
                                 // reset world state to last server-sent state
-                                updaters[i].UpdateFromState(m_lastServerState);
+                                for (int i = 0; i < updaters.Count; i++)
+                                {
+                                    updaters[i].UpdateFromState(m_lastServerState);
+                                }
 
                                 while (rewindTicks < m_localTick)
                                 {
                                     uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
 
-                                    updaters[i].SetStateAndStep(
+                                    for (int i = 0; i < updaters.Count; i++)
+                                    {
+                                        updaters[i].SetStateAndStep(
                                         ref m_clientStateBuffer[rewindIndex],
                                         m_inputBuffer[rewindIndex],
                                         Time.fixedDeltaTime);
+                                    }
+
                                     m_clientPhysics.Simulate(Time.fixedDeltaTime);
                                 }
                             }
-
+                            
                             m_lastServerState = null;
                         }
                     }

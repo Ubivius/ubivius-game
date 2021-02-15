@@ -11,6 +11,9 @@ namespace ubv
     {
         namespace logic
         {
+            // TO READ https://fabiensanglard.net/quake3/network.php
+            // and maybe https://thad.frogley.info/w/gfg08/gfg08.pdf
+
             abstract public class ServerState
             {
                 protected readonly object m_lock = new object();
@@ -22,7 +25,6 @@ namespace ubv
 
             public class ClientConnection
             {
-                public uint ServerTick;
                 public client.ClientState State;
 
                 public int PlayerGUID { get; private set; }
@@ -30,7 +32,7 @@ namespace ubv
                 public ClientConnection(int playerGUID)
                 {
                     State = new client.ClientState();
-                    State.SetPlayerID(playerGUID);
+                    State.PlayerGUID = playerGUID;
                     PlayerGUID = playerGUID;
                 }
             }
@@ -52,6 +54,7 @@ namespace ubv
                 private readonly common.StandardMovementSettings m_movementSettings;
                 private readonly int m_snapshotDelay;
                 private readonly GameObject m_playerPrefab;
+                private readonly int m_simulationBuffer;
 
                 private List<common.data.PlayerState> m_players;
 
@@ -65,6 +68,7 @@ namespace ubv
                     common.StandardMovementSettings 
                     movementSettings, 
                     int snapshotDelay, 
+                    int simulationBuffer,
                     string physicsScene
 #if NETWORK_SIMULATE
                     , ServerUpdate parent
@@ -79,6 +83,7 @@ namespace ubv
 
                     m_movementSettings = movementSettings;
                     m_snapshotDelay = snapshotDelay;
+                    m_simulationBuffer = simulationBuffer;
                     m_physicsScene = physicsScene;
                     m_playerPrefab = playerPrefab;
 
@@ -89,13 +94,14 @@ namespace ubv
 #endif // NETWORK_SIMULATE 
                     
                     m_TCPServer.Subscribe(this);
+                    m_UDPserver.Subscribe(this);
                 }
 
                 public override ServerState Update()
                 {
                     lock (m_lock)
                     {
-                        if (m_TCPClientConnections.Count > 3
+                        if (m_TCPClientConnections.Count > 3 // TODO : Change here when matchmaking microservice is up
 #if NETWORK_SIMULATE
                             || m_forceStartGame
 #endif // NETWORK_SIMULATE
@@ -106,13 +112,14 @@ namespace ubv
 
                             common.data.GameStartMessage message = new common.data.GameStartMessage();
                             message.Players.Set(m_players);
+                            message.SimulationBuffer.Set(m_simulationBuffer);
 
                             foreach (IPEndPoint ip in m_TCPClientConnections.Keys)
                             {
                                 m_TCPServer.Send(message.GetBytes(), ip);
                             }
 
-                            return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_physicsScene);
+                            return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_simulationBuffer, m_physicsScene);
                         }
                     }
                     return this;
@@ -146,7 +153,6 @@ namespace ubv
                         // set rotation / position according to existing players?
 
                         m_players.Add(playerState);
-                        m_UDPserver.Subscribe(this);
                         m_UDPserver.RegisterClient(clientIP.Address);
 
                         m_TCPServer.Send(idMessage.GetBytes(), clientIP);
@@ -191,37 +197,51 @@ namespace ubv
                 private udp.server.UDPServer m_UDPserver;
 
                 private Dictionary<IPEndPoint, ClientConnection> m_UDPClientConnections;
-                private Dictionary<ClientConnection, common.data.InputMessage> m_clientInputs;
                 private Dictionary<int, Rigidbody2D> m_bodies;
                 
+                private Dictionary<ClientConnection, Dictionary<int, common.data.InputFrame>> m_clientInputBuffers;
+
                 private common.StandardMovementSettings m_movementSettings;
-                private readonly int m_snapshotDelay;
+                private readonly int m_snapshotTicks;
                 
                 private uint m_tickAccumulator;
+                private int m_masterTick;
+                private int m_bufferedMasterTick;
+
+                private readonly int m_simulationBuffer;
 
                 private PhysicsScene2D m_serverPhysics;
 
                 private GameObject m_playerPrefab;
+                
+                List<int> m_toRemoveCache;
 
                 public GameplayState(udp.server.UDPServer UDPServer,
                     GameObject playerPrefab, 
                     Dictionary<IPEndPoint, ClientConnection> UDPClientConnections, 
                     common.StandardMovementSettings movementSettings, 
                     int snapshotDelay, 
+                    int simulationBuffer,
                     string physicsScene)
                 {
                     m_UDPserver = UDPServer;
                     m_UDPserver.Subscribe(this);
                     m_tickAccumulator = 0;
+                    m_masterTick = 0;
+                    m_bufferedMasterTick = 0;
+                    m_simulationBuffer = simulationBuffer;
                     m_UDPClientConnections = UDPClientConnections;
 
                     m_movementSettings = movementSettings;
+
+                    m_snapshotTicks = snapshotDelay;
+                    m_toRemoveCache = new List<int>();
 
                     m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(physicsScene).GetPhysicsScene2D();
                     m_playerPrefab = playerPrefab;
 
                     m_bodies = new Dictionary<int, Rigidbody2D>();
-                    m_clientInputs = new Dictionary<ClientConnection, common.data.InputMessage>();
+                    m_clientInputBuffers = new Dictionary<ClientConnection, Dictionary<int, common.data.InputFrame>>();
                     
                     // instantiate each player
                     foreach (IPEndPoint ip in m_UDPClientConnections.Keys)
@@ -241,12 +261,13 @@ namespace ubv
                         player.Position.Set(m_bodies[m_UDPClientConnections[ip].PlayerGUID].position);
 
                         m_UDPClientConnections[ip].State.AddPlayer(player);
-                        m_UDPClientConnections[ip].State.SetPlayerID(player.GUID);
+                        m_UDPClientConnections[ip].State.PlayerGUID = player.GUID;
                     }
 
                     // add each player to each other client state
                     foreach (ClientConnection baseConn in m_UDPClientConnections.Values)
                     {
+                        m_clientInputBuffers[baseConn] = new Dictionary<int, common.data.InputFrame>();
                         foreach (ClientConnection conn in m_UDPClientConnections.Values)
                         {
                             common.data.PlayerState currentPlayer = conn.State.GetPlayer();
@@ -262,66 +283,72 @@ namespace ubv
                 {
                     return this;
                 }
-
+                
                 public override ServerState FixedUpdate()
                 {
-                    // for each player
-                    // check if missing frames
-                    // update frames
-
-                    uint framesToSimulate = 0;
                     lock (m_lock)
                     {
-                        foreach (ClientConnection client in m_clientInputs.Keys)
+                        if (++m_bufferedMasterTick > m_simulationBuffer + m_masterTick)
                         {
-                            common.data.InputMessage message = m_clientInputs[client];
-                            int messageCount = message.InputFrames.Value.Count;
-                            uint maxTick = message.StartTick + (uint)(messageCount - 1);
-#if DEBUG_LOG
-            Debug.Log("max tick to simulate = " + maxTick.ToString());
-#endif // DEBUG_LOG
-
-                            // on recule jusqu'à ce qu'on trouve le  tick serveur le plus récent
-                            uint missingFrames = (maxTick > client.ServerTick) ? maxTick - client.ServerTick : 0;
-
-                            if (framesToSimulate < missingFrames) framesToSimulate = missingFrames;
-                        }
-
-                        for (uint f = framesToSimulate; f > 0; f--)
-                        {
-                            foreach (ClientConnection client in m_clientInputs.Keys)
+                            foreach (ClientConnection client in m_clientInputBuffers.Keys)
                             {
-                                common.data.InputMessage message = m_clientInputs[client];
-                                int messageCount = message.InputFrames.Value.Count;
-                                if (messageCount > f)
+                                // if input buffer has a frame corresponding to this tick
+                                common.data.InputFrame frame = null;
+                                if(!m_clientInputBuffers[client].ContainsKey(m_masterTick))
                                 {
-                                    common.data.InputFrame frame = message.InputFrames.Value[messageCount - (int)f - 1];
+#if DEBUG_LOG
+                                    Debug.Log("Missed a player input from " + client.PlayerGUID + " for tick " + m_masterTick);
+#endif //DEBUG_LOG
+                                    frame = new common.data.InputFrame(); // create a default frame to not move player
+                                }
+                                else
+                                {
+                                    frame = m_clientInputBuffers[client][m_masterTick];
+                                }
 
-                                    // must be called in main unity thread
-                                    Rigidbody2D body = m_bodies[client.PlayerGUID];
+                                // must be called in main unity thread
+                                Rigidbody2D body = m_bodies[client.PlayerGUID];
+                                common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
+                                
+                                m_toRemoveCache.Clear();
+                                foreach(int tick in m_clientInputBuffers[client].Keys)
+                                {
+                                    if(tick <= m_masterTick)
+                                    {
+                                        m_toRemoveCache.Add(tick);
+                                    }
+                                }
 
-                                    common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
-
-                                    client.State.GetPlayer().Position.Set(body.position);
-                                    client.State.Tick.Set(client.ServerTick);
-                                    client.ServerTick++;
+                                for(int i = 0; i < m_toRemoveCache.Count; i++)
+                                {
+                                    m_clientInputBuffers[client].Remove(m_toRemoveCache[i]);
                                 }
                             }
-
+                            
                             m_serverPhysics.Simulate(Time.fixedDeltaTime);
+
+                            m_masterTick++;
+                            
+                            foreach (ClientConnection client in m_clientInputBuffers.Keys)
+                            {
+                                Rigidbody2D body = m_bodies[client.PlayerGUID];
+                                common.data.PlayerState player = client.State.GetPlayer();
+                                player.Position.Set(body.position);
+                                player.Rotation.Set(body.rotation);
+                                client.State.Tick.Set((uint)m_masterTick);
+                            }
                         }
 
-                        m_clientInputs.Clear();
-                    }
-
-                    if (++m_tickAccumulator > m_snapshotDelay)
-                    {
-                        m_tickAccumulator = 0;
-                        foreach (IPEndPoint ip in m_UDPClientConnections.Keys)
+                        if (++m_tickAccumulator > m_snapshotTicks)
                         {
-                            m_UDPserver.Send(m_UDPClientConnections[ip].State.GetBytes(), ip);
+                            m_tickAccumulator = 0;
+                            foreach (IPEndPoint ip in m_UDPClientConnections.Keys)
+                            {
+                                m_UDPserver.Send(m_UDPClientConnections[ip].State.GetBytes(), ip);
+                            }
                         }
                     }
+
                     return this;
                 }
 
@@ -332,7 +359,21 @@ namespace ubv
                     {
                         lock (m_lock)
                         {
-                            m_clientInputs[m_UDPClientConnections[clientEndPoint]] = inputs;
+                            ClientConnection conn = m_UDPClientConnections[clientEndPoint];
+                            List<common.data.InputFrame> inputFrames = inputs.InputFrames.Value;
+#if DEBUG_LOG
+                            Debug.Log("(NOW = " + m_masterTick + ") Received tick " + inputs.StartTick.Value + " to " +  (inputs.StartTick.Value + inputFrames.Count) +  " from " + conn.PlayerGUID);
+#endif //DEBUG_LOG
+
+                            int frameIndex = 0;
+                            for (int i = 0; i < inputFrames.Count; i++)
+                            {
+                                frameIndex = (int)inputs.StartTick.Value + i;
+                                if (frameIndex >= m_masterTick)
+                                {
+                                    m_clientInputBuffers[conn][frameIndex] = inputFrames[i];
+                                }
+                            }
                         }
                     }
                 }
