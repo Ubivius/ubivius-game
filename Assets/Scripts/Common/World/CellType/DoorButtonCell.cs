@@ -34,8 +34,18 @@ namespace ubv.common.world.cellType
         public DoorButtonCell()
         {
             IsWalkable = false;
-            m_linkedDoorCellID = new serialization.types.Int32(m_linkedDoor.GetCellID());
+            m_linkedDoorCellID = new serialization.types.Int32(m_linkedDoor != null ? m_linkedDoor.GetCellID() : 0);
             InitSerializableMembers(m_linkedDoorCellID);
+        }
+
+        public void SetLinkedDoor(DoorCell door)
+        {
+            m_linkedDoor = door;
+        }
+
+        public int GetLinkedDoorID()
+        {
+            return m_linkedDoorCellID.Value;
         }
 
         public void CloseDoor()

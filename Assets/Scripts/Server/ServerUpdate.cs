@@ -16,6 +16,7 @@ namespace ubv
             {
                 private ServerState m_currentState;
 
+                [SerializeField] private common.world.WorldGenerator m_worldGenerator;
                 [SerializeField] private GameObject m_playerPrefab;
                 [SerializeField] private common.StandardMovementSettings m_movementSettings;
                 [SerializeField] private string m_physicsScene;
@@ -40,6 +41,7 @@ namespace ubv
                     m_currentState = new GameCreationState(m_UDPServer,
                         m_TCPServer,
                         m_playerPrefab,
+                        m_worldGenerator,
                         m_movementSettings,
                         m_snapshotDelay,
                         m_simulationBuffer,

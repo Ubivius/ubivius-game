@@ -25,6 +25,9 @@ namespace ubv
                 private readonly tcp.client.TCPClient m_TCPClient;
                 private readonly udp.client.UDPClient m_UDPClient;
 
+                // TEMP
+                MonoBehaviour m_parent;
+
                 //tranfer to play
                 private readonly string m_physicsScene;
                 private readonly PlayerSettings m_playerSettings;
@@ -56,6 +59,8 @@ namespace ubv
                     m_UDPClient = UDPClient;
                     m_TCPClient = TCPClient;
                     m_TCPClient.Subscribe(this);
+
+                    m_parent = parent;
 
 #if NETWORK_SIMULATE
                     parent.ConnectButtonEvent.AddListener(SendConnectionRequestToServer);
@@ -97,6 +102,24 @@ namespace ubv
                         {
                             m_playerStates = start.Players.Value;
                             m_simulationBuffer = start.SimulationBuffer.Value;
+
+                            common.world.cellType.CellInfo[,] cellInfoArray = start.CellInfo2DArray.Value;
+
+                            for(int x = 0; x < cellInfoArray.GetLength(0); x++)
+                            {
+                                for (int y = 0; y < cellInfoArray.GetLength(1); y++)
+                                {
+                                    common.world.cellType.LogicCell cell = cellInfoArray[x, y].CellFromBytes();
+                                    if(cell is common.world.cellType.WallCell)
+                                    {
+                                        Debug.Log("WALL CELL AT " + x + ", " + y);
+                                        // WATCH OUT: X ET Y INVERSÉS?
+                                    }
+                                }
+                            }
+
+                            m_TCPClient.Send(new ClientReadyMessage(m_playerID.Value).GetBytes());
+
 #if DEBUG_LOG
                             Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG

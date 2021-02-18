@@ -24,21 +24,24 @@ namespace ubv
 
                 public serialization.types.Int32 SimulationBuffer { get; protected set; }
                 public PlayerStateList Players { get; protected set; }
+                public world.LogicGrid.CellInfo2DArray CellInfo2DArray;
 
                 public GameStartMessage()
                 {
                     SimulationBuffer = new serialization.types.Int32(0);
-                    Players = new PlayerStateList(new List<PlayerState>());
+                    Players = new PlayerStateList(null);
+                    CellInfo2DArray = new world.LogicGrid.CellInfo2DArray(null);
 
-                    InitSerializableMembers(SimulationBuffer, Players);
+                    InitSerializableMembers(SimulationBuffer, Players, CellInfo2DArray);
                 }
 
-                public GameStartMessage(int simulationBuffer, List<PlayerState> players) : base()
+                public GameStartMessage(int simulationBuffer, List<PlayerState> players, world.cellType.CellInfo[,] array) : base()
                 {
                     SimulationBuffer = new serialization.types.Int32(simulationBuffer);
                     Players = new PlayerStateList(players);
+                    CellInfo2DArray = new world.LogicGrid.CellInfo2DArray(array);
 
-                    InitSerializableMembers(SimulationBuffer, Players);
+                    InitSerializableMembers(SimulationBuffer, Players, CellInfo2DArray);
                 }
                 
                 protected override ID.BYTE_TYPE SerializationID()

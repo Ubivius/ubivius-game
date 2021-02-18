@@ -4,6 +4,8 @@ using System.Net;
 using ubv.udp;
 using System.Collections.Generic;
 using ubv.tcp;
+using ubv.common.data;
+using ubv.common.serialization;
 
 namespace ubv
 {
@@ -44,9 +46,12 @@ namespace ubv
             /// </summary>
             public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver, udp.server.IUDPServerReceiver
             {
+                private common.world.WorldGenerator m_worldGenerator;
                 private tcp.server.TCPServer m_TCPServer;
                 private Dictionary<IPEndPoint, ClientConnection> m_TCPClientConnections;
                 private Dictionary<IPEndPoint, ClientConnection> m_UDPClientConnections;
+
+                private Dictionary<int, bool> m_readyClients;
 
                 // transfer to gameplay
                 private readonly string m_physicsScene;
@@ -65,6 +70,7 @@ namespace ubv
                 public GameCreationState(udp.server.UDPServer UDPServer, 
                     tcp.server.TCPServer TCPServer,
                     GameObject playerPrefab, 
+                    common.world.WorldGenerator worldGenerator,
                     common.StandardMovementSettings 
                     movementSettings, 
                     int snapshotDelay, 
@@ -81,6 +87,8 @@ namespace ubv
                     m_TCPClientConnections = new Dictionary<IPEndPoint, ClientConnection>();
                     m_UDPClientConnections = new Dictionary<IPEndPoint, ClientConnection>();
 
+                    m_readyClients = new Dictionary<int, bool>();
+
                     m_movementSettings = movementSettings;
                     m_snapshotDelay = snapshotDelay;
                     m_simulationBuffer = simulationBuffer;
@@ -89,6 +97,10 @@ namespace ubv
 
                     m_forceStartGame = false;
 
+                    m_worldGenerator = worldGenerator;
+
+                    m_worldGenerator.GenerateWorld();
+                    
 #if NETWORK_SIMULATE
                     parent.ForceStartGameButtonEvent.AddListener(() => { m_forceStartGame = true; });
 #endif // NETWORK_SIMULATE 
@@ -101,25 +113,33 @@ namespace ubv
                 {
                     lock (m_lock)
                     {
-                        if (m_TCPClientConnections.Count > 3 // TODO : Change here when matchmaking microservice is up
+                        if ((m_TCPClientConnections.Count > 3 // TODO : Change here when matchmaking microservice is up
 #if NETWORK_SIMULATE
                             || m_forceStartGame
 #endif // NETWORK_SIMULATE
-                        )
+                            ) && !awaitingClients)
                         {
-                            m_TCPServer.Unsubscribe(this);
                             m_UDPserver.Unsubscribe(this);
 
-                            common.data.GameStartMessage message = new common.data.GameStartMessage(m_simulationBuffer, m_players);
+                            common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
+
+                            common.data.GameStartMessage message = new common.data.GameStartMessage(m_simulationBuffer, m_players, cellInfoArray);
 
                             foreach (IPEndPoint ip in m_TCPClientConnections.Keys)
                             {
                                 m_TCPServer.Send(message.GetBytes(), ip);
                             }
 
-                            return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_simulationBuffer, m_physicsScene);
+                            Debug.Log("Waiting for clients to be ready");
+                            awaitingClients = true;
                         }
                     }
+                    
+                    if(m_readyClients.Count == m_players.Count && m_players.Count > 0)
+                    {
+                        return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_simulationBuffer, m_physicsScene);
+                    }
+
                     return this;
                 }
 
@@ -127,9 +147,18 @@ namespace ubv
                 {
                     return this;
                 }
-                
+
+                // TEMP
+                bool awaitingClients = false;
+
                 public void ReceivePacket(TCPToolkit.Packet packet, IPEndPoint clientIP)
                 {
+                    ClientReadyMessage ready = Serializable.CreateFromBytes<ClientReadyMessage>(packet.Data);
+                    if(ready != null)
+                    {
+                        Debug.Log("Client " + ready.PlayerID.Value + " is ready");
+                        m_readyClients[ready.PlayerID.Value] = true;
+                    }
                     return;
                 }
 

@@ -14,7 +14,8 @@ namespace ubv.common.world.cellType
             CELL_WALL,
             CELL_DOOR,
             CELL_BUTTON,
-            CELL_FLOOR
+            CELL_FLOOR,
+            CELL_NONE
         }
 
         private serialization.types.Byte m_cellType;
@@ -23,20 +24,27 @@ namespace ubv.common.world.cellType
 
         public CellInfo() : base()
         {
-            m_cellType = new serialization.types.Byte((byte)0);
-            m_cellID = new serialization.types.Int32(-1);
-            m_logicCellBytes = new serialization.types.ByteArray(null);
+            m_cellType = new serialization.types.Byte((byte)CellType.CELL_NONE);
+            m_cellID = new serialization.types.Int32(0);
+            m_logicCellBytes = new serialization.types.ByteArray(new byte[0]);
 
             InitSerializableMembers(m_cellType, m_cellID, m_logicCellBytes);
         }
 
         public CellInfo(LogicCell parentCell)
         {
-            CellType cellType = parentCell.GetCellType();
-            int cellID = parentCell.GetCellID();
-            m_cellType = new serialization.types.Byte((byte)cellType);
-            m_cellID = new serialization.types.Int32(cellID);
-            m_logicCellBytes = new serialization.types.ByteArray(parentCell.GetBytes());
+            if (parentCell != null)
+            {
+                m_cellType = new serialization.types.Byte((byte)parentCell.GetCellType());
+                m_cellID = new serialization.types.Int32(parentCell.GetCellID());
+                m_logicCellBytes = new serialization.types.ByteArray(parentCell.GetBytes());
+            }
+            else
+            {
+                m_cellType = new serialization.types.Byte((byte)CellType.CELL_NONE);
+                m_cellID = new serialization.types.Int32(0);
+                m_logicCellBytes = new serialization.types.ByteArray(new byte[0]);
+            }
 
             InitSerializableMembers(m_cellType, m_cellID, m_logicCellBytes);
         }
@@ -62,6 +70,8 @@ namespace ubv.common.world.cellType
                     break;
                 case CellType.CELL_BUTTON:
                     cell = CreateFromBytes<DoorButtonCell>(m_logicCellBytes.Value);
+                    break;
+                case CellType.CELL_NONE:
                     break;
                 default:
                     break;

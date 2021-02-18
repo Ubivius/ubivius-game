@@ -121,6 +121,88 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &425690305
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 425690308}
+  - component: {fileID: 425690307}
+  - component: {fileID: 425690306}
+  m_Layer: 0
+  m_Name: MasterGrid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &425690306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 425690305}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d48f061af1d36404ca1a03eb4181349d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_boundariesMap: {x: 50, y: 50}
+  m_randomRoomPoolSection0:
+  - {fileID: 2292421661394856297, guid: 3d468dc9c994ab64c8cbc88f0779d4a1, type: 3}
+  - {fileID: 1732814683923114780, guid: 2146b954d84975444985edc8f23e8c79, type: 3}
+  - {fileID: 1410954967039421410, guid: dc8b70697a5098b4cae0dda1f70658df, type: 3}
+  - {fileID: 8175273298408582779, guid: 0a58398403efe9544ac88c0ea5212b99, type: 3}
+  m_numberRandomRoomSection0: 0
+  m_numberofTrySection0: 50
+  m_mandatoryRoomPoolSection0:
+  - {fileID: 5161993595501163376, guid: 3928f1980e463394ea90c9a134d63319, type: 3}
+  m_randomRoomPoolTopLeft: []
+  m_numberRandomRoomTopLeft: 0
+  m_numberofTryTopLeft: 0
+  m_mandatoryRoomPoolTopLeft: []
+  m_randomRoomPoolTopRight: []
+  m_numberRandomRoomTopRight: 0
+  m_numberofTryTopRight: 0
+  m_mandatoryRoomPoolTopRight: []
+  m_randomRoomPoolBottomLeft: []
+  m_numberRandomRoomBottomLeft: 0
+  m_numberofTryBottomLeft: 0
+  m_mandatoryRoomPoolBottomLeft: []
+  m_randomRoomPoolBottomRight: []
+  m_numberRandomRoomBottomRight: 0
+  m_numberofTryBottomRight: 0
+  m_mandatoryRoomPoolBottomRight: []
+--- !u!156049354 &425690307
+Grid:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 425690305}
+  m_Enabled: 1
+  m_CellSize: {x: 1, y: 1, z: 0}
+  m_CellGap: {x: 0, y: 0, z: 0}
+  m_CellLayout: 0
+  m_CellSwizzle: 0
+--- !u!4 &425690308
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 425690305}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &779656959
 GameObject:
   m_ObjectHideFlags: 0
@@ -371,6 +453,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f365d0edd5817ef4fba0106764fb6677, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_worldGenerator: {fileID: 425690306}
   m_playerPrefab: {fileID: 6058910025482233828, guid: f5db74dd4237e7b42b2ae1f11b3348a2,
     type: 3}
   m_movementSettings: {fileID: 11400000, guid: a2974712f0687ee4f995c884f2948972, type: 2}
@@ -412,7 +495,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2123676789
 MonoBehaviour:
   m_ObjectHideFlags: 0

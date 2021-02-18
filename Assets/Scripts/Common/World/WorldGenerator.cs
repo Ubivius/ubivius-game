@@ -36,7 +36,6 @@ namespace ubv.common.world
     }
 
     [RequireComponent(typeof(Grid))]
-
     public class WorldGenerator : MonoBehaviour
     {
         [SerializeField] private Vector2Int m_boundariesMap;
@@ -78,7 +77,13 @@ namespace ubv.common.world
             m_grid = GetComponent<Grid>();
 
             m_masterLogicGrid = new ubv.common.world.LogicGrid(m_boundariesMap.x, m_boundariesMap.y);
-
+        }
+        
+        public void GenerateWorld()
+        {
+#if DEBUG_LOG
+            Debug.Log("Generating world...");
+#endif // DEBUG_LOG
             Vector3 positionUnusedRoom = new Vector3(-250, -250, 0);
             foreach (RoomInfo room in m_mandatoryRoomPoolSection0)
             {
@@ -89,12 +94,20 @@ namespace ubv.common.world
             {
                 RoomInfo myRoom = Instantiate(
                     m_randomRoomPoolSection0[Random.Range(0, m_randomRoomPoolSection0.Count)],
-                    positionUnusedRoom, 
-                    Quaternion.identity, 
+                    positionUnusedRoom,
+                    Quaternion.identity,
                     m_grid.transform
                     );
                 AddRoomToSection0(myRoom, false);
             }
+#if DEBUG_LOG
+            Debug.Log("World generated.");
+#endif // DEBUG_LOG
+        }
+
+        public cellType.CellInfo[,] GetCellInfoArray()
+        {
+            return m_masterLogicGrid.GetCellInfo();
         }
 
         private void AddRoom(RoomInfo room, Vector2Int roomOrigin)

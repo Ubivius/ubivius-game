@@ -34,7 +34,8 @@ namespace ubv.common.serialization
             ARRAY2D_CELLINFO,
             BYTEARRAY,
             BYTE,
-            NULL
+            NULL,
+            CLIENT_READY_MESSAGE
         }
     }
 }

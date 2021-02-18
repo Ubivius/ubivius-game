@@ -18,6 +18,7 @@ namespace ubv.common.serialization
                 bytes[i] = sourceBytes[i - 1];
             }
 
+            //Debug.Log("Created bytes : " + System.BitConverter.ToString(bytes)  + " in "+ this.SerializationID() + ", " + this.GetType().ToString());
             return bytes;
         }
 
@@ -185,18 +186,36 @@ namespace ubv.common.serialization
 
             protected override bool CreateFromSourceBytes(byte[] sourceBytes)
             {
-                m_value = sourceBytes;
-                return true;
+                int length = System.BitConverter.ToInt32(sourceBytes, 0);
+                if (length <= sourceBytes.Length - sizeof(int))
+                {
+                    m_value = sourceBytes.SubArray(sizeof(int), length);
+                    return true;
+                }
+                return false;
             }
 
             protected override int GetSourceByteCount()
             {
-                return m_value.Length;
+                return m_value.Length + sizeof(int);
             }
 
             protected override byte[] GetSourceBytes()
             {
-                return m_value;
+                byte[] bytes = new byte[GetSourceByteCount()];
+
+                byte[] countBytes = System.BitConverter.GetBytes(m_value.Length);
+                for(int i = 0; i < sizeof(int); i++)
+                {
+                    bytes[i] = countBytes[i];
+                }
+
+                for(int i = sizeof(int); i < bytes.Length; i++)
+                {
+                    bytes[i] = m_value[i - sizeof(int)];
+                }
+
+                return bytes;
             }
 
             protected override ID.BYTE_TYPE SerializationID()
@@ -462,6 +481,10 @@ namespace ubv.common.serialization
             {
                 int itemCount = System.BitConverter.ToInt32(bytes, 0);
 
+                if (m_value == null)
+                {
+                    m_value = new System.Collections.Generic.List<T>(itemCount);
+                }
                 m_value.Clear();
 
                 int header = sizeof(int); // item count
@@ -717,7 +740,7 @@ namespace ubv.common.serialization
                 int itemCount = m_value.GetLength(0) * m_value.GetLength(1);
                 for (int i = 0; i < itemCount; i++)
                 {
-                    total += m_value[i  % itemCount, i / itemCount].GetByteCount();
+                    total += m_value[i  % m_value.GetLength(0), i / m_value.GetLength(0)].GetByteCount();
                 }
 
                 return total;
@@ -728,7 +751,7 @@ namespace ubv.common.serialization
                 byte[] bytes = new byte[GetSourceByteCount()];
 
                 int width = m_value.GetLength(0);
-                int length = m_value.GetLength(0);
+                int length = m_value.GetLength(1);
                 
                 byte[] widthBytes = System.BitConverter.GetBytes(width);
                 for (int i = 0; i < widthBytes.Length; i++)
@@ -743,19 +766,18 @@ namespace ubv.common.serialization
                 }
 
                 int header = sizeof(int) * 2; // item count
-                int index = 0;
-                
+                int index = header;
                 for (int x = 0; x < width; x++)
                 {
                     for (int y = 0; y < length; y++)
                     {
                         T obj = m_value[x, y];
                         byte[] objBytes = obj.GetBytes();
-                        index = (width * x) + y;
                         for (int b = 0; b < objBytes.Length; b++)
                         {
-                            bytes[header + (index * objBytes.Length) + b] = objBytes[b];
+                            bytes[index + b] = objBytes[b];
                         }
+                        index += objBytes.Length;
                     }
                 }
                 return bytes;

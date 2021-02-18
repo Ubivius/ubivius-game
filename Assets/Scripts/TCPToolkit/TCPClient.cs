@@ -26,7 +26,7 @@ namespace ubv.tcp.client
 
         private List<ITCPClientReceiver> m_receivers;
 
-        private const int DATA_BUFFER_SIZE = 1024;
+        private const int DATA_BUFFER_SIZE = 1024*1024;
         private Queue<byte[]> m_dataToSend;
 
         private void Awake()
