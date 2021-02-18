@@ -17,16 +17,16 @@ namespace ubv.common.world.cellType
     {
         private serialization.types.Int32 m_doorType;
         private serialization.types.Bool m_IsClosed;
-        private serialization.types.Int32 m_cellID;
-        
+
         public DoorCell(DoorType doorType) : base()
         {
             IsWalkable = true;
             DoorType = doorType;
 
             m_IsClosed = new serialization.types.Bool(false);
-            m_doorType = new serialization.types.Int32((int)DoorType.Standard);
-            m_cellID = new serialization.types.Int32(System.Guid.NewGuid().GetHashCode());
+            m_doorType = new serialization.types.Int32((int)doorType);
+
+            InitSerializableMembers(m_IsClosed, m_doorType);
         }
 
         public void CloseDoor()
@@ -41,12 +41,24 @@ namespace ubv.common.world.cellType
             IsWalkable = true;
         }
 
+        public DoorCell() : base()
+        {
+            m_IsClosed = new serialization.types.Bool(false);
+            m_doorType = new serialization.types.Int32((int)DoorType.Standard);
+
+            InitSerializableMembers(m_IsClosed, m_doorType);
+        }
+
         public DoorType DoorType { get => (DoorType)m_doorType.Value; private set => m_doorType.Value = (int)value; }
-        public int CellID { get => m_cellID.Value; private set => m_cellID.Value = value; }
 
         protected override ID.BYTE_TYPE SerializationID()
         {
             return ID.BYTE_TYPE.LOGIC_CELL_DOOR;
+        }
+
+        public override CellInfo.CellType GetCellType()
+        {
+            return CellInfo.CellType.CELL_DOOR;
         }
     }
 }

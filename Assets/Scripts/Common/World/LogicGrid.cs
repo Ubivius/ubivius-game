@@ -25,11 +25,28 @@ namespace ubv.common.world
             }
         }
 
+        public LogicGrid() : base()
+        {
+            Grid = null;
+            m_infoGrid = new CellInfo2DArray(0, 0);
+            InitSerializableMembers(m_infoGrid);
+        }
+
         public LogicGrid(int x, int y) : base()
         {
             Grid = new cellType.LogicCell[x, y];
             m_infoGrid = new CellInfo2DArray(x, y);
             InitSerializableMembers(m_infoGrid);
+        }
+
+        public void CreateGridFromCellInfo()
+        {
+
+        }
+
+        public void CreateCellInfoFromGrid()
+        {
+
         }
 
         public LogicCell[,] Grid { get => m_grid; private set => m_grid = value; }

@@ -139,7 +139,7 @@ namespace ubv.common.serialization
             {
                 m_value = value;
             }
-            
+
             public T Value
             {
                 get => m_value;
@@ -151,6 +151,58 @@ namespace ubv.common.serialization
             protected abstract override bool CreateFromSourceBytes(byte[] sourceBytes);
 
             protected abstract override ID.BYTE_TYPE SerializationID();
+        }
+
+        public class Byte : Serialized<byte>
+        {
+            public Byte(byte value) : base(value) { }
+
+            protected override bool CreateFromSourceBytes(byte[] sourceBytes)
+            {
+                m_value = sourceBytes[0];
+                return true;
+            }
+
+            protected override int GetSourceByteCount()
+            {
+                return 1;
+            }
+
+            protected override byte[] GetSourceBytes()
+            {
+                return new byte[] { m_value };
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.BYTE;
+            }
+        }
+
+        public class ByteArray : Serialized<byte[]>
+        {
+            public ByteArray(byte[] value) : base(value)  { }
+
+            protected override bool CreateFromSourceBytes(byte[] sourceBytes)
+            {
+                m_value = sourceBytes;
+                return true;
+            }
+
+            protected override int GetSourceByteCount()
+            {
+                return m_value.Length;
+            }
+
+            protected override byte[] GetSourceBytes()
+            {
+                return m_value;
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.BYTEARRAY;
+            }
         }
 
         public class Int32 : Serialized<int>

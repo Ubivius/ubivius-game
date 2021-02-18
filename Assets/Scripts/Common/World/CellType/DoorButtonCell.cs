@@ -16,7 +16,9 @@ namespace ubv.common.world.cellType
         {
             IsWalkable = false;
             m_linkedDoor = linkedDoor;
-            m_linkedDoorCellID = new serialization.types.Int32(m_linkedDoor.CellID);
+            m_linkedDoorCellID = new serialization.types.Int32(m_linkedDoor.GetCellID());
+
+            InitSerializableMembers(m_linkedDoorCellID);
         }
         
         protected override ID.BYTE_TYPE SerializationID()
@@ -24,9 +26,16 @@ namespace ubv.common.world.cellType
             return  ID.BYTE_TYPE.LOGIC_CELL_INTERACTABLE;
         }
 
+        public override CellInfo.CellType GetCellType()
+        {
+            return CellInfo.CellType.CELL_BUTTON;
+        }
+
         public DoorButtonCell()
         {
             IsWalkable = false;
+            m_linkedDoorCellID = new serialization.types.Int32(m_linkedDoor.GetCellID());
+            InitSerializableMembers(m_linkedDoorCellID);
         }
 
         public void CloseDoor()

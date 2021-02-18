@@ -16,7 +16,12 @@ namespace ubv.common.world.cellType
 
         protected override ID.BYTE_TYPE SerializationID()
         {
-            return  ID.BYTE_TYPE.LOGIC_CELL_WALL;
+            return ID.BYTE_TYPE.LOGIC_CELL_WALL;
+        }
+
+        public override CellInfo.CellType GetCellType()
+        {
+            return CellInfo.CellType.CELL_WALL;
         }
     }
 }

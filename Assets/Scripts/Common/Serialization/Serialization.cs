@@ -31,7 +31,10 @@ namespace ubv.common.serialization
             HASHMAP_INT_PLAYERSTATE,
             LIST_INPUTFRAME,
             LOGIC_CELL_INFO,
-            ARRAY2D_CELLINFO
+            ARRAY2D_CELLINFO,
+            BYTEARRAY,
+            BYTE,
+            NULL
         }
     }
 }

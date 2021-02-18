@@ -20,5 +20,10 @@ namespace ubv.common.world.cellType
         {
             return ID.BYTE_TYPE.LOGIC_CELL_FLOOR;
         }
+
+        public override CellInfo.CellType GetCellType()
+        {
+            return CellInfo.CellType.CELL_FLOOR;
+        }
     }
 }
