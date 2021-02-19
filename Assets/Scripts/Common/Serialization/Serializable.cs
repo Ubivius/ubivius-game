@@ -644,7 +644,7 @@ namespace ubv.common.serialization
                     T obj = new T();
                     if (!obj.CreateFromBytes(bytes.ArrayFrom(subIndex)))
                     {
-                        m_value = null;
+                        m_value = new T[0];
                         return false;
                     }
                     subIndex += obj.GetByteCount();
@@ -724,7 +724,7 @@ namespace ubv.common.serialization
                     T obj = new T();
                     if (!obj.CreateFromBytes(bytes.ArrayFrom(index)))
                     {
-                        m_value = null;
+                        m_value = new T[0, 0];
                         return false;
                     }
                     index += obj.GetByteCount();

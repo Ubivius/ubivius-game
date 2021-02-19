@@ -14,6 +14,15 @@ namespace ubv
         {
             abstract public class ClientSyncState
             {
+                protected readonly tcp.client.TCPClient m_TCPClient;
+                protected readonly udp.client.UDPClient m_UDPClient;
+
+                public ClientSyncState(tcp.client.TCPClient tcpClient, udp.client.UDPClient udpClient)
+                {
+                    m_TCPClient = tcpClient;
+                    m_UDPClient = udpClient;
+                }
+
                 protected readonly object m_lock = new object();
                 
                 public abstract ClientSyncState Update();
@@ -22,11 +31,9 @@ namespace ubv
 
             public class ClientSyncInit : ClientSyncState, tcp.client.ITCPClientReceiver
             {
-                private readonly tcp.client.TCPClient m_TCPClient;
-                private readonly udp.client.UDPClient m_UDPClient;
-
-                // TEMP
-                MonoBehaviour m_parent;
+                private readonly world.WorldRebuilder m_worldRebuilder;
+                private bool m_readyToPlay;
+                private common.world.cellType.CellInfo[,] m_cellInfos;
 
                 //tranfer to play
                 private readonly string m_physicsScene;
@@ -43,24 +50,29 @@ namespace ubv
                     tcp.client.TCPClient TCPClient, 
                     udp.client.UDPClient UDPClient,
                     string physicsScene, 
-                    PlayerSettings playerSettings
+                    PlayerSettings playerSettings,
+                    world.WorldRebuilder worldGrid
 #if NETWORK_SIMULATE
-                    , ClientSync parent)
+                    , ClientSync parent) 
 #endif // NETWORK_SIMULATE
+                    : base(TCPClient, UDPClient)
                 {
                     m_physicsScene = physicsScene;
                     m_playerID = null;
                     m_playerStates = null;
+                    m_readyToPlay = false;
 
                     m_playerSettings = playerSettings;
 
                     m_playWithoutServer = false;
-
-                    m_UDPClient = UDPClient;
-                    m_TCPClient = TCPClient;
+                    
                     m_TCPClient.Subscribe(this);
 
-                    m_parent = parent;
+                    m_worldRebuilder = worldGrid;
+
+                    m_cellInfos = null;
+
+                    m_worldRebuilder.OnWorldBuilt(OnWorldBuilt);
 
 #if NETWORK_SIMULATE
                     parent.ConnectButtonEvent.AddListener(SendConnectionRequestToServer);
@@ -102,34 +114,24 @@ namespace ubv
                         {
                             m_playerStates = start.Players.Value;
                             m_simulationBuffer = start.SimulationBuffer.Value;
-
-                            common.world.cellType.CellInfo[,] cellInfoArray = start.CellInfo2DArray.Value;
-
-                            for(int x = 0; x < cellInfoArray.GetLength(0); x++)
-                            {
-                                for (int y = 0; y < cellInfoArray.GetLength(1); y++)
-                                {
-                                    common.world.cellType.LogicCell cell = cellInfoArray[x, y].CellFromBytes();
-                                    if(cell is common.world.cellType.WallCell)
-                                    {
-                                        Debug.Log("WALL CELL AT " + x + ", " + y);
-                                        // WATCH OUT: X ET Y INVERSÉS?
-                                    }
-                                }
-                            }
-
-                            m_TCPClient.Send(new ClientReadyMessage(m_playerID.Value).GetBytes());
-
 #if DEBUG_LOG
                             Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
+
+                            m_worldRebuilder.BuildWorldFromCellInfo(start.CellInfo2DArray.Value);
                         }
                     }
                 }
 
+                private void OnWorldBuilt()
+                {
+                    m_TCPClient.Send(new ClientReadyMessage(m_playerID.Value).GetBytes());
+                    m_readyToPlay = true;
+                }
+
                 public override ClientSyncState Update()
                 {
-                    if(m_playerStates != null)
+                    if(m_readyToPlay)
                     {
                         return new ClientSyncPlay(m_UDPClient, m_playerID.Value, m_physicsScene, m_playerSettings, m_playerStates, m_simulationBuffer);
                     }
@@ -154,7 +156,6 @@ namespace ubv
             /// </summary>
             public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver
             {
-                private udp.client.UDPClient m_UDPClient;
                 private readonly int m_playerID;
 
                 private uint m_remoteTick;
@@ -186,7 +187,7 @@ namespace ubv
 #if NETWORK_SIMULATE
                     , bool startWithoutServer = false
 #endif // NETWORK_SIMULATE
-                    )
+                    ) : base(null, UDPClient)
                 {
 #if NETWORK_SIMULATE
                     m_noServer = startWithoutServer;
@@ -209,8 +210,7 @@ namespace ubv
                     }
                     
                     m_updaters.Add(new PlayerGameObjectUpdater(playerSettings, playerStateDict, m_playerID));
-
-                    m_UDPClient = UDPClient;
+                    
                     m_UDPClient.Subscribe(this);
                     
                     for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
