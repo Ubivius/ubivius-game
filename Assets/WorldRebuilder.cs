@@ -57,6 +57,8 @@ namespace ubv.client.world
             m_onWorldBuilt += action;
         }
         
+        // every new cell created must also be added here
+        // not pretty but it'll work for now
         private IEnumerator RebuildWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
         {
             m_isBuildingWorld = true;
@@ -65,16 +67,26 @@ namespace ubv.client.world
             {
                 for (int y = 0; y < cellInfos.GetLength(1); y++)
                 {
-                    // x and y are swapped by the serialization
-                    // don't really know why but it's not really an issue right now
-                    // TODO : FIX THE SWAP
-                    common.world.cellType.LogicCell cell = cellInfos[y, x].CellFromBytes();
+                    common.world.cellType.LogicCell cell = cellInfos[x, y].CellFromBytes();
                     pos.x = x;
                     pos.y = y;
                     if (cell is common.world.cellType.WallCell)
                     {
                         m_walls.SetTile(pos, m_defaultWallTile);
                     }
+                    else if (cell is common.world.cellType.FloorCell)
+                    {
+                        m_floor.SetTile(pos, m_defaultFloorTile);
+                    }
+                    else if (cell is common.world.cellType.DoorCell)
+                    {
+                        m_doors.SetTile(pos, m_defaultDoorTile);
+                    }
+                    else if (cell is common.world.cellType.DoorButtonCell)
+                    {
+                        m_interactable.SetTile(pos, m_defaultInteractableTile);
+                    }
+
                     yield return null;
                 }
             }

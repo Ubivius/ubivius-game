@@ -109,6 +109,7 @@ namespace ubv
                     }
                     else
                     {
+                        // TODO : see why createfrombytes takes SO LONG
                         GameStartMessage start = common.serialization.IConvertible.CreateFromBytes<GameStartMessage>(packet.Data);
                         if (start != null)
                         {

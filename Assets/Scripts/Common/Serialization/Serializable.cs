@@ -728,7 +728,7 @@ namespace ubv.common.serialization
                         return false;
                     }
                     index += obj.GetByteCount();
-                    m_value[x, y] = obj;
+                    m_value[y, x] = obj; // we swap due to how objects are stored in the serialized array
                 }
                 
                 return true;
