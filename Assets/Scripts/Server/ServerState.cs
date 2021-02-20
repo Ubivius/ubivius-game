@@ -123,7 +123,7 @@ namespace ubv
 
                             common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
 
-                            common.data.GameStartMessage message = new common.data.GameStartMessage(m_simulationBuffer, m_players, cellInfoArray);
+                            common.data.GameInitMessage message = new common.data.GameInitMessage(m_simulationBuffer, m_players, cellInfoArray);
 
                             foreach (IPEndPoint ip in m_TCPClientConnections.Keys)
                             {
@@ -135,8 +135,16 @@ namespace ubv
                         }
                     }
                     
-                    if(m_readyClients.Count == m_players.Count && m_players.Count > 0)
+                    if(m_readyClients.Count == m_players.Count && m_players.Count > 0 && awaitingClients)
                     {
+                        GameReadyMessage message = new GameReadyMessage();
+
+                        Debug.Log("Starting game.");
+                        foreach (IPEndPoint ip in m_TCPClientConnections.Keys)
+                        {
+                            m_TCPServer.Send(message.GetBytes(), ip);
+                        }
+
                         return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_simulationBuffer, m_physicsScene);
                     }
 
@@ -153,7 +161,7 @@ namespace ubv
 
                 public void ReceivePacket(TCPToolkit.Packet packet, IPEndPoint clientIP)
                 {
-                    ClientReadyMessage ready = Serializable.CreateFromBytes<ClientReadyMessage>(packet.Data);
+                    GameReadyMessage ready = Serializable.CreateFromBytes<GameReadyMessage>(packet.Data);
                     if(ready != null)
                     {
                         Debug.Log("Client " + ready.PlayerID.Value + " is ready");

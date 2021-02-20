@@ -9,7 +9,7 @@ namespace ubv
     {
         namespace data
         {
-            public class GameStartMessage : serialization.Serializable
+            public class GameInitMessage : serialization.Serializable
             {
                 public class PlayerStateList : serialization.types.List<PlayerState>
                 {
@@ -26,7 +26,7 @@ namespace ubv
                 public PlayerStateList Players { get; protected set; }
                 public world.LogicGrid.CellInfo2DArray CellInfo2DArray;
 
-                public GameStartMessage()
+                public GameInitMessage()
                 {
                     SimulationBuffer = new serialization.types.Int32(0);
                     Players = new PlayerStateList(null);
@@ -35,7 +35,7 @@ namespace ubv
                     InitSerializableMembers(SimulationBuffer, Players, CellInfo2DArray);
                 }
 
-                public GameStartMessage(int simulationBuffer, List<PlayerState> players, world.cellType.CellInfo[,] array) : base()
+                public GameInitMessage(int simulationBuffer, List<PlayerState> players, world.cellType.CellInfo[,] array) : base()
                 {
                     SimulationBuffer = new serialization.types.Int32(simulationBuffer);
                     Players = new PlayerStateList(players);

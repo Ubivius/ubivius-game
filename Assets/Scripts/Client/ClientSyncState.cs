@@ -110,7 +110,7 @@ namespace ubv
                     else
                     {
                         // TODO : see why createfrombytes takes SO LONG
-                        GameStartMessage start = common.serialization.IConvertible.CreateFromBytes<GameStartMessage>(packet.Data);
+                        GameInitMessage start = common.serialization.IConvertible.CreateFromBytes<GameInitMessage>(packet.Data);
                         if (start != null)
                         {
                             m_playerStates = start.Players.Value;
@@ -121,13 +121,21 @@ namespace ubv
 
                             m_worldRebuilder.BuildWorldFromCellInfo(start.CellInfo2DArray.Value);
                         }
+                        else if(!m_readyToPlay)
+                        {
+                            GameReadyMessage ready = common.serialization.IConvertible.CreateFromBytes<GameReadyMessage>(packet.Data);
+                            if(ready != null)
+                            {
+                                Debug.Log("Client received confirmation that server is starting game.");
+                                m_readyToPlay = true;
+                            }
+                        }
                     }
                 }
 
                 private void OnWorldBuilt()
                 {
-                    m_TCPClient.Send(new ClientReadyMessage(m_playerID.Value).GetBytes());
-                    m_readyToPlay = true;
+                    m_TCPClient.Send(new GameReadyMessage(m_playerID.Value).GetBytes());
                 }
 
                 public override ClientSyncState Update()

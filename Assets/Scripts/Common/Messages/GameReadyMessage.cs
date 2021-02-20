@@ -8,17 +8,17 @@ namespace ubv
     {
         namespace data
         {
-            public class ClientReadyMessage : Serializable
+            public class GameReadyMessage : Serializable
             {
                 public serialization.types.Int32 PlayerID;
                 
-                public ClientReadyMessage()
+                public GameReadyMessage()
                 {
                     PlayerID = new serialization.types.Int32(0);
                     InitSerializableMembers(PlayerID);
                 }
 
-                public ClientReadyMessage(int playerID)
+                public GameReadyMessage(int playerID)
                 {
                     PlayerID = new serialization.types.Int32(playerID);
                     InitSerializableMembers(PlayerID);
