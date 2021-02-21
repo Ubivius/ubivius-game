@@ -257,8 +257,6 @@ namespace ubv
                     int simulationBuffer,
                     string physicsScene)
                 {
-                    m_UDPserver = UDPServer;
-                    m_UDPserver.Subscribe(this);
                     m_tickAccumulator = 0;
                     m_masterTick = 0;
                     m_bufferedMasterTick = 0;
@@ -310,6 +308,9 @@ namespace ubv
                             }
                         }
                     }
+                    
+                    m_UDPserver = UDPServer;
+                    m_UDPserver.Subscribe(this);
                 }
 
                 public override ServerState Update()

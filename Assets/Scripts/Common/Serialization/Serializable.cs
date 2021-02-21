@@ -554,7 +554,7 @@ namespace ubv.common.serialization
                 int index = header;
                 for (int i = 0; i < itemCount; i++)
                 {
-                    int key = System.BitConverter.ToInt32(bytes, 0);
+                    int key = System.BitConverter.ToInt32(bytes, index);
                     index += sizeof(int);
 
                     T obj = new T();
