@@ -104,7 +104,7 @@ namespace ubv
                         Debug.Log("Received connection confirmation, player ID is " + m_playerID);
 #endif // DEBUG_LOG
 
-                        // send a ping to the server to make it known
+                        // send a ping to the server to make it known that the player received its ID
                         m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(auth.GetBytes()).RawBytes);
                     }
                     else
@@ -310,6 +310,11 @@ namespace ubv
                             Debug.Log("Received server state tick " + state.Tick.Value);
 #endif //DEBUG_LOG
                             m_remoteTick = state.Tick.Value;
+
+                            if(m_localTick + (uint)m_simulationBuffer < m_remoteTick)
+                            {
+                                m_localTick = m_remoteTick + (uint)m_simulationBuffer;
+                            }
                         }
                     }
                 }
