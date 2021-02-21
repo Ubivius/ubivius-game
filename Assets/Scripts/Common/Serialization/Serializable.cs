@@ -564,6 +564,8 @@ namespace ubv.common.serialization
                         return false;
                     }
 
+                    index += obj.GetByteCount();
+
                     dict[key] = obj;
                 }
                 m_value = dict;
