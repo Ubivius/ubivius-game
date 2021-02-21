@@ -142,6 +142,7 @@ namespace ubv
                 {
                     if(m_readyToPlay)
                     {
+                        m_TCPClient.Unsubscribe(this);
                         return new ClientSyncPlay(m_UDPClient, m_playerID.Value, m_physicsScene, m_playerSettings, m_playerStates, m_simulationBuffer);
                     }
 #if NETWORK_SIMULATE
@@ -343,7 +344,7 @@ namespace ubv
                     // TODO: Cap max input queue size
                     // (under the hood, send multiple packets?)
                     List<common.data.InputFrame> frames = new List<common.data.InputFrame>();
-                    for (uint tick = m_remoteTick; tick <= m_localTick; tick++)
+                    for (uint tick = (uint)Mathf.Max((int)m_remoteTick, (int)m_localTick - (m_simulationBuffer * 2)); tick <= m_localTick; tick++)
                     {
                         frames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
                     }
