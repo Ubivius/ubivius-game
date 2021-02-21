@@ -93,7 +93,6 @@ namespace ubv.client.world
             m_cellInfos = null;
             m_isBuildingWorld = false;
             m_onWorldBuilt.Invoke();
-            gameObject.SetActive(false);
         }
     }
 }
