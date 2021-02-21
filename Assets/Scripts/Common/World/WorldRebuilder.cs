@@ -90,8 +90,10 @@ namespace ubv.client.world
                     yield return null;
                 }
             }
+            m_cellInfos = null;
             m_isBuildingWorld = false;
             m_onWorldBuilt.Invoke();
+            gameObject.SetActive(false);
         }
     }
 }
