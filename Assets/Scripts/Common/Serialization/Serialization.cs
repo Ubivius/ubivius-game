@@ -35,7 +35,8 @@ namespace ubv.common.serialization
             BYTEARRAY,
             BYTE,
             NULL,
-            CLIENT_READY_MESSAGE
+            CLIENT_READY_MESSAGE,
+            LOGIC_CELL_VOID
         }
     }
 }

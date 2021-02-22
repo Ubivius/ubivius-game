@@ -12,6 +12,8 @@ namespace ubv.common.world
     public class LogicGrid
     {
         private cellType.LogicCell[,] m_grid;
+        private int m_width;
+        private int m_height;
 
         public class CellInfo2DArray : serialization.types.Array2D<CellInfo>
         {
@@ -27,6 +29,8 @@ namespace ubv.common.world
         public LogicGrid(int x, int y) : base()
         {
             Grid = new cellType.LogicCell[x, y];
+            Width = x;
+            Height = y;
         }
         
         public LogicGrid(CellInfo[,] infoGrid)
@@ -80,6 +84,7 @@ namespace ubv.common.world
         }
 
         public LogicCell[,] Grid { get => m_grid; private set => m_grid = value; }
-        
+        public int Width { get => m_width; private set => m_width = value; }
+        public int Height { get => m_height; private set => m_height = value; }
     }
 }
