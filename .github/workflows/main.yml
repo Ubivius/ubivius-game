@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ master, main ]
   push:
-    branches: [ master, main, feature/UBI-328-Push-server-to-dockerhub ]
+    branches: [ master, main ]
 
 env:
   BUILD_TYPE: test
