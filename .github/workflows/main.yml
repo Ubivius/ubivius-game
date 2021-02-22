@@ -59,15 +59,15 @@ jobs:
             echo "::set-output name=BRANCH::$(echo $GITHUB_REF)"
         shell: bash
 
-      #- name: Build and Push Artefact to Registry
-      #  uses: elgohr/Publish-Docker-Github-Action@master
-      #  with:
-      #    name: ubiviushub/${{ steps.fetch-vars.outputs.REPO_NAME }}
-      #    username: ${{ env.DOCKERHUB_USER }}
-      #    password: ${{ env.DOCKERHUB_PWD }}
-      #    buildargs: ${{ env.BUILD_LVL }}
-      #    dockerfile: Dockerfile
-      #    tags: "${{ env.REPO_VERSION }}"
+      - name: Build and Push Artefact to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: ubiviushub/${{ steps.fetch-vars.outputs.REPO_NAME }}
+          username: ${{ env.DOCKERHUB_USER }}
+          password: ${{ env.DOCKERHUB_PWD }}
+          buildargs: ${{ env.BUILD_LVL }}
+          dockerfile: Dockerfile
+          tags: "${{ env.REPO_VERSION }}"
 
       # Output
       - uses: actions/upload-artifact@v1

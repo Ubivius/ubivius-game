@@ -8,6 +8,5 @@ FROM alpine as test
 FROM ubuntu as local
 
 FROM ${BUILD_TYPE} AS exit_artefact
-COPY /github/workspace/build/Server ./app
-WORKDIR /app
-CMD ["ubivius-server.x86_64"]
+COPY ./build/Server ./app
+CMD ["app/ubivius-server.x86_64"]
