@@ -4,7 +4,14 @@ on:
   pull_request:
     branches: [ master, main ]
   push:
-    branches: [ master, main ]
+    branches: [ master, main, feature/UBI-328-Push-server-to-dockerhub ]
+
+env:
+  BUILD_LVL: test
+  DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
+  DOCKERHUB_PWD: ${{ secrets.DOCKERHUB_PWD }}
+  REPO_VERSION: 0.0.0
 
 jobs:
   server-build:
@@ -41,7 +48,27 @@ jobs:
           buildMethod: Build.ServerBuild
           targetPlatform: StandaloneLinux64
           unityVersion: 2019.4.1f1
-      
+
+      - name: Pre-load env-var
+        id: fetch-vars
+        run: |
+            ls -la
+            IN=$(echo ${GITHUB_REPOSITORY})
+            NAME=${IN#"Ubivius/"}
+            echo "::set-output name=REPO_NAME::$(echo $NAME)"
+            echo "::set-output name=BRANCH::$(echo $GITHUB_REF)"
+        shell: bash
+
+      #- name: Build and Push Artefact to Registry
+      #  uses: elgohr/Publish-Docker-Github-Action@master
+      #  with:
+      #    name: ubiviushub/${{ steps.fetch-vars.outputs.REPO_NAME }}
+      #    username: ${{ env.DOCKERHUB_USER }}
+      #    password: ${{ env.DOCKERHUB_PWD }}
+      #    buildargs: ${{ env.BUILD_LVL }}
+      #    dockerfile: Dockerfile
+      #    tags: "${{ env.REPO_VERSION }}"
+
       # Output
       - uses: actions/upload-artifact@v1
         with:
