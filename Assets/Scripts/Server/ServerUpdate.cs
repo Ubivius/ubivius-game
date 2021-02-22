@@ -19,7 +19,8 @@ namespace ubv
                 [SerializeField] private GameObject m_playerPrefab;
                 [SerializeField] private common.StandardMovementSettings m_movementSettings;
                 [SerializeField] private string m_physicsScene;
-                [SerializeField] private int m_snapshotDelay;
+                [SerializeField] private int m_snapshotDelay = 4;
+                [SerializeField] private int m_simulationBuffer = 5;
 
                 [SerializeField] private udp.server.UDPServer m_UDPServer;
                 [SerializeField] private tcp.server.TCPServer m_TCPServer;
@@ -41,6 +42,7 @@ namespace ubv
                         m_playerPrefab,
                         m_movementSettings,
                         m_snapshotDelay,
+                        m_simulationBuffer,
                         m_physicsScene
 #if NETWORK_SIMULATE
                         , this

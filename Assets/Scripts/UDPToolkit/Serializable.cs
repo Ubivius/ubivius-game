@@ -220,6 +220,26 @@ namespace ubv
                 }
             }
 
+            public class Float : Serializable.Variable<float>
+            {
+                public Float(Serializable owner, float value) : base(owner, value) { }
+
+                protected override byte[] Bytes()
+                {
+                    return System.BitConverter.GetBytes(m_value);
+                }
+
+                protected override int ByteCount()
+                {
+                    return sizeof(int);
+                }
+
+                protected override float BuildFromBytes(byte[] bytes)
+                {
+                    return System.BitConverter.ToSingle(bytes, 0);
+                }
+            }
+
             public class Uint32 : Serializable.Variable<uint>
             {
                 public Uint32(Serializable owner, uint value) : base(owner, value) { }

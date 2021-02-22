@@ -74,3 +74,6 @@ Logs/
 ClassDiagram1.cd
 
 ClassDiagram1.png
+
+# For ReadTheDocs build results
+*/_build
