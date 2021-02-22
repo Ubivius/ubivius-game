@@ -7,7 +7,7 @@ on:
     branches: [ master, main, feature/UBI-328-Push-server-to-dockerhub ]
 
 env:
-  BUILD_LVL: test
+  BUILD_TYPE: test
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
   DOCKERHUB_PWD: ${{ secrets.DOCKERHUB_PWD }}
@@ -65,7 +65,7 @@ jobs:
           name: ubiviushub/${{ steps.fetch-vars.outputs.REPO_NAME }}
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ env.DOCKERHUB_PWD }}
-          buildargs: ${{ env.BUILD_LVL }}
+          buildargs: ${{ env.BUILD_TYPE }}
           dockerfile: Dockerfile
           tags: "${{ env.REPO_VERSION }}"
 
