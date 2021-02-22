@@ -317,7 +317,7 @@ namespace ubv
 #if DEBUG_LOG
                                 Debug.Log("Client has fallen behind by " + (m_remoteTick - m_localTick) + ". Fast-forwarding.");
 #endif //DEBUG_LOG
-                                m_localTick = m_remoteTick;
+                                m_localTick = m_remoteTick + (uint)m_simulationBuffer;
                             }
 
                             // PATCH FOR JITTER (too many phy simulate calls)
@@ -325,7 +325,7 @@ namespace ubv
                             // ClientCorrection()
                             if(m_localTick > m_remoteTick + (uint)m_simulationBuffer)
                             {
-                                m_localTick = m_remoteTick + (uint)m_simulationBuffer;
+                                m_localTick = m_remoteTick ;
                             }
                         }
                     }
