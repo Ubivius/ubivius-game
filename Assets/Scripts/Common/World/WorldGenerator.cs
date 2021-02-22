@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace ubv.common.world
 {
@@ -35,15 +36,19 @@ namespace ubv.common.world
         [SerializeField] private int m_numberofTryBottomRight;
         [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolBottomRight;
 
-        private Grid m_grid;
+        [SerializeField] private Tilemap m_floor;
+        [SerializeField] private TileBase m_tileFloor;
+        [SerializeField] private int m_wallThickness;
 
-        
+        private Grid m_grid;
 
         private ubv.common.world.LogicGrid m_masterLogicGrid;
 
         private ubv.common.world.RoomManager m_roomManager;
+        private ubv.common.world.CorridorsManager m_corridorsManager;
 
         private dataStruct.WorldGeneratorToRoomManager m_worldGeneratorToRoomManager;
+        private dataStruct.WorldGeneratorToCorridorsManager m_worldGeneratorToCorridorsManager;
 
         private void Awake()
         {
@@ -75,7 +80,14 @@ namespace ubv.common.world
 
             m_roomManager = new RoomManager(m_worldGeneratorToRoomManager);
             m_masterLogicGrid = m_roomManager.GenerateRoomGrid();
-            
+
+            m_worldGeneratorToCorridorsManager = new dataStruct.WorldGeneratorToCorridorsManager(m_masterLogicGrid, m_floor, m_tileFloor, m_wallThickness);
+
+            m_corridorsManager = new CorridorsManager(m_worldGeneratorToCorridorsManager);
+            m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
+
+
+
         }
 
     }

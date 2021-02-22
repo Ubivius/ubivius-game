@@ -39,7 +39,7 @@ namespace ubv.common.world
     }
     class RoomManager
     {
-        private const int c_mandatoryTry = 1000;
+        private const int c_mandatoryTry = 10000;
 
         private Vector2Int m_boundariesMap;
 
@@ -118,6 +118,46 @@ namespace ubv.common.world
                     m_grid.transform
                     );
                 AddRoomToSection0(myRoom, false);
+            }
+            for (int i = 0; i < m_numberRandomRoomBottomLeft; i++)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(
+                    m_randomRoomPoolSection0[Random.Range(0, m_randomRoomPoolSection0.Count)],
+                    positionUnusedRoom,
+                    Quaternion.identity,
+                    m_grid.transform
+                    );
+                AddRoomToBottomLeft(myRoom, false);
+            }
+            for (int i = 0; i < m_numberRandomRoomTopLeft; i++)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(
+                    m_randomRoomPoolSection0[Random.Range(0, m_randomRoomPoolSection0.Count)],
+                    positionUnusedRoom,
+                    Quaternion.identity,
+                    m_grid.transform
+                    );
+                AddRoomToTopLeft(myRoom, false);
+            }
+            for (int i = 0; i < m_numberRandomRoomTopRight; i++)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(
+                    m_randomRoomPoolSection0[Random.Range(0, m_randomRoomPoolSection0.Count)],
+                    positionUnusedRoom,
+                    Quaternion.identity,
+                    m_grid.transform
+                    );
+                AddRoomToTopRight(myRoom, false);
+            }
+            for (int i = 0; i < m_numberRandomRoomBottomRight; i++)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(
+                    m_randomRoomPoolSection0[Random.Range(0, m_randomRoomPoolSection0.Count)],
+                    positionUnusedRoom,
+                    Quaternion.identity,
+                    m_grid.transform
+                    );
+                AddRoomToBottomRight(myRoom, false);
             }
 
             return m_masterLogicGrid;
@@ -214,7 +254,15 @@ namespace ubv.common.world
 
         private void AddRoomToBottomLeft(RoomInfo room, bool isMandatory)
         {
-            Vector2Int roomOrigin = GetCoordInBottomLeft(room);
+            Vector2Int roomOrigin;
+            if (isMandatory)
+            {
+                roomOrigin = GetCoordInBottomLeft(room);
+            }
+            else
+            {
+                roomOrigin = GetCoordInBottomLeft(room, m_numberofTryBottomLeft);
+            }
             if (roomOrigin.x != -1)
             {
                 AddRoom(room, roomOrigin);
@@ -222,9 +270,17 @@ namespace ubv.common.world
             }
         }
 
-        private void AddRoomToBottomRight(RoomInfo room)
+        private void AddRoomToBottomRight(RoomInfo room, bool isMandatory)
         {
-            Vector2Int roomOrigin = GetCoordInBottomRight(room);
+            Vector2Int roomOrigin;
+            if (isMandatory)
+            {
+                roomOrigin = GetCoordInBottomRight(room);
+            }
+            else
+            {
+                roomOrigin = GetCoordInBottomRight(room, m_numberofTryBottomRight);
+            }
             if (roomOrigin.x != -1)
             {
                 AddRoom(room, roomOrigin);
@@ -358,7 +414,7 @@ namespace ubv.common.world
             {
                 for (int y = coord.y - 6; y < coord.y + roomInfo.Height + 6; y++)
                 {
-                    if (m_masterLogicGrid.Grid[x, y] != null || x == m_boundariesMap.x || y == m_boundariesMap.y)
+                    if (x < 0 || y < 0 || m_masterLogicGrid.Grid[x, y] != null || x == m_boundariesMap.x - 1 || y == m_boundariesMap.y - 1)
                     {
                         return false;
                     }
