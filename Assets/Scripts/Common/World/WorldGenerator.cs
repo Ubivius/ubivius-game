@@ -46,6 +46,7 @@ namespace ubv.common.world
 
         private ubv.common.world.RoomManager m_roomManager;
         private ubv.common.world.CorridorsManager m_corridorsManager;
+        private PathfindingGridManager m_pathfindingGridManager;
 
         private dataStruct.WorldGeneratorToRoomManager m_worldGeneratorToRoomManager;
         private dataStruct.WorldGeneratorToCorridorsManager m_worldGeneratorToCorridorsManager;
@@ -86,10 +87,8 @@ namespace ubv.common.world
             m_corridorsManager = new CorridorsManager(m_worldGeneratorToCorridorsManager);
             m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
 
-
-
+            m_pathfindingGridManager = new PathfindingGridManager(m_masterLogicGrid);
         }
-
     }
 }
 
