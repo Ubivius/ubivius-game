@@ -312,7 +312,18 @@ namespace ubv
 #endif //DEBUG_LOG
                             m_remoteTick = state.Tick.Value;
 
-                            if(m_localTick + (uint)m_simulationBuffer < m_remoteTick)
+                            if(m_localTick < m_remoteTick)
+                            {
+#if DEBUG_LOG
+                                Debug.Log("Client has fallen behind by " + (m_remoteTick - m_localTick) + ". Fast-forwarding.");
+#endif //DEBUG_LOG
+                                m_localTick = m_remoteTick;
+                            }
+
+                            // PATCH FOR JITTER (too many phy simulate calls)
+                            // TODO: investigate (si le temps le permet)
+                            // ClientCorrection()
+                            if(m_localTick > m_remoteTick + (uint)m_simulationBuffer)
                             {
                                 m_localTick = m_remoteTick + (uint)m_simulationBuffer;
                             }
@@ -341,8 +352,7 @@ namespace ubv
                     if (m_noServer)
                         return;
 #endif // NETWORK_SIMULATE
-                    // TODO: Cap max input queue size
-                    // (under the hood, send multiple packets?)
+
                     List<common.data.InputFrame> frames = new List<common.data.InputFrame>();
                     for (uint tick = (uint)Mathf.Max((int)m_remoteTick, (int)m_localTick - (m_simulationBuffer * 2)); tick <= m_localTick; tick++)
                     {
