@@ -57,9 +57,12 @@ public class PathfindingGridManager
         }
 
         m_pathfinding = new Pathfinding(m_pathNodeList);
+
+        // Just want to test the pathfinding
+        Testing testing = new Testing(m_pathNodeList, this);
     }
 
-    private PathNode GetNode(int x, int y)
+    public PathNode GetNode(int x, int y)
     {
         if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height && m_pathNodeList.Contains(new PathNode(x, y)))
         {

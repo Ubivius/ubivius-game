@@ -88,6 +88,7 @@ namespace ubv.common.world
             m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
 
             m_pathfindingGridManager = new PathfindingGridManager(m_masterLogicGrid);
+            
         }
     }
 }
