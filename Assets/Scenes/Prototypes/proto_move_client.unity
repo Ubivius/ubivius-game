@@ -939,6 +939,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: UDPClient
       objectReference: {fileID: 0}
+    - target: {fileID: 1775558437836293882, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_target
+      value: http://localhost:9090
+      objectReference: {fileID: 0}
+    - target: {fileID: 1775558437836293882, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_request
+      value: products/2
+      objectReference: {fileID: 0}
     - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_Name

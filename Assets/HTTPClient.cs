@@ -16,6 +16,8 @@ namespace ubv.common.http
 
         [SerializeField] string m_target;
 
+        [SerializeField] string m_request;
+
         private void Awake()
         {
             m_client = new HttpClient();
@@ -24,7 +26,8 @@ namespace ubv.common.http
         // Start is called before the first frame update
         void Start()
         {
-
+            var result = m_client.GetAsync(m_target + "/" + m_request);
+            Debug.Log(result.Result.Content.ReadAsStringAsync().Result);
         }
 
         // Update is called once per frame
