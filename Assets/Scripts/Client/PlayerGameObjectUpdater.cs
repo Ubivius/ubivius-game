@@ -48,7 +48,7 @@ namespace ubv.client.logic
             bool err = false;
             foreach(PlayerState player in remoteState.Players().Values)
             {
-                err = (player.Position - localState.Players()[player.GUID].Position.Value).sqrMagnitude > 0.01f;
+                err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > 0.01f;
                 if (err)
                 {
                     return true;
@@ -61,8 +61,8 @@ namespace ubv.client.logic
         {
             foreach (PlayerState player in state.Players().Values)
             {
-                player.Position.Set(m_bodies[player.GUID].position);
-                player.Rotation.Set(m_bodies[player.GUID].rotation);
+                player.Position.Value = m_bodies[player.GUID.Value].position;
+                player.Rotation.Value = m_bodies[player.GUID.Value].rotation;
             }
             
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, m_playerSettings.MovementSettings, input, deltaTime);
@@ -72,14 +72,14 @@ namespace ubv.client.logic
         {
             foreach (PlayerState player in state.Players().Values)
             {
-                if (player.GUID != m_playerGUID)
+                if (player.GUID.Value != m_playerGUID)
                 {
-                    m_goalStates[player.GUID] = player;
+                    m_goalStates[player.GUID.Value] = player;
                 }
                 else
                 {
-                    m_bodies[player.GUID].position = player.Position;
-                    m_bodies[player.GUID].rotation = player.Rotation;
+                    m_bodies[player.GUID.Value].position = player.Position.Value;
+                    m_bodies[player.GUID.Value].rotation = player.Rotation.Value;
                 }
             }
         }
@@ -88,15 +88,15 @@ namespace ubv.client.logic
         {
             foreach (PlayerState player in m_goalStates.Values)
             {
-                if (player.GUID != m_playerGUID)
+                if (player.GUID.Value != m_playerGUID)
                 {
-                    m_bodies[player.GUID].position = Vector2.LerpUnclamped(m_bodies[player.GUID].position, m_goalStates[player.GUID].Position, 0.25f);
-                    if((m_bodies[player.GUID].position - m_goalStates[player.GUID].Position).sqrMagnitude < 0.01f)
+                    m_bodies[player.GUID.Value].position = Vector2.LerpUnclamped(m_bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, 0.25f);
+                    if((m_bodies[player.GUID.Value].position - m_goalStates[player.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
                     {
-                        m_bodies[player.GUID].position = m_goalStates[player.GUID].Position;
+                        m_bodies[player.GUID.Value].position = m_goalStates[player.GUID.Value].Position.Value;
                     }
 
-                    m_bodies[player.GUID].rotation = player.Rotation;
+                    m_bodies[player.GUID.Value].rotation = player.Rotation.Value;
                 }
             }
         }
