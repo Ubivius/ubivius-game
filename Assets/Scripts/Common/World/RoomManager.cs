@@ -40,6 +40,7 @@ namespace ubv.common.world
     class RoomManager
     {
         private const int c_mandatoryTry = 10000;
+        private const int c_extraWidth = 2; // Il doit y avoir 2 uniter de libre autour de la room, 1 pour mur et 1 de plus pour permettre un mini corridor entre 2 pièces
 
         private Vector2Int m_boundariesMap;
 
@@ -73,6 +74,8 @@ namespace ubv.common.world
 
         private ubv.common.world.LogicGrid m_masterLogicGrid;
 
+        private int m_wallThickness = 1;
+
         public RoomManager(dataStruct.WorldGeneratorToRoomManager data)
         {
             m_boundariesMap = data.boundariesMap;
@@ -97,6 +100,7 @@ namespace ubv.common.world
             m_numberofTryBottomRight = data.numberofTryBottomRight;
             m_mandatoryRoomPoolBottomRight = data.mandatoryRoomPoolBottomRight;
             m_grid = data.grid;
+            m_wallThickness = data.wallThickness;
         }
 
         public LogicGrid GenerateRoomGrid()
@@ -304,7 +308,20 @@ namespace ubv.common.world
 
         private Vector2Int GetCoordInSection0(RoomInfo roomInfo, int nbrTry = c_mandatoryTry)
         {
-            BoxInfo box = new BoxInfo(m_boundariesMap.x / 3, m_boundariesMap.y / 3, m_boundariesMap.x / 3, m_boundariesMap.y / 3);
+            int width = (m_boundariesMap.x / 3) - 2 * c_extraWidth;
+            int height = (m_boundariesMap.y / 3) - 2 * c_extraWidth;
+            if(width - roomInfo.Width < 1 || height - roomInfo.Height < 1)
+            {
+                if(nbrTry == c_mandatoryTry)
+                {
+                    Debug.LogError("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
+                }
+                return new Vector2Int(-1, -1);
+            }
+            BoxInfo box = new BoxInfo(m_boundariesMap.x / 3 + m_wallThickness,
+                                      m_boundariesMap.y / 3 + m_wallThickness, 
+                                      width - 2 * m_wallThickness - roomInfo.Width, 
+                                      height- 2 * m_wallThickness - roomInfo.Height);
             Vector2Int coordTry;
             for (int i = 0; i < nbrTry; i++)
             {
@@ -323,8 +340,28 @@ namespace ubv.common.world
 
         private Vector2Int GetCoordInTopLeft(RoomInfo roomInfo, int nbrTry = c_mandatoryTry)
         {
-            BoxInfo bigBox = new BoxInfo(0, m_boundariesMap.y / 2, m_boundariesMap.x / 3, m_boundariesMap.y / 2);
-            BoxInfo smallBox = new BoxInfo(m_boundariesMap.x / 3, m_boundariesMap.y / 3, m_boundariesMap.x / 6, m_boundariesMap.y / 3);
+            int bigWidth = (m_boundariesMap.x / 3) - 2 * c_extraWidth;
+            int bigHeigth = (m_boundariesMap.y / 2) - 2 * c_extraWidth;
+            if (bigWidth - roomInfo.Width < 1 || bigHeigth - roomInfo.Height < 1)
+            {
+                if (nbrTry == c_mandatoryTry)
+                {
+                    Debug.LogError("MAP CREATION ALERT : TopLeft to small for mandatory room, look your sizing");
+                }
+                return new Vector2Int(-1, -1);
+            }
+            int SB_w = m_boundariesMap.x / 3 - m_wallThickness - roomInfo.Width;
+            int SB_h = m_boundariesMap.y / 6 + m_wallThickness;
+            int BB_w = m_boundariesMap.x / 2 - m_wallThickness - roomInfo.Width;
+            int BB_h = m_boundariesMap.y / 2 - m_wallThickness - roomInfo.Height - SB_h;
+            BoxInfo bigBox = new BoxInfo(0, 
+                                         m_boundariesMap.y / 2 + SB_h,
+                                         BB_w, 
+                                         BB_h);
+            BoxInfo smallBox = new BoxInfo(0,
+                                           m_boundariesMap.y / 2,
+                                           SB_w,
+                                           SB_h);
             Vector2Int coord = TryGetCoord(roomInfo, bigBox, smallBox, nbrTry);
             if (coord.x != -1)
             {
@@ -339,8 +376,28 @@ namespace ubv.common.world
 
         private Vector2Int GetCoordInTopRight(RoomInfo roomInfo, int nbrTry = c_mandatoryTry)
         {
-            BoxInfo bigBox = new BoxInfo(m_boundariesMap.x * 2 / 3, m_boundariesMap.y / 2, m_boundariesMap.x / 3, m_boundariesMap.y / 2);
-            BoxInfo smallBox = new BoxInfo(m_boundariesMap.x / 2, m_boundariesMap.y * 2 / 3, m_boundariesMap.x / 6, m_boundariesMap.y / 3);
+            int bigWidth = (m_boundariesMap.x / 3) - c_extraWidth;
+            int bigHeigth = (m_boundariesMap.y / 2) - c_extraWidth;
+            if (bigWidth - roomInfo.Width < 1 || bigHeigth - roomInfo.Height < 1)
+            {
+                if (nbrTry == c_mandatoryTry)
+                {
+                    Debug.LogError("MAP CREATION ALERT : TopRight to small for mandatory room, look your sizing");
+                }
+                return new Vector2Int(-1, -1);
+            }
+            int SB_x = m_boundariesMap.x / 6 + m_wallThickness;
+            int SB_y = m_boundariesMap.y / 3 - 2 * m_wallThickness - roomInfo.Height;
+            int BB_x = m_boundariesMap.x / 2 - m_wallThickness - roomInfo.Width - SB_x;
+            int BB_y = m_boundariesMap.y / 2 - m_wallThickness - roomInfo.Height;
+            BoxInfo bigBox = new BoxInfo(m_boundariesMap.x / 2 + SB_x,
+                                         m_boundariesMap.y / 2, 
+                                         BB_x, 
+                                         BB_y);
+            BoxInfo smallBox = new BoxInfo(m_boundariesMap.x / 2, 
+                                           m_boundariesMap.y * 2 / 3 + m_wallThickness, 
+                                           SB_x, 
+                                           SB_y);
             Vector2Int coord = TryGetCoord(roomInfo, bigBox, smallBox, nbrTry);
             if (coord.x != -1)
             {
@@ -355,8 +412,28 @@ namespace ubv.common.world
 
         private Vector2Int GetCoordInBottomLeft(RoomInfo roomInfo, int nbrTry = c_mandatoryTry)
         {
-            BoxInfo bigBox = new BoxInfo(0, 0, m_boundariesMap.x / 3, m_boundariesMap.y / 2);
-            BoxInfo smallBox = new BoxInfo(m_boundariesMap.x / 3, 0, m_boundariesMap.x / 6, m_boundariesMap.y / 3);
+            int bigWidth = (m_boundariesMap.x / 3) - c_extraWidth;
+            int bigHeigth = (m_boundariesMap.y / 2) - c_extraWidth;
+            if (bigWidth - roomInfo.Width < 1 || bigHeigth - roomInfo.Height < 1)
+            {
+                if (nbrTry == c_mandatoryTry)
+                {
+                    Debug.LogError("MAP CREATION ALERT : BottomLeft to small for mandatory room, look your sizing");
+                }
+                return new Vector2Int(-1, -1);
+            }
+            int BB_x = m_boundariesMap.x / 3 - m_wallThickness - roomInfo.Width;
+            int BB_y = m_boundariesMap.y / 2 - m_wallThickness - roomInfo.Height;
+            int SB_x = m_boundariesMap.x / 2 - m_wallThickness - roomInfo.Width - BB_x;
+            int SB_y = m_boundariesMap.y / 3 - m_wallThickness - roomInfo.Height;
+            BoxInfo bigBox = new BoxInfo(0, 
+                                         0, 
+                                         BB_x,
+                                         BB_y);
+            BoxInfo smallBox = new BoxInfo(BB_x, 
+                                           0, 
+                                           SB_x, 
+                                           SB_y);
             Vector2Int coord = TryGetCoord(roomInfo, bigBox, smallBox, nbrTry);
             if (coord.x != -1)
             {
@@ -371,8 +448,28 @@ namespace ubv.common.world
 
         private Vector2Int GetCoordInBottomRight(RoomInfo roomInfo, int nbrTry = c_mandatoryTry)
         {
-            BoxInfo bigBox = new BoxInfo(m_boundariesMap.x * 2 / 3, 0, m_boundariesMap.x / 3, m_boundariesMap.y / 2);
-            BoxInfo smallBox = new BoxInfo(m_boundariesMap.x / 2, 0, m_boundariesMap.x / 6, m_boundariesMap.y / 3);
+            int bigWidth = (m_boundariesMap.x / 3) - roomInfo.Width - c_extraWidth;
+            int bigHeigth = (m_boundariesMap.y / 2) - roomInfo.Height - c_extraWidth;
+            if (bigWidth - roomInfo.Width < 1 || bigHeigth - roomInfo.Height < 1)
+            {
+                if (nbrTry == c_mandatoryTry)
+                {
+                    Debug.LogError("MAP CREATION ALERT : BottomRight to small for mandatory room, look your sizing");
+                }
+                return new Vector2Int(-1, -1);
+            }
+            int SB_x = m_boundariesMap.x / 6 - m_wallThickness;
+            int SB_y = m_boundariesMap.y / 3 - m_wallThickness - roomInfo.Height;
+            int BB_x = m_boundariesMap.x / 2 - m_wallThickness - roomInfo.Width - SB_x;
+            int BB_y = m_boundariesMap.y / 2 - m_wallThickness - roomInfo.Height;
+            BoxInfo bigBox = new BoxInfo(m_boundariesMap.x / 2 + SB_x, 
+                                         0, 
+                                         BB_x, 
+                                         BB_y);
+            BoxInfo smallBox = new BoxInfo(m_boundariesMap.x / 2, 
+                                           0, 
+                                           SB_x, 
+                                           SB_y);
             Vector2Int coord = TryGetCoord(roomInfo, bigBox, smallBox, nbrTry);
             if (coord.x != -1)
             {
@@ -410,9 +507,9 @@ namespace ubv.common.world
         
         private bool SpaceIsFree(RoomInfo roomInfo, Vector2Int coord)
         {
-            for (int x = coord.x - 6; x < coord.x + roomInfo.Width + 6; x++) // Il doit y avoir 6 uniter de libre autour de la room, 2 pour mur, 3 pour corridor et 1 pour mur
+            for (int x = coord.x - c_extraWidth; x < coord.x + roomInfo.Width + c_extraWidth; x++) 
             {
-                for (int y = coord.y - 6; y < coord.y + roomInfo.Height + 6; y++)
+                for (int y = coord.y - c_extraWidth; y < coord.y + roomInfo.Height + c_extraWidth; y++)
                 {
                     if (x < 0 || y < 0 || m_masterLogicGrid.Grid[x, y] != null || x == m_boundariesMap.x - 1 || y == m_boundariesMap.y - 1)
                     {

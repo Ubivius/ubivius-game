@@ -39,6 +39,7 @@ namespace ubv.common.world.dataStruct
         public List<RoomInfo> mandatoryRoomPoolBottomRight;
 
         public Grid grid;
+        public int wallThickness;
 
         public WorldGeneratorToRoomManager(
             Vector2Int boundariesMap, 
@@ -62,7 +63,8 @@ namespace ubv.common.world.dataStruct
             int numberRandomRoomBottomRight, 
             int numberofTryBottomRight,
             List<RoomInfo> mandatoryRoomPoolBottomRight,
-            Grid grid)
+            Grid grid,
+            int wallThickness)
         {
             this.boundariesMap = boundariesMap;
             this.randomRoomPoolSection0 = randomRoomPoolSection0;
@@ -86,6 +88,7 @@ namespace ubv.common.world.dataStruct
             this.numberofTryBottomRight = numberofTryBottomRight;
             this.mandatoryRoomPoolBottomRight = mandatoryRoomPoolBottomRight;
             this.grid = grid;
+            this.wallThickness = wallThickness;
         }
     }
 }
