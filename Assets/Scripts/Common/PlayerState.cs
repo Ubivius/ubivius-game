@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using ubv.common.serialization;
 
 namespace ubv
 {
@@ -11,31 +12,43 @@ namespace ubv
             /// Class reprensenting individual player state 
             /// Add here the data of a single player
             /// </summary>
-            public class PlayerState : udp.Serializable
+            public class PlayerState : serialization.Serializable
             {
-                public udp.SerializableTypes.Vector2 Position;
-                public udp.SerializableTypes.Float Rotation;
-                public udp.SerializableTypes.Int32 GUID;
+                public serialization.types.Vector2 Position;
+                public serialization.types.Float Rotation;
+                public serialization.types.Int32 GUID;
 
-                public PlayerState() : base() { }
+                public PlayerState() : base()
+                {
+                    Position = new serialization.types.Vector2(Vector2.zero);
+                    Rotation = new serialization.types.Float(0);
+                    GUID = new serialization.types.Int32(0);
+
+                    InitSerializableMembers(Position, Rotation, GUID);
+                }
+
+                public PlayerState(int playerID) : base()
+                {
+                    Position = new serialization.types.Vector2(Vector2.zero);
+                    Rotation = new serialization.types.Float(0);
+                    GUID = new serialization.types.Int32(playerID);
+
+                    InitSerializableMembers(Position, Rotation, GUID);
+                }
 
                 public PlayerState(PlayerState player) : base()
                 {
-                    Position.Set(player.Position);
-                    Rotation.Set(player.Rotation);
-                    GUID.Set(player.GUID);
-                }
+                    Position = new serialization.types.Vector2(Vector2.zero);
+                    Rotation = new serialization.types.Float(player.Rotation.Value);
+                    GUID = new serialization.types.Int32(player.GUID.Value);
 
-                protected override void InitSerializableMembers()
-                {
-                    Position = new udp.SerializableTypes.Vector2(this, Vector2.zero);
-                    Rotation = new udp.SerializableTypes.Float(this, 0f);
-                    GUID = new udp.SerializableTypes.Int32(this, -1);
+                    InitSerializableMembers(Position, Rotation, GUID);
                 }
-
-                protected override byte SerializationID()
+                
+                
+                protected override ID.BYTE_TYPE SerializationID()
                 {
-                    return (byte)udp.Serialization.BYTE_TYPE.PLAYER_STATE;
+                    return ID.BYTE_TYPE.PLAYER_STATE;
                 }
 
             }

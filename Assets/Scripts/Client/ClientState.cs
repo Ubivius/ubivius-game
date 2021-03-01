@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using ubv.common.serialization.types;
+using ubv.common.serialization;
 
 namespace ubv
 {
@@ -10,30 +12,44 @@ namespace ubv
         /// Class reprensenting local client state, which will be simulated locally and synced with an authoritative server.
         /// Add here everything that needs to be shared with the server (and the other players).
         /// </summary>
-        public class ClientState : udp.Serializable
+        public class ClientState : Serializable
         {
-            private udp.SerializableTypes.HashMap<common.data.PlayerState> m_playerStates;
-            public udp.SerializableTypes.Uint32 Tick;
+            public class PlayerHashMap : HashMap<common.data.PlayerState>
+            {
+                public PlayerHashMap(Dictionary<int, common.data.PlayerState> players) : base(players)
+                { }
+
+                protected override ID.BYTE_TYPE SerializationID()
+                {
+                    return ID.BYTE_TYPE.HASHMAP_INT_PLAYERSTATE;
+                }
+            }
+
+            private PlayerHashMap m_playerStates;
+            public Uint32 Tick { get; protected set; }
 
             public int PlayerGUID;
 
-            public ClientState() : base() { }
+            public ClientState() : base()
+            {
+                m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
+                Tick = new Uint32(0);
+                InitSerializableMembers(m_playerStates, Tick);
+            }
 
             public ClientState(ref ClientState state) : base()
             {
-                Tick.Set(state.Tick);
-                SetPlayers(state.m_playerStates);
+                m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
+                Tick = new Uint32(state.Tick.Value);
+
+                SetPlayers(state.m_playerStates.Value);
+                InitSerializableMembers(m_playerStates, Tick);
+
             }
             
-            protected override void InitSerializableMembers()
+            protected override ID.BYTE_TYPE SerializationID()
             {
-                m_playerStates = new udp.SerializableTypes.HashMap<common.data.PlayerState>(this, new Dictionary<int, common.data.PlayerState>());
-                Tick = new udp.SerializableTypes.Uint32(this, 0);
-            }
-
-            protected override byte SerializationID()
-            {
-                return (byte)udp.Serialization.BYTE_TYPE.CLIENT_STATE;
+                return ID.BYTE_TYPE.CLIENT_STATE;
             }
             
             public common.data.PlayerState GetPlayer()
@@ -43,7 +59,7 @@ namespace ubv
 
             public void AddPlayer(common.data.PlayerState playerState)
             {
-                m_playerStates.Value[playerState.GUID] = playerState;
+                m_playerStates.Value[playerState.GUID.Value] = playerState;
             }
 
             public void SetPlayers(Dictionary<int, common.data.PlayerState> playerStates)
@@ -51,7 +67,7 @@ namespace ubv
                 m_playerStates.Value.Clear();
                 foreach (common.data.PlayerState player in playerStates.Values)
                 {
-                    m_playerStates.Value[player.GUID] = new common.data.PlayerState(player);
+                    m_playerStates.Value[player.GUID.Value] = new common.data.PlayerState(player);
                 }
             }
 

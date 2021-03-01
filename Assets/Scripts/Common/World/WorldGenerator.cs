@@ -79,6 +79,8 @@ namespace ubv.common.world
                 m_grid,
                 m_wallThickness);
 
+        public void GenerateWorld()
+        {
             m_roomManager = new RoomManager(m_worldGeneratorToRoomManager);
             m_masterLogicGrid = m_roomManager.GenerateRoomGrid();
 
@@ -86,9 +88,11 @@ namespace ubv.common.world
 
             m_corridorsManager = new CorridorsManager(m_worldGeneratorToCorridorsManager);
             m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
-
-
-
+        }
+        
+        public cellType.CellInfo[,] GetCellInfoArray()
+        {
+            return m_masterLogicGrid.GetCellInfo();
         }
 
     }
