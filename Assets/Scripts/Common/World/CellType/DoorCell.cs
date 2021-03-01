@@ -3,37 +3,62 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ubv.common.serialization;
 
 namespace ubv.common.world.cellType
 {
     public enum DoorType
     {
-        Standart,
+        Standard,
         Section
     }
 
     public class DoorCell : LogicCell
     {
-        private DoorType m_doorType;
-        private bool m_IsClosed;
+        private serialization.types.Int32 m_doorType;
+        private serialization.types.Bool m_IsClosed;
 
-        public DoorCell(DoorType doorType)
+        public DoorCell(DoorType doorType) : base()
         {
             IsWalkable = true;
             DoorType = doorType;
+
+            m_IsClosed = new serialization.types.Bool(false);
+            m_doorType = new serialization.types.Int32((int)doorType);
+
+            InitSerializableMembers(m_IsClosed, m_doorType);
         }
 
         public void CloseDoor()
         {
-            m_IsClosed = true;
+            m_IsClosed.Value = true;
             IsWalkable = false;
         }
 
         public void OpenDoor()
         {
-            m_IsClosed = false;
+            m_IsClosed.Value = (false);
             IsWalkable = true;
         }
-        public DoorType DoorType { get => m_doorType; private set => m_doorType = value; }
+
+        public DoorCell() : base()
+        {
+            m_IsClosed = new serialization.types.Bool(false);
+            m_doorType = new serialization.types.Int32((int)DoorType.Standard);
+
+            InitSerializableMembers(m_IsClosed, m_doorType);
+        }
+
+        public DoorType DoorType { get => (DoorType)m_doorType.Value; private set => m_doorType.Value = (int)value; }
+
+        protected override ID.BYTE_TYPE SerializationID()
+        {
+            return ID.BYTE_TYPE.LOGIC_CELL_DOOR;
+        }
+
+        public override CellInfo.CellType GetCellType()
+        {
+            return CellInfo.CellType.CELL_DOOR;
+        }
     }
 }

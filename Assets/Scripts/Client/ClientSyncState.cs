@@ -14,6 +14,15 @@ namespace ubv
         {
             abstract public class ClientSyncState
             {
+                protected readonly tcp.client.TCPClient m_TCPClient;
+                protected readonly udp.client.UDPClient m_UDPClient;
+
+                public ClientSyncState(tcp.client.TCPClient tcpClient, udp.client.UDPClient udpClient)
+                {
+                    m_TCPClient = tcpClient;
+                    m_UDPClient = udpClient;
+                }
+
                 protected readonly object m_lock = new object();
                 
                 public abstract ClientSyncState Update();
@@ -22,8 +31,9 @@ namespace ubv
 
             public class ClientSyncInit : ClientSyncState, tcp.client.ITCPClientReceiver
             {
-                private readonly tcp.client.TCPClient m_TCPClient;
-                private readonly udp.client.UDPClient m_UDPClient;
+                private readonly world.WorldRebuilder m_worldRebuilder;
+                private bool m_readyToPlay;
+                private common.world.cellType.CellInfo[,] m_cellInfos;
 
                 //tranfer to play
                 private readonly string m_physicsScene;
@@ -40,22 +50,29 @@ namespace ubv
                     tcp.client.TCPClient TCPClient, 
                     udp.client.UDPClient UDPClient,
                     string physicsScene, 
-                    PlayerSettings playerSettings
+                    PlayerSettings playerSettings,
+                    world.WorldRebuilder worldGrid
 #if NETWORK_SIMULATE
-                    , ClientSync parent)
+                    , ClientSync parent) 
 #endif // NETWORK_SIMULATE
+                    : base(TCPClient, UDPClient)
                 {
                     m_physicsScene = physicsScene;
                     m_playerID = null;
                     m_playerStates = null;
+                    m_readyToPlay = false;
 
                     m_playerSettings = playerSettings;
 
                     m_playWithoutServer = false;
-
-                    m_UDPClient = UDPClient;
-                    m_TCPClient = TCPClient;
+                    
                     m_TCPClient.Subscribe(this);
+
+                    m_worldRebuilder = worldGrid;
+
+                    m_cellInfos = null;
+
+                    m_worldRebuilder.OnWorldBuilt(OnWorldBuilt);
 
 #if NETWORK_SIMULATE
                     parent.ConnectButtonEvent.AddListener(SendConnectionRequestToServer);
@@ -72,42 +89,60 @@ namespace ubv
                 {
                     m_TCPClient.Connect();
 
-                    m_TCPClient.Send(new IdentificationMessage().GetBytes()); // sends a ping to the server
+                    m_TCPClient.Send(new IdentificationMessage(0).GetBytes()); // sends a ping to the server
                 }
 
                 public void ReceivePacket(tcp.TCPToolkit.Packet packet)
                 {
                     // receive auth message and set player id
                     
-                    IdentificationMessage auth = udp.Serializable.FromBytes<IdentificationMessage>(packet.Data);
+                    IdentificationMessage auth = common.serialization.IConvertible.CreateFromBytes<IdentificationMessage>(packet.Data);
                     if (auth != null)
                     {
-                        m_playerID = auth.PlayerID;
+                        m_playerID = auth.PlayerID.Value;
 #if DEBUG_LOG
                         Debug.Log("Received connection confirmation, player ID is " + m_playerID);
 #endif // DEBUG_LOG
 
-                        // send a ping to the server to make it known
+                        // send a ping to the server to make it known that the player received its ID
                         m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(auth.GetBytes()).RawBytes);
                     }
                     else
                     {
-                        GameStartMessage start = udp.Serializable.FromBytes<GameStartMessage>(packet.Data);
+                        // TODO : see why createfrombytes takes SO LONG
+                        GameInitMessage start = common.serialization.IConvertible.CreateFromBytes<GameInitMessage>(packet.Data);
                         if (start != null)
                         {
-                            m_playerStates = start.Players;
-                            m_simulationBuffer = start.SimulationBuffer;
+                            m_playerStates = start.Players.Value;
+                            m_simulationBuffer = start.SimulationBuffer.Value;
 #if DEBUG_LOG
                             Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
+
+                            m_worldRebuilder.BuildWorldFromCellInfo(start.CellInfo2DArray.Value);
+                        }
+                        else if(!m_readyToPlay)
+                        {
+                            GameReadyMessage ready = common.serialization.IConvertible.CreateFromBytes<GameReadyMessage>(packet.Data);
+                            if(ready != null)
+                            {
+                                Debug.Log("Client received confirmation that server is starting game.");
+                                m_readyToPlay = true;
+                            }
                         }
                     }
                 }
 
+                private void OnWorldBuilt()
+                {
+                    m_TCPClient.Send(new GameReadyMessage(m_playerID.Value).GetBytes());
+                }
+
                 public override ClientSyncState Update()
                 {
-                    if(m_playerStates != null)
+                    if(m_readyToPlay)
                     {
+                        m_TCPClient.Unsubscribe(this);
                         return new ClientSyncPlay(m_UDPClient, m_playerID.Value, m_physicsScene, m_playerSettings, m_playerStates, m_simulationBuffer);
                     }
 #if NETWORK_SIMULATE
@@ -115,7 +150,7 @@ namespace ubv
                     {
                         m_TCPClient.Unsubscribe(this);
                         PlayerState soloPlayer = new PlayerState();
-                        soloPlayer.GUID.Set(0);
+                        soloPlayer.GUID.Value = 0;
                         List<PlayerState> players = new List<PlayerState>();
                         players.Add(soloPlayer);
                         return new ClientSyncPlay(m_UDPClient, 0, m_physicsScene, m_playerSettings, players, 0, m_playWithoutServer);
@@ -131,7 +166,6 @@ namespace ubv
             /// </summary>
             public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver
             {
-                private udp.client.UDPClient m_UDPClient;
                 private readonly int m_playerID;
 
                 private uint m_remoteTick;
@@ -163,7 +197,7 @@ namespace ubv
 #if NETWORK_SIMULATE
                     , bool startWithoutServer = false
 #endif // NETWORK_SIMULATE
-                    )
+                    ) : base(null, UDPClient)
                 {
 #if NETWORK_SIMULATE
                     m_noServer = startWithoutServer;
@@ -182,12 +216,11 @@ namespace ubv
                     Dictionary<int, PlayerState> playerStateDict = new Dictionary<int, PlayerState>();
                     foreach(PlayerState state in playerStates)
                     {
-                        playerStateDict[state.GUID] = state;
+                        playerStateDict[state.GUID.Value] = state;
                     }
                     
                     m_updaters.Add(new PlayerGameObjectUpdater(playerSettings, playerStateDict, m_playerID));
-
-                    m_UDPClient = UDPClient;
+                    
                     m_UDPClient.Subscribe(this);
                     
                     for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
@@ -269,7 +302,7 @@ namespace ubv
                     // client doesnt need its own client state ticks
                     lock (m_lock)
                     {
-                        ClientState state = udp.Serializable.FromBytes<ClientState>(packet.Data);
+                        ClientState state = common.serialization.IConvertible.CreateFromBytes<ClientState>(packet.Data);
                         if (state != null)
                         {
                             state.PlayerGUID = m_playerID;
@@ -277,7 +310,23 @@ namespace ubv
 #if DEBUG_LOG
                             Debug.Log("Received server state tick " + state.Tick.Value);
 #endif //DEBUG_LOG
-                            m_remoteTick = state.Tick;
+                            m_remoteTick = state.Tick.Value;
+
+                            if(m_localTick < m_remoteTick)
+                            {
+#if DEBUG_LOG
+                                Debug.Log("Client has fallen behind by " + (m_remoteTick - m_localTick) + ". Fast-forwarding.");
+#endif //DEBUG_LOG
+                                m_localTick = m_remoteTick + (uint)m_simulationBuffer;
+                            }
+
+                            // PATCH FOR JITTER (too many phy simulate calls)
+                            // TODO: investigate (si le temps le permet)
+                            // ClientCorrection()
+                            if(m_localTick > m_remoteTick + (uint)m_simulationBuffer)
+                            {
+                                m_localTick = m_remoteTick ;
+                            }
                         }
                     }
                 }
@@ -286,15 +335,15 @@ namespace ubv
                 {
                     if (m_lastInput != null)
                     {
-                        m_inputBuffer[bufferIndex].Movement.Set(m_lastInput.Movement.Value);
-                        m_inputBuffer[bufferIndex].Sprinting.Set(m_lastInput.Sprinting.Value);
+                        m_inputBuffer[bufferIndex].Movement.Value = m_lastInput.Movement.Value;
+                        m_inputBuffer[bufferIndex].Sprinting.Value = m_lastInput.Sprinting.Value;
                     }
                     else
                     {
                         m_inputBuffer[bufferIndex].SetToNeutral();
                     }
 
-                    m_inputBuffer[bufferIndex].Tick.Set(m_localTick);
+                    m_inputBuffer[bufferIndex].Tick.Value = m_localTick;
 
                     m_lastInput = null;
 
@@ -303,19 +352,18 @@ namespace ubv
                     if (m_noServer)
                         return;
 #endif // NETWORK_SIMULATE
-                    // TODO: Cap max input queue size
-                    // (under the hood, send multiple packets?)
+
                     List<common.data.InputFrame> frames = new List<common.data.InputFrame>();
-                    for (uint tick = m_remoteTick; tick <= m_localTick; tick++)
+                    for (uint tick = (uint)Mathf.Max((int)m_remoteTick, (int)m_localTick - (m_simulationBuffer * 2)); tick <= m_localTick; tick++)
                     {
                         frames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
                     }
 
                     InputMessage inputMessage = new InputMessage();
 
-                    inputMessage.PlayerID.Set(m_playerID);
-                    inputMessage.StartTick.Set(m_remoteTick);
-                    inputMessage.InputFrames.Set(frames);
+                    inputMessage.PlayerID.Value = m_playerID;
+                    inputMessage.StartTick.Value = m_remoteTick;
+                    inputMessage.InputFrames.Value = frames;
 
 #if NETWORK_SIMULATE
                     if (Random.Range(0f, 1f) > m_packetLossChance)
