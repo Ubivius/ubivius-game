@@ -35,7 +35,7 @@ namespace ubv.http
             return PostJSON(requestUrl, JsonUtility.ToJson(objToSerialize));
         }
 
-        public HttpResponseMessage Put(string requestUrl, string jsonString)
+        public HttpResponseMessage PutJSON(string requestUrl, string jsonString)
         {
             StringContent data = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
             
@@ -45,7 +45,7 @@ namespace ubv.http
 
         public HttpResponseMessage Put(string requestUrl, object objToSerialize)
         {
-            return Put(requestUrl, JsonUtility.ToJson(objToSerialize));
+            return PutJSON(requestUrl, JsonUtility.ToJson(objToSerialize));
         }
 
         public string Get(string requestUrl)
