@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Net;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace Tests
 {
@@ -37,8 +38,10 @@ namespace Tests
 
                 HttpListenerRequest request = context.Request;
                 HttpListenerResponse response = context.Response;
-
-
+                
+                response.ContentType = "application/json";
+                response.ContentEncoding = Encoding.UTF8;
+                //response.ContentLength64 = data.LongLength;
             }
         }
     }

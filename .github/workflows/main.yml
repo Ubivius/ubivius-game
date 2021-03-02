@@ -34,7 +34,6 @@ jobs:
         uses: webbertakken/unity-test-runner@v1.3
         with:
           projectPath: Assets/Tests
-          unityVersion: 2019.4.1f1
 
       # Build
       - name: Server build 
@@ -93,7 +92,6 @@ jobs:
         uses: webbertakken/unity-test-runner@v1.3
         with:
           projectPath: Assets/Tests
-          unityVersion: 2019.4.1f1
 
       # Build
       - name: Client build
