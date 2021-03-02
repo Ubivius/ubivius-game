@@ -78,29 +78,29 @@ namespace ubv.common.world
 
         public RoomManager(dataStruct.WorldGeneratorToRoomManager data)
         {
-            m_boundariesMap = data.boundariesMap;
-            m_randomRoomPoolSection0 = data.randomRoomPoolSection0;
-            m_numberRandomRoomSection0 = data.numberRandomRoomSection0;
-            m_numberofTrySection0 = data.numberofTrySection0;
-            m_mandatoryRoomPoolSection0 = data.mandatoryRoomPoolSection0;
-            m_randomRoomPoolTopLeft = data.randomRoomPoolTopLeft;
-            m_numberRandomRoomTopLeft = data.numberRandomRoomTopLeft;
-            m_numberofTryTopLeft = data.numberofTryTopLeft;
-            m_mandatoryRoomPoolTopLeft = data.mandatoryRoomPoolTopLeft;
-            m_randomRoomPoolTopRight = data.randomRoomPoolTopRight;
-            m_numberRandomRoomTopRight = data.numberRandomRoomTopRight;
-            m_numberofTryTopRight = data.numberofTryTopRight;
-            m_mandatoryRoomPoolTopRight = data.mandatoryRoomPoolTopRight;
-            m_randomRoomPoolBottomLeft = data.randomRoomPoolBottomLeft;
-            m_numberRandomRoomBottomLeft = data.numberRandomRoomBottomLeft;
-            m_numberofTryBottomLeft = data.numberofTryBottomLeft;
-            m_mandatoryRoomPoolBottomLeft = data.mandatoryRoomPoolBottomLeft;
-            m_randomRoomPoolBottomRight = data.randomRoomPoolBottomRight;
-            m_numberRandomRoomBottomRight = data.numberRandomRoomBottomRight;
-            m_numberofTryBottomRight = data.numberofTryBottomRight;
-            m_mandatoryRoomPoolBottomRight = data.mandatoryRoomPoolBottomRight;
-            m_grid = data.grid;
-            m_wallThickness = data.wallThickness;
+            m_boundariesMap = data.BoundariesMap;
+            m_randomRoomPoolSection0 = data.RandomRoomPoolSection0;
+            m_numberRandomRoomSection0 = data.NumberRandomRoomSection0;
+            m_numberofTrySection0 = data.NumberofTrySection0;
+            m_mandatoryRoomPoolSection0 = data.MandatoryRoomPoolSection0;
+            m_randomRoomPoolTopLeft = data.RandomRoomPoolTopLeft;
+            m_numberRandomRoomTopLeft = data.NumberRandomRoomTopLeft;
+            m_numberofTryTopLeft = data.NumberofTryTopLeft;
+            m_mandatoryRoomPoolTopLeft = data.MandatoryRoomPoolTopLeft;
+            m_randomRoomPoolTopRight = data.RandomRoomPoolTopRight;
+            m_numberRandomRoomTopRight = data.NumberRandomRoomTopRight;
+            m_numberofTryTopRight = data.NumberofTryTopRight;
+            m_mandatoryRoomPoolTopRight = data.MandatoryRoomPoolTopRight;
+            m_randomRoomPoolBottomLeft = data.RandomRoomPoolBottomLeft;
+            m_numberRandomRoomBottomLeft = data.NumberRandomRoomBottomLeft;
+            m_numberofTryBottomLeft = data.NumberofTryBottomLeft;
+            m_mandatoryRoomPoolBottomLeft = data.MandatoryRoomPoolBottomLeft;
+            m_randomRoomPoolBottomRight = data.RandomRoomPoolBottomRight;
+            m_numberRandomRoomBottomRight = data.NumberRandomRoomBottomRight;
+            m_numberofTryBottomRight = data.NumberofTryBottomRight;
+            m_mandatoryRoomPoolBottomRight = data.MandatoryRoomPoolBottomRight;
+            m_grid = data.Grid;
+            m_wallThickness = data.WallThickness;
         }
 
         public LogicGrid GenerateRoomGrid()
