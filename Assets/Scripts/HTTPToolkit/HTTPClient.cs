@@ -14,12 +14,7 @@ namespace ubv.http
     {
         static private readonly HttpClient m_client = new HttpClient();
 
-        [SerializeField] string m_endPoint = "http://localhost:9090";
-
-        private void Awake()
-        {
-            
-        }
+        [SerializeField] private string m_endPoint = "http://localhost:9090";
         
         public HttpResponseMessage PostJSON(string requestUrl, string jsonString)
         {

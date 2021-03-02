@@ -8,24 +8,12 @@ namespace Tests
 {
     public class HTTPClientTest
     {
-        [UnityTest]
-        public IEnumerator HTTPClientTest_Works()
-        {
-            yield return null;
-        }
-
-        public class HTTPClientMonoBehaviourTest : MonoBehaviour, IMonoBehaviourTest
-        {
-            bool IMonoBehaviourTest.IsTestFinished
-            {
-                get { return false; }
-            }
-        }
-
-        ubv.http.HTTPClient m_client;
+        private ubv.http.HTTPClient m_client;
+        private HTTPMockedServer m_server;
 
         private void Init()
         {
+            m_server = new HTTPMockedServer();
         }
 
         [Test]
@@ -61,5 +49,12 @@ namespace Tests
         {
 
         }
+
+        [UnityTest]
+        public IEnumerator HTTPClientTestRoutine()
+        {
+            yield return null;
+        }
+
     }
 }
