@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -7,29 +8,21 @@ using UnityEngine.TestTools;
 namespace Tests
 {
     public class HTTPClientTest
-    {
-        private ubv.http.HTTPClient m_client;
-        private HTTPMockedServer m_server;
-
-        private void Init()
-        {
-            m_server = new HTTPMockedServer();
-        }
-
-        [Test]
-        public void RunAllTests()
-        {
-            Init();
-            GetTest();
-            PostTest();
-            PutTest();
-            DeleteTest();
-        }
-
+    {   
         [Test]
         public void GetTest()
         {
+            ubv.http.HTTPClient client = new GameObject().AddComponent<ubv.http.HTTPClient>();
 
+            HTTPMockedServer server = null;
+            Thread t = new Thread(() =>
+            {
+                server = new HTTPMockedServer();
+            });
+            t.Start();
+
+            Assert.IsTrue(client.Get("products/1", out string content).Equals(System.Net.HttpStatusCode.OK));
+            Assert.IsTrue(client.Get("products/99", out string content2).Equals(System.Net.HttpStatusCode.NotFound));
         }
 
         [Test]
@@ -48,12 +41,6 @@ namespace Tests
         public void DeleteTest()
         {
 
-        }
-
-        [UnityTest]
-        public IEnumerator HTTPClientTestRoutine()
-        {
-            yield return null;
         }
 
     }

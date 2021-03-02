@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using UnityEngine;
 
@@ -43,11 +44,11 @@ namespace ubv.http
             return PutJSON(requestUrl, JsonUtility.ToJson(objToSerialize));
         }
 
-        public string Get(string requestUrl)
+        public HttpStatusCode Get(string requestUrl, out string responseContent)
         {
-            string responseContent = m_client.GetStringAsync(m_endPoint + "/" + requestUrl).Result;
-            
-            return responseContent;
+            HttpResponseMessage response = m_client.GetAsync(m_endPoint + "/" + requestUrl).Result;
+            responseContent = response.Content.ReadAsStringAsync().Result;
+            return response.StatusCode;
         }
 
         public byte[] GetBytes(string requestUrl)

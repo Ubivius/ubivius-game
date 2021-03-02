@@ -9,60 +9,79 @@ namespace Tests
 {
     public class HTTPMockedServer
     {
-        private HttpListener m_httpListener;
+        static private HttpListener m_httpListener;
         private readonly string m_prefix;
-        private readonly string[] m_urls;
-        private List<string> m_productsJSONs;
+        static private readonly List<string> m_productIDs = new List<string>()
+        {
+            "1", "2", "3", "4", "5", "7", "9"
+        };
+        static private bool m_running ;
 
         public HTTPMockedServer()
         {
             m_prefix = "http://localhost:9090";
-            m_urls = new string[] {
-                "products"
-            };
-
-            m_productsJSONs = new List<string>()
+            
+            if (m_httpListener == null)
             {
-                "{\"id\":1, \"name\":\"newName\", \"price\":1.00, \"sku\":\"abc-abc-abcd\"}"
-            };
+                m_httpListener = new HttpListener();
+                m_httpListener.Prefixes.Add(m_prefix + "/products/");
 
-            m_httpListener = new HttpListener();
-            foreach (string url in m_urls)
-            {
-                m_httpListener.Prefixes.Add(m_prefix + "/" + url);
+                m_running = true;
+                m_httpListener.Start();
+                Task listenTask = HandleConnections();
+                listenTask.GetAwaiter().GetResult();
+
+                m_httpListener.Close();
+                m_httpListener.Stop();
             }
-
-            m_httpListener.Start();
         }
 
-        public async Task HandleConnections()
+        ~HTTPMockedServer()
         {
-            bool run = true;
+            Stop();
+        }
 
-            while (run)
+        public void Stop()
+        {
+            m_running = false;
+        }
+
+        public static async Task HandleConnections()
+        {
+            while (m_running)
             {
                 HttpListenerContext context = await m_httpListener.GetContextAsync();
 
                 HttpListenerRequest request = context.Request;
                 HttpListenerResponse response = context.Response;
                 
-                StringBuilder JSONBuilder = new StringBuilder();
-                foreach (string str in m_productsJSONs)
-                {
-                    JSONBuilder.Append(str);
-                }
+                byte[] data = Encoding.UTF8.GetBytes("Successful data");
 
-                byte[] data = Encoding.UTF8.GetBytes(JSONBuilder.ToString());
+                // response codes: https://docs.microsoft.com/en-us/azure/architecture/best-practices/api-design#get-methods
 
+                Debug.Log("HTTP Mocked Server received " + request.Url.LocalPath);
+                string[] parts = request.Url.LocalPath.Split('/');
+                string id = parts[parts.Length - 1];
                 switch (request.HttpMethod)
                 {
                     case "POST":
+                        response.StatusCode = 201;
                         break;
                     case "PUT":
+                        response.StatusCode = 201;
                         break;
                     case "GET":
+                        if (m_productIDs.Contains(id))
+                        {
+                            response.StatusCode = 200;
+                        }
+                        else
+                        {
+                            response.StatusCode = 404;
+                        }
                         break;
                     case "DELETE":
+                        response.StatusCode = 204;
                         break;
                     default:
                         break;
