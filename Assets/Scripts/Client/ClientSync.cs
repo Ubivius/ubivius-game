@@ -17,6 +17,8 @@ namespace ubv
             // https://github.com/spectre1989/unity_physics_csp/blob/master/Assets/Logic.cs
 
             client.logic.ClientSyncState m_currentState;
+
+            [SerializeField] private world.WorldRebuilder m_worldGrid;
             
             [SerializeField] private udp.client.UDPClient m_UDPClient;
             [SerializeField] private tcp.client.TCPClient m_TCPClient;
@@ -40,7 +42,8 @@ namespace ubv
                     m_TCPClient,
                     m_UDPClient,
                     m_physicsScene,
-                    m_playerSettings
+                    m_playerSettings,
+                    m_worldGrid
 #if NETWORK_SIMULATE
                     , this
 #endif // NETWORK_SIMULATE

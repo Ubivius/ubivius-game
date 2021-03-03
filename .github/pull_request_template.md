@@ -1,9 +1,9 @@
-#### Quel changement ça apporte?
+#### What changes does this PR contain?
 
-#### Quels JIRA sont concernés?
+#### Which JIRA ticket ID's are associated with this PR?
 
-#### Comment ça a été testé (étapes pour reproduire les tests du côté des reviewers)?
+#### How was it tested (Steps to reproduce by reviewers)?
 
-#### Notes pour les reviewers
+#### Notes for reviewers
 
 @ubivius/gamedev
