@@ -3,13 +3,20 @@ using System.Collections.Generic;
 using ubv.common.world;
 using UnityEngine;
 
-public class PathfindingGridManager
+public class PathfindingGridManager: MonoBehaviour
 {
+    [SerializeField] private WorldGenerator m_worlsGeneratorcaliss;
+
     private LogicGrid m_logicGrid;
     private List<PathNode> m_pathNodeList;
     private Pathfinding m_pathfinding;
 
-    public PathfindingGridManager(LogicGrid logicGrid)
+    private void Start()
+    {
+        this.SetPathfindingGridManager(m_worlsGeneratorcaliss.GetMasterLogicGrid());
+    }
+
+    private void SetPathfindingGridManager(LogicGrid logicGrid)
     {
         m_logicGrid = logicGrid;
         m_pathNodeList = new List<PathNode>();
@@ -18,9 +25,12 @@ public class PathfindingGridManager
         {
             for (int y = 0; y < m_logicGrid.Height; y++)
             {
-                if (m_logicGrid.Grid[x,y].IsWalkable)
+                if (m_logicGrid.Grid[x, y] != null)
                 {
-                    m_pathNodeList.Add(new PathNode(x, y));
+                    if (m_logicGrid.Grid[x, y].IsWalkable)
+                    {
+                        m_pathNodeList.Add(new PathNode(x, y));
+                    }
                 }
             }
         }
@@ -53,25 +63,23 @@ public class PathfindingGridManager
             // Up
             if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X, pathnode.Y + 1));
 
-            pathnode.GetNeighbourList().RemoveAll(null);
         }
-
-        m_pathfinding = new Pathfinding(m_pathNodeList);
-
-        // Just want to test the pathfinding
-        Testing testing = new Testing(m_pathNodeList, this);
     }
 
     public PathNode GetNode(int x, int y)
     {
-        if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height && m_pathNodeList.Contains(new PathNode(x, y)))
+        if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height)
         {
-            return m_pathNodeList.Find(pathnode => pathnode.X == x && pathnode.Y == y);
+            foreach(PathNode pathNode in m_pathNodeList)
+            {
+                if (pathNode.X == x && pathNode.Y == y)
+                {
+                    return pathNode;
+                }
+            }
         }
-        else
-        {
-            return null;
-        }
+        
+        return null;
     }
 
     public List<PathNode> GetPath(PathNode startNode, PathNode endNode)

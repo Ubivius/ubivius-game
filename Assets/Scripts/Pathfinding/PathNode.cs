@@ -15,6 +15,7 @@ public class PathNode
     {
         this.X = x;
         this.Y = y;
+        m_neighbourList = new List<PathNode>();
     }
 
     public List<PathNode> GetNeighbourList()
@@ -22,9 +23,15 @@ public class PathNode
         return this.m_neighbourList;
     }
 
-    public void AddNeighbour(PathNode pathNode)
+    public bool AddNeighbour(PathNode pathNode)
     {
-        this.m_neighbourList.Add(pathNode);
+        if (pathNode != null)
+        {
+            this.m_neighbourList.Add(pathNode);
+            return true;
+        }
+        else
+            return false;
     }
 
     public void RemoveNeighbour(PathNode pathNode)
