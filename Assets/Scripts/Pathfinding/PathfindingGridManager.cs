@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PathfindingGridManager: MonoBehaviour
 {
-    [SerializeField] private WorldGenerator m_worlsGeneratorcaliss;
+    [SerializeField] private WorldGenerator m_worldGenerator;
 
     private LogicGrid m_logicGrid;
     private List<PathNode> m_pathNodeList;
@@ -13,7 +13,7 @@ public class PathfindingGridManager: MonoBehaviour
 
     private void Start()
     {
-        this.SetPathfindingGridManager(m_worlsGeneratorcaliss.GetMasterLogicGrid());
+        this.SetPathfindingGridManager(m_worldGenerator.GetMasterLogicGrid());
     }
 
     private void SetPathfindingGridManager(LogicGrid logicGrid)
