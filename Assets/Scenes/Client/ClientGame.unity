@@ -121,6 +121,56 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &134844664
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 134844666}
+  - component: {fileID: 134844665}
+  m_Layer: 0
+  m_Name: ClientSyncPlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &134844665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 134844664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd061c09ef56aae4aad8621ac5bd44f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_clientSync: {fileID: 0}
+  m_TCPClient: {fileID: 0}
+  m_UDPClient: {fileID: 0}
+  m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
+  m_physicsScene: ClientGame
+  m_packetLossChance: 0.15
+  m_noServer: 0
+--- !u!4 &134844666
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 134844664}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &299737380
 GameObject:
   m_ObjectHideFlags: 0
@@ -203,7 +253,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1668815429}
+      - m_Target: {fileID: 0}
         m_MethodName: InvokeConnect
         m_Mode: 1
         m_Arguments:
@@ -688,30 +738,53 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!114 &999353107 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1584834601242082865, guid: c732e1b58c017874bbf5da45531902cf,
-    type: 3}
-  m_PrefabInstance: {fileID: 1584834602100937690}
+--- !u!1 &910818083
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 910818085}
+  - component: {fileID: 910818084}
+  m_Layer: 0
+  m_Name: ClientSyncLoadWorld
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &910818084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910818083}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56f55256fc4a6704eafd0dd78732d19e, type: 3}
+  m_Script: {fileID: 11500000, guid: af48666a0ead02640af7a30caf87caca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1004355448 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
-    type: 3}
-  m_PrefabInstance: {fileID: 1584834602100937690}
+  m_clientSync: {fileID: 0}
+  m_TCPClient: {fileID: 0}
+  m_UDPClient: {fileID: 0}
+  m_worldRebuilder: {fileID: 624650640}
+--- !u!4 &910818085
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37271d27156413948aba6f3d52b03edf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_GameObject: {fileID: 910818083}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1216002073
 GameObject:
   m_ObjectHideFlags: 0
@@ -1226,18 +1299,6 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!114 &1668815429 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1584834600499235231, guid: c732e1b58c017874bbf5da45531902cf,
-    type: 3}
-  m_PrefabInstance: {fileID: 1584834602100937690}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad6e58ddc91bc2e41a1691bec489cc39, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2021493589
 GameObject:
   m_ObjectHideFlags: 0
@@ -1320,7 +1381,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1668815429}
+      - m_Target: {fileID: 0}
         m_MethodName: InvokeNoServerConnect
         m_Mode: 1
         m_Arguments:
@@ -1368,100 +1429,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2021493589}
   m_CullTransparentMesh: 0
---- !u!1001 &1584834602100937690
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1584834600499235231, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_UDPClient
-      value: 
-      objectReference: {fileID: 999353107}
-    - target: {fileID: 1584834600499235231, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_TCPClient
-      value: 
-      objectReference: {fileID: 1004355448}
-    - target: {fileID: 1584834600499235231, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_worldGrid
-      value: 
-      objectReference: {fileID: 624650640}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834600992003659, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_Name
-      value: ClientNetworking
-      objectReference: {fileID: 0}
-    - target: {fileID: 1584834601242082864, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_Name
-      value: UDPClient
-      objectReference: {fileID: 0}
-    - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
-        type: 3}
-      propertyPath: m_Name
-      value: TCPClient
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: c732e1b58c017874bbf5da45531902cf, type: 3}
 --- !u!1001 &4639765598835359790
 PrefabInstance:
   m_ObjectHideFlags: 0
