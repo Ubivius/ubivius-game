@@ -75,17 +75,7 @@ public class PathfindingGridManager: MonoBehaviour
     {
         if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height)
         {
-            //Much faster with this function
-
-            return m_pathNodeList[m_logicGrid.Height * x + x + y];
-
-            /*foreach(PathNode pathNode in m_pathNodeList)
-            {
-                if (pathNode.X == x && pathNode.Y == y)
-                {
-                    return pathNode;
-                }
-            }*/
+            return m_pathNodeList[(m_logicGrid.Height - 1) * x + x + y];
         }
         
         return null;
