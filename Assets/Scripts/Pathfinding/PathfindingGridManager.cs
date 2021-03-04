@@ -13,7 +13,10 @@ public class PathfindingGridManager: MonoBehaviour
 
     private void Start()
     {
-        this.SetPathfindingGridManager(m_worldGenerator.GetMasterLogicGrid());
+        if(m_worldGenerator.GetMasterLogicGrid() != null)
+        {
+            this.SetPathfindingGridManager(m_worldGenerator.GetMasterLogicGrid());
+        }
     }
 
     private void SetPathfindingGridManager(LogicGrid logicGrid)
@@ -64,6 +67,8 @@ public class PathfindingGridManager: MonoBehaviour
             if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X, pathnode.Y + 1));
 
         }
+
+        m_pathfinding = new Pathfinding(m_pathNodeList);
     }
 
     public PathNode GetNode(int x, int y)

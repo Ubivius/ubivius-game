@@ -963,7 +963,7 @@ GameObject:
   - component: {fileID: 1549976838}
   - component: {fileID: 1549976837}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: PathfindingGridManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -981,7 +981,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b39c7f67aeb5376499a755ff4005e6d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_worldGenerator: {fileID: 0}
+  m_worldGenerator: {fileID: 624650640}
 --- !u!4 &1549976838
 Transform:
   m_ObjectHideFlags: 0
