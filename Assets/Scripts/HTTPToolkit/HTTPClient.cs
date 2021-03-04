@@ -17,29 +17,29 @@ namespace ubv.http
 
         [SerializeField] private string m_endPoint = "http://localhost:9090";
         
-        public HttpResponseMessage PostJSON(string requestUrl, string jsonString)
+        public HttpStatusCode PostJSON(string requestUrl, string jsonString)
         {
             StringContent data = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = m_client.PostAsync(m_endPoint + "/" + requestUrl, data).Result;
             
-            return response;
+            return response.StatusCode;
         }
 
-        public HttpResponseMessage Post(string requestUrl, object objToSerialize)
+        public HttpStatusCode Post(string requestUrl, object objToSerialize)
         {
             return PostJSON(requestUrl, JsonUtility.ToJson(objToSerialize));
         }
 
-        public HttpResponseMessage PutJSON(string requestUrl, string jsonString)
+        public HttpStatusCode PutJSON(string requestUrl, string jsonString)
         {
             StringContent data = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
             
             HttpResponseMessage response = m_client.PutAsync(m_endPoint + "/" + requestUrl, data).Result;
-            return response;
+            return response.StatusCode;
         }
 
-        public HttpResponseMessage Put(string requestUrl, object objToSerialize)
+        public HttpStatusCode Put(string requestUrl, object objToSerialize)
         {
             return PutJSON(requestUrl, JsonUtility.ToJson(objToSerialize));
         }
@@ -58,11 +58,11 @@ namespace ubv.http
             return responseContent;
         }
 
-        public HttpResponseMessage Delete(string requestUrl)
+        public HttpStatusCode Delete(string requestUrl)
         {
             HttpResponseMessage result = m_client.DeleteAsync(m_endPoint + "/" + requestUrl).Result;
 
-            return result;
+            return result.StatusCode;
         }
     }
 }

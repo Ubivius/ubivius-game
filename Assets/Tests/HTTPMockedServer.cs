@@ -32,7 +32,7 @@ namespace Tests
                 listenTask.GetAwaiter().GetResult();
 
                 m_httpListener.Close();
-                m_httpListener.Stop();
+                m_httpListener = null;
             }
         }
 
@@ -58,8 +58,7 @@ namespace Tests
                 byte[] data = Encoding.UTF8.GetBytes("Successful data");
 
                 // response codes: https://docs.microsoft.com/en-us/azure/architecture/best-practices/api-design#get-methods
-
-                Debug.Log("HTTP Mocked Server received " + request.Url.LocalPath);
+                
                 string[] parts = request.Url.LocalPath.Split('/');
                 string id = parts[parts.Length - 1];
                 switch (request.HttpMethod)
@@ -68,7 +67,7 @@ namespace Tests
                         response.StatusCode = 201;
                         break;
                     case "PUT":
-                        response.StatusCode = 201;
+                        response.StatusCode = 200;
                         break;
                     case "GET":
                         if (m_productIDs.Contains(id))
@@ -81,7 +80,14 @@ namespace Tests
                         }
                         break;
                     case "DELETE":
-                        response.StatusCode = 204;
+                        if (m_productIDs.Contains(id))
+                        {
+                            response.StatusCode = 204;
+                        }
+                        else
+                        {
+                            response.StatusCode = 404;
+                        }
                         break;
                     default:
                         break;
