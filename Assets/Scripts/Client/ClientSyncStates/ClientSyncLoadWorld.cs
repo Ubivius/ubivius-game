@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using ubv.common.data;
 using ubv.tcp;
+using System.Threading;
 
 namespace ubv.client.logic
 {
@@ -19,7 +20,7 @@ namespace ubv.client.logic
 
         protected override void StateAwake()
         {
-            ClientSyncState.LoadWorldState = this;
+            ClientSyncState.m_loadWorldState = this;
         }
 
         public void Init(common.world.cellType.CellInfo[,] cellInfos, int playerID, int simulationBuffer, List<PlayerState> playerStates)
@@ -32,10 +33,20 @@ namespace ubv.client.logic
             m_worldRebuilder.BuildWorldFromCellInfo(cellInfos);
         }
 
+        protected override void StateUpdate()
+        {
+            Debug.Log("World loaded at : " + GetWorldLoadProgress()*100 + "%");
+        }
+
+        public float GetWorldLoadProgress()
+        {
+            return m_worldRebuilder.GetWorldBuildProgress();
+        }
+
         private void SetupPlayState()
         {
-            ClientSyncState.PlayState.Init(m_playerID.Value, m_simulationBuffer.Value, m_playerStates);
-            CurrentState = ClientSyncState.PlayState;
+            ClientSyncState.m_playState.Init(m_playerID.Value, m_simulationBuffer.Value, m_playerStates);
+            m_currentState = ClientSyncState.m_playState;
         }
     }  
 }

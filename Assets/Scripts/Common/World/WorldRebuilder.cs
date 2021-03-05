@@ -21,9 +21,19 @@ namespace ubv.client.world
         [SerializeField] private Tile m_defaultDoorTile;
         [SerializeField] private Tile m_defaultInteractableTile;
         
-        public void BuildWorldFromCellInfo(common.world.cellType.CellInfo[,] cellInfos)
+        private int m_totalTiles;
+        private int m_loadedTiles;
+
+        private void Awake()
+        {
+            m_totalTiles = 0;
+            m_loadedTiles = 0;
+        }
+
+        private IEnumerator BuildWorldFromCellInfoCoroutine(common.world.cellType.CellInfo[,] cellInfos)
         {
             Vector3Int pos = new Vector3Int(0, 0, 0);
+            m_totalTiles = cellInfos.GetLength(0) * cellInfos.GetLength(1);
             for (int x = 0; x < cellInfos.GetLength(0); x++)
             {
                 for (int y = 0; y < cellInfos.GetLength(1); y++)
@@ -47,9 +57,28 @@ namespace ubv.client.world
                     {
                         m_interactable.SetTile(pos, m_defaultInteractableTile);
                     }
+                    m_loadedTiles++;
+                    yield return null;
                 }
             }
             m_onWorldBuilt.Invoke();
+        }
+
+        public void BuildWorldFromCellInfo(common.world.cellType.CellInfo[,] cellInfos)
+        {
+            StartCoroutine(BuildWorldFromCellInfoCoroutine(cellInfos));
+        }
+
+        public float GetWorldBuildProgress()
+        {
+            if (m_totalTiles == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return (float)m_loadedTiles / (float)m_totalTiles;
+            }
         }
 
         public void OnWorldBuilt(UnityEngine.Events.UnityAction action)

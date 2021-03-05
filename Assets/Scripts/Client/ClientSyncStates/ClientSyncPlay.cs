@@ -37,12 +37,11 @@ namespace ubv.client.logic
 
 #if NETWORK_SIMULATE
         [SerializeField] private float m_packetLossChance = 0.15f;
-        [SerializeField] private bool m_noServer;
 #endif // NETWORK_SIMULATE
 
         protected override void StateAwake()
         {
-            ClientSyncState.PlayState = this;
+            ClientSyncState.m_playState = this;
         }
 
         public void Init(int playerID, int simulationBuffer, List<PlayerState> playerStates)
@@ -212,13 +211,7 @@ namespace ubv.client.logic
             m_inputBuffer[bufferIndex].Tick.Value = m_localTick;
 
             m_lastInput = null;
-
-
-#if NETWORK_SIMULATE
-            if (m_noServer)
-                return;
-#endif // NETWORK_SIMULATE
-
+            
             List<common.data.InputFrame> frames = new List<common.data.InputFrame>();
             for (uint tick = (uint)Mathf.Max((int)m_remoteTick, (int)m_localTick - (m_simulationBuffer * 2)); tick <= m_localTick; tick++)
             {
@@ -261,11 +254,7 @@ namespace ubv.client.logic
         {
             if (!m_initialized)
                 return;
-
-#if NETWORK_SIMULATE
-            if (m_noServer)
-                return;
-#endif // NETWORK_SIMULATE
+            
             // receive a state from server
             // check what tick it corresponds to
             // rewind client state to the tick

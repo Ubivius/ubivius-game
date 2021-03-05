@@ -19,25 +19,14 @@ namespace ubv
 
 #if NETWORK_SIMULATE
             [HideInInspector] public UnityEngine.Events.UnityEvent ConnectButtonEvent;
-            [HideInInspector] public UnityEngine.Events.UnityEvent PlayWithoutServerButtonEvent;
 #endif // NETWORK_SIMULATE
             
-
-            private void Start()
-            {
-                logic.ClientSyncState.CurrentState = logic.ClientSyncState.InitState;
-            }
             
 
 #if NETWORK_SIMULATE
             public void InvokeConnect()
             {
                 ConnectButtonEvent.Invoke();
-            }
-
-            public void InvokeNoServerConnect()
-            {
-                PlayWithoutServerButtonEvent.Invoke();
             }
 #endif // NETWORK_SIMULATE
         }

@@ -18,11 +18,6 @@ namespace ubv
                 {
                     targetClientSync.ConnectButtonEvent.Invoke();
                 }
-
-                if (GUILayout.Button("Play without server"))
-                {
-                    targetClientSync.PlayWithoutServerButtonEvent.Invoke();
-                }
 #endif // NETWORK_SIMULATE
             }
         }

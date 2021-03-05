@@ -11,11 +11,12 @@ namespace ubv.client.logic
 {
     abstract public class ClientSyncState : MonoBehaviour
     {
-        static public ClientSyncState CurrentState = null;
+        static protected ClientSyncState m_currentState = null;
 
-        static public ClientSyncInit InitState;
-        static public ClientSyncLoadWorld LoadWorldState;
-        static public ClientSyncPlay PlayState;
+        static protected ClientSyncInit m_initState;
+        static protected ClientSyncLobby m_lobbyState;
+        static protected ClientSyncLoadWorld m_loadWorldState;
+        static protected ClientSyncPlay m_playState;
 
         protected ClientSync m_clientSync;
         protected tcp.client.TCPClient m_TCPClient;
@@ -36,7 +37,7 @@ namespace ubv.client.logic
 
         private void Update()
         {
-            if (CurrentState != this)
+            if (m_currentState != this)
                 return;
 
             StateUpdate();
@@ -44,7 +45,7 @@ namespace ubv.client.logic
 
         private void FixedUpdate()
         {
-            if (CurrentState != this)
+            if (m_currentState != this)
                 return;
 
             StateFixedUpdate();
