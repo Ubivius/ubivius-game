@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ master, main ]
   push:
-    branches: [ master, main ]
+    branches: [ master, main, hotfix/UBI-348-Add-game-tests ]
 
 env:
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -24,10 +24,10 @@ jobs:
           lfs: true
       
       # Cache
-      - uses: actions/cache@v2
-        with:
-          path: /home/runner/work/ubivius-game/ubivius-game/Library
-          key: Library-cache
+      #- uses: actions/cache@v2
+      #  with:
+      #    path: /home/runner/work/ubivius-game/ubivius-game/Library
+      #    key: Library-cache
       
       # Test
       - name: Run tests
