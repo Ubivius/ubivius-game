@@ -17,18 +17,15 @@ namespace ubv.client.logic
         private int? m_playerID;
         private int? m_simulationBuffer;
 
-        private void Awake()
+        protected override void StateAwake()
         {
             ClientSyncState.LoadWorldState = this;
-
-            m_playerID = null;
-            m_playerStates = null;
-
-            m_worldRebuilder.OnWorldBuilt(SetupPlayState);
         }
 
         public void Init(common.world.cellType.CellInfo[,] cellInfos, int playerID, int simulationBuffer, List<PlayerState> playerStates)
         {
+            m_worldRebuilder.OnWorldBuilt(SetupPlayState);
+
             m_playerID = playerID;
             m_simulationBuffer = simulationBuffer;
             m_playerStates = playerStates;

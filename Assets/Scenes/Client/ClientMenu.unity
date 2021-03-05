@@ -436,9 +436,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f40a56306a6e45b41bbae31a0f3a7f51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_clientSync: {fileID: 2143992357}
-  m_TCPClient: {fileID: 2143992355}
-  m_UDPClient: {fileID: 2143992356}
 --- !u!4 &612753410
 Transform:
   m_ObjectHideFlags: 0
@@ -842,7 +839,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1087618064
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1225,3 +1222,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65a997f22d4492d4ab9c22d921c5362c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2143992360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2143992358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7bebdc192d09154987fba40adca1fcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ClientSync: {fileID: 2143992357}
+  TCPClient: {fileID: 2143992355}
+  UDPClient: {fileID: 2143992356}

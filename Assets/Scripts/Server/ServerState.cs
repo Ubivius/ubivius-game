@@ -102,7 +102,11 @@ namespace ubv
                     m_worldGenerator.GenerateWorld();
                     
 #if NETWORK_SIMULATE
-                    parent.ForceStartGameButtonEvent.AddListener(() => { m_forceStartGame = true; });
+                    parent.ForceStartGameButtonEvent.AddListener(() => 
+                    {
+                        Debug.Log("Forcing game start");
+                        m_forceStartGame = true;
+                    });
 #endif // NETWORK_SIMULATE 
                     
                     m_TCPServer.Subscribe(this);

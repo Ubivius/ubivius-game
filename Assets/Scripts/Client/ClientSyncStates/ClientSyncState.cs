@@ -17,10 +17,23 @@ namespace ubv.client.logic
         static public ClientSyncLoadWorld LoadWorldState;
         static public ClientSyncPlay PlayState;
 
-        [SerializeField] protected ClientSync m_clientSync;
-        [SerializeField] protected tcp.client.TCPClient m_TCPClient;
-        [SerializeField] protected udp.client.UDPClient m_UDPClient;
-        
+        protected ClientSync m_clientSync;
+        protected tcp.client.TCPClient m_TCPClient;
+        protected udp.client.UDPClient m_UDPClient;
+
+        private void Awake()
+        {
+            StateAwake();
+        }
+
+        private void Start()
+        {
+            m_clientSync = ClientNetworkingManager.Instance.ClientSync;
+            m_TCPClient = ClientNetworkingManager.Instance.TCPClient;
+            m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
+            StateStart();
+        }
+
         private void Update()
         {
             if (CurrentState != this)
@@ -37,6 +50,8 @@ namespace ubv.client.logic
             StateFixedUpdate();
         }
 
+        protected virtual void StateAwake() { }
+        protected virtual void StateStart() { }
         protected virtual void StateUpdate() { }
         protected virtual void StateFixedUpdate() { }
 

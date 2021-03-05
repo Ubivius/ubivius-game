@@ -40,10 +40,13 @@ namespace ubv.client.logic
         [SerializeField] private bool m_noServer;
 #endif // NETWORK_SIMULATE
 
-        private void Awake()
+        protected override void StateAwake()
         {
             ClientSyncState.PlayState = this;
+        }
 
+        public void Init(int playerID, int simulationBuffer, List<PlayerState> playerStates)
+        {
             m_localTick = 0;
             m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
@@ -53,10 +56,7 @@ namespace ubv.client.logic
 
             m_updaters = new List<IClientStateUpdater>();
             m_initialized = false;
-        }
 
-        public void Init(int playerID, int simulationBuffer, List<PlayerState> playerStates)
-        {
             m_playerID = playerID;
             m_simulationBuffer = simulationBuffer;
             Dictionary<int, PlayerState> playerStateDict = new Dictionary<int, PlayerState>();
