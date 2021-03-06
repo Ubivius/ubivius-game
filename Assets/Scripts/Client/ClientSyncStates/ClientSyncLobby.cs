@@ -63,7 +63,6 @@ namespace ubv.client.logic
                 Debug.Log("Client received confirmation that server is about to start game with " + playerStates.Count + " players and " + simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
 
-                // TODO : modify code here for Client Ready Confirmation (UBI-350)
 
                 m_TCPClient.Unsubscribe(this);
                 StartCoroutine(LoadLobbyCoroutine(m_awaitedInitMessage.CellInfo2DArray.Value, simulationBuffer, playerStates));
@@ -90,8 +89,6 @@ namespace ubv.client.logic
 
             ClientSyncState.m_currentState = ClientSyncState.m_loadWorldState;
             ClientSyncState.m_loadWorldState.Init(cellInfos, m_playerID.Value, simulationBuffer, playerStates);
-
-            Destroy(this.gameObject);
         }
     }   
 }
