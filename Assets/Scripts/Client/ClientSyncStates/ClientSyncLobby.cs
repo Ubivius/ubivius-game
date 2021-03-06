@@ -10,7 +10,7 @@ using UnityEngine.Events;
 
 namespace ubv.client.logic
 {
-    public class ClientListUpdateEvent : UnityEvent<List<PlayerState>>  { }
+    public class ClientListUpdateEvent : UnityEvent<List<int>>  { }
 
     public class ClientSyncLobby : ClientSyncState, tcp.client.ITCPClientReceiver
     {
@@ -43,7 +43,13 @@ namespace ubv.client.logic
             if (clientList != null)
             {
                 List<PlayerState> playerStates = clientList.Players.Value;
-                ClientListUpdate.Invoke(playerStates);
+                List<int> playerIDs = new List<int>();
+                foreach(PlayerState state in playerStates)
+                {
+                    playerIDs.Add(state.GUID.Value);
+                }
+
+                ClientListUpdate.Invoke(playerIDs);
             }
         }
 
@@ -69,6 +75,7 @@ namespace ubv.client.logic
         {
             m_playerID = playerID;
             m_TCPClient.Subscribe(this);
+            ClientListUpdate.Invoke(new List<int> { m_playerID.Value });
         }
 
         // TODO maybe later: add a reusable loading screen ?
