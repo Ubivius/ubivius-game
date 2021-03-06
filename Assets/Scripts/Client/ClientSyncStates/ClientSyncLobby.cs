@@ -6,17 +6,23 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using ubv.common.data;
 using ubv.tcp;
+using UnityEngine.Events;
 
 namespace ubv.client.logic
 {
+    public class ClientListUpdateEvent : UnityEvent<List<PlayerState>>  { }
+
     public class ClientSyncLobby : ClientSyncState, tcp.client.ITCPClientReceiver
     {
         private int? m_playerID; // TODO maybe : set it static/global because accessed by everything
 
         private GameInitMessage m_awaitedInitMessage;
 
+        public ClientListUpdateEvent ClientListUpdate { get; private set; } 
+
         protected override void StateAwake()
         {
+            ClientListUpdate = new ClientListUpdateEvent();
             DontDestroyOnLoad(this);
             m_awaitedInitMessage = null;
             ClientSyncState.m_lobbyState = this;
@@ -32,6 +38,13 @@ namespace ubv.client.logic
             }
 
             // loads other players in lobby, receives message from server indicating a new player joined
+
+            ClientListMessage clientList = common.serialization.IConvertible.CreateFromBytes<ClientListMessage>(packet.Data);
+            if (clientList != null)
+            {
+                List<PlayerState> playerStates = clientList.Players.Value;
+                ClientListUpdate.Invoke(playerStates);
+            }
         }
 
         protected override void StateUpdate()
@@ -43,6 +56,8 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                 Debug.Log("Client received confirmation that server is about to start game with " + playerStates.Count + " players and " + simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
+
+                // TODO : modify code here for Client Ready Confirmation (UBI-350)
 
                 m_TCPClient.Unsubscribe(this);
                 StartCoroutine(LoadLobbyCoroutine(m_awaitedInitMessage.CellInfo2DArray.Value, simulationBuffer, playerStates));

@@ -167,6 +167,7 @@ namespace ubv.server.logic
 #if DEBUG_LOG
                 Debug.Log("Received connection request from " + clientIP.ToString() + ", attributed " + playerID);
 #endif // DEBUG_LOG
+                
             }
         }
 
@@ -187,14 +188,19 @@ namespace ubv.server.logic
 #endif // DEBUG_LOG
                 return;
             }
-
+            
             common.data.IdentificationMessage identification = common.serialization.Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data);
             if (identification != null)
             {
                 m_UDPClientConnections[clientIP] = new ClientConnection(identification.PlayerID.Value);
+
+                // broadcast connection to all players
+                byte[] bytes = new ClientListMessage(m_players).GetBytes();
+                foreach (IPEndPoint ip in m_TCPClientConnections.Keys)
+                {
+                    m_TCPServer.Send(bytes, ip);
+                }
             }
         }
     }
-
-    
 }
