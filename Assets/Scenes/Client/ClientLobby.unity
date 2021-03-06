@@ -565,6 +565,7 @@ MonoBehaviour:
   ClientSync: {fileID: 877075099}
   TCPClient: {fileID: 877075098}
   UDPClient: {fileID: 877075097}
+  HTTPClient: {fileID: 877075102}
 --- !u!114 &877075101
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -575,6 +576,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65a997f22d4492d4ab9c22d921c5362c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &877075102 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1775558437836293882, guid: c732e1b58c017874bbf5da45531902cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 877075095}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f571978d471691c4eb1222fb51982cdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1040387157

@@ -15,9 +15,8 @@ namespace ubv.tcp.client
     {
         protected readonly object m_lock = new object();
 
-        [Header("Connection parameters")]
-        [SerializeField] private string m_serverAddress;
-        [SerializeField] private int m_port;
+        private string m_serverAddress;
+        private int m_port;
 
         protected bool m_exitSignal;
 
@@ -40,7 +39,6 @@ namespace ubv.tcp.client
             m_exitSignal = false;
             m_dataToSend = new Queue<byte[]>();
             m_client = new TcpClient();
-            m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
 
             m_iteratingTroughReceivers = false;
         }
@@ -234,8 +232,11 @@ namespace ubv.tcp.client
             }
         }
 
-        public void Connect()
+        public void Connect(string address, int port)
         {
+            m_serverAddress = address;
+            m_port = port;
+            m_server = new IPEndPoint(IPAddress.Parse(address), port);
             Thread thread = new Thread(new ThreadStart(CommThread));
             thread.Start();
         }

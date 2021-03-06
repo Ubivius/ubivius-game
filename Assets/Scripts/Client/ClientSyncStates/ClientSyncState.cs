@@ -21,6 +21,7 @@ namespace ubv.client.logic
         protected ClientSync m_clientSync;
         protected tcp.client.TCPClient m_TCPClient;
         protected udp.client.UDPClient m_UDPClient;
+        protected http.HTTPClient m_HTTPClient;
 
         private void Awake()
         {
@@ -32,6 +33,7 @@ namespace ubv.client.logic
             m_clientSync = ClientNetworkingManager.Instance.ClientSync;
             m_TCPClient = ClientNetworkingManager.Instance.TCPClient;
             m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
+            m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
             StateStart();
         }
 

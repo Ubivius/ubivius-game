@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using ubv.common.data;
 using ubv.tcp;
+using System.Net.Http;
 
 namespace ubv.client.logic
 {
@@ -19,7 +20,7 @@ namespace ubv.client.logic
 
         protected override void StateStart()
         {
-            m_TCPClient.Subscribe(this);
+            //m_TCPClient.Subscribe(this);
 
 #if NETWORK_SIMULATE
             m_clientSync.ConnectButtonEvent.AddListener(SendConnectionRequestToServer);
@@ -29,9 +30,25 @@ namespace ubv.client.logic
 
         public void SendConnectionRequestToServer()
         {
-            m_TCPClient.Connect();
+            int playerID = System.Guid.NewGuid().GetHashCode(); // for now
+            m_HTTPClient.Get("dispatcher/" + playerID.ToString(), OnDispatcherResponse);
+        }
 
-            m_TCPClient.Send(new IdentificationMessage(0).GetBytes()); // sends a ping to the server
+        private void OnDispatcherResponse(HttpResponseMessage message)
+        {
+            if (message.StatusCode == HttpStatusCode.OK)
+            {
+                Debug.Log("Received from dispatcher : " + message.Content.ReadAsStringAsync());
+                string address = "";
+                int port = 0;
+                m_TCPClient.Connect(address, port);
+
+                m_TCPClient.Send(new IdentificationMessage(0).GetBytes()); // sends a ping to the server
+            }
+            else
+            {
+                Debug.Log("Dispatcher GET request was not successful");
+            }
         }
 
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
