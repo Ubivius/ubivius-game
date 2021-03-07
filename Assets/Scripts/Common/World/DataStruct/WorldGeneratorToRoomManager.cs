@@ -10,82 +10,84 @@ namespace ubv.common.world.dataStruct
 {
     struct WorldGeneratorToRoomManager
     {
-        public Vector2Int boundariesMap;
+        public Vector2Int BoundariesMap;
 
         // Section0
-        public List<RoomInfo> randomRoomPoolSection0;
-        public int numberRandomRoomSection0;
-        public int numberofTrySection0;
-        public List<RoomInfo> mandatoryRoomPoolSection0;
+        public List<RoomInfo> RandomRoomPoolSection0;
+        public int NumberRandomRoomSection0;
+        public int NumberofTrySection0;
+        public List<RoomInfo> MandatoryRoomPoolSection0;
         // TopLeft
-        public List<RoomInfo> randomRoomPoolTopLeft;
-        public int numberRandomRoomTopLeft;
-        public int numberofTryTopLeft;
-        public List<RoomInfo> mandatoryRoomPoolTopLeft;
+        public List<RoomInfo> RandomRoomPoolTopLeft;
+        public int NumberRandomRoomTopLeft;
+        public int NumberofTryTopLeft;
+        public List<RoomInfo> MandatoryRoomPoolTopLeft;
         // TopRight
-        public List<RoomInfo> randomRoomPoolTopRight;
-        public int numberRandomRoomTopRight;
-        public int numberofTryTopRight;
-        public List<RoomInfo> mandatoryRoomPoolTopRight;
+        public List<RoomInfo> RandomRoomPoolTopRight;
+        public int NumberRandomRoomTopRight;
+        public int NumberofTryTopRight;
+        public List<RoomInfo> MandatoryRoomPoolTopRight;
         // BottomLeft
-        public List<RoomInfo> randomRoomPoolBottomLeft;
-        public int numberRandomRoomBottomLeft;
-        public int numberofTryBottomLeft;
-        public List<RoomInfo> mandatoryRoomPoolBottomLeft;
+        public List<RoomInfo> RandomRoomPoolBottomLeft;
+        public int NumberRandomRoomBottomLeft;
+        public int NumberofTryBottomLeft;
+        public List<RoomInfo> MandatoryRoomPoolBottomLeft;
         // BottomRight
-        public List<RoomInfo> randomRoomPoolBottomRight;
-        public int numberRandomRoomBottomRight;
-        public int numberofTryBottomRight;
-        public List<RoomInfo> mandatoryRoomPoolBottomRight;
+        public List<RoomInfo> RandomRoomPoolBottomRight;
+        public int NumberRandomRoomBottomRight;
+        public int NumberofTryBottomRight;
+        public List<RoomInfo> MandatoryRoomPoolBottomRight;
 
-        public Grid grid;
+        public Grid Grid;
+        public int WallThickness;
 
-        public WorldGeneratorToRoomManager(
-            Vector2Int boundariesMap, 
-            List<RoomInfo> randomRoomPoolSection0, 
-            int numberRandomRoomSection0, 
-            int numberofTrySection0, 
-            List<RoomInfo> mandatoryRoomPoolSection0,
-            List<RoomInfo> randomRoomPoolTopLeft, 
-            int numberRandomRoomTopLeft, 
-            int numberofTryTopLeft, 
-            List<RoomInfo> mandatoryRoomPoolTopLeft, 
-            List<RoomInfo> randomRoomPoolTopRight, 
-            int numberRandomRoomTopRight, 
-            int numberofTryTopRight, 
-            List<RoomInfo> mandatoryRoomPoolTopRight, 
-            List<RoomInfo> randomRoomPoolBottomLeft, 
-            int numberRandomRoomBottomLeft,
-            int numberofTryBottomLeft, 
-            List<RoomInfo> mandatoryRoomPoolBottomLeft, 
-            List<RoomInfo> randomRoomPoolBottomRight, 
-            int numberRandomRoomBottomRight, 
-            int numberofTryBottomRight,
-            List<RoomInfo> mandatoryRoomPoolBottomRight,
-            Grid grid)
+        public WorldGeneratorToRoomManager(Vector2Int boundariesMap, 
+                                           List<RoomInfo> randomRoomPoolSection0, 
+                                           int numberRandomRoomSection0, 
+                                           int numberofTrySection0, 
+                                           List<RoomInfo> mandatoryRoomPoolSection0, 
+                                           List<RoomInfo> randomRoomPoolTopLeft, 
+                                           int numberRandomRoomTopLeft, 
+                                           int numberofTryTopLeft, 
+                                           List<RoomInfo> mandatoryRoomPoolTopLeft, 
+                                           List<RoomInfo> randomRoomPoolTopRight, 
+                                           int numberRandomRoomTopRight, 
+                                           int numberofTryTopRight, 
+                                           List<RoomInfo> mandatoryRoomPoolTopRight, 
+                                           List<RoomInfo> randomRoomPoolBottomLeft, 
+                                           int numberRandomRoomBottomLeft, 
+                                           int numberofTryBottomLeft, 
+                                           List<RoomInfo> mandatoryRoomPoolBottomLeft, 
+                                           List<RoomInfo> randomRoomPoolBottomRight, 
+                                           int numberRandomRoomBottomRight, 
+                                           int numberofTryBottomRight, 
+                                           List<RoomInfo> mandatoryRoomPoolBottomRight, 
+                                           Grid grid, 
+                                           int wallThickness)
         {
-            this.boundariesMap = boundariesMap;
-            this.randomRoomPoolSection0 = randomRoomPoolSection0;
-            this.numberRandomRoomSection0 = numberRandomRoomSection0;
-            this.numberofTrySection0 = numberofTrySection0;
-            this.mandatoryRoomPoolSection0 = mandatoryRoomPoolSection0;
-            this.randomRoomPoolTopLeft = randomRoomPoolTopLeft;
-            this.numberRandomRoomTopLeft = numberRandomRoomTopLeft;
-            this.numberofTryTopLeft = numberofTryTopLeft;
-            this.mandatoryRoomPoolTopLeft = mandatoryRoomPoolTopLeft;
-            this.randomRoomPoolTopRight = randomRoomPoolTopRight;
-            this.numberRandomRoomTopRight = numberRandomRoomTopRight;
-            this.numberofTryTopRight = numberofTryTopRight;
-            this.mandatoryRoomPoolTopRight = mandatoryRoomPoolTopRight;
-            this.randomRoomPoolBottomLeft = randomRoomPoolBottomLeft;
-            this.numberRandomRoomBottomLeft = numberRandomRoomBottomLeft;
-            this.numberofTryBottomLeft = numberofTryBottomLeft;
-            this.mandatoryRoomPoolBottomLeft = mandatoryRoomPoolBottomLeft;
-            this.randomRoomPoolBottomRight = randomRoomPoolBottomRight;
-            this.numberRandomRoomBottomRight = numberRandomRoomBottomRight;
-            this.numberofTryBottomRight = numberofTryBottomRight;
-            this.mandatoryRoomPoolBottomRight = mandatoryRoomPoolBottomRight;
-            this.grid = grid;
+            BoundariesMap = boundariesMap;
+            RandomRoomPoolSection0 = randomRoomPoolSection0;
+            NumberRandomRoomSection0 = numberRandomRoomSection0;
+            NumberofTrySection0 = numberofTrySection0;
+            MandatoryRoomPoolSection0 = mandatoryRoomPoolSection0;
+            RandomRoomPoolTopLeft = randomRoomPoolTopLeft;
+            NumberRandomRoomTopLeft = numberRandomRoomTopLeft;
+            NumberofTryTopLeft = numberofTryTopLeft;
+            MandatoryRoomPoolTopLeft = mandatoryRoomPoolTopLeft;
+            RandomRoomPoolTopRight = randomRoomPoolTopRight;
+            NumberRandomRoomTopRight = numberRandomRoomTopRight;
+            NumberofTryTopRight = numberofTryTopRight;
+            MandatoryRoomPoolTopRight = mandatoryRoomPoolTopRight;
+            RandomRoomPoolBottomLeft = randomRoomPoolBottomLeft;
+            NumberRandomRoomBottomLeft = numberRandomRoomBottomLeft;
+            NumberofTryBottomLeft = numberofTryBottomLeft;
+            MandatoryRoomPoolBottomLeft = mandatoryRoomPoolBottomLeft;
+            RandomRoomPoolBottomRight = randomRoomPoolBottomRight;
+            NumberRandomRoomBottomRight = numberRandomRoomBottomRight;
+            NumberofTryBottomRight = numberofTryBottomRight;
+            MandatoryRoomPoolBottomRight = mandatoryRoomPoolBottomRight;
+            Grid = grid;
+            WallThickness = wallThickness;
         }
     }
 }
