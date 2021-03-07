@@ -96,6 +96,10 @@ namespace ubv.common.world
             return m_masterLogicGrid.GetCellInfo();
         }
 
+        public LogicGrid GetMasterLogicGrid()
+        {
+            return m_masterLogicGrid;
+        }
     }
 }
 
