@@ -12,6 +12,14 @@ namespace ubv.client.logic
 {
     public class ClientSyncInit : ClientSyncState, tcp.client.ITCPClientReceiver
     {
+        private struct JSONServerInfo
+        {
+            public string Address;
+            public int Port;
+        }
+
+        private int? m_playerID;
+
         protected override void StateAwake()
         {
             ClientSyncState.m_initState = this;
@@ -20,8 +28,6 @@ namespace ubv.client.logic
 
         protected override void StateStart()
         {
-            //m_TCPClient.Subscribe(this);
-
 #if NETWORK_SIMULATE
             m_clientSync.ConnectButtonEvent.AddListener(SendConnectionRequestToServer);
 #endif // NETWORK_SIMULATE
@@ -31,6 +37,7 @@ namespace ubv.client.logic
         public void SendConnectionRequestToServer()
         {
             int playerID = System.Guid.NewGuid().GetHashCode(); // for now
+            m_playerID = playerID;
             m_HTTPClient.Get("dispatcher/" + playerID.ToString(), OnDispatcherResponse);
         }
 
@@ -38,12 +45,15 @@ namespace ubv.client.logic
         {
             if (message.StatusCode == HttpStatusCode.OK)
             {
-                Debug.Log("Received from dispatcher : " + message.Content.ReadAsStringAsync());
-                string address = "";
-                int port = 0;
-                m_TCPClient.Connect(address, port);
+                string JSON = message.Content.ReadAsStringAsync().Result;
+                JSONServerInfo serverInfo = JsonUtility.FromJson<JSONServerInfo>(JSON);
+                Debug.Log("Received from dispatcher : " + JSON);
+                string address = serverInfo.Address;
+                int port = serverInfo.Port;
 
-                m_TCPClient.Send(new IdentificationMessage(0).GetBytes()); // sends a ping to the server
+                m_TCPClient.Connect(address, port);
+                m_TCPClient.Subscribe(this);
+                m_TCPClient.Send(new IdentificationMessage(m_playerID.Value).GetBytes()); // sends a ping to the server
             }
             else
             {
@@ -57,14 +67,13 @@ namespace ubv.client.logic
             IdentificationMessage auth = common.serialization.IConvertible.CreateFromBytes<IdentificationMessage>(packet.Data);
             if (auth != null)
             {
-                int playerID = auth.PlayerID.Value;
 #if DEBUG_LOG
-                Debug.Log("Received connection confirmation, player ID is " + playerID);
+                Debug.Log("Received connection confirmation");
 #endif // DEBUG_LOG
 
                 // send a ping to the server to make it known that the player received its ID
                 m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(auth.GetBytes()).RawBytes);
-                ClientSyncState.m_lobbyState.Init(playerID);
+                ClientSyncState.m_lobbyState.Init(m_playerID.Value);
                 ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
                 m_TCPClient.Unsubscribe(this);
             }

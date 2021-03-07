@@ -135,41 +135,49 @@ namespace ubv.server.logic
 
         public void ReceivePacket(TCPToolkit.Packet packet, IPEndPoint clientIP)
         {
-            GameReadyMessage ready = Serializable.CreateFromBytes<GameReadyMessage>(packet.Data);
-            if(ready != null)
+            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data);
+            if (identification != null)
             {
-                Debug.Log("Client " + ready.PlayerID.Value + " is ready");
-                m_readyClients[ready.PlayerID.Value] = true;
+                lock (m_lock)
+                {
+                    if (!m_TCPClientConnections.ContainsKey(clientIP))
+                    {
+                        int playerID = identification.PlayerID.Value;
+
+                        // TODO get rid of client connection data and only use serializable list of int after serialize rework
+                        m_TCPClientConnections[clientIP] = new ClientConnection(playerID);
+
+                        // we send back ID message to confirm reception
+                        IdentificationMessage idMessage = new IdentificationMessage(playerID);
+
+                        PlayerState playerState = new PlayerState(playerID);
+
+                        // set rotation / position according to existing players?
+
+                        m_players.Add(playerState);
+                        m_UDPserver.RegisterClient(clientIP.Address);
+
+                        m_TCPServer.Send(idMessage.GetBytes(), clientIP);
+
+#if DEBUG_LOG
+                        Debug.Log("Received connection request from " + clientIP.ToString() + " (player ID  " + playerID + ")");
+#endif // DEBUG_LOG
+                    }
+                }
             }
-            return;
+            else
+            {
+                GameReadyMessage ready = Serializable.CreateFromBytes<GameReadyMessage>(packet.Data);
+                if (ready != null)
+                {
+                    Debug.Log("Client " + ready.PlayerID.Value + " is ready");
+                    m_readyClients[ready.PlayerID.Value] = true;
+                }
+            }
         }
 
         public void OnConnect(IPEndPoint clientIP)
-        {
-            lock (m_lock)
-            {
-                int playerID = System.Guid.NewGuid().GetHashCode();
-
-                // TODO get rid of client connection data and only use serializable list of int after serialize rework
-                m_TCPClientConnections[clientIP] = new ClientConnection(playerID);
-
-                common.data.IdentificationMessage idMessage = new common.data.IdentificationMessage(playerID);
-
-                common.data.PlayerState playerState = new common.data.PlayerState(playerID);
-
-                // set rotation / position according to existing players?
-
-                m_players.Add(playerState);
-                m_UDPserver.RegisterClient(clientIP.Address);
-
-                m_TCPServer.Send(idMessage.GetBytes(), clientIP);
-
-#if DEBUG_LOG
-                Debug.Log("Received connection request from " + clientIP.ToString() + ", attributed " + playerID);
-#endif // DEBUG_LOG
-                
-            }
-        }
+        { }
 
         public void OnDisconnect(IPEndPoint clientIP)
         {
