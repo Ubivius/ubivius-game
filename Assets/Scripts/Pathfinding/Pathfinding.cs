@@ -32,7 +32,7 @@ public class Pathfinding {
         List<PathNode> openList;
         List<PathNode> closedList;
 
-        if (startNode == null || endNode == null || !m_pathNodeDict.ContainsKey(startNode) || !m_pathNodeDict.ContainsKey(startNode)) 
+        if (startNode == null || endNode == null || !m_pathNodeDict.ContainsKey(startNode) || !m_pathNodeDict.ContainsKey(endNode)) 
         {
             // Invalid Path
             return null;
@@ -44,6 +44,7 @@ public class Pathfinding {
         foreach (PathNode pathNode in this.m_pathNodeDict.Keys)
         {
             m_pathNodeDict[pathNode].gCost = int.MaxValue;
+            m_pathNodeDict[pathNode].hCost = 0;
             m_pathNodeDict[pathNode].fCost = CalculateFCost(pathNode);
             m_pathNodeDict[pathNode].cameFromNode = null;
         }
