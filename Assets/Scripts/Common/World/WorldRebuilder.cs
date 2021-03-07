@@ -16,53 +16,24 @@ namespace ubv.client.world
         [SerializeField] private Tilemap m_interactable;
 
         // list of tiles 
-
         [SerializeField] private Tile m_defaultWallTile;
         [SerializeField] private Tile m_defaultFloorTile;
         [SerializeField] private Tile m_defaultDoorTile;
         [SerializeField] private Tile m_defaultInteractableTile;
-
-        common.world.cellType.CellInfo[,] m_cellInfos;
-        private bool m_isBuildingWorld;
+        
+        private int m_totalTiles;
+        private int m_loadedTiles;
 
         private void Awake()
         {
-            m_cellInfos = null;
-            m_isBuildingWorld = false;
+            m_totalTiles = 0;
+            m_loadedTiles = 0;
         }
 
-        // Start is called before the first frame update
-        void Start()
+        private IEnumerator BuildWorldFromCellInfoCoroutine(common.world.cellType.CellInfo[,] cellInfos)
         {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            if(m_cellInfos != null && !m_isBuildingWorld)
-            {
-                m_isBuildingWorld = true;
-                StartCoroutine(RebuildWorldCoroutine(m_cellInfos));
-            }
-        }
-
-        public void BuildWorldFromCellInfo(common.world.cellType.CellInfo[,] cellInfos)
-        {
-            m_cellInfos = cellInfos;
-        }
-
-        public void OnWorldBuilt(UnityEngine.Events.UnityAction action)
-        {
-            m_onWorldBuilt += action;
-        }
-        
-        // every new cell created must also be added here
-        // not pretty but it'll work for now
-        private IEnumerator RebuildWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
-        {
-            m_isBuildingWorld = true;
             Vector3Int pos = new Vector3Int(0, 0, 0);
+            m_totalTiles = cellInfos.GetLength(0) * cellInfos.GetLength(1);
             for (int x = 0; x < cellInfos.GetLength(0); x++)
             {
                 for (int y = 0; y < cellInfos.GetLength(1); y++)
@@ -86,13 +57,33 @@ namespace ubv.client.world
                     {
                         m_interactable.SetTile(pos, m_defaultInteractableTile);
                     }
-
+                    m_loadedTiles++;
                     yield return null;
                 }
             }
-            m_cellInfos = null;
-            m_isBuildingWorld = false;
             m_onWorldBuilt.Invoke();
+        }
+
+        public void BuildWorldFromCellInfo(common.world.cellType.CellInfo[,] cellInfos)
+        {
+            StartCoroutine(BuildWorldFromCellInfoCoroutine(cellInfos));
+        }
+
+        public float GetWorldBuildProgress()
+        {
+            if (m_totalTiles == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return (float)m_loadedTiles / (float)m_totalTiles;
+            }
+        }
+
+        public void OnWorldBuilt(UnityEngine.Events.UnityAction action)
+        {
+            m_onWorldBuilt += action;
         }
     }
 }
