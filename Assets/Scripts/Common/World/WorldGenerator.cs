@@ -76,7 +76,8 @@ namespace ubv.common.world
                 m_numberRandomRoomBottomRight,
                 m_numberofTryBottomRight,
                 m_mandatoryRoomPoolBottomRight,
-                m_grid);
+                m_grid,
+                m_wallThickness);
         }
 
         public void GenerateWorld()
