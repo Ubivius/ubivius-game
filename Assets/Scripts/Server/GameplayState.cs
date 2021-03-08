@@ -36,6 +36,11 @@ namespace ubv.server.logic
         protected override void StateAwake()
         {
             ServerState.m_gameplayState = this;
+            m_updaters = new List<IServerGameplayStateUpdater>
+            {
+                // Add your updaters here
+                new PlayerMovementUpdater()
+            };
         }
 
         public void Init(Dictionary<IPEndPoint, ClientState> UDPClientStates, int simulationBuffer)
@@ -74,6 +79,12 @@ namespace ubv.server.logic
                         baseState.AddPlayer(currentPlayer);
                     }
                 }
+            }
+
+
+            foreach (IServerGameplayStateUpdater updater in m_updaters)
+            {
+                updater.Setup();
             }
 
             foreach (ClientState state in m_UDPClientStates.Values)

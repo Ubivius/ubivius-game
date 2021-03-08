@@ -65,6 +65,7 @@ namespace ubv.client.logic
                 playerStateDict[state.GUID.Value] = state;
             }
 
+            // add your updaters here
             m_updaters.Add(new PlayerGameObjectUpdater(m_playerSettings, playerStateDict, m_playerID));
 
             m_UDPClient.Subscribe(this);

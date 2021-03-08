@@ -30,6 +30,8 @@ namespace ubv.server.logic
         
         private List<PlayerState> m_players;
 
+        private List<IServerInitializer> m_serverInitializers;
+
 #if NETWORK_SIMULATE
         private bool m_forceStartGame;
 #endif // NETWORK_SIMULATE
@@ -38,6 +40,12 @@ namespace ubv.server.logic
         {
             ServerState.m_gameCreationState = this;
             m_currentState = this;
+
+            m_serverInitializers = new List<IServerInitializer>
+            {
+                // Add your initializers here
+                m_worldGenerator
+            };
         }
 
         protected override void StateStart()
@@ -55,7 +63,10 @@ namespace ubv.server.logic
             
             m_forceStartGame = false;
             
-            m_worldGenerator.GenerateWorld();
+            foreach(IServerInitializer initializer in m_serverInitializers)
+            {
+                initializer.Init();
+            }
                     
 #if NETWORK_SIMULATE
             m_parent.ForceStartGameButtonEvent.AddListener(() => 
@@ -169,7 +180,7 @@ namespace ubv.server.logic
                 return;
             }
             
-            common.data.IdentificationMessage identification = common.serialization.Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data);
+            IdentificationMessage identification = Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data);
             if (identification != null)
             {
                 m_UDPClientStates[clientIP] = new ClientState(identification.PlayerID.Value);
