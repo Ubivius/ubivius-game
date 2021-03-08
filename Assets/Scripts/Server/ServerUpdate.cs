@@ -30,6 +30,14 @@ namespace ubv
                 [HideInInspector] public UnityEngine.Events.UnityEvent ForceStartGameButtonEvent;
 #endif // NETWORK_SIMULATE
 
+#if NETWORK_SIMULATE
+                public void ForceStart()
+                {
+                    Debug.Log("Forcing game start");
+                    ForceStartGameButtonEvent.Invoke();
+                }
+#endif //NETWORK_SIMULATE
+
                 private void Awake()
                 {
                     
