@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using ubv.tcp;
 using ubv.common.data;
 using ubv.common.serialization;
+using ubv.common;
 
 namespace ubv.server.logic
 {
@@ -16,63 +17,48 @@ namespace ubv.server.logic
     /// </summary>
     public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver, udp.server.IUDPServerReceiver
     {
-        private common.world.WorldGenerator m_worldGenerator;
-        private tcp.server.TCPServer m_TCPServer;
-        private Dictionary<IPEndPoint, ClientConnection> m_TCPClientConnections;
-        private Dictionary<IPEndPoint, ClientConnection> m_UDPClientConnections;
+#if NETWORK_SIMULATE
+        [SerializeField] private ServerUpdate m_parent;
+#endif // NETWORK_SIMULATE 
+
+        [SerializeField] private int m_simulationBuffer;
+        [SerializeField] private common.world.WorldGenerator m_worldGenerator;
+        private Dictionary<IPEndPoint, ClientState> m_TCPClientStates;
+        private Dictionary<IPEndPoint, ClientState> m_UDPClientStates;
 
         private Dictionary<int, bool> m_readyClients;
-
-        // transfer to gameplay
-        private readonly string m_physicsScene;
-        private readonly udp.server.UDPServer m_UDPserver;
-        private readonly common.StandardMovementSettings m_movementSettings;
-        private readonly int m_snapshotDelay;
-        private readonly GameObject m_playerPrefab;
-        private readonly int m_simulationBuffer;
-
-        private List<common.data.PlayerState> m_players;
+        
+        private List<PlayerState> m_players;
 
 #if NETWORK_SIMULATE
         private bool m_forceStartGame;
 #endif // NETWORK_SIMULATE
 
-        public GameCreationState(udp.server.UDPServer UDPServer, 
-            tcp.server.TCPServer TCPServer,
-            GameObject playerPrefab, 
-            common.world.WorldGenerator worldGenerator,
-            common.StandardMovementSettings 
-            movementSettings, 
-            int snapshotDelay, 
-            int simulationBuffer,
-            string physicsScene
-#if NETWORK_SIMULATE
-            , ServerUpdate parent
-#endif // NETWORK_SIMULATE 
-            )
+        protected override void StateAwake()
         {
-            m_UDPserver = UDPServer;
-            m_TCPServer = TCPServer;
-            m_players = new List<common.data.PlayerState>();
-            m_TCPClientConnections = new Dictionary<IPEndPoint, ClientConnection>();
-            m_UDPClientConnections = new Dictionary<IPEndPoint, ClientConnection>();
+            ServerState.m_gameCreationState = this;
+            m_currentState = this;
+        }
+
+        protected override void StateStart()
+        {
+            Init();
+        }
+
+        public void Init()
+        {
+            m_players = new List<PlayerState>();
+            m_TCPClientStates = new Dictionary<IPEndPoint, ClientState>();
+            m_UDPClientStates = new Dictionary<IPEndPoint, ClientState>();
 
             m_readyClients = new Dictionary<int, bool>();
-
-            m_movementSettings = movementSettings;
-            m_snapshotDelay = snapshotDelay;
-            m_simulationBuffer = simulationBuffer;
-            m_physicsScene = physicsScene;
-            m_playerPrefab = playerPrefab;
-
+            
             m_forceStartGame = false;
-
-            m_worldGenerator = worldGenerator;
-
+            
             m_worldGenerator.GenerateWorld();
                     
 #if NETWORK_SIMULATE
-            parent.ForceStartGameButtonEvent.AddListener(() => 
+            m_parent.ForceStartGameButtonEvent.AddListener(() => 
             {
                 Debug.Log("Forcing game start");
                 m_forceStartGame = true;
@@ -80,26 +66,26 @@ namespace ubv.server.logic
 #endif // NETWORK_SIMULATE 
                     
             m_TCPServer.Subscribe(this);
-            m_UDPserver.Subscribe(this);
+            m_UDPServer.Subscribe(this);
         }
 
-        public override ServerState Update()
+        protected override void StateUpdate()
         {
             lock (m_lock)
             {
-                if ((m_TCPClientConnections.Count > 3 // TODO : Change here when matchmaking microservice is up
+                if ((m_TCPClientStates.Count > 3 // TODO : Change here when matchmaking microservice is up
 #if NETWORK_SIMULATE
                     || m_forceStartGame
 #endif // NETWORK_SIMULATE
                     ) && !awaitingClients)
                 {
-                    m_UDPserver.Unsubscribe(this);
+                    m_UDPServer.Unsubscribe(this);
 
                     common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
 
-                    common.data.GameInitMessage message = new common.data.GameInitMessage(m_simulationBuffer, m_players, cellInfoArray);
+                    GameInitMessage message = new GameInitMessage(m_simulationBuffer, m_players, cellInfoArray);
 
-                    foreach (IPEndPoint ip in m_TCPClientConnections.Keys)
+                    foreach (IPEndPoint ip in m_TCPClientStates.Keys)
                     {
                         m_TCPServer.Send(message.GetBytes(), ip);
                     }
@@ -114,22 +100,16 @@ namespace ubv.server.logic
                 GameReadyMessage message = new GameReadyMessage();
 
                 Debug.Log("Starting game.");
-                foreach (IPEndPoint ip in m_TCPClientConnections.Keys)
+                foreach (IPEndPoint ip in m_TCPClientStates.Keys)
                 {
                     m_TCPServer.Send(message.GetBytes(), ip);
                 }
 
-                return new GameplayState(m_UDPserver, m_playerPrefab, m_UDPClientConnections, m_movementSettings, m_snapshotDelay, m_simulationBuffer, m_physicsScene);
+                m_gameplayState.Init(m_UDPClientStates, m_simulationBuffer);
+                m_currentState = m_gameplayState;
             }
-
-            return this;
         }
-
-        public override ServerState FixedUpdate()
-        {
-            return this;
-        }
-
+        
         // TEMP
         bool awaitingClients = false;
 
@@ -151,16 +131,16 @@ namespace ubv.server.logic
                 int playerID = System.Guid.NewGuid().GetHashCode();
 
                 // TODO get rid of client connection data and only use serializable list of int after serialize rework
-                m_TCPClientConnections[clientIP] = new ClientConnection(playerID);
+                m_TCPClientStates[clientIP] = new ClientState(playerID);
 
-                common.data.IdentificationMessage idMessage = new common.data.IdentificationMessage(playerID);
+                IdentificationMessage idMessage = new IdentificationMessage(playerID);
 
-                common.data.PlayerState playerState = new common.data.PlayerState(playerID);
+                PlayerState playerState = new PlayerState(playerID);
 
                 // set rotation / position according to existing players?
 
                 m_players.Add(playerState);
-                m_UDPserver.RegisterClient(clientIP.Address);
+                m_UDPServer.RegisterClient(clientIP.Address);
 
                 m_TCPServer.Send(idMessage.GetBytes(), clientIP);
 
@@ -175,13 +155,13 @@ namespace ubv.server.logic
         {
             lock (m_lock)
             {
-                m_TCPClientConnections.Remove(clientIP);
+                m_TCPClientStates.Remove(clientIP);
             }
         }
 
         public void Receive(UDPToolkit.Packet packet, IPEndPoint clientIP)
         {
-            if (m_UDPClientConnections.ContainsKey(clientIP))
+            if (m_UDPClientStates.ContainsKey(clientIP))
             {
 #if DEBUG_LOG
                 Debug.Log("Client " + clientIP.ToString() + " already connected. Ignoring.");
@@ -192,11 +172,11 @@ namespace ubv.server.logic
             common.data.IdentificationMessage identification = common.serialization.Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data);
             if (identification != null)
             {
-                m_UDPClientConnections[clientIP] = new ClientConnection(identification.PlayerID.Value);
+                m_UDPClientStates[clientIP] = new ClientState(identification.PlayerID.Value);
 
                 // broadcast connection to all players
                 byte[] bytes = new ClientListMessage(m_players).GetBytes();
-                foreach (IPEndPoint ip in m_TCPClientConnections.Keys)
+                foreach (IPEndPoint ip in m_TCPClientStates.Keys)
                 {
                     m_TCPServer.Send(bytes, ip);
                 }

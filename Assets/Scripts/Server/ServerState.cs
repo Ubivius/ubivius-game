@@ -12,25 +12,48 @@ namespace ubv.server.logic
     // TO READ https://fabiensanglard.net/quake3/network.php
     // and maybe https://thad.frogley.info/w/gfg08/gfg08.pdf
 
-    abstract public class ServerState
+    abstract public class ServerState : MonoBehaviour
     {
+        static protected ServerState m_currentState = null;
+        static protected GameplayState m_gameplayState;
+        static protected GameCreationState m_gameCreationState;
+
+        protected tcp.server.TCPServer m_TCPServer;
+        protected udp.server.UDPServer m_UDPServer;
+
         protected readonly object m_lock = new object();
                 
-        public abstract ServerState Update();
-        public abstract ServerState FixedUpdate();
-    }
-    
-    public class ClientConnection
-    {
-        public client.ClientState State;
-
-        public int PlayerGUID { get; private set; }
-
-        public ClientConnection(int playerGUID)
+        private void Awake()
         {
-            State = new client.ClientState();
-            State.PlayerGUID = playerGUID;
-            PlayerGUID = playerGUID;
+            StateAwake();
         }
+
+        private void Start()
+        {
+            m_TCPServer = ServerNetworkingManager.Instance.TCPServer;
+            m_UDPServer = ServerNetworkingManager.Instance.UDPServer;
+            StateStart();
+        }
+
+        private void Update()
+        {
+            if (m_currentState != this)
+                return;
+
+            StateUpdate();
+        }
+
+        private void FixedUpdate()
+        {
+            if (m_currentState != this)
+                return;
+
+            StateFixedUpdate();
+        }
+
+        protected virtual void StateAwake() { }
+        protected virtual void StateStart() { }
+        protected virtual void StateUpdate() { }
+        protected virtual void StateFixedUpdate() { }
     }
 }
