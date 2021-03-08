@@ -16,7 +16,7 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
         private EnemyMain m_enemyMain;
         public EnemyPathFindingMovement EnemyPathFindingMovement { get; private set; }
 
-        RoamingState(EnemyMain enemyMain)
+        public RoamingState(EnemyMain enemyMain)
         {
             m_enemyMain = enemyMain;
 
@@ -44,7 +44,7 @@ namespace Assets.EnemyAISystem.EnemyStatePattern
 
         private EnemyState FindTarget()
         {
-            if (Vector3.Distance(m_enemyMain.GetPosition(), player.position /*Player.Instance.GetPosition()*/) < m_targetRange)
+            //if (Vector3.Distance(m_enemyMain.GetPosition(), player.position /*Player.Instance.GetPosition()*/) < m_targetRange)
             {
                 // Player within target range
                 //return new ChasingTargetState();

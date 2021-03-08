@@ -19,7 +19,7 @@ namespace ubv.server.logic.ai
         void Start()
         {
             EnemyMain = GetComponent<EnemyMain>();
-            m_currentEnemyState = new RoamingState(EnemyMain enemyMain);
+            m_currentEnemyState = new RoamingState(EnemyMain);
         }
 
         // Update is called once per frame
