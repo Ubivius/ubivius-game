@@ -76,6 +76,8 @@ namespace ubv.common.world
 
         private int m_wallThickness = 1;
 
+        private List<RoomInfo> m_instantiateRoom = new List<RoomInfo>();
+
         public RoomManager(dataStruct.WorldGeneratorToRoomManager data)
         {
             m_boundariesMap = data.BoundariesMap;
@@ -170,6 +172,7 @@ namespace ubv.common.world
         private void AddRoom(RoomInfo room, Vector2Int roomOrigin)
         {
             room.transform.position = new Vector3(roomOrigin.x, roomOrigin.y, 0);
+            m_instantiateRoom.Add(room);
             AddToMasterGrid(room, roomOrigin);
         }
 
@@ -518,6 +521,11 @@ namespace ubv.common.world
                 }
             }
             return true;
+        }
+
+        public List<RoomInfo> GetRoomInMap()
+        {
+            return m_instantiateRoom;
         }
     }
 }

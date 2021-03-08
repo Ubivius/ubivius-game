@@ -1,11 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using ubv.common.world;
 
 namespace ubv.common.world
 {
@@ -24,7 +20,7 @@ namespace ubv.common.world
         private Tilemap m_floor;
         private TileBase m_tileFloor;
 
-        private int m_wallThickness = 1;
+        private int m_wallThickness;
 
         public CorridorsManager(dataStruct.WorldGeneratorToCorridorsManager data)
         {
@@ -187,7 +183,7 @@ namespace ubv.common.world
 
             while (dir.Count > 0)
             {
-                select = Random.Range(0, dir.Count);
+                select = Random.Range(0, dir.Count - 1);
 
                 switch (dir.ElementAt(select))
                 {
@@ -243,7 +239,7 @@ namespace ubv.common.world
 
             while (dir.Count > 0)
             {
-                select = Random.Range(0, dir.Count);
+                select = Random.Range(0, dir.Count - 1);
 
                 switch (dir.ElementAt(select))
                 {
