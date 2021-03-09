@@ -9,8 +9,7 @@ namespace ubv.server.logic
     public class PlayerMovementUpdater : ServerGameplayStateUpdater
     {
         private Dictionary<int, Rigidbody2D> m_bodies;
-        [SerializeField] private StandardMovementSettings m_movementSettings;
-        [SerializeField] private GameObject m_playerPrefab;
+        [SerializeField] private PlayerSettings m_playerSettings;
 
         public override void Setup()
         {
@@ -20,7 +19,7 @@ namespace ubv.server.logic
         public override void InitClient(ClientState state)
         {
             int id = state.PlayerGUID;
-            Rigidbody2D body = GameObject.Instantiate(m_playerPrefab).GetComponent<Rigidbody2D>();
+            Rigidbody2D body = GameObject.Instantiate(m_playerSettings.PlayerPrefab).GetComponent<Rigidbody2D>();
             body.position = m_bodies.Count * Vector2.left * 3;
             body.name = "Server player " + id.ToString();
             m_bodies.Add(id, body);
@@ -34,7 +33,7 @@ namespace ubv.server.logic
         public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
         {
             Rigidbody2D body = m_bodies[client.PlayerGUID];
-            common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
+            common.logic.PlayerMovement.Execute(ref body, m_playerSettings.MovementSettings, frame, Time.fixedDeltaTime);
         }
 
         public override void UpdateClient(ClientState client)

@@ -9,11 +9,9 @@ namespace ubv.client.logic
     /// <summary>
     /// Instantiate players and moves them according to their player states
     /// </summary>
-    public class PlayerGameObjectUpdater :  IClientStateUpdater
+    public class PlayerGameObjectUpdater :  ClientStateUpdater
     {
-        private const bool SMOOTH_CLIENT_CORRECTION = true;
-
-        private PlayerSettings m_playerSettings;
+        [SerializeField] private PlayerSettings m_playerSettings;
 
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Rigidbody2D m_localPlayerBody;
@@ -22,15 +20,15 @@ namespace ubv.client.logic
 
         private Dictionary<int, PlayerState> m_goalStates;
         
-        public PlayerGameObjectUpdater(PlayerSettings playerSettings, Dictionary<int, PlayerState> playerStates, int localID)
+        public override void Init(List<PlayerState> playerStates, int localID)
         {
-            m_playerSettings = playerSettings;
             m_bodies = new Dictionary<int, Rigidbody2D>();
             m_goalStates = new Dictionary<int, PlayerState>();
-            
-            foreach(int id in playerStates.Keys)
+            int id = 0;
+            foreach(PlayerState state in playerStates)
             {
-                m_bodies[id] = GameObject.Instantiate(playerSettings.PlayerPrefab).GetComponent<Rigidbody2D>();
+                id = state.GUID.Value;
+                m_bodies[id] = GameObject.Instantiate(m_playerSettings.PlayerPrefab).GetComponent<Rigidbody2D>();
                 m_bodies[id].name = "Client player " + id.ToString();
                 if (id != localID)
                 {
@@ -44,7 +42,7 @@ namespace ubv.client.logic
             m_localPlayerBody = m_bodies[localID];
         }
 
-        public bool NeedsCorrection(ClientState localState, ClientState remoteState)
+        public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
         {
             bool err = false;
             foreach(PlayerState player in remoteState.Players().Values)
@@ -58,7 +56,7 @@ namespace ubv.client.logic
             return err;
         }
 
-        public void SetStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
+        public override void SetStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
         {
             foreach (PlayerState player in state.Players().Values)
             {
@@ -69,7 +67,7 @@ namespace ubv.client.logic
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, m_playerSettings.MovementSettings, input, deltaTime);
         }
 
-        public void UpdateFromState(ClientState state)
+        public override void UpdateFromState(ClientState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {
@@ -85,7 +83,7 @@ namespace ubv.client.logic
             }
         }
 
-        public void FixedUpdate(float deltaTime)
+        public override void FixedStateUpdate(float deltaTime)
         {
             foreach (PlayerState player in m_goalStates.Values)
             {
