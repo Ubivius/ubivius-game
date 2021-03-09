@@ -53,8 +53,7 @@ namespace ubv.client.logic
 
             m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
             m_lastServerState = null;
-
-            m_updaters = new List<ClientStateUpdater>();
+            
             m_initialized = false;
 
             m_playerID = playerID;

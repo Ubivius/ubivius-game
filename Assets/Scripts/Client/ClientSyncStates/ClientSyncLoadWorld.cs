@@ -39,7 +39,12 @@ namespace ubv.client.logic
 
         protected override void StateUpdate()
         {
-            Debug.Log("World loaded at : " + GetWorldLoadProgress()*100 + "%");
+            float progress = GetWorldLoadProgress();
+            // to print only every 10 increments
+            if (((progress * 100) % 10) < 0.1)
+            {
+                Debug.Log("World loaded at : " + progress * 100 + "%");
+            }
             if (m_serverSentSignal)
             {
                 m_serverSentSignal = false;

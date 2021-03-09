@@ -35,7 +35,7 @@ namespace ubv.client.logic
                     m_bodies[id].bodyType = RigidbodyType2D.Kinematic;
                 }
                 
-                m_goalStates[id] = playerStates[id];
+                m_goalStates[id] = state;
             }
 
             m_playerGUID = localID;
