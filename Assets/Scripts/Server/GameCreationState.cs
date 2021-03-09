@@ -30,7 +30,7 @@ namespace ubv.server.logic
         
         private List<PlayerState> m_players;
 
-        private List<IServerInitializer> m_serverInitializers;
+        [SerializeField] private List<ServerInitializer> m_serverInitializers;
 
 #if NETWORK_SIMULATE
         private bool m_forceStartGame;
@@ -40,12 +40,6 @@ namespace ubv.server.logic
         {
             ServerState.m_gameCreationState = this;
             m_currentState = this;
-
-            m_serverInitializers = new List<IServerInitializer>
-            {
-                // Add your initializers here
-                m_worldGenerator
-            };
         }
 
         protected override void StateStart()
@@ -63,7 +57,7 @@ namespace ubv.server.logic
             
             m_forceStartGame = false;
             
-            foreach(IServerInitializer initializer in m_serverInitializers)
+            foreach(ServerInitializer initializer in m_serverInitializers)
             {
                 initializer.Init();
             }

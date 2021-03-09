@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 namespace ubv.common.world
 {
     [RequireComponent(typeof(Grid))]
-    public class WorldGenerator : MonoBehaviour, IServerInitializer
+    public class WorldGenerator : ServerInitializer
     {
         [SerializeField] private Vector2Int m_boundariesMap;
 
@@ -101,7 +101,7 @@ namespace ubv.common.world
             return m_masterLogicGrid;
         }
 
-        public void Init()
+        public override void Init()
         {
             GenerateWorld();
         }

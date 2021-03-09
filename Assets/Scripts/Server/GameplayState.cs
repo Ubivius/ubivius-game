@@ -29,18 +29,13 @@ namespace ubv.server.logic
         
         private PhysicsScene2D m_serverPhysics;
         
-        private List<IServerGameplayStateUpdater> m_updaters;
+        [SerializeField] private List<ServerGameplayStateUpdater> m_updaters;
                 
         private List<int> m_toRemoveCache;
 
         protected override void StateAwake()
         {
             ServerState.m_gameplayState = this;
-            m_updaters = new List<IServerGameplayStateUpdater>
-            {
-                // Add your updaters here
-                new PlayerMovementUpdater()
-            };
         }
 
         public void Init(Dictionary<IPEndPoint, ClientState> UDPClientStates, int simulationBuffer)
@@ -82,14 +77,14 @@ namespace ubv.server.logic
             }
 
 
-            foreach (IServerGameplayStateUpdater updater in m_updaters)
+            foreach (ServerGameplayStateUpdater updater in m_updaters)
             {
                 updater.Setup();
             }
 
             foreach (ClientState state in m_UDPClientStates.Values)
             {
-                foreach(IServerGameplayStateUpdater updater in m_updaters)
+                foreach(ServerGameplayStateUpdater updater in m_updaters)
                 {
                     updater.InitClient(state);
                 }
@@ -97,7 +92,7 @@ namespace ubv.server.logic
 
             foreach (ClientState state in m_UDPClientStates.Values)
             {
-                foreach (IServerGameplayStateUpdater updater in m_updaters)
+                foreach (ServerGameplayStateUpdater updater in m_updaters)
                 {
                     updater.InitPlayer(state.GetPlayer());
                 }
@@ -129,9 +124,9 @@ namespace ubv.server.logic
                         }
 
                         // must be called in main unity thread
-                        foreach (IServerGameplayStateUpdater updater in m_updaters)
+                        foreach (ServerGameplayStateUpdater updater in m_updaters)
                         {
-                            updater.FixedUpdate(client, frame, Time.fixedDeltaTime);
+                            updater.FixedUpdateFromClient(client, frame, Time.fixedDeltaTime);
                         }
 
                         m_toRemoveCache.Clear();
@@ -155,7 +150,7 @@ namespace ubv.server.logic
                             
                     foreach (ClientState client in m_clientInputBuffers.Keys)
                     {
-                        foreach (IServerGameplayStateUpdater updater in m_updaters)
+                        foreach (ServerGameplayStateUpdater updater in m_updaters)
                         {
                             updater.UpdateClient(client);
                         }
