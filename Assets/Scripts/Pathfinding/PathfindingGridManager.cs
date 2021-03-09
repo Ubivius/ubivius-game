@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Assets.Scripts.Pathfinding;
+using System.Collections;
 using System.Collections.Generic;
 using ubv.common.world;
 using UnityEngine;
@@ -7,13 +8,16 @@ public class PathfindingGridManager: MonoBehaviour
 {
     [SerializeField] private WorldGenerator m_worldGenerator;
 
+    [SerializeField] private float m_nodeSize = 1;
+    private Vector3 m_worldOrigin = Vector3.zero;
+
     private LogicGrid m_logicGrid;
     private List<PathNode> m_pathNodeList;
     private Pathfinding m_pathfinding;
 
     private void Start()
     {
-        if(m_worldGenerator.GetMasterLogicGrid() != null)
+        if (m_worldGenerator.GetMasterLogicGrid() != null)
         {
             this.SetPathfindingGridManager(m_worldGenerator.GetMasterLogicGrid());
         }
@@ -71,18 +75,33 @@ public class PathfindingGridManager: MonoBehaviour
         m_pathfinding = new Pathfinding(m_pathNodeList);
     }
 
-    public PathNode GetNode(int x, int y)
+    private PathNode GetNode(int x, int y)
     {
         if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height)
         {
-            return m_pathNodeList[(m_logicGrid.Height - 1) * x + x + y];
+
+            foreach (PathNode pathNode in m_pathNodeList)
+            {
+                if (pathNode.X == x && pathNode.Y == y)
+                {
+                    return pathNode;
+                }
+
+            }
+            //return m_pathNodeList[(m_logicGrid.Height - 1) * x + x + y];
         }
         
         return null;
     }
 
-    public List<PathNode> GetPath(PathNode startNode, PathNode endNode)
+    public PathRoute GetPathRoute(Vector3 start, Vector3 end)
     {
-        return m_pathfinding.FindPath(startNode, endNode);
+        PathNode startNode = this.GetNode(Mathf.RoundToInt(start.x), Mathf.RoundToInt(start.y));
+        PathNode endNode = this.GetNode(Mathf.RoundToInt(end.x), Mathf.RoundToInt(end.y));
+
+        List<PathNode> pathNodeList = m_pathfinding.FindPath(startNode, endNode);
+
+        return new PathRoute(pathNodeList, m_worldOrigin, m_nodeSize);
     }
+
 }

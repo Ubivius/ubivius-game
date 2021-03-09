@@ -8,9 +8,10 @@ namespace Assets.Scripts.EnemySystem.EnemyStatePattern
     {
 
         [SerializeField] private float m_speed;
+        [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
 
         private EnemyMain enemyMain;
-        private List<Vector3> pathVectorList;
+        private List<Vector3> m_pathVectorList;
         private int currentPathIndex;
         private float pathfindingTimer;
         private Vector3 moveDir;
@@ -36,9 +37,9 @@ namespace Assets.Scripts.EnemySystem.EnemyStatePattern
         private void HandleMovement()
         {
             PrintPathfindingPath();
-            if (pathVectorList != null)
+            if (m_pathVectorList != null)
             {
-                Vector3 targetPosition = pathVectorList[currentPathIndex];
+                Vector3 targetPosition = m_pathVectorList[currentPathIndex];
                 float reachedTargetDistance = 5f;
                 if (Vector3.Distance(GetPosition(), targetPosition) > reachedTargetDistance)
                 {
@@ -50,7 +51,7 @@ namespace Assets.Scripts.EnemySystem.EnemyStatePattern
                 else
                 {
                     currentPathIndex++;
-                    if (currentPathIndex >= pathVectorList.Count)
+                    if (currentPathIndex >= m_pathVectorList.Count)
                     {
                         StopMoving();
                         //enemyMain.CharacterAnims.PlayIdleAnim();
@@ -65,22 +66,22 @@ namespace Assets.Scripts.EnemySystem.EnemyStatePattern
 
         public void StopMoving()
         {
-            pathVectorList = null;
+            m_pathVectorList = null;
             moveDir = Vector3.zero;
         }
 
         public List<Vector3> GetPathVectorList()
         {
-            return pathVectorList;
+            return m_pathVectorList;
         }
 
         private void PrintPathfindingPath()
         {
-            if (pathVectorList != null)
+            if (m_pathVectorList != null)
             {
-                for (int i = 0; i < pathVectorList.Count - 1; i++)
+                for (int i = 0; i < m_pathVectorList.Count - 1; i++)
                 {
-                    Debug.DrawLine(pathVectorList[i], pathVectorList[i + 1]);
+                    Debug.DrawLine(m_pathVectorList[i], m_pathVectorList[i + 1]);
                 }
             }
         }
@@ -102,13 +103,14 @@ namespace Assets.Scripts.EnemySystem.EnemyStatePattern
         {
             currentPathIndex = 0;
 
+            m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition).pathVectorList;
             //pathVectorList = GridPathfinding.instance.GetPathRouteWithShortcuts(GetPosition(), targetPosition).pathVectorList;
             pathfindingTimer = .2f;
             //pathVectorList = new List<Vector3> { targetPosition };
 
-            if (pathVectorList != null && pathVectorList.Count > 1)
+            if (m_pathVectorList != null && m_pathVectorList.Count > 1)
             {
-                pathVectorList.RemoveAt(0);
+                m_pathVectorList.RemoveAt(0);
             }
         }
 
