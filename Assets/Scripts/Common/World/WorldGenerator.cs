@@ -91,6 +91,12 @@ namespace ubv.common.world
             m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
         }
         
+        public void GenerateWithOneRoom() // For test only 
+        {
+            m_roomManager = new RoomManager(m_worldGeneratorToRoomManager);
+            m_masterLogicGrid = m_roomManager.AddOneRoom();
+        }
+
         public cellType.CellInfo[,] GetCellInfoArray()
         {
             return m_masterLogicGrid.GetCellInfo();
