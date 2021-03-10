@@ -73,6 +73,10 @@ public class PathfindingGridManager: MonoBehaviour
         }
 
         m_pathfinding = new Pathfinding(m_pathNodeList);
+
+        /*GameObject testing = new GameObject("PathfindingTesting");
+        Testing Pathfindingtesting = testing.AddComponent<Testing>();
+        Pathfindingtesting.Init(m_pathNodeList, this);*/
     }
 
     private PathNode GetNode(int x, int y)
@@ -94,12 +98,17 @@ public class PathfindingGridManager: MonoBehaviour
         return null;
     }
 
+    public  List<PathNode> GetPath(PathNode startNode, PathNode endNode)
+    {
+        return m_pathfinding.FindPath(startNode, endNode);
+    }
+
     public PathRoute GetPathRoute(Vector3 start, Vector3 end)
     {
         PathNode startNode = this.GetNode(Mathf.RoundToInt(start.x), Mathf.RoundToInt(start.y));
         PathNode endNode = this.GetNode(Mathf.RoundToInt(end.x), Mathf.RoundToInt(end.y));
 
-        List<PathNode> pathNodeList = m_pathfinding.FindPath(startNode, endNode);
+        List<PathNode> pathNodeList = this.GetPath(startNode, endNode);
 
         return new PathRoute(pathNodeList, m_worldOrigin, m_nodeSize);
     }
