@@ -68,7 +68,7 @@ public class PathTesting : MonoBehaviour
             new Vector3(x, y),
             new Vector3(endx, endy)).m_pathNodeList;
         stopwatch.Stop();
-        UnityEngine.Debug.Log("Elapsed pathfinding time : " + stopwatch.ElapsedTicks + " ticks");
+        UnityEngine.Debug.Log("Elapsed pathfinding time : " + stopwatch.ElapsedMilliseconds + " ms");
         stopwatch.Reset();
     }
     //pt pour le faire avec la sourie

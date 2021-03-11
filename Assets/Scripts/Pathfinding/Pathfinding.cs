@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,6 +28,50 @@ public class Pathfinding {
         }
     }
 
+    // COPY PASTE DEGROS GROS PORC
+
+    public class PriorityQueue<T>
+    {
+        // I'm using an unsorted array for this example, but ideally this
+        // would be a binary heap. There's an open issue for adding a binary
+        // heap to the standard C# library: https://github.com/dotnet/corefx/issues/574
+        //
+        // Until then, find a binary heap class:
+        // * https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
+        // * http://visualstudiomagazine.com/articles/2012/11/01/priority-queues-with-c.aspx
+        // * http://xfleury.github.io/graphsearch.html
+        // * http://stackoverflow.com/questions/102398/priority-queue-in-net
+
+        private List<System.Tuple<T, double>> elements = new List<Tuple<T, double>>();
+
+        public int Count
+        {
+            get { return elements.Count; }
+        }
+
+        public void Enqueue(T item, double priority)
+        {
+            elements.Add(System.Tuple.Create(item, priority));
+        }
+
+        public T Dequeue()
+        {
+            int bestIndex = 0;
+
+            for (int i = 0; i < elements.Count; i++)
+            {
+                if (elements[i].Item2 < elements[bestIndex].Item2)
+                {
+                    bestIndex = i;
+                }
+            }
+
+            T bestItem = elements[bestIndex].Item1;
+            elements.RemoveAt(bestIndex);
+            return bestItem;
+        }
+    }
+
     public List<PathNode> FindPath(PathNode startNode, PathNode endNode) 
     {
         // cache ?
@@ -38,8 +83,10 @@ public class Pathfinding {
             // Invalid Path
             return null;
         }
-        
 
+        PriorityQueue<PathNode> frontier = new PriorityQueue<PathNode>();
+        frontier.Enqueue(startNode, 0);
+        
         openList = new List<PathNode> { startNode };
         closedList = new List<PathNode>();
 
@@ -55,23 +102,35 @@ public class Pathfinding {
         m_pathNodeDict[startNode].hCost = CalculateDistanceCost(startNode, endNode);
         m_pathNodeDict[startNode].fCost = CalculateFCost(startNode);
 
-        while (openList.Count > 0)
+        Dictionary<PathNode, float> costSoFar = new Dictionary<PathNode, float>();
+        costSoFar[startNode] = 0;
+
+        while (frontier.Count > 0)
         {
-            PathNode currentNode = GetLowestFCostNode(openList);
+            PathNode currentNode = frontier.Dequeue();//GetLowestFCostNode(openList);
             if (currentNode == endNode)
             {
                 // Reached final node
-                return CalculatePath(endNode);
+                return CalculatePath(endNode); // bug live si meme place ?
             }
 
-            openList.Remove(currentNode);
-            closedList.Add(currentNode);
+            //openList.Remove(currentNode);
+            //closedList.Add(currentNode);
 
-            foreach (PathNode neighbourNode in currentNode.GetNeighbourList()) 
+            foreach (PathNode next in currentNode.GetNeighbourList()) 
             {
-                if (closedList.Contains(neighbourNode)) continue;
+                float newCost = costSoFar[currentNode] + CalculateDistanceCost(currentNode, next);
+                if(!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
+                {
+                    costSoFar[next] = newCost;
+                    float priority = newCost + CalculateDistanceCost(next, endNode);
+                    frontier.Enqueue(next, priority);
+                    m_pathNodeDict[next].cameFromNode = currentNode;
+                }
 
-                int tentativeGCost = m_pathNodeDict[currentNode].gCost + CalculateDistanceCost(currentNode, neighbourNode);
+                //if (closedList.Contains(neighbourNode)) continue;
+
+                /*int tentativeGCost = m_pathNodeDict[currentNode].gCost + CalculateDistanceCost(currentNode, neighbourNode);
                 if (tentativeGCost < m_pathNodeDict[neighbourNode].gCost) 
                 {
                     m_pathNodeDict[neighbourNode].cameFromNode = currentNode;
@@ -83,7 +142,7 @@ public class Pathfinding {
                     {
                         openList.Add(neighbourNode);
                     }
-                }
+                }*/
             }
         }
 
