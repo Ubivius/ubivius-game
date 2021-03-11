@@ -12,21 +12,23 @@ public class PathfindingGridManager: MonoBehaviour
     private Vector3 m_worldOrigin = Vector3.zero;
 
     private LogicGrid m_logicGrid;
-    private List<PathNode> m_pathNodeList;
+    private PathNode[,] m_pathNodes;
     private Pathfinding m_pathfinding;
 
     private void Start()
     {
-        if (m_worldGenerator.GetMasterLogicGrid() != null)
+        LogicGrid logicGrid = m_worldGenerator.GetMasterLogicGrid();
+        if (logicGrid != null)
         {
-            this.SetPathfindingGridManager(m_worldGenerator.GetMasterLogicGrid());
+            this.SetPathfindingGridManager(logicGrid);
         }
     }
 
     private void SetPathfindingGridManager(LogicGrid logicGrid)
     {
         m_logicGrid = logicGrid;
-        m_pathNodeList = new List<PathNode>();
+        m_pathNodes = new PathNode[m_logicGrid.Width, m_logicGrid.Height];
+        List<PathNode> pathNodeList = new List<PathNode>();
 
         for (int x = 0; x < m_logicGrid.Width; x++)
         {
@@ -36,63 +38,59 @@ public class PathfindingGridManager: MonoBehaviour
                 {
                     if (m_logicGrid.Grid[x, y].IsWalkable)
                     {
-                        m_pathNodeList.Add(new PathNode(x, y));
+                        m_pathNodes[x, y] = (new PathNode(x, y));
+                        pathNodeList.Add(m_pathNodes[x, y]);
                     }
                 }
             }
         }
 
         //Add neighbours to each pathnode
-        foreach(PathNode pathnode in m_pathNodeList)
+        foreach(PathNode pathnode in m_pathNodes)
         {
-            if (pathnode.X - 1 >= 0)
+            if (pathnode != null)
             {
-                // Left
-                pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y));
-                // Left Down
-                if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y - 1));
-                // Left Up
-                if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y + 1));
-            }
-
-            if (pathnode.X + 1 < m_logicGrid.Width)
-            {
-                // Right
-                pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y));
-                // Right Down
-                if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y - 1));
-                // Right Up
-                if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y + 1));
-            }
-
-            // Down
-            if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X, pathnode.Y - 1));
-            // Up
-            if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X, pathnode.Y + 1));
-
-        }
-
-        m_pathfinding = new Pathfinding(m_pathNodeList);
-
-        /*GameObject testing = new GameObject("PathfindingTesting");
-        Testing Pathfindingtesting = testing.AddComponent<Testing>();
-        Pathfindingtesting.Init(m_pathNodeList, this);*/
-    }
-
-    private PathNode GetNode(int x, int y)
-    {
-        if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height)
-        {
-
-            foreach (PathNode pathNode in m_pathNodeList)
-            {
-                if (pathNode.X == x && pathNode.Y == y)
+                if (pathnode.X - 1 >= 0)
                 {
-                    return pathNode;
+                    // Left
+                    pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y));
+                    // Left Down
+                    if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y - 1));
+                    // Left Up
+                    if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y + 1));
                 }
 
+                if (pathnode.X + 1 < m_logicGrid.Width)
+                {
+                    // Right
+                    pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y));
+                    // Right Down
+                    if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y - 1));
+                    // Right Up
+                    if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y + 1));
+                }
+
+                // Down
+                if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X, pathnode.Y - 1));
+                // Up
+                if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X, pathnode.Y + 1));
+
             }
-            //return m_pathNodeList[(m_logicGrid.Height - 1) * x + x + y];
+        }
+
+        m_pathfinding = new Pathfinding(pathNodeList);
+        
+
+        GameObject testing = new GameObject("PathfindingTesting");
+        PathTesting Pathfindingtesting = testing.AddComponent<PathTesting>();
+        Pathfindingtesting.Init(pathNodeList, this);
+    }
+
+    public PathNode GetNode(int x, int y)
+    {
+        //if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height)
+        {
+            return m_pathNodes[x, y];
         }
         
         return null;
@@ -100,7 +98,9 @@ public class PathfindingGridManager: MonoBehaviour
 
     public  List<PathNode> GetPath(PathNode startNode, PathNode endNode)
     {
-        return m_pathfinding.FindPath(startNode, endNode);
+        List<PathNode> path = m_pathfinding.FindPath(startNode, endNode);
+        if (path == null) Debug.Log("Not path found!");
+        return path;
     }
 
     public PathRoute GetPathRoute(Vector3 start, Vector3 end)

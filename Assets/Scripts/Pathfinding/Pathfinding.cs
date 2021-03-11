@@ -17,7 +17,7 @@ public class Pathfinding {
 
     Dictionary<PathNode, NodeInfo> m_pathNodeDict;
 
-    public Pathfinding(List<PathNode> pathNodeList) 
+    public Pathfinding(IEnumerable<PathNode> pathNodeList) 
     {
         this.m_pathNodeDict = new Dictionary<PathNode, NodeInfo>();
 
@@ -29,6 +29,7 @@ public class Pathfinding {
 
     public List<PathNode> FindPath(PathNode startNode, PathNode endNode) 
     {
+        // cache ?
         List<PathNode> openList;
         List<PathNode> closedList;
 
@@ -37,6 +38,7 @@ public class Pathfinding {
             // Invalid Path
             return null;
         }
+        
 
         openList = new List<PathNode> { startNode };
         closedList = new List<PathNode>();
@@ -98,8 +100,10 @@ public class Pathfinding {
 
     private List<PathNode> CalculatePath(PathNode endNode) 
     {
-        List<PathNode> path = new List<PathNode>();
-        path.Add(endNode);
+        List<PathNode> path = new List<PathNode>
+        {
+            endNode
+        };
         PathNode currentNode = endNode;
         while (m_pathNodeDict[currentNode].cameFromNode != null) 
         {

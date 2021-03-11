@@ -648,6 +648,25 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1426572983 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4247499401278839604, guid: 2440ad9a813087043aff3d8131677843,
+    type: 3}
+  m_PrefabInstance: {fileID: 4247499401763992249}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1426572985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1426572983}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e1f8cd2d70957a4caca096a930d7857, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_generator: {fileID: 4247499401763992250}
 --- !u!1 &1549976836
 GameObject:
   m_ObjectHideFlags: 0
@@ -678,6 +697,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_worldGenerator: {fileID: 4247499401763992250}
+  m_nodeSize: 1
 --- !u!4 &1549976838
 Transform:
   m_ObjectHideFlags: 0
@@ -925,31 +945,12 @@ MonoBehaviour:
     type: 3}
   m_PrefabInstance: {fileID: 4247499401763992249}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4247499401763992251}
+  m_GameObject: {fileID: 1426572983}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d48f061af1d36404ca1a03eb4181349d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &4247499401763992251 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4247499401278839604, guid: 2440ad9a813087043aff3d8131677843,
-    type: 3}
-  m_PrefabInstance: {fileID: 4247499401763992249}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &4247499401763992252
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4247499401763992251}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e1f8cd2d70957a4caca096a930d7857, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_generator: {fileID: 4247499401763992250}
 --- !u!1001 &4639765598835359790
 PrefabInstance:
   m_ObjectHideFlags: 0

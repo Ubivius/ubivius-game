@@ -8,7 +8,7 @@ namespace ubv.common.world
     {
         [SerializeField] private WorldGenerator m_generator;
         // Start is called before the first frame update
-        void Awake()
+        void OnEnable()
         {
             //m_generator.GenerateWorld();     // full map
             m_generator.GenerateWithOneRoom(); // one room
