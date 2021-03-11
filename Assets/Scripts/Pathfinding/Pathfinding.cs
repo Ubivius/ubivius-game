@@ -8,28 +8,6 @@ public class Pathfinding {
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 14;
 
-    private class NodeInfo
-    {
-        public int gCost;
-        public int hCost;
-        public int fCost;
-        public PathNode cameFromNode;
-    }
-
-    Dictionary<PathNode, NodeInfo> m_pathNodeDict;
-
-    public Pathfinding(IEnumerable<PathNode> pathNodeList) 
-    {
-        this.m_pathNodeDict = new Dictionary<PathNode, NodeInfo>();
-
-        foreach (PathNode pathNode in pathNodeList)
-        {
-            m_pathNodeDict.Add(pathNode, new NodeInfo());
-        }
-    }
-
-    // COPY PASTE DEGROS GROS PORC
-
     public class PriorityQueue<T>
     {
         // I'm using an unsorted array for this example, but ideally this
@@ -72,12 +50,25 @@ public class Pathfinding {
         }
     }
 
+    private class NodeInfo
+    {
+        public PathNode cameFromNode;
+    }
+
+    Dictionary<PathNode, NodeInfo> m_pathNodeDict;
+
+    public Pathfinding(IEnumerable<PathNode> pathNodeList) 
+    {
+        this.m_pathNodeDict = new Dictionary<PathNode, NodeInfo>();
+
+        foreach (PathNode pathNode in pathNodeList)
+        {
+            m_pathNodeDict.Add(pathNode, new NodeInfo());
+        }
+    }
+
     public List<PathNode> FindPath(PathNode startNode, PathNode endNode) 
     {
-        // cache ?
-        List<PathNode> openList;
-        List<PathNode> closedList;
-
         if (startNode == null || endNode == null || !m_pathNodeDict.ContainsKey(startNode) || !m_pathNodeDict.ContainsKey(endNode)) 
         {
             // Invalid Path
@@ -86,36 +77,18 @@ public class Pathfinding {
 
         PriorityQueue<PathNode> frontier = new PriorityQueue<PathNode>();
         frontier.Enqueue(startNode, 0);
-        
-        openList = new List<PathNode> { startNode };
-        closedList = new List<PathNode>();
-
-        foreach (PathNode pathNode in this.m_pathNodeDict.Keys)
-        {
-            m_pathNodeDict[pathNode].gCost = int.MaxValue;
-            m_pathNodeDict[pathNode].hCost = 0;
-            m_pathNodeDict[pathNode].fCost = CalculateFCost(pathNode);
-            m_pathNodeDict[pathNode].cameFromNode = null;
-        }
-
-        m_pathNodeDict[startNode].gCost = 0;
-        m_pathNodeDict[startNode].hCost = CalculateDistanceCost(startNode, endNode);
-        m_pathNodeDict[startNode].fCost = CalculateFCost(startNode);
 
         Dictionary<PathNode, float> costSoFar = new Dictionary<PathNode, float>();
         costSoFar[startNode] = 0;
 
         while (frontier.Count > 0)
         {
-            PathNode currentNode = frontier.Dequeue();//GetLowestFCostNode(openList);
+            PathNode currentNode = frontier.Dequeue();
             if (currentNode == endNode)
             {
                 // Reached final node
                 return CalculatePath(endNode); // bug live si meme place ?
             }
-
-            //openList.Remove(currentNode);
-            //closedList.Add(currentNode);
 
             foreach (PathNode next in currentNode.GetNeighbourList()) 
             {
@@ -127,34 +100,11 @@ public class Pathfinding {
                     frontier.Enqueue(next, priority);
                     m_pathNodeDict[next].cameFromNode = currentNode;
                 }
-
-                //if (closedList.Contains(neighbourNode)) continue;
-
-                /*int tentativeGCost = m_pathNodeDict[currentNode].gCost + CalculateDistanceCost(currentNode, neighbourNode);
-                if (tentativeGCost < m_pathNodeDict[neighbourNode].gCost) 
-                {
-                    m_pathNodeDict[neighbourNode].cameFromNode = currentNode;
-                    m_pathNodeDict[neighbourNode].gCost = tentativeGCost;
-                    m_pathNodeDict[neighbourNode].hCost = CalculateDistanceCost(neighbourNode, endNode);
-                    m_pathNodeDict[neighbourNode].fCost = CalculateFCost(neighbourNode);
-
-                    if (!openList.Contains(neighbourNode)) 
-                    {
-                        openList.Add(neighbourNode);
-                    }
-                }*/
             }
         }
 
-        // Out of nodes on the openList
+        // Out of nodes
         return null;
-    }
-
-    public int CalculateFCost(PathNode pathnode)
-    {
-        int fCost = m_pathNodeDict[pathnode].gCost + m_pathNodeDict[pathnode].hCost + pathnode.TerrainCost;
-        return fCost;
-
     }
 
     private List<PathNode> CalculatePath(PathNode endNode) 
@@ -179,19 +129,5 @@ public class Pathfinding {
         int yDistance = Mathf.Abs(a.Y - b.Y);
         int remaining = Mathf.Abs(xDistance - yDistance);
         return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
-    }
-
-    private PathNode GetLowestFCostNode(List<PathNode> pathNodeList) 
-    {
-        PathNode lowestFCostNode = pathNodeList[0];
-        for (int i = 1; i < pathNodeList.Count; i++) 
-        {
-            if (m_pathNodeDict[pathNodeList[i]].fCost < m_pathNodeDict[lowestFCostNode].fCost) 
-            {
-                lowestFCostNode = pathNodeList[i];
-            }
-        }
-
-        return lowestFCostNode;
     }
 }

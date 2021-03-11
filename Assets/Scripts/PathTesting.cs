@@ -9,35 +9,14 @@ using System.Diagnostics;
 public class PathTesting : MonoBehaviour
 {
     public int x, y, endx, endy;
-
-    private PathNode m_startNode;
-    private PathNode m_endNode;
     private List<PathNode> path;
 
     private PathfindingGridManager m_pathfindingGridManager;
-    private List<PathNode> m_pathNodeList;
 
-    private int m_index;
-
-    public void Init(List<PathNode> pathNodeList, PathfindingGridManager pathfindingGridManager)
+    public void Init(PathfindingGridManager pathfindingGridManager)
     {
-        m_pathNodeList = pathNodeList;
         m_pathfindingGridManager = pathfindingGridManager;
         UnityEngine.Debug.Log("Testing instatiate");
-    }
-    /*public Testing(List<PathNode> pathNodeList, PathfindingGridManager pathfindingGridManager)
-    {
-        m_pathNodeList = pathNodeList;
-        m_pathfindingGridManager = pathfindingGridManager;
-        Debug.Log("Testing instatiate");
-    }*/
-
-    private void Start()
-    {
-        //pathfindingGridManager = new PathfindingGridManager()
-        /*m_pathNodeList = pathNodeList;
-        m_pathfindingGridManager = pathfindingGridManager;
-        Debug.Log("Testing instatiate");*/
     }
 
     private void Update()
@@ -57,12 +36,6 @@ public class PathTesting : MonoBehaviour
     public void TestRandomPath()
     {
         stopwatch.Start();
-        //m_index = UnityEngine.Random.Range(0, m_pathNodeList.Count - 1);
-        m_startNode = m_pathfindingGridManager.GetNode(x, y);
-
-        //m_index = UnityEngine.Random.Range(0, m_pathNodeList.Count - 1);
-
-        m_endNode = m_pathfindingGridManager.GetNode(endx, endy);
 
         path = m_pathfindingGridManager.GetPathRoute(
             new Vector3(x, y),
@@ -92,20 +65,3 @@ public class PathTesting : MonoBehaviour
         y = Mathf.FloorToInt((worldPosition - Vector3.zero).y / cellSize);
     }
 }
-
-
-/*ubv.common.world.LogicGrid testGrid = new LogicGrid(5, 5);
-
-
-            for (int x= 0; x<testGrid.Width; x++)
-            {
-                for (int y=0; y<testGrid.Height; y++)
-                {
-
-                    testGrid.Grid[x, y] = new world.cellType.FloorCell();
-                }
-            }*/
-//if (m_masterLogicGrid.Grid[6,6] != null)
-//{
-//m_pathfindingGridManager = new PathfindingGridManager(testGrid);
-//}

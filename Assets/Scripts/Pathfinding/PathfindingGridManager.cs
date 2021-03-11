@@ -83,12 +83,12 @@ public class PathfindingGridManager: MonoBehaviour
 
         GameObject testing = new GameObject("PathfindingTesting");
         PathTesting Pathfindingtesting = testing.AddComponent<PathTesting>();
-        Pathfindingtesting.Init(pathNodeList, this);
+        Pathfindingtesting.Init(this);
     }
 
     public PathNode GetNode(int x, int y)
     {
-        //if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height)
+        if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height)
         {
             return m_pathNodes[x, y];
         }
