@@ -7,8 +7,9 @@ using UnityEngine;
 public class PathfindingGridManager: MonoBehaviour
 {
     [SerializeField] private WorldGenerator m_worldGenerator;
-
     [SerializeField] private float m_nodeSize = 1;
+    
+    private PathTesting m_pathTesting;
     private Vector3 m_worldOrigin = Vector3.zero;
 
     private LogicGrid m_logicGrid;
@@ -79,11 +80,17 @@ public class PathfindingGridManager: MonoBehaviour
         }
 
         m_pathfinding = new Pathfinding(pathNodeList);
-        
 
-        GameObject testing = new GameObject("PathfindingTesting");
-        PathTesting Pathfindingtesting = testing.AddComponent<PathTesting>();
-        Pathfindingtesting.Init(this);
+        SetUpPathTesting();
+    }
+
+    private void SetUpPathTesting()
+    {
+        m_pathTesting = this.GetComponent<PathTesting>();
+        if (m_pathTesting != null)
+        {
+            m_pathTesting.Init(this);
+        }
     }
 
     public PathNode GetNode(int x, int y)
