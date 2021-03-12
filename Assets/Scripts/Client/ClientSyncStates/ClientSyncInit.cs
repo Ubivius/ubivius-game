@@ -38,7 +38,19 @@ namespace ubv.client.logic
         {
             int playerID = System.Guid.NewGuid().GetHashCode(); // for now
             m_playerID = playerID;
-            m_HTTPClient.Get("dispatcher/" + playerID.ToString(), OnDispatcherResponse);
+
+            HttpResponseMessage msg = new HttpResponseMessage();
+            string jsonString = JsonUtility.ToJson(new JSONServerInfo
+            {
+                Address = "127.0.0.1",
+                Port = 9051
+            }).ToString();
+            msg.Content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
+            msg.StatusCode = HttpStatusCode.OK;
+            OnDispatcherResponse(msg);
+
+            // uncomment when dispatcher ready
+            // m_HTTPClient.Get("dispatcher/" + playerID.ToString(), OnDispatcherResponse);
         }
 
         private void OnDispatcherResponse(HttpResponseMessage message)

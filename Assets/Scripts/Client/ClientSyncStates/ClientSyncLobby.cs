@@ -14,6 +14,7 @@ namespace ubv.client.logic
 
     public class ClientSyncLobby : ClientSyncState, tcp.client.ITCPClientReceiver
     {
+        private bool m_worldLoaded;
         private int? m_playerID; // TODO maybe : set it static/global because accessed by everything
 
         private GameInitMessage m_awaitedInitMessage;
@@ -65,7 +66,7 @@ namespace ubv.client.logic
 
 
                 m_TCPClient.Unsubscribe(this);
-                StartCoroutine(LoadLobbyCoroutine(m_awaitedInitMessage.CellInfo2DArray.Value, simulationBuffer, playerStates));
+                StartCoroutine(LoadWorldCoroutine(m_awaitedInitMessage.CellInfo2DArray.Value, simulationBuffer, playerStates));
                 m_awaitedInitMessage = null;
             }
         }
@@ -77,10 +78,15 @@ namespace ubv.client.logic
             ClientListUpdate.Invoke(new List<int> { m_playerID.Value });
         }
 
-        // TODO maybe later: add a reusable loading screen ?
-        private IEnumerator LoadLobbyCoroutine(common.world.cellType.CellInfo[,] cellInfos, int simulationBuffer, List<PlayerState> playerStates)
+        public void InitFromWorldLoaded()
         {
-            AsyncOperation loadLobby = SceneManager.LoadSceneAsync("ClientGame");
+
+        }
+
+        // TODO maybe later: add a reusable loading screen ?
+        private IEnumerator LoadWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos, int simulationBuffer, List<PlayerState> playerStates)
+        {
+            AsyncOperation loadLobby = SceneManager.LoadSceneAsync("ClientGame", LoadSceneMode.Additive);
             while (!loadLobby.isDone)
             {
                 Debug.Log("Loading lobby : " + loadLobby.progress*100f + " %");
