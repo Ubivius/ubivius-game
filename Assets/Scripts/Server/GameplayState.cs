@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using ubv.tcp;
 using ubv.common.data;
 using ubv.common.serialization;
+using ubv.common;
 
 namespace ubv.server.logic
 {
@@ -14,113 +15,108 @@ namespace ubv.server.logic
     /// </summary>
     public class GameplayState : ServerState, udp.server.IUDPServerReceiver
     {
-        private udp.server.UDPServer m_UDPserver;
-
-        private Dictionary<IPEndPoint, ClientConnection> m_UDPClientConnections;
-        private Dictionary<int, Rigidbody2D> m_bodies;
+        private Dictionary<IPEndPoint, ClientState> m_UDPClientStates;
                 
-        private Dictionary<ClientConnection, Dictionary<int, common.data.InputFrame>> m_clientInputBuffers;
+        private Dictionary<ClientState, Dictionary<int, InputFrame>> m_clientInputBuffers;
+        
+        [SerializeField] private int m_snapshotTicks;
+        [SerializeField] private string m_physicsSceneName;
 
-        private common.StandardMovementSettings m_movementSettings;
-        private readonly int m_snapshotTicks;
-                
         private uint m_tickAccumulator;
         private int m_masterTick;
         private int m_bufferedMasterTick;
-
-        private readonly int m_simulationBuffer;
-
+        private int m_simulationBuffer;
+        
         private PhysicsScene2D m_serverPhysics;
-
-        private GameObject m_playerPrefab;
+        
+        [SerializeField] private List<ServerGameplayStateUpdater> m_updaters;
                 
-        List<int> m_toRemoveCache;
+        private List<int> m_toRemoveCache;
 
-        public GameplayState(udp.server.UDPServer UDPServer,
-            GameObject playerPrefab, 
-            Dictionary<IPEndPoint, ClientConnection> UDPClientConnections, 
-            common.StandardMovementSettings movementSettings, 
-            int snapshotDelay, 
-            int simulationBuffer,
-            string physicsScene)
+        protected override void StateAwake()
+        {
+            ServerState.m_gameplayState = this;
+        }
+
+        public void Init(Dictionary<IPEndPoint, ClientState> UDPClientStates, int simulationBuffer)
         {
             m_tickAccumulator = 0;
             m_masterTick = 0;
             m_bufferedMasterTick = 0;
             m_simulationBuffer = simulationBuffer;
-            m_UDPClientConnections = UDPClientConnections;
-
-            m_movementSettings = movementSettings;
-
-            m_snapshotTicks = snapshotDelay;
+            m_UDPClientStates = UDPClientStates;
+            
             m_toRemoveCache = new List<int>();
 
-            m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(physicsScene).GetPhysicsScene2D();
-            m_playerPrefab = playerPrefab;
-
-            m_bodies = new Dictionary<int, Rigidbody2D>();
-            m_clientInputBuffers = new Dictionary<ClientConnection, Dictionary<int, common.data.InputFrame>>();
-                    
-            // instantiate each player
-            foreach (IPEndPoint ip in m_UDPClientConnections.Keys)
-            {
-                int id = m_UDPClientConnections[ip].PlayerGUID;
-                Rigidbody2D body = GameObject.Instantiate(playerPrefab).GetComponent<Rigidbody2D>();
-                body.position = m_bodies.Count * Vector2.left * 3;
-                body.name = "Server player " + id.ToString();
-                m_bodies.Add(id, body);
-            }
-
+            m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(m_physicsSceneName).GetPhysicsScene2D();
+            
+            m_clientInputBuffers = new Dictionary<ClientState, Dictionary<int, InputFrame>>();
+                   
             // add each player to client states
-            foreach (IPEndPoint ip in m_UDPClientConnections.Keys)
+            foreach (IPEndPoint ip in m_UDPClientStates.Keys)
             {
-                common.data.PlayerState player = new common.data.PlayerState();
-                player.GUID.Value = m_UDPClientConnections[ip].PlayerGUID;
-                player.Position.Value = m_bodies[m_UDPClientConnections[ip].PlayerGUID].position;
-
-                m_UDPClientConnections[ip].State.AddPlayer(player);
-                m_UDPClientConnections[ip].State.PlayerGUID = player.GUID.Value;
+                PlayerState player = new PlayerState();
+                player.GUID.Value = m_UDPClientStates[ip].PlayerGUID;
+                
+                m_UDPClientStates[ip].AddPlayer(player);
+                m_UDPClientStates[ip].PlayerGUID = player.GUID.Value;
             }
 
             // add each player to each other client state
-            foreach (ClientConnection baseConn in m_UDPClientConnections.Values)
+            foreach (ClientState baseState in m_UDPClientStates.Values)
             {
-                m_clientInputBuffers[baseConn] = new Dictionary<int, common.data.InputFrame>();
-                foreach (ClientConnection conn in m_UDPClientConnections.Values)
+                m_clientInputBuffers[baseState] = new Dictionary<int, common.data.InputFrame>();
+                foreach (ClientState conn in m_UDPClientStates.Values)
                 {
-                    common.data.PlayerState currentPlayer = conn.State.GetPlayer();
-                    if (baseConn.PlayerGUID != conn.PlayerGUID)
+                    PlayerState currentPlayer = conn.GetPlayer();
+                    if (baseState.PlayerGUID != conn.PlayerGUID)
                     {
-                        baseConn.State.AddPlayer(currentPlayer);
+                        baseState.AddPlayer(currentPlayer);
                     }
                 }
             }
-                    
-            m_UDPserver = UDPServer;
-            m_UDPserver.Subscribe(this);
-        }
 
-        public override ServerState Update()
-        {
-            return this;
+
+            foreach (ServerGameplayStateUpdater updater in m_updaters)
+            {
+                updater.Setup();
+            }
+
+            foreach (ClientState state in m_UDPClientStates.Values)
+            {
+                foreach(ServerGameplayStateUpdater updater in m_updaters)
+                {
+                    updater.InitClient(state);
+                }
+            }
+
+            foreach (ClientState state in m_UDPClientStates.Values)
+            {
+                foreach (ServerGameplayStateUpdater updater in m_updaters)
+                {
+                    updater.InitPlayer(state.GetPlayer());
+                }
+            }
+            
+            m_UDPServer.Subscribe(this);
         }
                 
-        public override ServerState FixedUpdate()
+        protected override void StateFixedUpdate()
         {
             lock (m_lock)
             {
                 if (++m_bufferedMasterTick > m_simulationBuffer + m_masterTick)
                 {
-                    foreach (ClientConnection client in m_clientInputBuffers.Keys)
+                    foreach (ClientState client in m_clientInputBuffers.Keys)
                     {
                         // if input buffer has a frame corresponding to this tick
-                        common.data.InputFrame frame = null;
+                        InputFrame frame = null;
                         if(!m_clientInputBuffers[client].ContainsKey(m_masterTick))
                         {
 #if DEBUG_LOG
                             Debug.Log("Missed a player input from " + client.PlayerGUID + " for tick " + m_masterTick);
 #endif //DEBUG_LOG
-                            frame = new common.data.InputFrame(); // create a default frame to not move player
+                            frame = new InputFrame(); // create a default frame to not move player
                         }
                         else
                         {
@@ -128,9 +124,11 @@ namespace ubv.server.logic
                         }
 
                         // must be called in main unity thread
-                        Rigidbody2D body = m_bodies[client.PlayerGUID];
-                        common.logic.PlayerMovement.Execute(ref body, m_movementSettings, frame, Time.fixedDeltaTime);
-                                
+                        foreach (ServerGameplayStateUpdater updater in m_updaters)
+                        {
+                            updater.FixedUpdateFromClient(client, frame, Time.fixedDeltaTime);
+                        }
+
                         m_toRemoveCache.Clear();
                         foreach(int tick in m_clientInputBuffers[client].Keys)
                         {
@@ -150,38 +148,36 @@ namespace ubv.server.logic
 
                     m_masterTick++;
                             
-                    foreach (ClientConnection client in m_clientInputBuffers.Keys)
+                    foreach (ClientState client in m_clientInputBuffers.Keys)
                     {
-                        Rigidbody2D body = m_bodies[client.PlayerGUID];
-                        common.data.PlayerState player = client.State.GetPlayer();
-                        player.Position.Value = body.position;
-                        player.Rotation.Value = body.rotation;
-                        client.State.Tick.Value = (uint)m_masterTick;
+                        foreach (ServerGameplayStateUpdater updater in m_updaters)
+                        {
+                            updater.UpdateClient(client);
+                        }
+                        client.Tick.Value = (uint)m_masterTick;
                     }
                 }
 
                 if (++m_tickAccumulator > m_snapshotTicks)
                 {
                     m_tickAccumulator = 0;
-                    foreach (IPEndPoint ip in m_UDPClientConnections.Keys)
+                    foreach (IPEndPoint ip in m_UDPClientStates.Keys)
                     {
-                        m_UDPserver.Send(m_UDPClientConnections[ip].State.GetBytes(), ip);
+                        m_UDPServer.Send(m_UDPClientStates[ip].GetBytes(), ip);
                     }
                 }
             }
-
-            return this;
         }
 
         public void Receive(udp.UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
         {
-            common.data.InputMessage inputs = common.serialization.IConvertible.CreateFromBytes<common.data.InputMessage>(packet.Data);
-            if (inputs != null && m_UDPClientConnections.ContainsKey(clientEndPoint))
+            InputMessage inputs = IConvertible.CreateFromBytes<InputMessage>(packet.Data);
+            if (inputs != null && m_UDPClientStates.ContainsKey(clientEndPoint))
             {
                 lock (m_lock)
                 {
-                    ClientConnection conn = m_UDPClientConnections[clientEndPoint];
-                    List<common.data.InputFrame> inputFrames = inputs.InputFrames.Value;
+                    ClientState conn = m_UDPClientStates[clientEndPoint];
+                    List<InputFrame> inputFrames = inputs.InputFrames.Value;
 #if DEBUG_LOG
                     Debug.Log("(NOW = " + m_masterTick + ") Received tick " + inputs.StartTick.Value + " to " +  (inputs.StartTick.Value + inputFrames.Count) +  " from " + conn.PlayerGUID);
 #endif //DEBUG_LOG
