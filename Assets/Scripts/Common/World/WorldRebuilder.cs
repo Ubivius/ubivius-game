@@ -25,10 +25,14 @@ namespace ubv.client.world
         private int m_totalTiles;
         private int m_loadedTiles;
 
+        public bool IsRebuilt { get; private set; }
+
         private void Awake()
         {
             m_totalTiles = 0;
             m_loadedTiles = 0;
+            LoadingData.WorldRebuilder = this;
+            IsRebuilt = false;
         }
 
         private IEnumerator BuildWorldFromCellInfoCoroutine(CellInfo[,] cellInfos)
@@ -75,15 +79,17 @@ namespace ubv.client.world
                         doorButtonCells.Add(m_defaultInteractableTile);
                         doorButtonPos.Add(pos);
                     }
+                    m_loadedTiles++;
                 }
+                yield return null;
             }
-            yield return null;
 
             m_walls.SetTiles(wallPos.ToArray(), wallCells.ToArray());
             m_floor.SetTiles(floorPos.ToArray(), floorCells.ToArray());
             m_doors.SetTiles(doorPos.ToArray(), doorCells.ToArray());
             m_interactable.SetTiles(doorButtonPos.ToArray(), doorButtonCells.ToArray());
-            
+
+            IsRebuilt = true;
             m_onWorldBuilt.Invoke();
         }
 

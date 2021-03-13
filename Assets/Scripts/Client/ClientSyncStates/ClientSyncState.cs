@@ -15,7 +15,6 @@ namespace ubv.client.logic
 
         static protected ClientSyncInit m_initState;
         static protected ClientSyncLobby m_lobbyState;
-        static protected ClientSyncLoadWorld m_loadWorldState;
         static protected ClientSyncPlay m_playState;
 
         protected ClientSync m_clientSync;
