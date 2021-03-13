@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using ubv.common.data;
 using ubv.tcp;
+using ubv.common;
 
 namespace ubv.client.logic
 {
@@ -31,7 +32,7 @@ namespace ubv.client.logic
 
         private PhysicsScene2D m_clientPhysics;
 
-        private List<IClientStateUpdater> m_updaters;
+        [SerializeField] private List<ClientStateUpdater> m_updaters;
 
         private bool m_initialized;
 
@@ -52,20 +53,16 @@ namespace ubv.client.logic
 
             m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
             m_lastServerState = null;
-
-            m_updaters = new List<IClientStateUpdater>();
+            
             m_initialized = false;
 
             m_playerID = playerID;
             m_simulationBuffer = simulationBuffer;
-            Dictionary<int, PlayerState> playerStateDict = new Dictionary<int, PlayerState>();
-            foreach (PlayerState state in playerStates)
+
+            foreach (ClientStateUpdater updater in m_updaters)
             {
-                playerStateDict[state.GUID.Value] = state;
+                updater.Init(playerStates, m_playerID);
             }
-
-            m_updaters.Add(new PlayerGameObjectUpdater(m_playerSettings, playerStateDict, m_playerID));
-
             m_UDPClient.Subscribe(this);
 
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
@@ -102,7 +99,7 @@ namespace ubv.client.logic
 
             for (int i = 0; i < m_updaters.Count; i++)
             {
-                m_updaters[i].FixedUpdate(Time.deltaTime);
+                m_updaters[i].FixedStateUpdate(Time.deltaTime);
             }
 
             //return this;
@@ -116,7 +113,7 @@ namespace ubv.client.logic
             m_lastInput = InputController.CurrentFrame();
         }
 
-        public void RegisterUpdater(IClientStateUpdater updater)
+        public void RegisterUpdater(ClientStateUpdater updater)
         {
             if (!m_initialized)
                 return;
@@ -137,12 +134,12 @@ namespace ubv.client.logic
             m_clientPhysics.Simulate(deltaTime);
         }
                 
-        private List<IClientStateUpdater> UpdatersNeedingCorrection(ClientState localState, ClientState remoteState)
+        private List<ClientStateUpdater> UpdatersNeedingCorrection(ClientState localState, ClientState remoteState)
         {
             if (!m_initialized)
                 return null;
 
-            List<IClientStateUpdater> needCorrection = new List<IClientStateUpdater>();
+            List<ClientStateUpdater> needCorrection = new List<ClientStateUpdater>();
 
             for (int i = 0; i < m_updaters.Count; i++)
             {
@@ -263,7 +260,7 @@ namespace ubv.client.logic
             {
                 if (m_lastServerState != null)
                 {
-                    List<IClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastServerState);
+                    List<ClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastServerState);
                     if (updaters.Count > 0)
                     {
                         uint rewindTicks = m_remoteTick;
