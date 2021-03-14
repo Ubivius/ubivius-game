@@ -125,25 +125,29 @@ namespace ubv.server.logic
             {
                 lock (m_lock)
                 {
-                    int playerID = System.Guid.NewGuid().GetHashCode();
+                    if (!m_TCPClientStates.ContainsKey(clientIP))
+                    {
+                        int playerID = identification.PlayerID.Value;
 
-                    // TODO get rid of client connection data and only use serializable list of int after serialize rework
-                    m_TCPClientStates[clientIP] = new ClientState(playerID);
+                        // TODO get rid of client connection data and only use serializable list of int after serialize rework
+                        m_TCPClientStates[clientIP] = new ClientState(playerID);
 
-                    IdentificationMessage idMessage = new IdentificationMessage(playerID);
+                        // we send back ID message to confirm reception
+                        IdentificationMessage idMessage = new IdentificationMessage(playerID);
 
-                    PlayerState playerState = new PlayerState(playerID);
+                        PlayerState playerState = new PlayerState(playerID);
 
-                     // set rotation / position according to existing players?
+                        // set rotation / position according to existing players?
 
-                    m_players.Add(playerState);
-                    m_UDPServer.RegisterClient(clientIP.Address);
+                        m_players.Add(playerState);
+                        m_UDPServer.RegisterClient(clientIP.Address);
 
-                    m_TCPServer.Send(idMessage.GetBytes(), clientIP);
+                        m_TCPServer.Send(idMessage.GetBytes(), clientIP);
 
 #if DEBUG_LOG
-                    Debug.Log("Received connection request from " + clientIP.ToString() + " (player ID  " + playerID + ")");
+                        Debug.Log("Received connection request from " + clientIP.ToString() + " (player ID  " + playerID + ")");
 #endif // DEBUG_LOG
+                    }
                 }
             }
             else

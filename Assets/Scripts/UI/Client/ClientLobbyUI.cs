@@ -10,6 +10,7 @@ namespace ubv.ui.client
         [SerializeField] private Transform m_playerListParent;
         [SerializeField] private ubv.client.logic.ClientSyncLobby m_lobby;
         [SerializeField] private TextMeshProUGUI m_defaultPlayerNameItem;
+        [SerializeField] private LoadingScreen m_loadingScreen;
 
         // TODO : switch type from int to something more adapted
         // to UI, which would contain more client-specific info 
@@ -20,6 +21,17 @@ namespace ubv.ui.client
         private void Awake()
         {
             m_connectedPlayers = new List<int>();
+            m_loadingScreen.gameObject.SetActive(false);
+            m_lobby.OnStartLoadWorld += () =>
+             {
+
+                 m_loadingScreen.gameObject.SetActive(true);
+                 m_loadingScreen.FadeLoadingScreen(1, 0.5f);
+             };
+            m_lobby.OnGameStart += () =>
+            {
+                m_loadingScreen.FadeAway(1);
+            };
         }
 
         private void Start()
@@ -42,6 +54,11 @@ namespace ubv.ui.client
                     }
                     m_newPlayers = null;
                 }
+            }
+
+            if (m_loadingScreen.isActiveAndEnabled)
+            {
+                m_loadingScreen.LoadPercentage = m_lobby.LoadPercentage;
             }
         }
 

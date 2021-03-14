@@ -23,16 +23,18 @@ namespace ubv.client.logic
         private GameInitMessage m_awaitedInitMessage;
 
         public ClientListUpdateEvent ClientListUpdate { get; private set; }
+        public UnityAction OnStartLoadWorld;
+        public UnityAction OnGameStart;
 
-        [SerializeField] private LoadingScreen m_loadingScreen;
+        public float LoadPercentage { get; private set; }
 
         protected override void StateAwake()
         {
             ClientListUpdate = new ClientListUpdateEvent();
             m_awaitedInitMessage = null;
             ClientSyncState.m_lobbyState = this;
-            m_loadingScreen.gameObject.SetActive(false);
             m_serverSentSignal = false;
+            LoadPercentage = 0;
         }
 
         private void OnWorldBuilt()
@@ -91,7 +93,7 @@ namespace ubv.client.logic
 
             if (m_serverSentSignal)
             {
-                m_loadingScreen.FadeAway(1);
+                OnGameStart?.Invoke();
                 ClientSyncState.m_playState.Init(m_playerID.Value, m_simulationBuffer.Value, m_playerStates);
                 m_currentState = ClientSyncState.m_playState;
                 m_TCPClient.Unsubscribe(this);
@@ -108,13 +110,11 @@ namespace ubv.client.logic
         
         private IEnumerator LoadWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
         {
-            // pop un loading screen
-            m_loadingScreen.gameObject.SetActive(true);
-            m_loadingScreen.FadeLoadingScreen(1, 0.5f);
+            OnStartLoadWorld?.Invoke();
             AsyncOperation loadLobby = SceneManager.LoadSceneAsync("ClientGame");
             while (!loadLobby.isDone)
             {
-                m_loadingScreen.LoadPercentage = loadLobby.progress * 0.25f;
+                LoadPercentage = loadLobby.progress * 0.25f;
                 yield return null;
             }
 
@@ -123,7 +123,7 @@ namespace ubv.client.logic
             worldRebuilder.BuildWorldFromCellInfo(cellInfos);
             while (!worldRebuilder.IsRebuilt)
             {
-                m_loadingScreen.LoadPercentage = 0.25f + (worldRebuilder.GetWorldBuildProgress() * 0.75f);
+                LoadPercentage = 0.25f + (worldRebuilder.GetWorldBuildProgress() * 0.75f);
                 yield return null;
             }
             
