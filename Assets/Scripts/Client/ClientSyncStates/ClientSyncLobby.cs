@@ -14,22 +14,45 @@ namespace ubv.client.logic
 
     public class ClientSyncLobby : ClientSyncState, tcp.client.ITCPClientReceiver
     {
+        private bool m_serverSentSignal;
         private int? m_playerID; // TODO maybe : set it static/global because accessed by everything
+
+        private int? m_simulationBuffer;
+        private List<PlayerState> m_playerStates;
 
         private GameInitMessage m_awaitedInitMessage;
 
-        public ClientListUpdateEvent ClientListUpdate { get; private set; } 
+        public ClientListUpdateEvent ClientListUpdate { get; private set; }
+        public UnityAction OnStartLoadWorld;
+        public UnityAction OnGameStart;
+
+        public float LoadPercentage { get; private set; }
 
         protected override void StateAwake()
         {
             ClientListUpdate = new ClientListUpdateEvent();
-            DontDestroyOnLoad(this);
             m_awaitedInitMessage = null;
             ClientSyncState.m_lobbyState = this;
+            m_serverSentSignal = false;
+            LoadPercentage = 0;
+        }
+
+        private void OnWorldBuilt()
+        {
+            // TODO : modify code here for Client Ready Confirmation (UBI-350)
+            GameReadyMessage ready = new GameReadyMessage(m_playerID.Value);
+            m_TCPClient.Send(ready.GetBytes());
         }
         
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
+            // check if ready (rework later with UBI-350)
+            GameReadyMessage ready = common.serialization.Serializable.CreateFromBytes<GameReadyMessage>(packet.Data);
+            if (ready != null)
+            {
+                m_serverSentSignal = true;
+            }
+
             // TODO : see why createfrombytes takes SO LONG
             GameInitMessage start = common.serialization.IConvertible.CreateFromBytes<GameInitMessage>(packet.Data);
             if (start != null)
@@ -57,16 +80,24 @@ namespace ubv.client.logic
         {
             if(m_awaitedInitMessage != null)
             {
-                List<PlayerState> playerStates = m_awaitedInitMessage.Players.Value;
-                int simulationBuffer = m_awaitedInitMessage.SimulationBuffer.Value;
+                m_playerStates = m_awaitedInitMessage.Players.Value;
+                m_simulationBuffer = m_awaitedInitMessage.SimulationBuffer.Value;
 #if DEBUG_LOG
-                Debug.Log("Client received confirmation that server is about to start game with " + playerStates.Count + " players and " + simulationBuffer + " simulation buffer ticks");
+                Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
 
 
-                m_TCPClient.Unsubscribe(this);
-                StartCoroutine(LoadLobbyCoroutine(m_awaitedInitMessage.CellInfo2DArray.Value, simulationBuffer, playerStates));
+                StartCoroutine(LoadWorldCoroutine(m_awaitedInitMessage.CellInfo2DArray.Value));
                 m_awaitedInitMessage = null;
+            }
+
+            if (m_serverSentSignal)
+            {
+                OnGameStart?.Invoke();
+                ClientSyncState.m_playState.Init(m_playerID.Value, m_simulationBuffer.Value, m_playerStates);
+                m_currentState = ClientSyncState.m_playState;
+                m_TCPClient.Unsubscribe(this);
+                m_serverSentSignal = false;
             }
         }
 
@@ -76,19 +107,26 @@ namespace ubv.client.logic
             m_TCPClient.Subscribe(this);
             ClientListUpdate.Invoke(new List<int> { m_playerID.Value });
         }
-
-        // TODO maybe later: add a reusable loading screen ?
-        private IEnumerator LoadLobbyCoroutine(common.world.cellType.CellInfo[,] cellInfos, int simulationBuffer, List<PlayerState> playerStates)
+        
+        private IEnumerator LoadWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
         {
+            OnStartLoadWorld?.Invoke();
             AsyncOperation loadLobby = SceneManager.LoadSceneAsync("ClientGame");
             while (!loadLobby.isDone)
             {
-                Debug.Log("Loading lobby : " + loadLobby.progress*100f + " %");
+                LoadPercentage = loadLobby.progress * 0.25f;
                 yield return null;
             }
 
-            ClientSyncState.m_currentState = ClientSyncState.m_loadWorldState;
-            ClientSyncState.m_loadWorldState.Init(cellInfos, m_playerID.Value, simulationBuffer, playerStates);
+            world.WorldRebuilder worldRebuilder = LoadingData.WorldRebuilder;
+            worldRebuilder.OnWorldBuilt(OnWorldBuilt);
+            worldRebuilder.BuildWorldFromCellInfo(cellInfos);
+            while (!worldRebuilder.IsRebuilt)
+            {
+                LoadPercentage = 0.25f + (worldRebuilder.GetWorldBuildProgress() * 0.75f);
+                yield return null;
+            }
+            
         }
     }   
 }
