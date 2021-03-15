@@ -23,11 +23,12 @@ namespace ubv.ui.client
             m_connectedPlayers = new List<int>();
             m_loadingScreen.gameObject.SetActive(false);
             m_lobby.OnStartLoadWorld += () =>
-             {
+            {
 
-                 m_loadingScreen.gameObject.SetActive(true);
-                 m_loadingScreen.FadeLoadingScreen(1, 0.5f);
-             };
+                m_loadingScreen.gameObject.SetActive(true);
+                m_loadingScreen.FadeLoadingScreen(1, 0.5f);
+            };
+
             m_lobby.OnGameStart += () =>
             {
                 m_loadingScreen.FadeAway(1);
