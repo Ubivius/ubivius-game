@@ -10,7 +10,14 @@ namespace ubv.common.world.cellType
     public enum DoorType
     {
         Standard,
-        Section
+        Section_North,
+        Section_East,
+        Section_South,
+        Section_West,
+        Section0_NorthEast,
+        Section0_SouthEast,
+        Section0_SouthWest,
+        Section0_NorthWest
     }
 
     public class DoorCell : LogicCell
