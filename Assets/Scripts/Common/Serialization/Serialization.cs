@@ -11,8 +11,8 @@ namespace ubv.common.serialization
             INPUT_MESSAGE = 0x01,
             CLIENT_STATE = 0x02,
             PLAYER_STATE, // 0x03...
-            AUTH_MESSAGE,
-            GAME_INIT_MESSAGE,
+            IDENTIFICATION_MESSAGE,
+            SERVER_INIT_MESSAGE,
             LOGIC_CELL,
             LOGIC_CELL_DOOR,
             LOGIC_CELL_FLOOR,
@@ -37,7 +37,9 @@ namespace ubv.common.serialization
             NULL,
             CLIENT_READY_MESSAGE,
             LOGIC_CELL_VOID,
-            CLIENT_LIST_MESSAGE
+            CLIENT_LIST_MESSAGE,
+            SERVER_STARTS_MESSAGE,
+            CLIENT_WORLD_LOADED_MESSAGE
         }
     }
 }

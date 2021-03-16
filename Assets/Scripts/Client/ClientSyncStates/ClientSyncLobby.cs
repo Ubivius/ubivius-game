@@ -20,7 +20,7 @@ namespace ubv.client.logic
         private int? m_simulationBuffer;
         private List<PlayerState> m_playerStates;
 
-        private GameInitMessage m_awaitedInitMessage;
+        private ServerInitMessage m_awaitedInitMessage;
 
         public ClientListUpdateEvent ClientListUpdate { get; private set; }
         public UnityAction OnStartLoadWorld;
@@ -39,29 +39,38 @@ namespace ubv.client.logic
 
         private void OnWorldBuilt()
         {
-            // TODO : modify code here for Client Ready Confirmation (UBI-350)
-            GameReadyMessage ready = new GameReadyMessage(m_playerID.Value);
-            m_TCPClient.Send(ready.GetBytes());
+            ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage(m_playerID.Value);
+            m_TCPClient.Send(worldLoaded.GetBytes());
         }
         
+        public void SendReadyToServer()
+        {
+            ClientReadyMessage clientReadyMessage = new ClientReadyMessage(m_playerID.Value);
+            m_TCPClient.Send(clientReadyMessage.GetBytes());
+        }
+
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
-            // check if ready (rework later with UBI-350)
-            GameReadyMessage ready = common.serialization.Serializable.CreateFromBytes<GameReadyMessage>(packet.Data);
+            ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data);
             if (ready != null)
             {
                 m_serverSentSignal = true;
+                return;
             }
 
             // TODO : see why createfrombytes takes SO LONG
-            GameInitMessage start = common.serialization.IConvertible.CreateFromBytes<GameInitMessage>(packet.Data);
+            System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+            watch.Start();
+            ServerInitMessage start = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data);
+            watch.Stop();
+            Debug.Log("Time elapsed for world deserialization : " + watch.ElapsedMilliseconds + " ms");
             if (start != null)
             {
                 m_awaitedInitMessage = start;
+                return;
             }
 
             // loads other players in lobby, receives message from server indicating a new player joined
-
             ClientListMessage clientList = common.serialization.IConvertible.CreateFromBytes<ClientListMessage>(packet.Data);
             if (clientList != null)
             {

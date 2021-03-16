@@ -25,15 +25,7 @@ namespace ubv.client.logic
             ClientSyncState.m_initState = this;
             ClientSyncState.m_currentState = this;
         }
-
-        protected override void StateStart()
-        {
-#if NETWORK_SIMULATE
-            m_clientSync.ConnectButtonEvent.AddListener(SendConnectionRequestToServer);
-#endif // NETWORK_SIMULATE
-
-        }
-
+        
         public void SendConnectionRequestToServer()
         {
             int playerID = System.Guid.NewGuid().GetHashCode(); // for now
@@ -79,15 +71,18 @@ namespace ubv.client.logic
             IdentificationMessage auth = common.serialization.IConvertible.CreateFromBytes<IdentificationMessage>(packet.Data);
             if (auth != null)
             {
+                if (auth.PlayerID.Value == m_playerID)
+                {
 #if DEBUG_LOG
-                Debug.Log("Received connection confirmation");
+                    Debug.Log("Received TCP connection confirmation, sending UDP confirmation back.");
 #endif // DEBUG_LOG
 
-                // send a ping to the server to make it known that the player received its ID
-                m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(auth.GetBytes()).RawBytes);
-                ClientSyncState.m_lobbyState.Init(m_playerID.Value);
-                ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
-                m_TCPClient.Unsubscribe(this);
+                    // send a ping to the server to make it known that the player received its ID
+                    m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(auth.GetBytes()).RawBytes);
+                    ClientSyncState.m_lobbyState.Init(m_playerID.Value);
+                    ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
+                    m_TCPClient.Unsubscribe(this);
+                }
             }
         }
     }   

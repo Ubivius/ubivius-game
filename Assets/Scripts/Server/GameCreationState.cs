@@ -17,29 +17,26 @@ namespace ubv.server.logic
     /// </summary>
     public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver, udp.server.IUDPServerReceiver
     {
-#if NETWORK_SIMULATE
-        [SerializeField] private ServerUpdate m_parent;
-#endif // NETWORK_SIMULATE 
-
         [SerializeField] private int m_simulationBuffer;
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
         private Dictionary<IPEndPoint, ClientState> m_TCPClientStates;
         private Dictionary<IPEndPoint, ClientState> m_UDPClientStates;
 
         private Dictionary<int, bool> m_readyClients;
-        
         private List<PlayerState> m_players;
 
         [SerializeField] private List<ServerInitializer> m_serverInitializers;
 
-#if NETWORK_SIMULATE
-        private bool m_forceStartGame;
-#endif // NETWORK_SIMULATE
+        // Flags
+        private bool m_readyToStartGame;
+        private bool m_awaitingClientLoadWorld;
 
         protected override void StateAwake()
         {
             ServerState.m_gameCreationState = this;
             m_currentState = this;
+            m_readyToStartGame = false;
+            m_awaitingClientLoadWorld = false;
         }
 
         protected override void StateStart()
@@ -55,40 +52,44 @@ namespace ubv.server.logic
 
             m_readyClients = new Dictionary<int, bool>();
             
-            m_forceStartGame = false;
-            
             foreach(ServerInitializer initializer in m_serverInitializers)
             {
                 initializer.Init();
             }
                     
-#if NETWORK_SIMULATE
-            m_parent.ForceStartGameButtonEvent.AddListener(() => 
-            {
-                Debug.Log("Forcing game start");
-                m_forceStartGame = true;
-            });
-#endif // NETWORK_SIMULATE 
-                    
             m_TCPServer.Subscribe(this);
             m_UDPServer.Subscribe(this);
+        }
+
+        private bool EveryoneIsReady()
+        {
+            foreach(bool ready in m_readyClients.Values)
+            {
+                if (!ready)
+                {
+                    return false;
+                }
+            }
+
+            return m_readyClients.Count > 0;
+        }
+
+        private bool EveryoneIsWorldLoaded()
+        {
+            return m_awaitingClientLoadWorld && m_readyClients.Count == 0;
         }
 
         protected override void StateUpdate()
         {
             lock (m_lock)
             {
-                if ((m_TCPClientStates.Count > 3 // TODO : Change here when matchmaking microservice is up
-#if NETWORK_SIMULATE
-                    || m_forceStartGame
-#endif // NETWORK_SIMULATE
-                    ) && !awaitingClients)
+                if (EveryoneIsReady() && !m_awaitingClientLoadWorld)
                 {
                     m_UDPServer.Unsubscribe(this);
 
                     common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
 
-                    GameInitMessage message = new GameInitMessage(m_simulationBuffer, m_players, cellInfoArray);
+                    ServerInitMessage message = new ServerInitMessage(m_simulationBuffer, m_players, cellInfoArray);
 
                     foreach (IPEndPoint ip in m_TCPClientStates.Keys)
                     {
@@ -96,13 +97,20 @@ namespace ubv.server.logic
                     }
 
                     Debug.Log("Waiting for clients to be ready");
-                    awaitingClients = true;
+                    m_awaitingClientLoadWorld = true;
+                }
+                
+                if (EveryoneIsWorldLoaded())
+                {
+                    m_readyToStartGame = true;
+                    m_awaitingClientLoadWorld = false;
                 }
             }
                     
-            if(m_readyClients.Count == m_players.Count && m_players.Count > 0 && awaitingClients)
+            if (m_readyToStartGame)
             {
-                GameReadyMessage message = new GameReadyMessage();
+                m_readyToStartGame = false;
+                ServerStartsMessage message = new ServerStartsMessage();
 
                 Debug.Log("Starting game.");
                 foreach (IPEndPoint ip in m_TCPClientStates.Keys)
@@ -110,14 +118,13 @@ namespace ubv.server.logic
                     m_TCPServer.Send(message.GetBytes(), ip);
                 }
 
+                m_TCPServer.Unsubscribe(this);
+
                 m_gameplayState.Init(m_UDPClientStates, m_simulationBuffer);
                 m_currentState = m_gameplayState;
             }
         }
         
-        // TEMP
-        bool awaitingClients = false;
-
         public void ReceivePacket(TCPToolkit.Packet packet, IPEndPoint clientIP)
         {
             IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data);
@@ -140,6 +147,7 @@ namespace ubv.server.logic
                         // set rotation / position according to existing players?
 
                         m_players.Add(playerState);
+                        m_readyClients[playerID] = false;
                         m_UDPServer.RegisterClient(clientIP.Address);
 
                         m_TCPServer.Send(idMessage.GetBytes(), clientIP);
@@ -149,16 +157,26 @@ namespace ubv.server.logic
 #endif // DEBUG_LOG
                     }
                 }
+                return;
             }
-            else
+
+            ClientReadyMessage ready = IConvertible.CreateFromBytes<ClientReadyMessage>(packet.Data);
+            if (ready != null)
             {
-                GameReadyMessage ready = Serializable.CreateFromBytes<GameReadyMessage>(packet.Data);
-                if (ready != null)
+                Debug.Log("Client " + ready.PlayerID.Value + " is ready to receive world.");
+                m_readyClients[ready.PlayerID.Value] = true;
+                return;
+            }
+
+            if (m_awaitingClientLoadWorld)
+            {
+                ClientWorldLoadedMessage clientWorldLoaded = IConvertible.CreateFromBytes<ClientWorldLoadedMessage>(packet.Data);
+                if (clientWorldLoaded != null)
                 {
-                    Debug.Log("Client " + ready.PlayerID.Value + " is ready");
-                    m_readyClients[ready.PlayerID.Value] = true;
+                    m_readyClients.Remove(clientWorldLoaded.PlayerID.Value);
                 }
             }
+            
         }
 
         public void OnConnect(IPEndPoint clientIP)
@@ -177,14 +195,22 @@ namespace ubv.server.logic
             if (m_UDPClientStates.ContainsKey(clientIP))
             {
 #if DEBUG_LOG
-                Debug.Log("Client " + clientIP.ToString() + " already connected. Ignoring.");
+                Debug.Log("UDP Client " + clientIP.ToString() + " already connected. Ignoring.");
 #endif // DEBUG_LOG
                 return;
             }
-            
+
             IdentificationMessage identification = Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data);
             if (identification != null)
             {
+                if (!m_readyClients.ContainsKey(identification.PlayerID.Value))
+                {
+#if DEBUG_LOG
+                    Debug.Log("Received request from " + clientIP.ToString() + ", who is not registered (ID " + identification.PlayerID.Value + " ). Rejecting");
+#endif // DEBUG_LOG
+                    return;
+                }
+
                 m_UDPClientStates[clientIP] = new ClientState(identification.PlayerID.Value);
 
                 // broadcast connection to all players
