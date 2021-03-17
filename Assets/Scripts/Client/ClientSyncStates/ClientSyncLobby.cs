@@ -57,19 +57,7 @@ namespace ubv.client.logic
                 m_serverSentSignal = true;
                 return;
             }
-
-            // TODO : see why createfrombytes takes SO LONG
-            System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-            watch.Start();
-            ServerInitMessage start = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data);
-            watch.Stop();
-            Debug.Log("Time elapsed for world deserialization : " + watch.ElapsedMilliseconds + " ms");
-            if (start != null)
-            {
-                m_awaitedInitMessage = start;
-                return;
-            }
-
+            
             // loads other players in lobby, receives message from server indicating a new player joined
             ClientListMessage clientList = common.serialization.IConvertible.CreateFromBytes<ClientListMessage>(packet.Data);
             if (clientList != null)
@@ -82,6 +70,20 @@ namespace ubv.client.logic
                 }
 
                 ClientListUpdate.Invoke(playerIDs);
+                return;
+            }
+
+            // TODO : see why createfrombytes takes SO LONG
+            // meanwhile maybe start in thread
+            System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+            watch.Start();
+            ServerInitMessage start = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data);
+            watch.Stop();
+            Debug.Log("Time elapsed for world deserialization : " + watch.ElapsedMilliseconds + " ms");
+            if (start != null)
+            {
+                m_awaitedInitMessage = start;
+                return;
             }
         }
 

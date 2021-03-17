@@ -63,12 +63,7 @@ namespace ubv
 
                     m_server.BeginReceive(EndReceiveCallback, m_server);
                 }
-
-                public string GetAddress()
-                {
-                    return ((IPEndPoint)m_server.Client.LocalEndPoint).Address.ToString();
-                }
-
+                
                 private void Update()
                 {
                     // TODO: Adapt to use a better time tracking? System time?  
@@ -170,7 +165,7 @@ namespace ubv
                     else
                     {
 #if DEBUG_LOG
-                        Debug.Log("Received data from unregistered client. Ignoring.");
+                        Debug.Log("Received data from unregistered client(" + clientEndPoint.ToString() + "). Ignoring.");
 #endif // DEBUG_LOG
                     }
                     

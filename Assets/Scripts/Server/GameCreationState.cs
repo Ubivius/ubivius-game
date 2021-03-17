@@ -61,8 +61,11 @@ namespace ubv.server.logic
                     
             m_TCPServer.Subscribe(this);
             m_UDPServer.Subscribe(this);
-            
-            m_serverUDPInfo = new ServerConnectionInfoMessage(m_UDPServer.GetAddress(), 9050);
+
+            // non-local 
+            // m_serverUDPInfo = new ServerConnectionInfoMessage("72.10.157.139", 9050);
+            // local
+            m_serverUDPInfo = new ServerConnectionInfoMessage("127.0.0.1", 9050);
 
         }
 
@@ -212,6 +215,9 @@ namespace ubv.server.logic
 #endif // DEBUG_LOG
                     return;
                 }
+#if DEBUG_LOG
+                Debug.Log("Received UDP confirmation from " + clientIP.ToString());
+#endif // DEBUG_LOG
 
                 m_UDPClientStates[clientIP] = new ClientState(identification.PlayerID.Value);
 

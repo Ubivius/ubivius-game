@@ -447,17 +447,33 @@ namespace ubv.common.serialization
 
             protected override byte[] GetSourceBytes()
             {
-                return System.Text.Encoding.Unicode.GetBytes(m_value);
+                byte[] strBytes = System.Text.Encoding.Unicode.GetBytes(m_value);
+                byte[] countBytes = System.BitConverter.GetBytes(strBytes.Length);
+                byte[] bytes = new byte[strBytes.Length + countBytes.Length];
+
+                int i = 0;
+                for(; i < countBytes.Length; i++)
+                {
+                    bytes[i] = countBytes[i];
+                }
+
+                for (; i < strBytes.Length + countBytes.Length; i++)
+                {
+                    bytes[i] = strBytes[i - countBytes.Length];
+                }
+
+                return bytes;
             }
 
             protected override int GetSourceByteCount()
             {
-                return GetBytes().Length;
+                return GetSourceBytes().Length;
             }
 
             protected override bool CreateFromSourceBytes(byte[] bytes)
             {
-                m_value = System.Text.Encoding.Unicode.GetString(bytes);
+                int byteCount = System.BitConverter.ToInt32(bytes, 0);
+                m_value = System.Text.Encoding.Unicode.GetString(bytes.SubArray(sizeof(int), byteCount));
                 return true;
             }
 

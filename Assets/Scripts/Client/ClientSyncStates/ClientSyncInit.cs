@@ -12,6 +12,12 @@ namespace ubv.client.logic
 {
     public class ClientSyncInit : ClientSyncState, tcp.client.ITCPClientReceiver
     {
+        // when dispatcher is ready
+        // [SerializeField] EndPoint m_dispatcherEndpoint;
+
+        [SerializeField] string m_serverTCPAddress;
+        [SerializeField] int m_serverTCPPort;
+
         private struct JSONServerInfo
         {
             public string Address;
@@ -31,11 +37,12 @@ namespace ubv.client.logic
             int playerID = System.Guid.NewGuid().GetHashCode(); // for now
             m_playerID = playerID;
 
+            // mock dispatcher response for now
             HttpResponseMessage msg = new HttpResponseMessage();
             string jsonString = JsonUtility.ToJson(new JSONServerInfo
             {
-                Address = "127.0.0.1",
-                Port = 9051
+                Address = m_serverTCPAddress,
+                Port = m_serverTCPPort
             }).ToString();
             msg.Content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
             msg.StatusCode = HttpStatusCode.OK;
@@ -72,7 +79,7 @@ namespace ubv.client.logic
             if (udpInfo != null)
             {
 #if DEBUG_LOG
-                Debug.Log("Received TCP connection confirmation, sending UDP confirmation back.");
+                Debug.Log("Received TCP connection confirmation, sending UDP confirmation back to " + udpInfo.Address.Value + ":" + udpInfo.Port.Value.ToString() + ".");
 #endif // DEBUG_LOG
 
                 // send a ping to the server to make it known that the player received its ID
@@ -80,7 +87,8 @@ namespace ubv.client.logic
 
                 m_UDPClient.SetTargetServer(udpInfo.Address.Value, udpInfo.Port.Value);
 
-                m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(identificationMessage.GetBytes()).RawBytes);
+                // TODO : make sure server receives UDP ping
+                m_UDPClient.Send(identificationMessage.GetBytes());
                 ClientSyncState.m_lobbyState.Init(m_playerID.Value);
                 ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
                 m_TCPClient.Unsubscribe(this);
