@@ -44,6 +44,12 @@ namespace ubv.common.world
             AddSectionDoorEast();
             AddSectionDoorSouth();
             AddSectionDoorWest();
+
+            AddSection0NorthEast();
+            AddSection0SouthEast();
+            AddSection0SouthWest();
+            AddSection0NorthWest();
+
             m_floor.RefreshAllTiles();
             m_door.RefreshAllTiles();
             return m_masterLogicGrid;
@@ -323,15 +329,7 @@ namespace ubv.common.world
             int yMin = m_masterLogicGrid.Height * 2 / 3;
             int yMax = m_masterLogicGrid.Height;
 
-            for (int y = yMin; y < yMax; y++)
-            {
-                if ((m_masterLogicGrid.Grid[x, y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)
-                {
-                    m_masterLogicGrid.Grid[x, y] = new world.cellType.DoorCell(cellType.DoorType.Section_North);
-                    m_floor.SetTile(new Vector3Int(x, y, 0), null); // Remove tile
-                    m_door.SetTile(new Vector3Int(x, y, 0), m_tileDoor);
-                }
-            }
+            AddDoorY(x, yMin, yMax, cellType.DoorType.Section_North);
         }
 
         private void AddSectionDoorEast()
@@ -340,15 +338,7 @@ namespace ubv.common.world
             int xMax = m_masterLogicGrid.Width;
             int y = m_masterLogicGrid.Height / 2;
 
-            for (int x = xMin; x < xMax; x++)
-            {
-                if ((m_masterLogicGrid.Grid[x, y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)
-                {
-                    m_masterLogicGrid.Grid[x, y] = new world.cellType.DoorCell(cellType.DoorType.Section_East);
-                    m_floor.SetTile(new Vector3Int(x, y, 0), null); // Remove tile
-                    m_door.SetTile(new Vector3Int(x, y, 0), m_tileDoor);
-                }
-            }
+            AddDoorX(xMin, xMax, y, cellType.DoorType.Section_East);
         }
 
         private void AddSectionDoorSouth()
@@ -357,15 +347,7 @@ namespace ubv.common.world
             int yMin = 0;
             int yMax = m_masterLogicGrid.Height / 3;
 
-            for (int y = yMin; y < yMax; y++)
-            {
-                if ((m_masterLogicGrid.Grid[x, y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)
-                {
-                    m_masterLogicGrid.Grid[x, y] = new world.cellType.DoorCell(cellType.DoorType.Section_North);
-                    m_floor.SetTile(new Vector3Int(x, y, 0), null); // Remove tile
-                    m_door.SetTile(new Vector3Int(x, y, 0), m_tileDoor);
-                }
-            }
+            AddDoorY(x, yMin, yMax, cellType.DoorType.Section_South);
         }
 
         private void AddSectionDoorWest()
@@ -374,11 +356,89 @@ namespace ubv.common.world
             int xMax = m_masterLogicGrid.Width / 3;
             int y = m_masterLogicGrid.Height / 2;
 
+            AddDoorX(xMin, xMax, y, cellType.DoorType.Section_West);
+        }
+
+        private void AddSection0NorthEast()
+        {
+            int xMin = m_masterLogicGrid.Width / 2;
+            int xMax = m_masterLogicGrid.Width *2 / 3;
+            int y = m_masterLogicGrid.Height * 2 / 3;
+
+            AddDoorX(xMin, xMax, y, cellType.DoorType.Section0_NorthEast);
+
+            int x = m_masterLogicGrid.Width * 2 / 3;
+            int yMin = m_masterLogicGrid.Height / 2;
+            int yMax = m_masterLogicGrid.Height * 2 / 3;
+
+            AddDoorY(x, yMin, yMax, cellType.DoorType.Section0_NorthEast);
+        }
+
+        private void AddSection0SouthEast()
+        {
+            int xMin = m_masterLogicGrid.Width / 2;
+            int xMax = m_masterLogicGrid.Width * 2 / 3;
+            int y = m_masterLogicGrid.Height / 3;
+
+            AddDoorX(xMin, xMax, y, cellType.DoorType.Section0_SouthEast);
+
+            int x = m_masterLogicGrid.Width * 2 / 3;
+            int yMin = m_masterLogicGrid.Height / 3;
+            int yMax = m_masterLogicGrid.Height / 2;
+
+            AddDoorY(x, yMin, yMax, cellType.DoorType.Section0_SouthEast);
+        }
+
+        private void AddSection0SouthWest()
+        {
+            int xMin = m_masterLogicGrid.Width / 3;
+            int xMax = m_masterLogicGrid.Width / 2;
+            int y = m_masterLogicGrid.Height / 3;
+
+            AddDoorX(xMin, xMax, y, cellType.DoorType.Section0_SouthWest);
+
+            int x = m_masterLogicGrid.Width / 3;
+            int yMin = m_masterLogicGrid.Height / 3;
+            int yMax = m_masterLogicGrid.Height / 2;
+
+            AddDoorY(x, yMin, yMax, cellType.DoorType.Section0_SouthWest);
+        }
+
+        private void AddSection0NorthWest()
+        {
+            int xMin = m_masterLogicGrid.Width / 3;
+            int xMax = m_masterLogicGrid.Width / 2;
+            int y = m_masterLogicGrid.Height * 2 / 3;
+
+            AddDoorX(xMin, xMax, y, cellType.DoorType.Section0_NorthWest);
+
+            int x = m_masterLogicGrid.Width / 3;
+            int yMin = m_masterLogicGrid.Height / 2;
+            int yMax = m_masterLogicGrid.Height * 2 / 3;
+
+            AddDoorY(x, yMin, yMax, cellType.DoorType.Section0_NorthWest);
+        }
+
+        private void AddDoorX(int xMin, int xMax, int y, cellType.DoorType type)
+        {
             for (int x = xMin; x < xMax; x++)
             {
                 if ((m_masterLogicGrid.Grid[x, y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)
                 {
-                    m_masterLogicGrid.Grid[x, y] = new world.cellType.DoorCell(cellType.DoorType.Section_West);
+                    m_masterLogicGrid.Grid[x, y] = new world.cellType.DoorCell(type);
+                    m_floor.SetTile(new Vector3Int(x, y, 0), null); // Remove tile
+                    m_door.SetTile(new Vector3Int(x, y, 0), m_tileDoor);
+                }
+            }
+        }
+
+        private void AddDoorY(int x, int yMin, int yMax, cellType.DoorType type)
+        {
+            for (int y = yMin; y < yMax; y++)
+            {
+                if ((m_masterLogicGrid.Grid[x, y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)
+                {
+                    m_masterLogicGrid.Grid[x, y] = new world.cellType.DoorCell(type);
                     m_floor.SetTile(new Vector3Int(x, y, 0), null); // Remove tile
                     m_door.SetTile(new Vector3Int(x, y, 0), m_tileDoor);
                 }

@@ -177,9 +177,18 @@ namespace ubv.common.world
 
         private Direction GetRandomDirection(Vector2Int pos, Direction foward)
         {
-            List<int> dir = new List<int> { 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4};
+            List<int> dir = new List<int> { 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
 
             int select;
+
+            if (OnFrontier(pos))
+            {
+                if (IsSpaceFree(pos, foward))
+                {
+                    return foward;
+                }
+                return Direction.Stop;
+            }
 
             while (dir.Count > 0)
             {
@@ -375,6 +384,23 @@ namespace ubv.common.world
                     return true;
                 }
             }            
+            return false;
+        }
+
+        private bool OnFrontier(Vector2Int pos)
+        {
+            if (   (pos.x >= m_masterLogicGrid.Width / 3 && pos.x < m_masterLogicGrid.Width * 2 / 3 && pos.y == m_masterLogicGrid.Height * 2 / 3) // Section0_North
+                || (pos.x == m_masterLogicGrid.Width * 2 / 3 && pos.y >= m_masterLogicGrid.Height / 3 && pos.y < m_masterLogicGrid.Height * 2 / 3) // Section0_East
+                || (pos.x >= m_masterLogicGrid.Width / 3 && pos.x < m_masterLogicGrid.Width * 2 / 3 && pos.y == m_masterLogicGrid.Height / 3) // Section0_South
+                || (pos.x == m_masterLogicGrid.Width / 3 && pos.y >= m_masterLogicGrid.Height / 3 && pos.y < m_masterLogicGrid.Height * 2 / 3) // Section0_West
+                || (pos.x == m_masterLogicGrid.Width / 2 && pos.y >= m_masterLogicGrid.Height * 2 / 3 && pos.y < m_masterLogicGrid.Height) // North
+                || (pos.x >= m_masterLogicGrid.Width * 2 / 3 && pos.x < m_masterLogicGrid.Width && pos.y == m_masterLogicGrid.Height / 2) // East
+                || (pos.x == m_masterLogicGrid.Width / 2 && pos.y >= 0 && pos.y < m_masterLogicGrid.Height / 3) // South
+                || (pos.x >= 0 && pos.x < m_masterLogicGrid.Width / 3 && pos.y == m_masterLogicGrid.Height / 2) // West
+               )
+            {
+                return true;
+            }
             return false;
         }
 
