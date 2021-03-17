@@ -368,6 +368,10 @@ namespace ubv.common.serialization
 
         public class Vector2Int : Serialized<UnityEngine.Vector2Int>
         {
+            public Vector2Int(UnityEngine.Vector2Int value) : base(value)
+            {
+            }
+
             protected override byte[] GetSourceBytes()
             {
                 byte[] bytes = new byte[sizeof(int) * 2];
@@ -398,6 +402,10 @@ namespace ubv.common.serialization
 
         public class Quaternion : Serialized<UnityEngine.Quaternion>
         {
+            public Quaternion(UnityEngine.Quaternion value) : base(value)
+            {
+            }
+
             protected override byte[] GetSourceBytes()
             {
                 byte[] bytes = new byte[sizeof(float) * 4];
@@ -433,6 +441,10 @@ namespace ubv.common.serialization
 
         public class String : Serialized<string>
         {
+            public String(string value) : base(value)
+            {
+            }
+
             protected override byte[] GetSourceBytes()
             {
                 return System.Text.Encoding.Unicode.GetBytes(m_value);

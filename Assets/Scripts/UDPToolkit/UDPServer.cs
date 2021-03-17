@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading;
 using UnityEngine.SceneManagement;
+using System;
 
 namespace ubv
 {
@@ -61,6 +62,11 @@ namespace ubv
 #endif // DEBUG_LOG
 
                     m_server.BeginReceive(EndReceiveCallback, m_server);
+                }
+
+                public string GetAddress()
+                {
+                    return ((IPEndPoint)m_server.Client.LocalEndPoint).Address.ToString();
                 }
 
                 private void Update()

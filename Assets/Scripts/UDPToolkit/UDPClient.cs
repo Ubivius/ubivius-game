@@ -58,7 +58,12 @@ namespace ubv
                     m_lastPacketSentTime = 0;
 
                     m_client = new UdpClient();
-                    m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
+                    SetTargetServer(m_serverAddress, m_port);
+                }
+
+                public void SetTargetServer(string address, int port)
+                {
+                    m_server = new IPEndPoint(IPAddress.Parse(address), port);
                 }
 
                 private void Start()

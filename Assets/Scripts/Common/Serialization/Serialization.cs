@@ -39,7 +39,8 @@ namespace ubv.common.serialization
             LOGIC_CELL_VOID,
             CLIENT_LIST_MESSAGE,
             SERVER_STARTS_MESSAGE,
-            CLIENT_WORLD_LOADED_MESSAGE
+            CLIENT_WORLD_LOADED_MESSAGE,
+            SERVER_CONNECTION_INFO_MESSAGE
         }
     }
 }

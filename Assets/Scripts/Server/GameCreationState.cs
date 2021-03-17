@@ -27,6 +27,8 @@ namespace ubv.server.logic
 
         [SerializeField] private List<ServerInitializer> m_serverInitializers;
 
+        private ServerConnectionInfoMessage m_serverUDPInfo;
+
         // Flags
         private bool m_readyToStartGame;
         private bool m_awaitingClientLoadWorld;
@@ -59,6 +61,9 @@ namespace ubv.server.logic
                     
             m_TCPServer.Subscribe(this);
             m_UDPServer.Subscribe(this);
+            
+            m_serverUDPInfo = new ServerConnectionInfoMessage(m_UDPServer.GetAddress(), 9050);
+
         }
 
         private bool EveryoneIsReady()
@@ -138,10 +143,7 @@ namespace ubv.server.logic
 
                         // TODO get rid of client connection data and only use serializable list of int after serialize rework
                         m_TCPClientStates[clientIP] = new ClientState(playerID);
-
-                        // we send back ID message to confirm reception
-                        IdentificationMessage idMessage = new IdentificationMessage(playerID);
-
+                        
                         PlayerState playerState = new PlayerState(playerID);
 
                         // set rotation / position according to existing players?
@@ -150,7 +152,7 @@ namespace ubv.server.logic
                         m_readyClients[playerID] = false;
                         m_UDPServer.RegisterClient(clientIP.Address);
 
-                        m_TCPServer.Send(idMessage.GetBytes(), clientIP);
+                        m_TCPServer.Send(m_serverUDPInfo.GetBytes(), clientIP);
 
 #if DEBUG_LOG
                         Debug.Log("Received connection request from " + clientIP.ToString() + " (player ID  " + playerID + ")");

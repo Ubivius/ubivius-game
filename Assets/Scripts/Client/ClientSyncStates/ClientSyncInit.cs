@@ -68,21 +68,22 @@ namespace ubv.client.logic
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
             // receive auth message and set player id
-            IdentificationMessage auth = common.serialization.IConvertible.CreateFromBytes<IdentificationMessage>(packet.Data);
-            if (auth != null)
+            ServerConnectionInfoMessage udpInfo = common.serialization.IConvertible.CreateFromBytes<ServerConnectionInfoMessage>(packet.Data);
+            if (udpInfo != null)
             {
-                if (auth.PlayerID.Value == m_playerID)
-                {
 #if DEBUG_LOG
-                    Debug.Log("Received TCP connection confirmation, sending UDP confirmation back.");
+                Debug.Log("Received TCP connection confirmation, sending UDP confirmation back.");
 #endif // DEBUG_LOG
 
-                    // send a ping to the server to make it known that the player received its ID
-                    m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(auth.GetBytes()).RawBytes);
-                    ClientSyncState.m_lobbyState.Init(m_playerID.Value);
-                    ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
-                    m_TCPClient.Unsubscribe(this);
-                }
+                // send a ping to the server to make it known that the player received its ID
+                IdentificationMessage identificationMessage = new IdentificationMessage(m_playerID.Value);
+
+                m_UDPClient.SetTargetServer(udpInfo.Address.Value, udpInfo.Port.Value);
+
+                m_UDPClient.Send(UDPToolkit.Packet.PacketFromBytes(identificationMessage.GetBytes()).RawBytes);
+                ClientSyncState.m_lobbyState.Init(m_playerID.Value);
+                ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
+                m_TCPClient.Unsubscribe(this);
             }
         }
     }   
