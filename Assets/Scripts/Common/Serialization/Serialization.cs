@@ -40,7 +40,7 @@ namespace ubv.common.serialization
             CLIENT_LIST_MESSAGE,
             SERVER_STARTS_MESSAGE,
             CLIENT_WORLD_LOADED_MESSAGE,
-            SERVER_CONNECTION_INFO_MESSAGE
+            SERVER_SUCCESSFUL_CONNECT_MESSAGE
         }
     }
 }

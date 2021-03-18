@@ -27,8 +27,6 @@ namespace ubv.server.logic
 
         [SerializeField] private List<ServerInitializer> m_serverInitializers;
 
-        private ServerConnectionInfoMessage m_serverUDPInfo;
-
         // Flags
         private bool m_readyToStartGame;
         private bool m_awaitingClientLoadWorld;
@@ -61,11 +59,7 @@ namespace ubv.server.logic
                     
             m_TCPServer.Subscribe(this);
             m_UDPServer.Subscribe(this);
-
-            // non-local 
-            // m_serverUDPInfo = new ServerConnectionInfoMessage("72.10.157.139", 9050);
-            // local
-            m_serverUDPInfo = new ServerConnectionInfoMessage("127.0.0.1", 9050);
+            m_UDPServer.AcceptNewClients = true;
 
         }
 
@@ -153,9 +147,10 @@ namespace ubv.server.logic
 
                         m_players.Add(playerState);
                         m_readyClients[playerID] = false;
-                        m_UDPServer.RegisterClient(clientIP.Address);
 
-                        m_TCPServer.Send(m_serverUDPInfo.GetBytes(), clientIP);
+                        ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
+
+                        m_TCPServer.Send(serverSuccessPing.GetBytes(), clientIP);
 
 #if DEBUG_LOG
                         Debug.Log("Received connection request from " + clientIP.ToString() + " (player ID  " + playerID + ")");
@@ -166,7 +161,7 @@ namespace ubv.server.logic
             }
 
             ClientReadyMessage ready = IConvertible.CreateFromBytes<ClientReadyMessage>(packet.Data);
-            if (ready != null)
+            if (ready != null && m_readyClients.ContainsKey(ready.PlayerID.Value))
             {
                 Debug.Log("Client " + ready.PlayerID.Value + " is ready to receive world.");
                 m_readyClients[ready.PlayerID.Value] = true;
@@ -208,17 +203,10 @@ namespace ubv.server.logic
             IdentificationMessage identification = Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data);
             if (identification != null)
             {
-                if (!m_readyClients.ContainsKey(identification.PlayerID.Value))
-                {
 #if DEBUG_LOG
-                    Debug.Log("Received request from " + clientIP.ToString() + ", who is not registered (ID " + identification.PlayerID.Value + " ). Rejecting");
+                Debug.Log("Received UDP confirmation from " + clientIP.ToString() + " (player ID  " + identification.PlayerID.Value + ")");
 #endif // DEBUG_LOG
-                    return;
-                }
-#if DEBUG_LOG
-                Debug.Log("Received UDP confirmation from " + clientIP.ToString());
-#endif // DEBUG_LOG
-
+                
                 m_UDPClientStates[clientIP] = new ClientState(identification.PlayerID.Value);
 
                 // broadcast connection to all players
