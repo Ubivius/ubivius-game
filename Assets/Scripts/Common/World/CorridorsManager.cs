@@ -135,7 +135,7 @@ namespace ubv.common.world
 
         private void AddTile(Vector2Int pos, Direction dir)
         {
-            switch (dir)
+            switch (dir) // TODO Retirer tout les add to tilemap
             {
                 case Direction.North:
                     m_masterLogicGrid.Grid[pos.x + 1, pos.y + 1] = new world.cellType.FloorCell();
@@ -172,13 +172,18 @@ namespace ubv.common.world
                 default:
                     break;
             }
-            m_floor.RefreshAllTiles();
+            // TODO stop watch
+            //m_floor.RefreshAllTiles();
         }
 
         private Direction GetRandomDirection(Vector2Int pos, Direction foward)
         {
-            List<int> dir = new List<int> { 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
-
+            List<int> dir = new List<int> { 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4}; // TODO look to clear useless check
+            // Utiliser ramdom avec un switch à default?
+            // Utiliser une liste mélanger et la parcourir?
+            // Toujours tout droit sauf si erreur?
+            // random 0 a 3
+            // Librairie? vérifier pour tirage avec probabilité
             int select;
 
             if (OnFrontier(pos))
@@ -233,7 +238,8 @@ namespace ubv.common.world
                 }
                 else
                 {
-                    dir.RemoveRange(5, dir.Count - 5);
+                    //dir.RemoveRange(5, dir.Count - 5);
+                    dir.RemoveRange(4, dir.Count - 4);
                 }
             }
 
