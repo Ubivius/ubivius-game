@@ -26,7 +26,7 @@ namespace ubv.server.logic
         private List<PlayerState> m_players;
 
         [SerializeField] private List<ServerInitializer> m_serverInitializers;
-
+        
         // Flags
         private bool m_readyToStartGame;
         private bool m_awaitingClientLoadWorld;
@@ -155,6 +155,12 @@ namespace ubv.server.logic
 #if DEBUG_LOG
                         Debug.Log("Received connection request from " + clientIP.ToString() + " (player ID  " + playerID + ")");
 #endif // DEBUG_LOG
+
+                        byte[] bytes = new ClientListMessage(m_players).GetBytes();
+                        foreach (IPEndPoint ip in m_TCPClientStates.Keys)
+                        {
+                            m_TCPServer.Send(bytes, ip);
+                        }
                     }
                 }
                 return;
@@ -208,13 +214,6 @@ namespace ubv.server.logic
 #endif // DEBUG_LOG
                 
                 m_UDPClientStates[clientIP] = new ClientState(identification.PlayerID.Value);
-
-                // broadcast connection to all players
-                byte[] bytes = new ClientListMessage(m_players).GetBytes();
-                foreach (IPEndPoint ip in m_TCPClientStates.Keys)
-                {
-                    m_TCPServer.Send(bytes, ip);
-                }
             }
         }
     }
