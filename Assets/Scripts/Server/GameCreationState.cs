@@ -98,7 +98,7 @@ namespace ubv.server.logic
                         m_TCPServer.Send(message.GetBytes(), ip);
                     }
 
-                    Debug.Log("Waiting for clients to be ready");
+                    Debug.Log("Waiting for clients to load their worlds");
                     m_awaitingClientLoadWorld = true;
                 }
                 
