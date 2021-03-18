@@ -52,23 +52,26 @@ namespace ubv.common.world
                 for (int y = 1 + m_wallThickness; y < height - 1 - m_wallThickness; y++)
                 {
                     Vector2Int pos = new Vector2Int(x, y);
-                    if (IsSpaceFreeNorth(pos) &&
-                        IsSpaceFreeEast(pos) &&
-                        IsSpaceFreeSouth(pos) &&
-                        IsSpaceFreeWest(pos))
-                    {
-                        if (m_masterLogicGrid.Grid[x,     y    ] == null && // center                 
-                            m_masterLogicGrid.Grid[x - 1, y - 1] == null && // bottom-left
-                            m_masterLogicGrid.Grid[x - 1, y    ] == null && // left
-                            m_masterLogicGrid.Grid[x - 1, y + 1] == null && // top-left
-                            m_masterLogicGrid.Grid[x,     y + 1] == null && // top
-                            m_masterLogicGrid.Grid[x + 1, y + 1] == null && // top-right
-                            m_masterLogicGrid.Grid[x + 1, y    ] == null && // right
-                            m_masterLogicGrid.Grid[x + 1, y - 1] == null && // bottom-right
-                            m_masterLogicGrid.Grid[x,     y - 1] == null    // bottom
-                            )
+                    if (!IsStartPointOnFrontier(pos))
+                    {                        
+                        if (IsSpaceFreeNorth(pos) &&
+                            IsSpaceFreeEast(pos) &&
+                            IsSpaceFreeSouth(pos) &&
+                            IsSpaceFreeWest(pos))
                         {
-                            return new Vector2Int(x, y);
+                            if (m_masterLogicGrid.Grid[x,     y    ] == null && // center                 
+                                m_masterLogicGrid.Grid[x - 1, y - 1] == null && // bottom-left
+                                m_masterLogicGrid.Grid[x - 1, y    ] == null && // left
+                                m_masterLogicGrid.Grid[x - 1, y + 1] == null && // top-left
+                                m_masterLogicGrid.Grid[x,     y + 1] == null && // top
+                                m_masterLogicGrid.Grid[x + 1, y + 1] == null && // top-right
+                                m_masterLogicGrid.Grid[x + 1, y    ] == null && // right
+                                m_masterLogicGrid.Grid[x + 1, y - 1] == null && // bottom-right
+                                m_masterLogicGrid.Grid[x,     y - 1] == null    // bottom
+                                )
+                            {
+                                return new Vector2Int(x, y);
+                            }
                         }
                     }
                 }
@@ -186,7 +189,7 @@ namespace ubv.common.world
             // Librairie? vérifier pour tirage avec probabilité
             int select;
 
-            if (OnFrontier(pos))
+            if (IsOnFrontier(pos, dir))
             {
                 if (IsSpaceFree(pos, foward))
                 {
@@ -393,16 +396,78 @@ namespace ubv.common.world
             return false;
         }
 
-        private bool OnFrontier(Vector2Int pos)
+        private bool IsStartPointOnFrontier(Vector2Int pos)
         {
-            if (   (pos.x >= m_masterLogicGrid.Width / 3 && pos.x < m_masterLogicGrid.Width * 2 / 3 && pos.y == m_masterLogicGrid.Height * 2 / 3) // Section0_North
-                || (pos.x == m_masterLogicGrid.Width * 2 / 3 && pos.y >= m_masterLogicGrid.Height / 3 && pos.y < m_masterLogicGrid.Height * 2 / 3) // Section0_East
-                || (pos.x >= m_masterLogicGrid.Width / 3 && pos.x < m_masterLogicGrid.Width * 2 / 3 && pos.y == m_masterLogicGrid.Height / 3) // Section0_South
-                || (pos.x == m_masterLogicGrid.Width / 3 && pos.y >= m_masterLogicGrid.Height / 3 && pos.y < m_masterLogicGrid.Height * 2 / 3) // Section0_West
-                || (pos.x == m_masterLogicGrid.Width / 2 && pos.y >= m_masterLogicGrid.Height * 2 / 3 && pos.y < m_masterLogicGrid.Height) // North
-                || (pos.x >= m_masterLogicGrid.Width * 2 / 3 && pos.x < m_masterLogicGrid.Width && pos.y == m_masterLogicGrid.Height / 2) // East
-                || (pos.x == m_masterLogicGrid.Width / 2 && pos.y >= 0 && pos.y < m_masterLogicGrid.Height / 3) // South
-                || (pos.x >= 0 && pos.x < m_masterLogicGrid.Width / 3 && pos.y == m_masterLogicGrid.Height / 2) // West
+            if (TileOnFrontier(pos.x,     pos.y    ) ||
+                TileOnFrontier(pos.x - 1, pos.y - 1) ||
+                TileOnFrontier(pos.x - 1, pos.y    ) ||
+                TileOnFrontier(pos.x - 1, pos.y + 1) ||
+                TileOnFrontier(pos.x,     pos.y + 1) ||
+                TileOnFrontier(pos.x + 1, pos.y + 1) ||
+                TileOnFrontier(pos.x + 1, pos.y    ) ||
+                TileOnFrontier(pos.x + 1, pos.y - 1) ||
+                TileOnFrontier(pos.x,     pos.y - 1))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool IsOnFrontierNorth(Vector2Int pos)
+        {
+            
+            if(!TileOnFrontier(pos.x - 1, pos.y + 1) &&
+               !TileOnFrontier(pos.x,     pos.y + 1) &&
+               !TileOnFrontier(pos.x + 1, pos.y + 1))
+            {
+                return false;                
+            }                                  
+            return false;
+        }
+
+        private bool IsOnFrontierEast(Vector2Int pos)
+        {
+            if (!TileOnFrontier(pos.x + 1, pos.y - 1) &&
+                !TileOnFrontier(pos.x + 1, pos.y    ) &&
+                !TileOnFrontier(pos.x + 1, pos.y + 1))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool IsOnFrontierSouth(Vector2Int pos)
+        {
+            if (!TileOnFrontier(pos.x - 1, pos.y - 1) &&
+                !TileOnFrontier(pos.x,     pos.y - 1) &&
+                !TileOnFrontier(pos.x + 1, pos.y - 1))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool IsOnFrontierWest(Vector2Int pos)
+        {
+            if (!TileOnFrontier(pos.x - 1, pos.y - 1) &&
+                !TileOnFrontier(pos.x - 1, pos.y    ) &&
+                !TileOnFrontier(pos.x - 1, pos.y + 1))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool TileOnFrontier(int x, int y)
+        {
+            if (   (x >= m_masterLogicGrid.Width / 3     && x < m_masterLogicGrid.Width * 2 / 3   && y == m_masterLogicGrid.Height * 2 / 3) // Section0_North
+                || (x == m_masterLogicGrid.Width * 2 / 3 && y >= m_masterLogicGrid.Height / 3     && y < m_masterLogicGrid.Height * 2 / 3) // Section0_East
+                || (x >= m_masterLogicGrid.Width / 3     && x < m_masterLogicGrid.Width * 2 / 3   && y == m_masterLogicGrid.Height / 3) // Section0_South
+                || (x == m_masterLogicGrid.Width / 3     && y >= m_masterLogicGrid.Height / 3     && y < m_masterLogicGrid.Height * 2 / 3) // Section0_West
+                || (x == m_masterLogicGrid.Width / 2     && y >= m_masterLogicGrid.Height * 2 / 3 && y < m_masterLogicGrid.Height) // North
+                || (x >= m_masterLogicGrid.Width * 2 / 3 && x < m_masterLogicGrid.Width           && y == m_masterLogicGrid.Height / 2) // East
+                || (x == m_masterLogicGrid.Width / 2     && y >= 0                                && y < m_masterLogicGrid.Height / 3) // South
+                || (x >= 0                               && x < m_masterLogicGrid.Width / 3       && y == m_masterLogicGrid.Height / 2) // West
                )
             {
                 return true;
