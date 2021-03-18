@@ -12,9 +12,9 @@ namespace ubv
             /// </summary>
             public class PlayerMovement
             {
-                static public void Execute(ref Rigidbody2D rigidbody, StandardMovementSettings movementSettings, common.data.InputFrame input, float deltaTime)
+                static public void Execute(ref Rigidbody2D rigidbody, gameplay.PlayerStats stats, common.data.InputFrame input, float deltaTime)
                 {
-                    rigidbody.velocity = input.Movement.Value * (input.Sprinting.Value ? movementSettings.SprintVelocity : movementSettings.WalkVelocity);
+                    rigidbody.velocity = input.Movement.Value * stats.WalkingVelocity.Value * (input.Sprinting.Value ? stats.RunningMultiplier.Value : 1f);
                 }
             }
         }

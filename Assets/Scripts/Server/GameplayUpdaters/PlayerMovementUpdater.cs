@@ -33,7 +33,7 @@ namespace ubv.server.logic
         public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
         {
             Rigidbody2D body = m_bodies[client.PlayerGUID];
-            common.logic.PlayerMovement.Execute(ref body, m_playerSettings.MovementSettings, frame, Time.fixedDeltaTime);
+            common.logic.PlayerMovement.Execute(ref body, m_playerStats, frame, Time.fixedDeltaTime);
         }
 
         public override void UpdateClient(ClientState client)
