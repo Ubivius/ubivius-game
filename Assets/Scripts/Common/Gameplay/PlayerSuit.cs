@@ -8,12 +8,16 @@ namespace ubv.common.gameplay
     {
         [SerializeField] protected PlayerItem m_mainItem;
         [SerializeField] protected PlayerItem m_sideItem;
+        
+        [SerializeField] private float m_defaultMaxHealth;
+        [SerializeField] private float m_defaultWalkingVelocity;
+        [SerializeField] private float m_defaultRunningMultiplier;
 
         public PlayerStats Stats;
 
         private void Awake()
         {
-            Stats.Init();
+            Stats = new PlayerStats(m_defaultMaxHealth, m_defaultWalkingVelocity, m_defaultRunningMultiplier);
         }
 
         // Start is called before the first frame update

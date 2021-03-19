@@ -7,7 +7,16 @@ namespace ubv.common.gameplay
     {
         private PlayerSuit m_currentSuit;
 
-        [SerializeField] private PlayerStats m_defaultStats;
+        [SerializeField] private float m_defaultMaxHealth;
+        [SerializeField] private float m_defaultWalkingVelocity;
+        [SerializeField] private float m_defaultRunningMultiplier;
+
+        private PlayerStats m_defaultStats;
+
+        private void Awake()
+        {
+            m_defaultStats = new PlayerStats(m_defaultMaxHealth, m_defaultWalkingVelocity, m_defaultRunningMultiplier);
+        }
 
         // Use this for initialization
         void Start()

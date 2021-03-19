@@ -3,12 +3,22 @@ using System.Collections;
 
 namespace ubv.common.gameplay
 {
-    [System.Serializable]
     public class PlayerStat
     {
-        [SerializeField] public float Max;
+        public float Max;
         public float Value { get; private set; }
         
+        public PlayerStat()
+        {
+            SetToMax();
+        }
+
+        public PlayerStat(float value)
+        {
+            Max = value;
+            Value = Max;
+        }
+
         public void Reduce(float amount)
         {
             Value -= amount;
