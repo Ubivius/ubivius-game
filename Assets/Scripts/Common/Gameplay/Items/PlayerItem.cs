@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 namespace ubv.common.gameplay
 {
@@ -19,14 +20,10 @@ namespace ubv.common.gameplay
 
         public bool ReadyToActivate { get; private set; }
 
+        public UnityAction OnItemActivation;
+
         private float m_activationTimer;
-
-        // Use this for initialization
-        void Start()
-        {
-
-        }
-
+        
         // Update is called once per frame
         void Update()
         {
@@ -44,6 +41,7 @@ namespace ubv.common.gameplay
         {
             if (ReadyToActivate)
             {
+                OnItemActivation?.Invoke();
                 m_activationTimer = 0;
                 ItemActivation();
             }
