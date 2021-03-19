@@ -25,6 +25,7 @@ namespace ubv.client.logic
         {
             m_bodies = new Dictionary<int, Rigidbody2D>();
             m_goalStates = new Dictionary<int, PlayerState>();
+            m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             int id = 0;
             foreach(PlayerState state in playerStates)
             {

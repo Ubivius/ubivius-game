@@ -8,13 +8,14 @@ namespace ubv.server.logic
 {
     public class PlayerMovementUpdater : ServerGameplayStateUpdater
     {
+        [SerializeField] private PlayerSettings m_playerSettings;
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
-        [SerializeField] private PlayerSettings m_playerSettings;
 
         public override void Setup()
         {
             m_bodies = new Dictionary<int, Rigidbody2D>();
+            m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
         }
 
         public override void InitClient(ClientState state)
