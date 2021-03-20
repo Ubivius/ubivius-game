@@ -11,6 +11,7 @@ namespace ubv.client.logic
         public ClientSync ClientSync;
         public tcp.client.TCPClient TCPClient;
         public udp.client.UDPClient UDPClient;
+        public http.HTTPClient HTTPClient;
 
         private void Awake()
         {
