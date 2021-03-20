@@ -8,13 +8,14 @@ public class PathfindingGridManager: MonoBehaviour
 {
     [SerializeField] private WorldGenerator m_worldGenerator;
     [SerializeField] private float m_nodeSize = 1;
-    
-    private PathTesting m_pathTesting;
+
     private Vector3 m_worldOrigin = Vector3.zero;
 
     private LogicGrid m_logicGrid;
     private PathNode[,] m_pathNodes;
     private Pathfinding m_pathfinding;
+
+    private bool m_setUpDone = false;
 
     private void Start()
     {
@@ -57,7 +58,7 @@ public class PathfindingGridManager: MonoBehaviour
                     pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y));
                     // Left Down
                     if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y - 1));
-                    // Left Up
+                    // Left Up   
                     if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y + 1));
                 }
 
@@ -80,17 +81,12 @@ public class PathfindingGridManager: MonoBehaviour
         }
 
         m_pathfinding = new Pathfinding(pathNodeList);
-
-        SetUpPathTesting();
+        m_setUpDone = true;
     }
 
-    private void SetUpPathTesting()
+    public bool IsSetUpDone()
     {
-        m_pathTesting = this.GetComponent<PathTesting>();
-        if (m_pathTesting != null)
-        {
-            m_pathTesting.Init(this);
-        }
+        return m_setUpDone;
     }
 
     public PathNode GetNode(int x, int y)
@@ -110,7 +106,7 @@ public class PathfindingGridManager: MonoBehaviour
         return path;
     }
 
-    public PathRoute GetPathRoute(Vector3 start, Vector3 end)
+    public PathRoute GetPathRoute(Vector2 start, Vector2 end)
     {
         PathNode startNode = this.GetNode(Mathf.RoundToInt(start.x), Mathf.RoundToInt(start.y));
         PathNode endNode = this.GetNode(Mathf.RoundToInt(end.x), Mathf.RoundToInt(end.y));
@@ -119,5 +115,4 @@ public class PathfindingGridManager: MonoBehaviour
 
         return new PathRoute(pathNodeList, m_worldOrigin, m_nodeSize);
     }
-
 }

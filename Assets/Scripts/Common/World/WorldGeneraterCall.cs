@@ -10,8 +10,8 @@ namespace ubv.common.world
         // Start is called before the first frame update
         void OnEnable()
         {
-            //m_generator.GenerateWorld();     // full map
-            m_generator.GenerateWithOneRoom(); // one room
+            m_generator.GenerateWorld();     // full map
+            //m_generator.GenerateWithOneRoom(); // one room
         }
     }
 }

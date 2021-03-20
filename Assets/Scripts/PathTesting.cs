@@ -8,42 +8,44 @@ using System.Diagnostics;
 
 public class PathTesting : MonoBehaviour
 {
+    [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
+
     public int x, y, endx, endy;
-    private List<PathNode> path;
+    private List<PathNode> m_path;
+    private Stopwatch m_stopwatch;
 
-    private PathfindingGridManager m_pathfindingGridManager;
-
-    public void Init(PathfindingGridManager pathfindingGridManager)
+    public void Start()
     {
-        m_pathfindingGridManager = pathfindingGridManager;
         UnityEngine.Debug.Log("Testing instatiate");
+        m_stopwatch = new Stopwatch();
     }
 
     private void Update()
     {
-        if (path != null)
+        if (m_path != null)
         {
-            for (int i=0; i< path.Count-1; i++)
+            for (int i=0; i< m_path.Count-1; i++)
             {
-                UnityEngine.Debug.DrawLine(new Vector3(path[i].X, path[i].Y), new Vector3(path[i + 1].X, path[i + 1].Y));
+                UnityEngine.Debug.DrawLine(new Vector2(m_path[i].X, m_path[i].Y), new Vector2(m_path[i + 1].X, m_path[i + 1].Y));
             }
         }
     }
 
-    private Stopwatch stopwatch = new Stopwatch();
-
-
     public void TestRandomPath()
     {
-        stopwatch.Start();
+        if (m_pathfindingGridManager.IsSetUpDone() == true)
+        {
+            m_stopwatch.Start();
 
-        path = m_pathfindingGridManager.GetPathRoute(
-            new Vector3(x, y),
-            new Vector3(endx, endy)).m_pathNodeList;
-        stopwatch.Stop();
-        UnityEngine.Debug.Log("Elapsed pathfinding time : " + stopwatch.ElapsedMilliseconds + " ms");
-        stopwatch.Reset();
+            m_path = m_pathfindingGridManager.GetPathRoute(
+                new Vector2(x, y),
+                new Vector2(endx, endy)).m_pathNodeList;
+            m_stopwatch.Stop();
+            UnityEngine.Debug.Log("Elapsed pathfinding time : " + m_stopwatch.ElapsedMilliseconds + " ms");
+            m_stopwatch.Reset();
+        }
     }
+
     //pt pour le faire avec la sourie
     public static Vector3 GetMouseWorldPosition()
     {
@@ -51,6 +53,7 @@ public class PathTesting : MonoBehaviour
         vec.z = 0f;
         return vec;
     }
+
     public static Vector3 GetMouseWorldPositionWithZ(Vector3 screenPosition, Camera worldCamera)
     {
         Vector3 worldPosition = worldCamera.ScreenToWorldPoint(screenPosition);
