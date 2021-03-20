@@ -38,4 +38,9 @@ public class PathNode
     {
         this.m_neighbourList.Remove(pathNode);
     }
+
+    public Vector3 GetWorldVector(Vector3 worldOrigin, float nodeSize)
+    {
+        return worldOrigin + new Vector3(X * nodeSize, Y * nodeSize);
+    }
 }
