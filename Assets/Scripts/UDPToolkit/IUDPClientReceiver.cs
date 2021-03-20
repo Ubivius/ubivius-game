@@ -10,6 +10,7 @@ namespace ubv
             public interface IUDPClientReceiver
             {
                 void ReceivePacket(UDPToolkit.Packet packet);
+                void OnDisconnect();
             }
         }
     }

@@ -291,5 +291,10 @@ namespace ubv.client.logic
                 }
             }
         }
+
+        public void OnDisconnect()
+        {
+
+        }
     }
 }

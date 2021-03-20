@@ -49,6 +49,7 @@ namespace ubv.tcp.client
 
         private void CommThread()
         {
+            m_exitSignal = false;
             using (m_client)
             {
                 try
@@ -73,6 +74,12 @@ namespace ubv.tcp.client
                 using (NetworkStream stream = m_client.GetStream())
                 {
                     HandleConnection(stream);
+                }
+
+                m_exitSignal = true;
+                foreach (ITCPClientReceiver receiver in m_receivers)
+                {
+                    receiver.OnDisconnect();
                 }
             }
         }

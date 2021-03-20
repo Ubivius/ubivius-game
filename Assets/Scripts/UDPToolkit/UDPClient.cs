@@ -77,14 +77,19 @@ namespace ubv
                         m_timeOutTimer += Time.deltaTime;
                         m_connectionQualityTimer += Time.deltaTime;
 
-                        /*if (m_timeOutTimer > m_serverTimeOut)
+                        if (m_timeOutTimer > m_serverTimeOut)
                         {
                             m_connectionData = new UDPToolkit.ConnectionData();
                             m_sequencesSendTime.Clear();
                             Debug.Log("Server timed out. Disconnecting.");
                             m_connected = false;
                             m_timeOutTimer = 0;
-                        }*/
+
+                            foreach(IUDPClientReceiver receiver in m_receivers)
+                            {
+                                receiver.OnDisconnect();
+                            }
+                        }
                     }
 
                 }

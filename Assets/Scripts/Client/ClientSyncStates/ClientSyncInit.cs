@@ -102,5 +102,10 @@ namespace ubv.client.logic
                 m_TCPClient.Unsubscribe(this);
             }
         }
+
+        public void OnDisconnect()
+        {
+
+        }
     }   
 }
