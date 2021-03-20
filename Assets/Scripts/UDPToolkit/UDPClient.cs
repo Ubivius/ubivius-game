@@ -16,8 +16,6 @@ namespace ubv
             public class UDPClient : MonoBehaviour
             {
                 [Header("Connection parameters")]
-                [SerializeField] private string m_serverAddress;
-                [SerializeField] private int m_port;
                 [SerializeField] private float m_serverTimeOut = 10;
                 [SerializeField] private float m_lostPacketTimeOut = 1;
                 [SerializeField] private float m_maximumGoodRTT = 0.15f; // the maximum round-trip-time(/ping) to consider the connection as good in seconds
@@ -58,7 +56,11 @@ namespace ubv
                     m_lastPacketSentTime = 0;
 
                     m_client = new UdpClient();
-                    m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
+                }
+
+                public void SetTargetServer(string address, int port)
+                {
+                    m_server = new IPEndPoint(IPAddress.Parse(address), port);
                 }
 
                 private void Start()
