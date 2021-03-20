@@ -16,8 +16,7 @@ namespace ubv.client.logic
         static protected ClientSyncInit m_initState;
         static protected ClientSyncLobby m_lobbyState;
         static protected ClientSyncPlay m_playState;
-
-        protected ClientSync m_clientSync;
+        
         protected tcp.client.TCPClient m_TCPClient;
         protected udp.client.UDPClient m_UDPClient;
         protected http.HTTPClient m_HTTPClient;
@@ -29,7 +28,6 @@ namespace ubv.client.logic
 
         private void Start()
         {
-            m_clientSync = ClientNetworkingManager.Instance.ClientSync;
             m_TCPClient = ClientNetworkingManager.Instance.TCPClient;
             m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
             m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
