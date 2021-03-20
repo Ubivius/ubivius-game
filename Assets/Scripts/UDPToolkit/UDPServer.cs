@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading;
 using UnityEngine.SceneManagement;
+using System;
 
 namespace ubv
 {
@@ -32,7 +33,7 @@ namespace ubv
 
                 private List<IUDPServerReceiver> m_receivers = new List<IUDPServerReceiver>();
 
-                private List<IPAddress> m_registeredClients;
+                public bool AcceptNewClients;
 
                 /// <summary>
                 /// Manages a specific client connection 
@@ -50,7 +51,6 @@ namespace ubv
 
                 private void Awake()
                 {
-                    m_registeredClients = new List<IPAddress>();
                     m_endPoints = new Dictionary<IPEndPoint, UdpClient>();
                     m_clientConnections = new Dictionary<UdpClient, ClientConnection>();
                     IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
@@ -62,7 +62,7 @@ namespace ubv
 
                     m_server.BeginReceive(EndReceiveCallback, m_server);
                 }
-
+                
                 private void Update()
                 {
                     // TODO: Adapt to use a better time tracking? System time?  
@@ -124,17 +124,7 @@ namespace ubv
             Debug.Log("Server sent " + server.EndSend(ar).ToString() + " bytes");
 #endif // DEBUG_LOG
                 }
-
-                public void RegisterClient(IPAddress client)
-                {
-                    m_registeredClients.Add(client);
-                }
-
-                public void UnregisterClient(IPAddress client)
-                {
-                    m_registeredClients.Remove(client);
-                }
-
+                
                 private void EndReceiveCallback(System.IAsyncResult ar)
                 {
                     IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
@@ -142,12 +132,21 @@ namespace ubv
                     
                     byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
 
-                    if (!m_endPoints.ContainsKey(clientEndPoint) && m_registeredClients.Contains(clientEndPoint.Address))
+                    if (!m_endPoints.ContainsKey(clientEndPoint))
                     {
-                        m_endPoints.Add(clientEndPoint, new UdpClient());
-                        m_endPoints[clientEndPoint].Connect(clientEndPoint);
+                        if (AcceptNewClients)
+                        {
+                            m_endPoints.Add(clientEndPoint, new UdpClient());
+                            m_endPoints[clientEndPoint].Connect(clientEndPoint);
 
-                        m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
+                            m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
+                        }
+                        else
+                        {
+#if DEBUG_LOG
+                            Debug.Log("Received data from unregistered client(" + clientEndPoint.ToString() + "). Not accepting new connections.");
+#endif // DEBUG_LOG
+                        }
                     }
 
                     if (m_endPoints.ContainsKey(clientEndPoint))
@@ -160,12 +159,6 @@ namespace ubv
                         {
                             OnReceive(packet, clientEndPoint);
                         }
-                    }
-                    else
-                    {
-#if DEBUG_LOG
-                        Debug.Log("Received data from unregistered client. Ignoring.");
-#endif // DEBUG_LOG
                     }
                     
                     server.BeginReceive(EndReceiveCallback, server);
