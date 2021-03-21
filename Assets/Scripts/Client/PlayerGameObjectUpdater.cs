@@ -14,6 +14,7 @@ namespace ubv.client.logic
         [SerializeField] private PlayerSettings m_playerSettings;
 
         private Dictionary<int, Rigidbody2D> m_bodies;
+        private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
         private Rigidbody2D m_localPlayerBody;
 
         private int m_playerGUID;
@@ -24,12 +25,17 @@ namespace ubv.client.logic
         {
             m_bodies = new Dictionary<int, Rigidbody2D>();
             m_goalStates = new Dictionary<int, PlayerState>();
+            m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             int id = 0;
             foreach(PlayerState state in playerStates)
             {
                 id = state.GUID.Value;
-                m_bodies[id] = GameObject.Instantiate(m_playerSettings.PlayerPrefab).GetComponent<Rigidbody2D>();
+                GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
+                m_bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
                 m_bodies[id].name = "Client player " + id.ToString();
+
+                m_playerControllers[id] = playerGameObject.GetComponent<common.gameplay.PlayerController>();
+
                 if (id != localID)
                 {
                     m_bodies[id].bodyType = RigidbodyType2D.Kinematic;
@@ -64,7 +70,7 @@ namespace ubv.client.logic
                 player.Rotation.Value = m_bodies[player.GUID.Value].rotation;
             }
             
-            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, m_playerSettings.MovementSettings, input, deltaTime);
+            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, m_playerControllers[state.PlayerGUID].GetStats(), input, deltaTime);
         }
 
         public override void UpdateFromState(ClientState state)
