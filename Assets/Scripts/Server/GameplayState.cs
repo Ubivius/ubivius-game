@@ -1,12 +1,9 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections.Generic;
 using System.Net;
-using ubv.udp;
-using System.Collections.Generic;
-using ubv.tcp;
+using ubv.common;
 using ubv.common.data;
 using ubv.common.serialization;
-using ubv.common;
+using UnityEngine;
 
 namespace ubv.server.logic
 {
@@ -15,7 +12,8 @@ namespace ubv.server.logic
     /// </summary>
     public class GameplayState : ServerState, udp.server.IUDPServerReceiver
     {
-        private Dictionary<IPEndPoint, ClientState> m_UDPClientStates;
+        private Dictionary<int, IPEndPoint> m_UDPClientEndoints;
+        private Dictionary<int, ClientState> m_clientStates;
                 
         private Dictionary<ClientState, Dictionary<int, InputFrame>> m_clientInputBuffers;
         
@@ -38,14 +36,15 @@ namespace ubv.server.logic
             ServerState.m_gameplayState = this;
         }
 
-        public void Init(Dictionary<IPEndPoint, ClientState> UDPClientStates, int simulationBuffer)
+        public void Init(Dictionary<int, IPEndPoint> UDPClientEndPoints, int simulationBuffer)
         {
             m_tickAccumulator = 0;
             m_masterTick = 0;
             m_bufferedMasterTick = 0;
             m_simulationBuffer = simulationBuffer;
-            m_UDPClientStates = UDPClientStates;
-            
+            m_UDPClientEndoints = UDPClientEndPoints;
+            m_clientStates = new Dictionary<int, ClientState>();
+
             m_toRemoveCache = new List<int>();
 
             m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(m_physicsSceneName).GetPhysicsScene2D();
@@ -53,36 +52,34 @@ namespace ubv.server.logic
             m_clientInputBuffers = new Dictionary<ClientState, Dictionary<int, InputFrame>>();
                    
             // add each player to client states
-            foreach (IPEndPoint ip in m_UDPClientStates.Keys)
+            foreach (int id in m_UDPClientEndoints.Keys)
             {
                 PlayerState player = new PlayerState();
-                player.GUID.Value = m_UDPClientStates[ip].PlayerGUID;
-                
-                m_UDPClientStates[ip].AddPlayer(player);
-                m_UDPClientStates[ip].PlayerGUID = player.GUID.Value;
+                player.GUID.Value = id;
+                m_clientStates[id] = new ClientState(id);
+                m_clientStates[id].AddPlayer(player);
             }
 
             // add each player to each other client state
-            foreach (ClientState baseState in m_UDPClientStates.Values)
+            foreach (ClientState baseState in m_clientStates.Values)
             {
                 m_clientInputBuffers[baseState] = new Dictionary<int, common.data.InputFrame>();
-                foreach (ClientState conn in m_UDPClientStates.Values)
+                foreach (ClientState otherState in m_clientStates.Values)
                 {
-                    PlayerState currentPlayer = conn.GetPlayer();
-                    if (baseState.PlayerGUID != conn.PlayerGUID)
+                    PlayerState currentPlayer = otherState.GetPlayer();
+                    if (baseState.PlayerGUID != otherState.PlayerGUID)
                     {
                         baseState.AddPlayer(currentPlayer);
                     }
                 }
             }
-
-
+            
             foreach (ServerGameplayStateUpdater updater in m_updaters)
             {
                 updater.Setup();
             }
 
-            foreach (ClientState state in m_UDPClientStates.Values)
+            foreach (ClientState state in m_clientStates.Values)
             {
                 foreach(ServerGameplayStateUpdater updater in m_updaters)
                 {
@@ -90,7 +87,7 @@ namespace ubv.server.logic
                 }
             }
 
-            foreach (ClientState state in m_UDPClientStates.Values)
+            foreach (ClientState state in m_clientStates.Values)
             {
                 foreach (ServerGameplayStateUpdater updater in m_updaters)
                 {
@@ -161,9 +158,9 @@ namespace ubv.server.logic
                 if (++m_tickAccumulator > m_snapshotTicks)
                 {
                     m_tickAccumulator = 0;
-                    foreach (IPEndPoint ip in m_UDPClientStates.Keys)
+                    foreach (int id in m_UDPClientEndoints.Keys)
                     {
-                        m_UDPServer.Send(m_UDPClientStates[ip].GetBytes(), ip);
+                        m_UDPServer.Send(m_clientStates[id].GetBytes(), m_UDPClientEndoints[id]);
                     }
                 }
             }
@@ -172,14 +169,15 @@ namespace ubv.server.logic
         public void Receive(udp.UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
         {
             InputMessage inputs = IConvertible.CreateFromBytes<InputMessage>(packet.Data);
-            if (inputs != null && m_UDPClientStates.ContainsKey(clientEndPoint))
+            if (inputs != null && m_UDPClientEndoints.ContainsValue(clientEndPoint))
             {
                 lock (m_lock)
                 {
-                    ClientState conn = m_UDPClientStates[clientEndPoint];
+                    int playerID = inputs.PlayerID.Value;
+                    ClientState clientState = m_clientStates[playerID];
                     List<InputFrame> inputFrames = inputs.InputFrames.Value;
 #if DEBUG_LOG
-                    Debug.Log("(NOW = " + m_masterTick + ") Received tick " + inputs.StartTick.Value + " to " +  (inputs.StartTick.Value + inputFrames.Count) +  " from " + conn.PlayerGUID);
+                    Debug.Log("(NOW = " + m_masterTick + ") Received tick " + inputs.StartTick.Value + " to " +  (inputs.StartTick.Value + inputFrames.Count) +  " from " + clientState.PlayerGUID);
 #endif //DEBUG_LOG
 
                     int frameIndex = 0;
@@ -188,7 +186,7 @@ namespace ubv.server.logic
                         frameIndex = (int)inputs.StartTick.Value + i;
                         if (frameIndex >= m_masterTick)
                         {
-                            m_clientInputBuffers[conn][frameIndex] = inputFrames[i];
+                            m_clientInputBuffers[clientState][frameIndex] = inputFrames[i];
                         }
                     }
                 }
