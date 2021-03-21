@@ -116,7 +116,6 @@ namespace ubv.client.logic
         {
             m_playerID = playerID;
             m_TCPClient.Subscribe(this);
-            ClientListUpdate.Invoke(new List<int> { m_playerID.Value });
         }
         
         private IEnumerator LoadWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
@@ -142,7 +141,9 @@ namespace ubv.client.logic
 
         public void OnDisconnect()
         {
-
+            m_initState.Init();
+            m_currentState = m_initState;
+            m_TCPClient.Unsubscribe(this);
         }
     }   
 }
