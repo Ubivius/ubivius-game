@@ -154,7 +154,7 @@ namespace ubv.tcp.server
             int bytesRead = 0;
 
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
-            while (!m_exitSignal)
+            while (!m_exitSignal && m_clientConnections[source].Connected)
             {
                 // read from stream
                 try
@@ -192,7 +192,7 @@ namespace ubv.tcp.server
             if (!stream.CanWrite)
                 return;
 
-            while (!m_exitSignal)
+            while (!m_exitSignal && m_clientConnections[source].Connected)
             {
                 // write to stream (send to client)lock (m_lock)
                 lock(m_lock)
