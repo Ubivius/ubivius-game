@@ -13,7 +13,7 @@ namespace ubv.client.logic
     public class ClientSyncInit : ClientSyncState, tcp.client.ITCPClientReceiver
     {
         // when dispatcher is ready
-        // [SerializeField] EndPoint m_dispatcherEndpoint;
+        // EndPoint m_dispatcherEndpoint;
 
         [SerializeField] string m_serverTCPAddress;
         [SerializeField] int m_serverTCPPort;
@@ -33,7 +33,7 @@ namespace ubv.client.logic
         protected override void StateAwake()
         {
             ClientSyncState.m_initState = this;
-            ClientSyncState.m_currentState = this;
+            ClientSyncState.m_currentState = ClientSyncState.m_initState;
         }
         
         public void SendConnectionRequestToServer()

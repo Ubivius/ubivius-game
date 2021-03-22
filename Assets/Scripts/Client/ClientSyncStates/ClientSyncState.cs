@@ -13,6 +13,7 @@ namespace ubv.client.logic
     {
         static protected ClientSyncState m_currentState = null;
 
+        static protected ClientSyncLogin m_loginState;
         static protected ClientSyncInit m_initState;
         static protected ClientSyncLobby m_lobbyState;
         static protected ClientSyncPlay m_playState;

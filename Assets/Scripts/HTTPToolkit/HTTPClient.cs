@@ -19,7 +19,14 @@ namespace ubv.http
 
         [SerializeField] private string m_endPoint = "http://localhost:9090";
 
+        private string m_authToken = "";
+
         public delegate void HttpResponseMessageDelegate(HttpResponseMessage response);
+
+        public void SetAuthenticationToken(string token)
+        {
+            m_authToken = token;
+        }
 
         public void PostJSON(string requestUrl, string jsonString, HttpResponseMessageDelegate callbackOnResponse = null)
         {
