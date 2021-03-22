@@ -22,6 +22,10 @@ namespace ubv.common.world
 
         private int m_wallThickness;
 
+        private int PassCount = 0;
+
+        private Vector2Int posCurseur;
+
         public CorridorsManager(dataStruct.WorldGeneratorToCorridorsManager data)
         {
             m_masterLogicGrid = data.masterLogicGrid;
@@ -32,13 +36,15 @@ namespace ubv.common.world
 
         public LogicGrid GenerateCorridorsGrid()
         {
-            Vector2Int coord = GetStartCoord();
-            while (coord.x != -1)
+            posCurseur = GetStartCoord();
+            while (posCurseur.x != -1)
             {
-                CoverStartPoint(coord);
-                CreatePath(coord, GetRandomDirection(coord));
-                coord = GetStartCoord();          
+                CoverStartPoint(posCurseur);
+                CreatePath(GetRandomDirection(posCurseur));
+                posCurseur = GetStartCoord();          
             }
+
+            Debug.LogError("Frontier Pass Count : " + PassCount);
 
             return m_masterLogicGrid;
         }
@@ -103,15 +109,15 @@ namespace ubv.common.world
             m_floor.RefreshAllTiles();
         }
 
-        private void CreatePath(Vector2Int pos, Direction dir)
+        private void CreatePath(Direction dir)
         {
-            pos = MoveCursor(pos, dir);
-            AddTile(pos, dir);
-            dir = GetRandomDirection(pos, dir);
+            posCurseur = MoveCursor(posCurseur, dir);
+            AddTile(posCurseur, dir);
+            dir = GetRandomDirection(dir);
             while (dir != Direction.Stop)
             {                
-                CreatePath(pos, dir);
-                dir = GetRandomDirection(pos, dir);
+                CreatePath(dir);
+                dir = GetRandomDirection(dir);
             }
         }
 
@@ -179,7 +185,8 @@ namespace ubv.common.world
             //m_floor.RefreshAllTiles();
         }
 
-        private Direction GetRandomDirection(Vector2Int pos, Direction foward)
+        //private Direction GetRandomDirection(Vector2Int pos, Direction foward)
+        private Direction GetRandomDirection(Direction foward)
         {
             List<int> dir = new List<int> { 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4}; // TODO look to clear useless check
             // Utiliser ramdom avec un switch à default?
@@ -189,49 +196,47 @@ namespace ubv.common.world
             // Librairie? vérifier pour tirage avec probabilité
             int select;
 
-            if (IsOnFrontier(pos, dir))
-            {
-                if (IsSpaceFree(pos, foward))
-                {
-                    return foward;
-                }
-                return Direction.Stop;
-            }
-
-            while (dir.Count > 0)
+            bool LookForDirection = true;
+            Direction DirectionFound = Direction.Stop;
+            while (dir.Count > 0 && LookForDirection)
             {
                 select = Random.Range(0, dir.Count - 1);
 
                 switch (dir.ElementAt(select))
                 {
                     case 0:
-                        if (IsSpaceFreeNorth(pos))
+                        if (IsSpaceFreeNorth(posCurseur))
                         {
-                            return Direction.North;
+                            DirectionFound = Direction.North;
+                            LookForDirection = false;
                         }
                         break;
                     case 1:
-                        if (IsSpaceFreeEast(pos))
+                        if (IsSpaceFreeEast(posCurseur))
                         {
-                            return Direction.East;
+                            DirectionFound = Direction.East;
+                            LookForDirection = false;
                         }
                         break;
                     case 2:
-                        if (IsSpaceFreeSouth(pos))
+                        if (IsSpaceFreeSouth(posCurseur))
                         {
-                            return Direction.South;
+                            DirectionFound = Direction.South;
+                            LookForDirection = false;
                         }
                         break;
                     case 3:
-                        if (IsSpaceFreeWest(pos))
+                        if (IsSpaceFreeWest(posCurseur))
                         {
-                            return Direction.West;
+                            DirectionFound = Direction.West;
+                            LookForDirection = false;
                         }
                         break;
                     default:
-                        if (IsSpaceFree(pos, foward))
+                        if (IsSpaceFree(posCurseur, foward))
                         {
-                            return foward;
+                            DirectionFound = foward;
+                            LookForDirection = false;
                         }
                         break;
                 }                
@@ -244,9 +249,26 @@ namespace ubv.common.world
                     //dir.RemoveRange(5, dir.Count - 5);
                     dir.RemoveRange(4, dir.Count - 4);
                 }
-            }
+                if (IsNearFrontier(DirectionFound) && !LookForDirection)
+                {
+                    if (IsFullyGoingThroughFrontier(DirectionFound))
+                    {
+                        PassCount++;
+                        if (!PassFrontier(DirectionFound))
+                        {
+                            DirectionFound = Direction.Stop;
+                            LookForDirection = false;
+                        }
+                    }
+                    else
+                    {
+                        LookForDirection = true;
+                    }
+                }
 
-            return Direction.Stop;
+            }                    
+
+            return DirectionFound;
         }
 
         private Direction GetRandomDirection(Vector2Int pos)
@@ -308,92 +330,191 @@ namespace ubv.common.world
             return false;
         }
 
-        private bool IsSpaceFreeNorth(Vector2Int pos)
+        private bool IsSpaceFreeNorth(Vector2Int pos, bool FrontierCheck = false)
         {
-            if (pos.y < m_masterLogicGrid.Height - 2 - m_wallThickness)
+            if(!FrontierCheck)
             {
-                if (m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y + 2 + m_wallThickness] == null && // top-left-left
-                    m_masterLogicGrid.Grid[pos.x - 1 ,                  pos.y + 2 + m_wallThickness] == null && // top-left
-                    m_masterLogicGrid.Grid[pos.x,                       pos.y + 2 + m_wallThickness] == null && // top
-                    m_masterLogicGrid.Grid[pos.x + 1,                   pos.y + 2 + m_wallThickness] == null && // top-right
-                    m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y + 2 + m_wallThickness] == null && // top-right-right
-                    m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y + 2] == null &&
-                    m_masterLogicGrid.Grid[pos.x - 1,                   pos.y + 2] == null &&
-                    m_masterLogicGrid.Grid[pos.x,                       pos.y + 2] == null && 
-                    m_masterLogicGrid.Grid[pos.x + 1,                   pos.y + 2] == null &&   
-                    m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y + 2] == null 
-                    )
+                if (pos.y < m_masterLogicGrid.Height - 2 - m_wallThickness)
                 {
-                    return true;
+                    if (m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y + 2 + m_wallThickness] == null && // top-left-left
+                        m_masterLogicGrid.Grid[pos.x - 1,                   pos.y + 2 + m_wallThickness] == null && // top-left
+                        m_masterLogicGrid.Grid[pos.x,                       pos.y + 2 + m_wallThickness] == null && // top
+                        m_masterLogicGrid.Grid[pos.x + 1,                   pos.y + 2 + m_wallThickness] == null && // top-right
+                        m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y + 2 + m_wallThickness] == null && // top-right-right
+                        m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y + 2] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 1,                   pos.y + 2] == null &&
+                        m_masterLogicGrid.Grid[pos.x,                       pos.y + 2] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 1,                   pos.y + 2] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y + 2] == null
+                        )
+                    {
+                        return true;
+                    }
                 }
-            }            
-            return false;
+                return false;
+            }
+            else
+            {
+                if (pos.y < m_masterLogicGrid.Height - 2 - m_wallThickness)
+                {
+                    if (m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y + 5 + m_wallThickness] == null && // top-left-left
+                        m_masterLogicGrid.Grid[pos.x - 1,                   pos.y + 5 + m_wallThickness] == null && // top-left
+                        m_masterLogicGrid.Grid[pos.x,                       pos.y + 5 + m_wallThickness] == null && // top
+                        m_masterLogicGrid.Grid[pos.x + 1,                   pos.y + 5 + m_wallThickness] == null && // top-right
+                        m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y + 5 + m_wallThickness] == null && // top-right-right
+                        m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y + 5] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 1,                   pos.y + 5] == null &&
+                        m_masterLogicGrid.Grid[pos.x,                       pos.y + 5] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 1,                   pos.y + 5] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y + 5] == null
+                        )
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
         }
 
-        private bool IsSpaceFreeEast(Vector2Int pos)
+        private bool IsSpaceFreeEast(Vector2Int pos, bool FrontierCheck = false)
         {
-            if (pos.x < m_masterLogicGrid.Width - 2 - m_wallThickness)
+            if(!FrontierCheck)
             {
-                if (m_masterLogicGrid.Grid[pos.x + 2 + m_wallThickness, pos.y + 1 + m_wallThickness] == null && // right-top-top
-                    m_masterLogicGrid.Grid[pos.x + 2 + m_wallThickness, pos.y + 1                  ] == null && // right-top
-                    m_masterLogicGrid.Grid[pos.x + 2 + m_wallThickness, pos.y                      ] == null && // right
-                    m_masterLogicGrid.Grid[pos.x + 2 + m_wallThickness, pos.y - 1                  ] == null && // right-bottom
-                    m_masterLogicGrid.Grid[pos.x + 2 + m_wallThickness, pos.y - 1 - m_wallThickness] == null && // right-bottom-bottom
-                    m_masterLogicGrid.Grid[pos.x + 2, pos.y + 1 + m_wallThickness] == null && 
-                    m_masterLogicGrid.Grid[pos.x + 2, pos.y + 1                  ] == null &&
-                    m_masterLogicGrid.Grid[pos.x + 2, pos.y                      ] == null &&
-                    m_masterLogicGrid.Grid[pos.x + 2, pos.y - 1                  ] == null &&
-                    m_masterLogicGrid.Grid[pos.x + 2, pos.y - 1 - m_wallThickness] == null
-                    )
+                if (pos.x < m_masterLogicGrid.Width - 2 - m_wallThickness)
                 {
-                    return true;
+                    if (m_masterLogicGrid.Grid[pos.x + 2 + m_wallThickness, pos.y + 1 + m_wallThickness] == null && // right-top-top
+                        m_masterLogicGrid.Grid[pos.x + 2 + m_wallThickness, pos.y + 1                  ] == null && // right-top
+                        m_masterLogicGrid.Grid[pos.x + 2 + m_wallThickness, pos.y                      ] == null && // right
+                        m_masterLogicGrid.Grid[pos.x + 2 + m_wallThickness, pos.y - 1                  ] == null && // right-bottom
+                        m_masterLogicGrid.Grid[pos.x + 2 + m_wallThickness, pos.y - 1 - m_wallThickness] == null && // right-bottom-bottom
+                        m_masterLogicGrid.Grid[pos.x + 2, pos.y + 1 + m_wallThickness] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 2, pos.y + 1                  ] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 2, pos.y                      ] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 2, pos.y - 1                  ] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 2, pos.y - 1 - m_wallThickness] == null
+                        )
+                    {
+                        return true;
+                    }
                 }
-            }            
-            return false;
+                return false;
+            }
+            else
+            {
+                if (pos.x < m_masterLogicGrid.Width - 2 - m_wallThickness)
+                {
+                    if (m_masterLogicGrid.Grid[pos.x + 5 + m_wallThickness, pos.y + 1 + m_wallThickness] == null && // right-top-top
+                        m_masterLogicGrid.Grid[pos.x + 5 + m_wallThickness, pos.y + 1                  ] == null && // right-top
+                        m_masterLogicGrid.Grid[pos.x + 5 + m_wallThickness, pos.y                      ] == null && // right
+                        m_masterLogicGrid.Grid[pos.x + 5 + m_wallThickness, pos.y - 1                  ] == null && // right-bottom
+                        m_masterLogicGrid.Grid[pos.x + 5 + m_wallThickness, pos.y - 1 - m_wallThickness] == null && // right-bottom-bottom
+                        m_masterLogicGrid.Grid[pos.x + 5, pos.y + 1 + m_wallThickness] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 5, pos.y + 1                  ] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 5, pos.y                      ] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 5, pos.y - 1                  ] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 5, pos.y - 1 - m_wallThickness] == null
+                        )
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
         }
 
-        private bool IsSpaceFreeSouth(Vector2Int pos)
+        private bool IsSpaceFreeSouth(Vector2Int pos, bool FrontierCheck = false)
         {
-            if (pos.y > 1 + m_wallThickness)
+            if (!FrontierCheck)
             {
-                if (m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y - 2 - m_wallThickness] == null && // bottom-left-left
-                    m_masterLogicGrid.Grid[pos.x - 1,                   pos.y - 2 - m_wallThickness] == null && // bottom-left
-                    m_masterLogicGrid.Grid[pos.x,                       pos.y - 2 - m_wallThickness] == null && // bottom
-                    m_masterLogicGrid.Grid[pos.x + 1,                   pos.y - 2 - m_wallThickness] == null && // bottom-right
-                    m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y - 2 - m_wallThickness] == null && // bottom-right-right
-                    m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y - 2] == null &&
-                    m_masterLogicGrid.Grid[pos.x - 1,                   pos.y - 2] == null &&
-                    m_masterLogicGrid.Grid[pos.x,                       pos.y - 2] == null &&
-                    m_masterLogicGrid.Grid[pos.x + 1,                   pos.y - 2] == null &&
-                    m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y - 2] == null 
-                    )
+                if (pos.y > 1 + m_wallThickness)
                 {
-                    return true;
+                    if (m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y - 2 - m_wallThickness] == null && // bottom-left-left
+                        m_masterLogicGrid.Grid[pos.x - 1,                   pos.y - 2 - m_wallThickness] == null && // bottom-left
+                        m_masterLogicGrid.Grid[pos.x,                       pos.y - 2 - m_wallThickness] == null && // bottom
+                        m_masterLogicGrid.Grid[pos.x + 1,                   pos.y - 2 - m_wallThickness] == null && // bottom-right
+                        m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y - 2 - m_wallThickness] == null && // bottom-right-right
+                        m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y - 2] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 1,                   pos.y - 2] == null &&
+                        m_masterLogicGrid.Grid[pos.x,                       pos.y - 2] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 1,                   pos.y - 2] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y - 2] == null
+                        )
+                    {
+                        return true;
+                    }
                 }
-            }            
-            return false;
+                return false;
+            }
+            else
+            {
+                if (pos.y > 1 + m_wallThickness)
+                {
+                    if (m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y - 5 - m_wallThickness] == null && // bottom-left-left
+                        m_masterLogicGrid.Grid[pos.x - 1,                   pos.y - 5 - m_wallThickness] == null && // bottom-left
+                        m_masterLogicGrid.Grid[pos.x,                       pos.y - 5 - m_wallThickness] == null && // bottom
+                        m_masterLogicGrid.Grid[pos.x + 1,                   pos.y - 5 - m_wallThickness] == null && // bottom-right
+                        m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y - 5 - m_wallThickness] == null && // bottom-right-right
+                        m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y - 5] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 1,                   pos.y - 5] == null &&
+                        m_masterLogicGrid.Grid[pos.x,                       pos.y - 5] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 1,                   pos.y - 5] == null &&
+                        m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y - 5] == null
+                        )
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
         }
 
-        private bool IsSpaceFreeWest(Vector2Int pos)
+        private bool IsSpaceFreeWest(Vector2Int pos, bool FrontierCheck = false)
         {
-            if (pos.x > 1 + m_wallThickness)
+            if (!FrontierCheck)
             {
-                if (m_masterLogicGrid.Grid[pos.x - 2 - m_wallThickness, pos.y - 1 - m_wallThickness] == null && // left-bottom-bottom
-                    m_masterLogicGrid.Grid[pos.x - 2 - m_wallThickness, pos.y - 1                  ] == null && // left-bottom
-                    m_masterLogicGrid.Grid[pos.x - 2 - m_wallThickness, pos.y                      ] == null && // left
-                    m_masterLogicGrid.Grid[pos.x - 2 - m_wallThickness, pos.y + 1                  ] == null && // left-top
-                    m_masterLogicGrid.Grid[pos.x - 2 - m_wallThickness, pos.y + 1 + m_wallThickness] == null && // left-top-top
-                    m_masterLogicGrid.Grid[pos.x - 2, pos.y - 1 - m_wallThickness] == null &&
-                    m_masterLogicGrid.Grid[pos.x - 2, pos.y - 1                  ] == null &&
-                    m_masterLogicGrid.Grid[pos.x - 2, pos.y                      ] == null && 
-                    m_masterLogicGrid.Grid[pos.x - 2, pos.y + 1                  ] == null &&
-                    m_masterLogicGrid.Grid[pos.x - 2, pos.y + 1 + m_wallThickness] == null
-                    )
+                if (pos.x > 1 + m_wallThickness)
                 {
-                    return true;
+                    if (m_masterLogicGrid.Grid[pos.x - 2 - m_wallThickness, pos.y - 1 - m_wallThickness] == null && // left-bottom-bottom
+                        m_masterLogicGrid.Grid[pos.x - 2 - m_wallThickness, pos.y - 1                  ] == null && // left-bottom
+                        m_masterLogicGrid.Grid[pos.x - 2 - m_wallThickness, pos.y                      ] == null && // left
+                        m_masterLogicGrid.Grid[pos.x - 2 - m_wallThickness, pos.y + 1                  ] == null && // left-top
+                        m_masterLogicGrid.Grid[pos.x - 2 - m_wallThickness, pos.y + 1 + m_wallThickness] == null && // left-top-top
+                        m_masterLogicGrid.Grid[pos.x - 2, pos.y - 1 - m_wallThickness] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 2, pos.y - 1                  ] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 2, pos.y                      ] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 2, pos.y + 1                  ] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 2, pos.y + 1 + m_wallThickness] == null
+                        )
+                    {
+                        return true;
+                    }
                 }
-            }            
-            return false;
+                return false;
+            }
+            else
+            {
+                if (pos.x > 1 + m_wallThickness)
+                {
+                    if (m_masterLogicGrid.Grid[pos.x - 5 - m_wallThickness, pos.y - 1 - m_wallThickness] == null && // left-bottom-bottom
+                        m_masterLogicGrid.Grid[pos.x - 5 - m_wallThickness, pos.y - 1                  ] == null && // left-bottom
+                        m_masterLogicGrid.Grid[pos.x - 5 - m_wallThickness, pos.y                      ] == null && // left
+                        m_masterLogicGrid.Grid[pos.x - 5 - m_wallThickness, pos.y + 1                  ] == null && // left-top
+                        m_masterLogicGrid.Grid[pos.x - 5 - m_wallThickness, pos.y + 1 + m_wallThickness] == null && // left-top-top
+                        m_masterLogicGrid.Grid[pos.x - 5, pos.y - 1 - m_wallThickness] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 5, pos.y - 1                  ] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 5, pos.y                      ] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 5, pos.y + 1                  ] == null &&
+                        m_masterLogicGrid.Grid[pos.x - 5, pos.y + 1 + m_wallThickness] == null
+                        )
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
 
         private bool IsStartPointOnFrontier(Vector2Int pos)
@@ -413,49 +534,194 @@ namespace ubv.common.world
             return false;
         }
 
+        private bool PassFrontier(Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.North:
+                    if(IsSpaceFreeNorth(posCurseur, false))
+                    {
+                        JumpFrontier(dir);
+                        return true;
+                    }
+                    return false;
+                case Direction.East:
+                    if (IsSpaceFreeEast(posCurseur, false))
+                    {
+                        JumpFrontier(dir);
+                        return true;
+                    }
+                    return false;
+                case Direction.South:
+                    if (IsSpaceFreeSouth(posCurseur, false))
+                    {
+                        JumpFrontier(dir);
+                        return true;
+                    }
+                    return false;
+                case Direction.West:
+                    if (IsSpaceFreeWest(posCurseur, false))
+                    {
+                        JumpFrontier(dir);
+                        return true;
+                    }
+                    return false;
+                default:
+                    return false;
+            }
+        }
+
+        private void JumpFrontier(Direction dir)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                posCurseur = MoveCursor(posCurseur, dir);
+                AddTile(posCurseur, dir);
+            }
+        }
+
+        private bool IsFullyGoingThroughFrontier(Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.North:
+                    return IsOnFrontierNorth(posCurseur);
+                case Direction.East:
+                    return IsOnFrontierEast(posCurseur);
+                case Direction.South:
+                    return IsOnFrontierSouth(posCurseur);
+                case Direction.West:
+                    return IsOnFrontierWest(posCurseur);
+                case Direction.Stop:
+                    return false;
+                default:
+                    return false;
+            }
+        }
+
         private bool IsOnFrontierNorth(Vector2Int pos)
         {
             
-            if(!TileOnFrontier(pos.x - 1, pos.y + 1) &&
-               !TileOnFrontier(pos.x,     pos.y + 1) &&
-               !TileOnFrontier(pos.x + 1, pos.y + 1))
+            if(TileOnFrontier(pos.x - 2, pos.y + 2) &&
+               TileOnFrontier(pos.x - 1, pos.y + 2) &&
+               TileOnFrontier(pos.x,     pos.y + 2) &&
+               TileOnFrontier(pos.x + 1, pos.y + 2) &&
+               TileOnFrontier(pos.x + 2, pos.y + 2))
             {
-                return false;                
+                return true;                
             }                                  
             return false;
         }
 
         private bool IsOnFrontierEast(Vector2Int pos)
         {
-            if (!TileOnFrontier(pos.x + 1, pos.y - 1) &&
-                !TileOnFrontier(pos.x + 1, pos.y    ) &&
-                !TileOnFrontier(pos.x + 1, pos.y + 1))
+            if (TileOnFrontier(pos.x + 2, pos.y - 2) &&
+                TileOnFrontier(pos.x + 2, pos.y - 1) &&
+                TileOnFrontier(pos.x + 2, pos.y    ) &&
+                TileOnFrontier(pos.x + 2, pos.y + 1) &&
+                TileOnFrontier(pos.x + 2, pos.y + 2))
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         private bool IsOnFrontierSouth(Vector2Int pos)
         {
-            if (!TileOnFrontier(pos.x - 1, pos.y - 1) &&
-                !TileOnFrontier(pos.x,     pos.y - 1) &&
-                !TileOnFrontier(pos.x + 1, pos.y - 1))
+            if (TileOnFrontier(pos.x - 2, pos.y - 2) &&
+                TileOnFrontier(pos.x - 1, pos.y - 2) &&
+                TileOnFrontier(pos.x,     pos.y - 2) &&
+                TileOnFrontier(pos.x + 1, pos.y - 2) &&
+                TileOnFrontier(pos.x + 2, pos.y - 2))
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         private bool IsOnFrontierWest(Vector2Int pos)
         {
-            if (!TileOnFrontier(pos.x - 1, pos.y - 1) &&
-                !TileOnFrontier(pos.x - 1, pos.y    ) &&
-                !TileOnFrontier(pos.x - 1, pos.y + 1))
+            if (TileOnFrontier(pos.x - 2, pos.y - 2) &&
+                TileOnFrontier(pos.x - 2, pos.y - 1) &&
+                TileOnFrontier(pos.x - 2, pos.y    ) &&
+                TileOnFrontier(pos.x - 2, pos.y + 1) &&
+                TileOnFrontier(pos.x - 2, pos.y + 2))
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
+        }
+
+        private bool IsNearFrontier(Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.North:
+                    return IsNearFrontierNorth(posCurseur);
+                case Direction.East:
+                    return IsNearFrontierEast(posCurseur);
+                case Direction.South:
+                    return IsNearFrontierSouth(posCurseur);
+                case Direction.West:
+                    return IsNearFrontierWest(posCurseur);
+                case Direction.Stop:
+                    return false;
+                default:
+                    return false;
+            }
+        }
+
+        private bool IsNearFrontierNorth(Vector2Int pos)
+        {
+
+            if (TileOnFrontier(pos.x - 2, pos.y + 2) ||
+                TileOnFrontier(pos.x - 1, pos.y + 2) ||
+                TileOnFrontier(pos.x,     pos.y + 2) ||
+                TileOnFrontier(pos.x + 1, pos.y + 2) ||
+                TileOnFrontier(pos.x + 2, pos.y + 2))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool IsNearFrontierEast(Vector2Int pos)
+        {
+            if (TileOnFrontier(pos.x + 2, pos.y - 2) ||
+                TileOnFrontier(pos.x + 2, pos.y - 1) ||
+                TileOnFrontier(pos.x + 2, pos.y    ) ||
+                TileOnFrontier(pos.x + 2, pos.y + 1) ||
+                TileOnFrontier(pos.x + 2, pos.y + 2))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool IsNearFrontierSouth(Vector2Int pos)
+        {
+            if (TileOnFrontier(pos.x - 2, pos.y - 2) ||
+                TileOnFrontier(pos.x - 1, pos.y - 2) ||
+                TileOnFrontier(pos.x,     pos.y - 2) ||
+                TileOnFrontier(pos.x + 1, pos.y - 2) ||
+                TileOnFrontier(pos.x + 2, pos.y - 2))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool IsNearFrontierWest(Vector2Int pos)
+        {
+            if (TileOnFrontier(pos.x - 2, pos.y - 2) ||
+                TileOnFrontier(pos.x - 2, pos.y - 1) ||
+                TileOnFrontier(pos.x - 2, pos.y    ) ||
+                TileOnFrontier(pos.x - 2, pos.y + 1) ||
+                TileOnFrontier(pos.x - 2, pos.y + 2))
+            {
+                return true;
+            }
+            return false;
         }
 
         private bool TileOnFrontier(int x, int y)

@@ -21,6 +21,8 @@ namespace ubv.common.world
         private TileBase m_tileDoor;
         private List<RoomInfo> m_roomInMap;
 
+        private int DoorCount = 0;
+
         public DoorManager(dataStruct.WorldGeneratorToDoorManager worldGeneratorToDoorManager)
         {
             m_masterLogicGrid = worldGeneratorToDoorManager.masterLogicGrid;
@@ -49,6 +51,8 @@ namespace ubv.common.world
             AddSection0SouthEast();
             AddSection0SouthWest();
             AddSection0NorthWest();
+
+            Debug.LogError("Frontier Door Count : " + DoorCount);
 
             m_floor.RefreshAllTiles();
             m_door.RefreshAllTiles();
@@ -421,26 +425,44 @@ namespace ubv.common.world
 
         private void AddDoorX(int xMin, int xMax, int y, cellType.DoorType type)
         {
-            for (int x = xMin; x < xMax; x++)
+            for (int x = xMin + 1; x < xMax - 1; x++)
             {
-                if ((m_masterLogicGrid.Grid[x, y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)
+                if ((m_masterLogicGrid.Grid[x - 1, y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR &&
+                    (m_masterLogicGrid.Grid[x,     y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR &&
+                    (m_masterLogicGrid.Grid[x + 1, y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)
                 {
-                    m_masterLogicGrid.Grid[x, y] = new world.cellType.DoorCell(type);
-                    m_floor.SetTile(new Vector3Int(x, y, 0), null); // Remove tile
-                    m_door.SetTile(new Vector3Int(x, y, 0), m_tileDoor);
+                    m_masterLogicGrid.Grid[x - 1, y] = new world.cellType.DoorCell(type);
+                    m_masterLogicGrid.Grid[x,     y] = new world.cellType.DoorCell(type);
+                    m_masterLogicGrid.Grid[x + 1, y] = new world.cellType.DoorCell(type);
+                    m_floor.SetTile(new Vector3Int(x - 1, y, 0), null); // Remove tile
+                    m_floor.SetTile(new Vector3Int(x,     y, 0), null); // Remove tile
+                    m_floor.SetTile(new Vector3Int(x + 1, y, 0), null); // Remove tile
+                    m_door.SetTile(new Vector3Int(x - 1, y, 0), m_tileDoor);
+                    m_door.SetTile(new Vector3Int(x,     y, 0), m_tileDoor);
+                    m_door.SetTile(new Vector3Int(x + 1, y, 0), m_tileDoor);
+                    DoorCount++;
                 }
             }
         }
 
         private void AddDoorY(int x, int yMin, int yMax, cellType.DoorType type)
         {
-            for (int y = yMin; y < yMax; y++)
+            for (int y = yMin + 1; y < yMax - 1; y++)
             {
-                if ((m_masterLogicGrid.Grid[x, y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)
+                if ((m_masterLogicGrid.Grid[x, y - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR &&
+                    (m_masterLogicGrid.Grid[x, y    ])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR &&
+                    (m_masterLogicGrid.Grid[x, y + 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)
                 {
-                    m_masterLogicGrid.Grid[x, y] = new world.cellType.DoorCell(type);
-                    m_floor.SetTile(new Vector3Int(x, y, 0), null); // Remove tile
-                    m_door.SetTile(new Vector3Int(x, y, 0), m_tileDoor);
+                    m_masterLogicGrid.Grid[x, y - 1] = new world.cellType.DoorCell(type);
+                    m_masterLogicGrid.Grid[x, y    ] = new world.cellType.DoorCell(type);
+                    m_masterLogicGrid.Grid[x, y + 1] = new world.cellType.DoorCell(type);
+                    m_floor.SetTile(new Vector3Int(x, y - 1, 0), null); // Remove tile
+                    m_floor.SetTile(new Vector3Int(x, y,     0), null); // Remove tile
+                    m_floor.SetTile(new Vector3Int(x, y + 1, 0), null); // Remove tile
+                    m_door.SetTile(new Vector3Int(x, y - 1, 0), m_tileDoor);
+                    m_door.SetTile(new Vector3Int(x, y,     0), m_tileDoor);
+                    m_door.SetTile(new Vector3Int(x, y + 1, 0), m_tileDoor);
+                    DoorCount++;
                 }
             }
         }
