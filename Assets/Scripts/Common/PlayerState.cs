@@ -13,9 +13,12 @@ namespace ubv
             /// Add here the data of a single player
             /// </summary>
             public class PlayerState : serialization.Serializable
-            {
+            {   
+                // send this over network
                 public serialization.types.Vector2 Position;
                 public serialization.types.Float Rotation;
+
+                // TODO : not send this via network because not likely to be changed
                 public serialization.types.Int32 GUID;
 
                 public PlayerState() : base()

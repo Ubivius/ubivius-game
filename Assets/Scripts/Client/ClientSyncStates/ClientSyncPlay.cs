@@ -15,7 +15,6 @@ namespace ubv.client.logic
     /// </summary>
     public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver
     {
-        [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private string m_physicsScene;
         private int m_playerID;
 
