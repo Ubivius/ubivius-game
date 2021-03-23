@@ -10,16 +10,28 @@ namespace ubv.server.logic.ai
     {
         private EnemyState m_currentEnemyState;
 
+        public Transform player;
+
+        private EnemyPathFindingMovement m_pathfindingMovement;
+        private Vector2 m_startingPosition;
+        private Vector2 roamPosition;
+        private float nextShootTime;
+
+        private void Awake()
+        {
+            m_pathfindingMovement = GetComponent<EnemyPathFindingMovement>();
+        }
+
         // Use this for initialization
         void Start()
         {
-            //m_currentEnemyState = new RoamingState()
+            m_currentEnemyState = new RoamingState(m_pathfindingMovement);
         }
 
         // Update is called once per frame
         void Update()
         {
-            //m_currentEnemyState = m_currentEnemyState.Update();
+            m_currentEnemyState = m_currentEnemyState.Update();
         }
     }
 }
