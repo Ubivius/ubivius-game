@@ -154,8 +154,17 @@ namespace ubv.tcp.server
             int bytesRead = 0;
 
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
-            while (!m_exitSignal && m_clientConnections[source].Connected)
+            TcpClient connection = m_clientConnections[source];
+            bool connected = true;
+            int count = 0;
+            int connectionCheckRate = 20;
+            while (!m_exitSignal && connected)
             {
+                if (count++ % connectionCheckRate == 0)
+                {
+                    connected = CheckConnection(connection);
+                }
+
                 // read from stream
                 try
                 {
@@ -192,10 +201,19 @@ namespace ubv.tcp.server
             if (!stream.CanWrite)
                 return;
 
-            while (!m_exitSignal && m_clientConnections[source].Connected)
+            TcpClient connection = m_clientConnections[source];
+            bool connected = true;
+            int count = 10;
+            int connectionCheckRate = 20;
+            while (!m_exitSignal && connected)
             {
+                if (count++ % connectionCheckRate == 0)
+                {
+                    connected = CheckConnection(connection);
+                }
+
                 // write to stream (send to client)lock (m_lock)
-                lock(m_lock)
+                lock (m_lock)
                 {
                     while (m_dataToSend[source].Count > 0)
                     {
@@ -212,6 +230,14 @@ namespace ubv.tcp.server
                     }
                 }
             }
+        }
+
+        private bool CheckConnection(TcpClient connection)
+        {
+            bool poll = connection.Client.Poll(1000, SelectMode.SelectRead);
+            bool available = (connection.Client.Available == 0);
+
+            return (!(poll && available) || !connection.Client.Connected);
         }
 
         public void Send(byte[] bytes, IPEndPoint target)
