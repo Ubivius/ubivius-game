@@ -58,7 +58,7 @@ jobs:
       # Return License
       - name: Return license
         uses: game-ci/unity-return-license@v1
-        if: always()
+        if: failure()
 
   server-publish:
     needs: [ server-build ]
@@ -133,7 +133,7 @@ jobs:
       # Return License
       - name: Return license
         uses: game-ci/unity-return-license@v1
-        if: always()
+        if: failure()
 
       # Output
       - uses: actions/upload-artifact@v1
