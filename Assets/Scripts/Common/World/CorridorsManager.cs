@@ -16,6 +16,18 @@ namespace ubv.common.world
 
     class CorridorsManager
     {
+        class Move
+        {
+            public Vector2Int pos;
+            public Direction dir;
+
+            public Move(Vector2Int pos, Direction dir)
+            {
+                this.pos = pos;
+                this.dir = dir;
+            }
+        }
+
         private ubv.common.world.LogicGrid m_masterLogicGrid;
         private Tilemap m_floor;
         private TileBase m_tileFloor;
@@ -36,12 +48,12 @@ namespace ubv.common.world
 
         public LogicGrid GenerateCorridorsGrid()
         {
-            posCurseur = GetStartCoord();
-            while (posCurseur.x != -1)
+            Vector2Int coord = GetStartCoord();
+            while (coord.x != -1)
             {
-                CoverStartPoint(posCurseur);
-                CreatePath(GetRandomDirection(posCurseur));
-                posCurseur = GetStartCoord();          
+                CoverStartPoint(coord);
+                CreatePath(new Move(coord, GetRandomDirection(coord)));
+                coord = GetStartCoord();          
             }
 
             Debug.LogError("Frontier Pass Count : " + PassCount);
@@ -109,16 +121,16 @@ namespace ubv.common.world
             m_floor.RefreshAllTiles();
         }
 
-        private void CreatePath(Direction dir)
+        private void CreatePath(Move move)
         {
-            posCurseur = MoveCursor(posCurseur, dir);
-            AddTile(posCurseur, dir);
-            dir = GetRandomDirection(dir);
-            while (dir != Direction.Stop)
+            move.pos = MoveCursor(move.pos, move.dir);
+            AddTile(move.pos, move.dir);
+            move = GetRandomDirection(move.pos, move.dir);
+            while (move.dir != Direction.Stop)
             {                
-                CreatePath(dir);
-                dir = GetRandomDirection(dir);
-            }
+                CreatePath(move);
+                move = GetRandomDirection(move.pos, move.dir);
+            } // Problème ici, avec le curseur global, on recule pas donc ça chie
         }
 
         private Vector2Int MoveCursor(Vector2Int pos, Direction dir)
@@ -186,14 +198,9 @@ namespace ubv.common.world
         }
 
         //private Direction GetRandomDirection(Vector2Int pos, Direction foward)
-        private Direction GetRandomDirection(Direction foward)
+        private Move GetRandomDirection(Vector2Int pos, Direction foward)
         {
             List<int> dir = new List<int> { 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4}; // TODO look to clear useless check
-            // Utiliser ramdom avec un switch à default?
-            // Utiliser une liste mélanger et la parcourir?
-            // Toujours tout droit sauf si erreur?
-            // random 0 a 3
-            // Librairie? vérifier pour tirage avec probabilité
             int select;
 
             bool LookForDirection = true;
@@ -205,42 +212,42 @@ namespace ubv.common.world
                 switch (dir.ElementAt(select))
                 {
                     case 0:
-                        if (IsSpaceFreeNorth(posCurseur))
+                        if (IsSpaceFreeNorth(pos))
                         {
                             DirectionFound = Direction.North;
                             LookForDirection = false;
                         }
                         break;
                     case 1:
-                        if (IsSpaceFreeEast(posCurseur))
+                        if (IsSpaceFreeEast(pos))
                         {
                             DirectionFound = Direction.East;
                             LookForDirection = false;
                         }
                         break;
                     case 2:
-                        if (IsSpaceFreeSouth(posCurseur))
+                        if (IsSpaceFreeSouth(pos))
                         {
                             DirectionFound = Direction.South;
                             LookForDirection = false;
                         }
                         break;
                     case 3:
-                        if (IsSpaceFreeWest(posCurseur))
+                        if (IsSpaceFreeWest(pos))
                         {
                             DirectionFound = Direction.West;
                             LookForDirection = false;
                         }
                         break;
                     default:
-                        if (IsSpaceFree(posCurseur, foward))
+                        if (IsSpaceFree(pos, foward))
                         {
                             DirectionFound = foward;
                             LookForDirection = false;
                         }
                         break;
                 }                
-                if(select < 5)
+                if(select < 4)
                 {
                     dir.RemoveAt(select);
                 }
@@ -249,15 +256,20 @@ namespace ubv.common.world
                     //dir.RemoveRange(5, dir.Count - 5);
                     dir.RemoveRange(4, dir.Count - 4);
                 }
-                if (IsNearFrontier(DirectionFound) && !LookForDirection)
+                if (IsNearFrontier(pos, DirectionFound) && !LookForDirection)
                 {
-                    if (IsFullyGoingThroughFrontier(DirectionFound))
+                    if (IsFullyGoingThroughFrontier(pos, DirectionFound))
                     {
                         PassCount++;
-                        if (!PassFrontier(DirectionFound))
+                        Vector2Int posTemp = PassFrontier(pos, DirectionFound);
+                        if (posTemp.x == -1)
                         {
                             DirectionFound = Direction.Stop;
                             LookForDirection = false;
+                        }
+                        else 
+                        {
+                            pos = posTemp;
                         }
                     }
                     else
@@ -268,7 +280,7 @@ namespace ubv.common.world
 
             }                    
 
-            return DirectionFound;
+            return new Move(pos, DirectionFound);
         }
 
         private Direction GetRandomDirection(Vector2Int pos)
@@ -534,64 +546,62 @@ namespace ubv.common.world
             return false;
         }
 
-        private bool PassFrontier(Direction dir)
+        private Vector2Int PassFrontier(Vector2Int pos, Direction dir)
         {
+            Vector2Int err = new Vector2Int(-1, -1);
             switch (dir)
             {
                 case Direction.North:
-                    if(IsSpaceFreeNorth(posCurseur, false))
+                    if(IsSpaceFreeNorth(pos, true))
                     {
-                        JumpFrontier(dir);
-                        return true;
+                        return JumpFrontier(pos, dir);
                     }
-                    return false;
+                    return err;
                 case Direction.East:
-                    if (IsSpaceFreeEast(posCurseur, false))
+                    if (IsSpaceFreeEast(pos, true))
                     {
-                        JumpFrontier(dir);
-                        return true;
+                        return JumpFrontier(pos, dir);
                     }
-                    return false;
+                    return err;
                 case Direction.South:
-                    if (IsSpaceFreeSouth(posCurseur, false))
+                    if (IsSpaceFreeSouth(pos, true))
                     {
-                        JumpFrontier(dir);
-                        return true;
+                        return JumpFrontier(pos, dir);
                     }
-                    return false;
+                    return err;
                 case Direction.West:
-                    if (IsSpaceFreeWest(posCurseur, false))
+                    if (IsSpaceFreeWest(pos, true))
                     {
-                        JumpFrontier(dir);
-                        return true;
+                        return JumpFrontier(pos, dir);
                     }
-                    return false;
+                    return err;
                 default:
-                    return false;
+                    return err;
             }
         }
 
-        private void JumpFrontier(Direction dir)
+        private Vector2Int JumpFrontier(Vector2Int pos, Direction dir)
         {
             for (int i = 0; i < 4; i++)
             {
-                posCurseur = MoveCursor(posCurseur, dir);
-                AddTile(posCurseur, dir);
+                pos = MoveCursor(pos, dir);
+                AddTile(pos, dir);
             }
+            return pos;
         }
 
-        private bool IsFullyGoingThroughFrontier(Direction dir)
+        private bool IsFullyGoingThroughFrontier(Vector2Int pos, Direction dir)
         {
             switch (dir)
             {
                 case Direction.North:
-                    return IsOnFrontierNorth(posCurseur);
+                    return IsOnFrontierNorth(pos);
                 case Direction.East:
-                    return IsOnFrontierEast(posCurseur);
+                    return IsOnFrontierEast(pos);
                 case Direction.South:
-                    return IsOnFrontierSouth(posCurseur);
+                    return IsOnFrontierSouth(pos);
                 case Direction.West:
-                    return IsOnFrontierWest(posCurseur);
+                    return IsOnFrontierWest(pos);
                 case Direction.Stop:
                     return false;
                 default:
@@ -652,18 +662,18 @@ namespace ubv.common.world
             return false;
         }
 
-        private bool IsNearFrontier(Direction dir)
+        private bool IsNearFrontier(Vector2Int pos, Direction dir)
         {
             switch (dir)
             {
                 case Direction.North:
-                    return IsNearFrontierNorth(posCurseur);
+                    return IsNearFrontierNorth(pos);
                 case Direction.East:
-                    return IsNearFrontierEast(posCurseur);
+                    return IsNearFrontierEast(pos);
                 case Direction.South:
-                    return IsNearFrontierSouth(posCurseur);
+                    return IsNearFrontierSouth(pos);
                 case Direction.West:
-                    return IsNearFrontierWest(posCurseur);
+                    return IsNearFrontierWest(pos);
                 case Direction.Stop:
                     return false;
                 default:
@@ -674,11 +684,11 @@ namespace ubv.common.world
         private bool IsNearFrontierNorth(Vector2Int pos)
         {
 
-            if (TileOnFrontier(pos.x - 2, pos.y + 2) ||
+            if (/*TileOnFrontier(pos.x - 2, pos.y + 2) ||*/
                 TileOnFrontier(pos.x - 1, pos.y + 2) ||
                 TileOnFrontier(pos.x,     pos.y + 2) ||
-                TileOnFrontier(pos.x + 1, pos.y + 2) ||
-                TileOnFrontier(pos.x + 2, pos.y + 2))
+                TileOnFrontier(pos.x + 1, pos.y + 2) /*||
+                TileOnFrontier(pos.x + 2, pos.y + 2)*/)
             {
                 return true;
             }
@@ -687,11 +697,11 @@ namespace ubv.common.world
 
         private bool IsNearFrontierEast(Vector2Int pos)
         {
-            if (TileOnFrontier(pos.x + 2, pos.y - 2) ||
+            if (/*TileOnFrontier(pos.x + 2, pos.y - 2) ||*/
                 TileOnFrontier(pos.x + 2, pos.y - 1) ||
                 TileOnFrontier(pos.x + 2, pos.y    ) ||
-                TileOnFrontier(pos.x + 2, pos.y + 1) ||
-                TileOnFrontier(pos.x + 2, pos.y + 2))
+                TileOnFrontier(pos.x + 2, pos.y + 1) /*||
+                TileOnFrontier(pos.x + 2, pos.y + 2)*/)
             {
                 return true;
             }
@@ -700,11 +710,11 @@ namespace ubv.common.world
 
         private bool IsNearFrontierSouth(Vector2Int pos)
         {
-            if (TileOnFrontier(pos.x - 2, pos.y - 2) ||
+            if (/*TileOnFrontier(pos.x - 2, pos.y - 2) ||*/
                 TileOnFrontier(pos.x - 1, pos.y - 2) ||
                 TileOnFrontier(pos.x,     pos.y - 2) ||
-                TileOnFrontier(pos.x + 1, pos.y - 2) ||
-                TileOnFrontier(pos.x + 2, pos.y - 2))
+                TileOnFrontier(pos.x + 1, pos.y - 2) /*||
+                TileOnFrontier(pos.x + 2, pos.y - 2)*/)
             {
                 return true;
             }
@@ -713,11 +723,11 @@ namespace ubv.common.world
 
         private bool IsNearFrontierWest(Vector2Int pos)
         {
-            if (TileOnFrontier(pos.x - 2, pos.y - 2) ||
+            if (/*TileOnFrontier(pos.x - 2, pos.y - 2) ||*/
                 TileOnFrontier(pos.x - 2, pos.y - 1) ||
                 TileOnFrontier(pos.x - 2, pos.y    ) ||
-                TileOnFrontier(pos.x - 2, pos.y + 1) ||
-                TileOnFrontier(pos.x - 2, pos.y + 2))
+                TileOnFrontier(pos.x - 2, pos.y + 1) /*||
+                TileOnFrontier(pos.x - 2, pos.y + 2)*/)
             {
                 return true;
             }
