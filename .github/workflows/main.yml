@@ -60,6 +60,10 @@ jobs:
         uses: game-ci/unity-return-license@v1
         if: always()
 
+  server-publish:
+    needs: [ server-build ]
+    runs-on: ubuntu-latest
+    steps:
       - name: Pre-load env-var
         id: fetch-vars
         run: |
