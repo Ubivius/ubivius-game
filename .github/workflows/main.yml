@@ -21,13 +21,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           lfs: true
       
       # Cache
       - uses: actions/cache@v2
         with:
-          path: /home/runner/work/ubivius-game/ubivius-game/Library
-          key: Library-cache
+          path: ubivius-game/Library
+          key: Library-ubivius-game-StandaloneLinux64
+          restore-keys: |
+            Library-ubivius-game-
+            Library-
       
       # Test
  #     - name: Run tests
@@ -88,13 +92,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           lfs: true
       
       # Cache
       - uses: actions/cache@v2
         with:
-          path: /home/runner/work/ubivius-game/ubivius-game/Library
-          key: Library-cache
+          path: ubivius-game/Library
+          key: Library-ubivius-game-StandaloneWindows64
+          restore-keys: |
+            Library-ubivius-game-
+            Library-
 
       # Test
 #      - name: Run tests
