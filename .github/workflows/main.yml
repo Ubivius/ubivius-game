@@ -50,6 +50,11 @@ jobs:
           buildMethod: Build.ServerBuild
           targetPlatform: StandaloneLinux64
           unityVersion: 2019.4.1f1
+      
+      # Return License
+      - name: Return license
+        uses: game-ci/unity-return-license@v1
+        if: always()
 
       - name: Pre-load env-var
         id: fetch-vars
@@ -112,6 +117,11 @@ jobs:
           buildMethod: Build.ClientBuild
           targetPlatform: StandaloneWindows64
           unityVersion: 2019.4.1f1
+
+      # Return License
+      - name: Return license
+        uses: game-ci/unity-return-license@v1
+        if: always()
 
       # Output
       - uses: actions/upload-artifact@v1
