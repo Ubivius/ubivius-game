@@ -9,6 +9,7 @@ public class EnemyPathFindingMovement : MonoBehaviour
 {
     [SerializeField] private const float SPEED = 20f;
     [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
+    [SerializeField] private Transform m_player;
 
     private EnemyMain m_enemyMain;
     private List<Vector2> m_pathVectorList;
@@ -101,20 +102,28 @@ public class EnemyPathFindingMovement : MonoBehaviour
 
     public void SetTargetPosition(Vector2 targetPosition)
     {
-        m_currentPathIndex = 0;
-
-        m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition).PathVectorList;
-        m_pathfindingTimer = .2f;
-
-        if (m_pathVectorList != null && m_pathVectorList.Count > 1)
+        if (m_pathfindingGridManager.IsSetUpDone() == true)
         {
-            m_pathVectorList.RemoveAt(0);
+            m_currentPathIndex = 0;
+
+            m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition).PathVectorList;
+            m_pathfindingTimer = .2f;
+
+            if (m_pathVectorList != null && m_pathVectorList.Count > 1)
+            {
+                m_pathVectorList.RemoveAt(0);
+            }
         }
     }
 
     public Vector2 GetPosition()
     {
         return (Vector2) transform.position;
+    }
+
+    public Vector2 GetPlayerPosition()
+    {
+        return (Vector2) m_player.position;
     }
 
     public Vector2 GetLastMoveDir()

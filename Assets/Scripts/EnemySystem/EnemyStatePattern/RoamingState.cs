@@ -9,15 +9,12 @@ namespace ubv.server.logic.ai
         private Vector2 m_startingPosition;
         private Vector2 m_roamPosition;
 
-        private Transform m_player;
-
-        public RoamingState(EnemyPathFindingMovement enemyPathFindingMovement, Transform player)
+        public RoamingState(EnemyPathFindingMovement enemyPathFindingMovement)
         {
             m_enemyPathFindingMovement = enemyPathFindingMovement;
 
             m_startingPosition = m_enemyPathFindingMovement.GetPosition();
             m_roamPosition = GetRoamingPosition();
-            m_player = player;
         }
 
         // Update is called once per frame
@@ -26,7 +23,7 @@ namespace ubv.server.logic.ai
             m_enemyPathFindingMovement.MoveToTimer(m_roamPosition);
 
             float reachedPositionDistance = 10f;
-            if (Vector3.Distance(m_enemyPathFindingMovement.GetPosition(), m_roamPosition) < reachedPositionDistance)
+            if (Vector3.SqrMagnitude(m_roamPosition - m_enemyPathFindingMovement.GetPosition()) < reachedPositionDistance*reachedPositionDistance)
             {
                 // Reached Roam Position
                 m_roamPosition = GetRoamingPosition();
@@ -43,7 +40,7 @@ namespace ubv.server.logic.ai
         private EnemyState FindTarget()
         {
             float targetRange = 50f;
-            if (Vector3.Distance(m_enemyPathFindingMovement.GetPosition(), m_player.position) < targetRange)
+            if (Vector3.Distance(m_enemyPathFindingMovement.GetPosition(), m_enemyPathFindingMovement.GetPlayerPosition()) < targetRange)
             {
                 // Player within target range
                 //return new ChasingTargetState();

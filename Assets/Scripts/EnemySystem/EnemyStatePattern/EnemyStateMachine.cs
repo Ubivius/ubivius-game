@@ -9,7 +9,7 @@ namespace ubv.server.logic.ai
     public class EnemyStateMachine : MonoBehaviour
     {
         private EnemyState m_currentEnemyState;
-        public Transform player;
+        //public Transform player;
         private EnemyPathFindingMovement m_pathfindingMovement;
 
         private void Awake()
@@ -20,7 +20,7 @@ namespace ubv.server.logic.ai
         // Use this for initialization
         void Start()
         {
-            m_currentEnemyState = new RoamingState(m_pathfindingMovement, player);
+            m_currentEnemyState = new RoamingState(m_pathfindingMovement);
         }
 
         // Update is called once per frame
