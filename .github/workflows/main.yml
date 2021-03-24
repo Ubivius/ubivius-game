@@ -60,11 +60,8 @@ jobs:
         uses: game-ci/unity-return-license@v1
         if: failure()
 
-  server-publish:
-    needs: [ server-build ]
-    runs-on: ubuntu-latest
-    steps:
       - name: Pre-load env-var
+        if: success()
         id: fetch-vars
         run: |
             IN=$(echo ${GITHUB_REPOSITORY})
@@ -74,6 +71,7 @@ jobs:
         shell: bash
 
       - name: Build and Push Artefact to Registry
+        if: success()
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
           name: ubiviushub/${{ steps.fetch-vars.outputs.REPO_NAME }}
@@ -84,6 +82,7 @@ jobs:
 
       # Output
       - uses: actions/upload-artifact@v1
+        if: success()
         with:
           name: Server
           path: build
@@ -137,6 +136,7 @@ jobs:
 
       # Output
       - uses: actions/upload-artifact@v1
+        if: success()
         with:
           name: Client
           path: build
