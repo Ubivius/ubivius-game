@@ -119,6 +119,7 @@ namespace ubv.common.world
             m_floor.SetTile(new Vector3Int(pos.x + 1, pos.y    , 0), m_tileFloor);
             m_floor.SetTile(new Vector3Int(pos.x + 1, pos.y + 1, 0), m_tileFloor);
             m_floor.RefreshAllTiles();
+            Debug.DrawLine(new Vector3(pos.x - 1, pos.y - 1), new Vector3(pos.x + 2, pos.y + 2), Color.white, 500f, false);
         }
 
         private void CreatePath(Move move)
@@ -582,11 +583,13 @@ namespace ubv.common.world
 
         private Vector2Int JumpFrontier(Vector2Int pos, Direction dir)
         {
+            Vector2Int debut = pos;
             for (int i = 0; i < 4; i++)
             {
                 pos = MoveCursor(pos, dir);
                 AddTile(pos, dir);
             }
+            Debug.DrawLine(new Vector3(debut.x, debut.y), new Vector3(pos.x, pos.y), Color.white, 500f, false);
             return pos;
         }
 
