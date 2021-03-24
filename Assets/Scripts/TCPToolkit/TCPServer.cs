@@ -234,10 +234,36 @@ namespace ubv.tcp.server
 
         private bool CheckConnection(TcpClient connection)
         {
-            bool poll = connection.Client.Poll(1000, SelectMode.SelectRead);
+            /*bool poll = connection.Client.Poll(1000, SelectMode.SelectRead);
             bool available = (connection.Client.Available == 0);
             
-            return !((poll && available) || !connection.Client.Connected);
+            return !((poll && available) || !connection.Client.Connected);*/
+            Socket client = connection.Client;
+            bool blockingState = client.Blocking;
+            try
+            {
+                byte[] tmp = new byte[1];
+
+                client.Blocking = false;
+                client.Send(tmp, 0, 0);
+                return true;
+            }
+            catch (SocketException e)
+            {
+                // 10035 == WSAEWOULDBLOCK
+                if (e.NativeErrorCode.Equals(10035))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            finally
+            {
+                client.Blocking = blockingState;
+            }
         }
 
         public void Send(byte[] bytes, IPEndPoint target)
