@@ -270,7 +270,7 @@ namespace ubv.tcp.client
             bool poll = m_client.Client.Poll(1000, SelectMode.SelectRead);
             bool available = (m_client.Client.Available == 0);
 
-            return (!(poll && available) || !m_client.Client.Connected);
+            return !((poll && available) || !m_client.Client.Connected);
         }
     }
 }

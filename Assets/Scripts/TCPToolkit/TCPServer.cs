@@ -236,8 +236,8 @@ namespace ubv.tcp.server
         {
             bool poll = connection.Client.Poll(1000, SelectMode.SelectRead);
             bool available = (connection.Client.Available == 0);
-
-            return (!(poll && available) || !connection.Client.Connected);
+            
+            return !((poll && available) || !connection.Client.Connected);
         }
 
         public void Send(byte[] bytes, IPEndPoint target)
