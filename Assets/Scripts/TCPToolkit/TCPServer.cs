@@ -158,11 +158,13 @@ namespace ubv.tcp.server
             bool connected = true;
             int count = 0;
             int connectionCheckRate = 20;
+            
             while (!m_exitSignal && connected)
             {
                 if (count++ % connectionCheckRate == 0)
                 {
                     connected = CheckConnection(connection);
+                    if (!connected) break;
                 }
 
                 // read from stream
@@ -210,6 +212,7 @@ namespace ubv.tcp.server
                 if (count++ % connectionCheckRate == 0)
                 {
                     connected = CheckConnection(connection);
+                    if (!connected) break;
                 }
 
                 // write to stream (send to client)lock (m_lock)
@@ -234,36 +237,10 @@ namespace ubv.tcp.server
 
         private bool CheckConnection(TcpClient connection)
         {
-            /*bool poll = connection.Client.Poll(1000, SelectMode.SelectRead);
+            bool poll = connection.Client.Poll(1000, SelectMode.SelectRead);
             bool available = (connection.Client.Available == 0);
             
-            return !((poll && available) || !connection.Client.Connected);*/
-            Socket client = connection.Client;
-            bool blockingState = client.Blocking;
-            try
-            {
-                byte[] tmp = new byte[1];
-
-                client.Blocking = false;
-                client.Send(tmp, 0, 0);
-                return true;
-            }
-            catch (SocketException e)
-            {
-                // 10035 == WSAEWOULDBLOCK
-                if (e.NativeErrorCode.Equals(10035))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            finally
-            {
-                client.Blocking = blockingState;
-            }
+            return !((poll && available) || !connection.Client.Connected);
         }
 
         public void Send(byte[] bytes, IPEndPoint target)
