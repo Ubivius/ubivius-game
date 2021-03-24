@@ -13,6 +13,7 @@ namespace ubv.tcp.client
     /// </summary>
     public class TCPClient : MonoBehaviour
     {
+        [SerializeField] int m_connectionTimeoutInMS = 500000;
         protected readonly object m_lock = new object();
 
         private string m_serverAddress;
@@ -30,7 +31,14 @@ namespace ubv.tcp.client
 
         private const int DATA_BUFFER_SIZE = 1024*1024;
         private Queue<byte[]> m_dataToSend;
-        
+
+        private bool m_activeEndpoint;
+        [SerializeField] private int m_checkConnectionRate = 61;
+        [SerializeField] private int m_connectionKeepAliveRate = 33;
+        private  float m_endpointLastTimeSeen;
+
+        private byte[] m_keepAlivePacketBytes;
+
         private void Awake()
         {
             m_receivers = new List<ITCPClientReceiver>();
@@ -40,7 +48,11 @@ namespace ubv.tcp.client
             m_dataToSend = new Queue<byte[]>();
             m_client = new TcpClient();
 
+            m_activeEndpoint = true;
+            m_endpointLastTimeSeen = 0;
+
             m_iteratingTroughReceivers = false;
+            m_keepAlivePacketBytes = new byte[0];
         }
 
         private void Start()
@@ -76,7 +88,7 @@ namespace ubv.tcp.client
                     HandleConnection(stream);
                 }
 
-                m_exitSignal = true;
+                //m_exitSignal = true;
                 foreach (ITCPClientReceiver receiver in m_receivers)
                 {
                     receiver.OnDisconnect();
@@ -106,17 +118,9 @@ namespace ubv.tcp.client
             int bytesRead = 0;
 
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
-
-            bool connected = true;
-            int count = 0;
-            int connectionCheckRate = 20;
-            while (!m_exitSignal && connected)
+            
+            while (!m_exitSignal && m_activeEndpoint)
             {
-                if (count++ % connectionCheckRate == 0)
-                {
-                    connected = CheckConnection();
-                }
-
                 // read from stream
                 try
                 {
@@ -133,15 +137,22 @@ namespace ubv.tcp.client
                     TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromBytes(bytes.SubArray(0, bytesRead));
                     if (packet.HasValidProtocolID())
                     {
-                        // broadcast reception to listeners
                         lock (m_lock)
                         {
-                            m_iteratingTroughReceivers = true;
-                            foreach (ITCPClientReceiver receiver in m_receivers)
+                            m_endpointLastTimeSeen = 0;
+                        }
+                        // broadcast reception to listeners
+                        if (packet.Data.Length > 0) // if it's not a keep-alive packet
+                        {
+                            lock (m_lock)
                             {
-                                receiver.ReceivePacket(packet);
+                                m_iteratingTroughReceivers = true;
+                                foreach (ITCPClientReceiver receiver in m_receivers)
+                                {
+                                    receiver.ReceivePacket(packet);
+                                }
+                                m_iteratingTroughReceivers = false;
                             }
-                            m_iteratingTroughReceivers = false;
                         }
                     }
                 }
@@ -152,6 +163,18 @@ namespace ubv.tcp.client
         {
             lock (m_lock)
             {
+                m_endpointLastTimeSeen += Time.deltaTime;
+                
+                if(Time.frameCount % m_checkConnectionRate == 0)
+                {
+                    m_activeEndpoint = CheckConnection();
+                }
+
+                if (Time.frameCount % m_connectionKeepAliveRate == 0 && m_activeEndpoint)
+                {
+                    Send(m_keepAlivePacketBytes);
+                }
+
                 if (!m_iteratingTroughReceivers)
                 {
                     if (m_receiversAwaitingSubscription.Count > 0)
@@ -181,17 +204,9 @@ namespace ubv.tcp.client
 
             if (!stream.CanWrite)
                 return;
-
-            bool connected = true;
-            int count = 10;
-            int connectionCheckRate = 20;
-            while (!m_exitSignal && connected)
+            
+            while (!m_exitSignal && m_activeEndpoint)
             {
-                if (count++ % connectionCheckRate == 0)
-                {
-                    connected = CheckConnection();
-                }
-
                 // write to stream (send to client)
                 lock (m_lock)
                 {
@@ -267,10 +282,7 @@ namespace ubv.tcp.client
 
         private bool CheckConnection()
         {
-            bool poll = m_client.Client.Poll(1000, SelectMode.SelectRead);
-            bool available = (m_client.Client.Available == 0);
-
-            return !((poll && available) || !m_client.Client.Connected);
+            return (m_endpointLastTimeSeen * 1000 < m_connectionTimeoutInMS);
         }
     }
 }

@@ -35,14 +35,22 @@ namespace ubv.tcp.server
 
         private Dictionary<IPEndPoint, TcpClient> m_clientConnections;
         private Dictionary<IPEndPoint, Queue<byte[]>> m_dataToSend;
+        private Dictionary<IPEndPoint, bool> m_activeEndpoints;
+        private Dictionary<IPEndPoint, float> m_endpointLastTimeSeen;
 
         private List<ITCPServerReceiver> m_receivers;
-                
+
+        [SerializeField] private int m_connectionCheckRate = 61;
+        [SerializeField] private int m_connectionKeepAliveRate = 33;
+        private byte[] m_keepAlivePacketBytes;
+              
         private void Awake()
         {
             m_receivers = new List<ITCPServerReceiver>();
             m_clientConnections = new Dictionary<IPEndPoint, TcpClient>();
             m_dataToSend = new Dictionary<IPEndPoint, Queue<byte[]>>();
+            m_activeEndpoints = new Dictionary<IPEndPoint, bool>();
+            m_endpointLastTimeSeen = new Dictionary<IPEndPoint, float>();
             
             m_exitSignal = false;
             m_tcpClientTasks = new List<Task>();
@@ -51,6 +59,7 @@ namespace ubv.tcp.server
 #if DEBUG_LOG
             Debug.Log("Launching TCP server at " + localEndPoint.ToString());
 #endif // DEBUG_LOG
+            m_keepAlivePacketBytes = new byte[0];
 
             m_tcpListener = new TcpListener(localEndPoint);
         }
@@ -86,8 +95,36 @@ namespace ubv.tcp.server
 
         private void Update()
         {
-                    
+            lock (m_lock)
+            {
+                List<IPEndPoint> keys = new List<IPEndPoint>(m_endpointLastTimeSeen.Keys);
+                foreach (IPEndPoint ep in keys)
+                {
+                    m_endpointLastTimeSeen[ep] += Time.deltaTime;
+                }
+            }
+
+            if(Time.frameCount % m_connectionCheckRate == 0)
+            {
+                foreach (IPEndPoint ep in m_clientConnections.Keys)
+                {
+                    lock (m_lock)
+                    {
+                        m_activeEndpoints[ep] = CheckConnection(ep);
+                    }
+                }
+            }
+
+            if (Time.frameCount % m_connectionKeepAliveRate == 0)
+            {
+                foreach (IPEndPoint ep in m_clientConnections.Keys)
+                {
+                    Send(m_keepAlivePacketBytes, ep);
+                }
+            }
         }
+
+
 
         private void OnDestroy()
         {
@@ -103,6 +140,11 @@ namespace ubv.tcp.server
 
                 IPEndPoint key = (IPEndPoint)(connection.Client.RemoteEndPoint);
                 m_clientConnections[key] = connection;
+                m_activeEndpoints[key] = true;
+                lock (m_lock)
+                {
+                    m_endpointLastTimeSeen[key] = 0;
+                }
                 m_dataToSend[key] = new Queue<byte[]>();
 
                 foreach (ITCPServerReceiver receiver in m_receivers)
@@ -155,18 +197,9 @@ namespace ubv.tcp.server
 
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
             TcpClient connection = m_clientConnections[source];
-            bool connected = true;
-            int count = 0;
-            int connectionCheckRate = 20;
             
-            while (!m_exitSignal && connected)
+            while (!m_exitSignal && m_activeEndpoints[source])
             {
-                if (count++ % connectionCheckRate == 0)
-                {
-                    connected = CheckConnection(connection);
-                    if (!connected) break;
-                }
-
                 // read from stream
                 try
                 {
@@ -175,6 +208,7 @@ namespace ubv.tcp.server
                 catch (IOException ex)
                 {
                     Debug.Log(ex.Message);
+                    m_activeEndpoints[source] = false;
                     return;
                 }
 
@@ -183,10 +217,18 @@ namespace ubv.tcp.server
                     TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromBytes(bytes.SubArray(0, bytesRead));
                     if (packet.HasValidProtocolID())
                     {
-                        // broadcast reception to listeners
-                        foreach (ITCPServerReceiver receiver in m_receivers)
+                        lock (m_lock)
                         {
-                            receiver.ReceivePacket(packet, source);
+                            m_endpointLastTimeSeen[source] = 0;
+                        }
+                        // broadcast reception to listeners
+                        if (packet.Data.Length > 0) // if it's not a keep-alive packet
+                        {
+                            // broadcast reception to listeners
+                            foreach (ITCPServerReceiver receiver in m_receivers)
+                            {
+                                receiver.ReceivePacket(packet, source);
+                            }
                         }
                     }
                 }
@@ -202,19 +244,9 @@ namespace ubv.tcp.server
 #endif
             if (!stream.CanWrite)
                 return;
-
-            TcpClient connection = m_clientConnections[source];
-            bool connected = true;
-            int count = 10;
-            int connectionCheckRate = 20;
-            while (!m_exitSignal && connected)
+            
+            while (!m_exitSignal && m_activeEndpoints[source])
             {
-                if (count++ % connectionCheckRate == 0)
-                {
-                    connected = CheckConnection(connection);
-                    if (!connected) break;
-                }
-
                 // write to stream (send to client)lock (m_lock)
                 lock (m_lock)
                 {
@@ -228,6 +260,7 @@ namespace ubv.tcp.server
                         catch (IOException ex)
                         {
                             Debug.Log(ex.Message);
+                            m_activeEndpoints[source] = false;
                             return;
                         }
                     }
@@ -235,12 +268,9 @@ namespace ubv.tcp.server
             }
         }
 
-        private bool CheckConnection(TcpClient connection)
+        private bool CheckConnection(IPEndPoint endpoint)
         {
-            bool poll = connection.Client.Poll(1000, SelectMode.SelectRead);
-            bool available = (connection.Client.Available == 0);
-            
-            return !((poll && available) || !connection.Client.Connected);
+            return (m_endpointLastTimeSeen[endpoint] * 1000 < m_connectionTimeoutInMS) ;
         }
 
         public void Send(byte[] bytes, IPEndPoint target)
