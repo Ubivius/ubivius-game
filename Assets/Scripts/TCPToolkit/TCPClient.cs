@@ -46,8 +46,6 @@ namespace ubv.tcp.client
             m_receiversAwaitingUnsubscription = new List<ITCPClientReceiver>();
             m_exitSignal = false;
             m_dataToSend = new Queue<byte[]>();
-            m_client = new TcpClient();
-
             m_activeEndpoint = true;
             m_endpointLastTimeSeen = 0;
 
@@ -61,6 +59,7 @@ namespace ubv.tcp.client
 
         private void CommThread()
         {
+            m_client = new TcpClient();
             m_exitSignal = false;
             using (m_client)
             {
@@ -275,6 +274,7 @@ namespace ubv.tcp.client
             m_serverAddress = address;
             m_port = port;
             m_server = new IPEndPoint(IPAddress.Parse(address), port);
+
             Thread thread = new Thread(new ThreadStart(CommThread));
             thread.Start();
         }
