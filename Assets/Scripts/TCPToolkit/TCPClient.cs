@@ -35,7 +35,8 @@ namespace ubv.tcp.client
         private bool m_activeEndpoint;
         [SerializeField] private int m_checkConnectionRate = 61;
         [SerializeField] private int m_connectionKeepAliveRate = 33;
-        private  float m_endpointLastTimeSeen;
+        private float m_endpointLastTimeSeen;
+        private int m_fixedFrameCount;
 
         private byte[] m_keepAlivePacketBytes;
 
@@ -51,6 +52,7 @@ namespace ubv.tcp.client
 
             m_iteratingTroughReceivers = false;
             m_keepAlivePacketBytes = new byte[0];
+            m_fixedFrameCount = 0;
         }
 
         private void Start()
@@ -87,11 +89,12 @@ namespace ubv.tcp.client
                     HandleConnection(stream);
                 }
 
-                //m_exitSignal = true;
+                m_iteratingTroughReceivers = true;
                 foreach (ITCPClientReceiver receiver in m_receivers)
                 {
                     receiver.OnDisconnect();
                 }
+                m_iteratingTroughReceivers = false;
             }
         }
 
@@ -117,13 +120,26 @@ namespace ubv.tcp.client
             int bytesRead = 0;
 
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
-            
-            while (!m_exitSignal && m_activeEndpoint)
+            int lastPacketEnd = 0;
+            byte[] packetBytes = new byte[0];
+            int bufferOffset = 0;
+            int totalPacketBytes = 0;
+
+            bool readyToReadPacket = true;
+
+            while (!m_exitSignal && m_activeEndpoint && bufferOffset >= 0)
             {
-                // read from stream
+                if (readyToReadPacket)
+                {
+                    bytesRead = 0;
+                    totalPacketBytes = 0;
+                    readyToReadPacket = false;
+                }
+                
+                // read from stream until we read a full packet
                 try
                 {
-                    bytesRead = stream.Read(bytes, 0, DATA_BUFFER_SIZE);
+                    bytesRead += stream.Read(bytes, bufferOffset % DATA_BUFFER_SIZE, DATA_BUFFER_SIZE - bufferOffset);
                 }
                 catch (IOException ex)
                 {
@@ -133,9 +149,12 @@ namespace ubv.tcp.client
 
                 if (bytesRead > 0)
                 {
-                    TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromBytes(bytes.SubArray(0, bytesRead));
-                    if (packet.HasValidProtocolID())
+                    TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
+                    while (packet != null && totalPacketBytes < bytesRead)
                     {
+                        readyToReadPacket = true;
+                        lastPacketEnd = packet.RawBytes.Length;
+                        totalPacketBytes += lastPacketEnd;
                         lock (m_lock)
                         {
                             m_endpointLastTimeSeen = 0;
@@ -153,6 +172,15 @@ namespace ubv.tcp.client
                                 m_iteratingTroughReceivers = false;
                             }
                         }
+                        packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes.ArrayFrom(totalPacketBytes));
+                    }
+
+                    // on a un restant de bytes
+                    // we shift
+                    bufferOffset = bytesRead - totalPacketBytes;
+                    for (int i = 0; i < bufferOffset; i++)
+                    {
+                        bytes[i] = bytes[i + totalPacketBytes];
                     }
                 }
             }
@@ -164,16 +192,6 @@ namespace ubv.tcp.client
             {
                 m_endpointLastTimeSeen += Time.deltaTime;
                 
-                if(Time.frameCount % m_checkConnectionRate == 0)
-                {
-                    m_activeEndpoint = CheckConnection();
-                }
-
-                if (Time.frameCount % m_connectionKeepAliveRate == 0 && m_activeEndpoint)
-                {
-                    Send(m_keepAlivePacketBytes);
-                }
-
                 if (!m_iteratingTroughReceivers)
                 {
                     if (m_receiversAwaitingSubscription.Count > 0)
@@ -195,6 +213,20 @@ namespace ubv.tcp.client
                     }
                 }
             }
+        }
+
+        private void FixedUpdate()
+        {
+            if(m_fixedFrameCount % m_checkConnectionRate == 0)
+            {
+                m_activeEndpoint = CheckConnection();
+            }
+
+            if (m_fixedFrameCount % m_connectionKeepAliveRate == 0 && m_activeEndpoint)
+            {
+                Send(m_keepAlivePacketBytes);
+            }
+            ++m_fixedFrameCount;
         }
 
         private void SendingThread(object streamObj)

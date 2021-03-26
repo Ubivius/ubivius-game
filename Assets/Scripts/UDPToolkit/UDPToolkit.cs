@@ -115,10 +115,10 @@ namespace ubv
 
             public class Packet : network.Packet
             {
-                public uint Sequence { get { return System.BitConverter.ToUInt32(RawBytes, 4); } }
-                public uint ACK { get { return System.BitConverter.ToUInt32(RawBytes, 8); } }
-                public int ACK_Bitfield { get { return System.BitConverter.ToInt32(RawBytes, 12); } }
-                public int DataSize { get { return System.BitConverter.ToInt32(RawBytes, 16); } }
+                public uint Sequence { get { return System.BitConverter.ToUInt32(RawBytes, 8); } }
+                public uint ACK { get { return System.BitConverter.ToUInt32(RawBytes, 12); } }
+                public int ACK_Bitfield { get { return System.BitConverter.ToInt32(RawBytes, 16); } }
+                public int DataSize { get { return System.BitConverter.ToInt32(RawBytes, 4); } }
                 public byte[] Data { get { return RawBytes.SubArray(UDP_HEADER_SIZE, DataSize); } }
                 
                 private Packet(byte[] bytes) : base(bytes)
@@ -134,6 +134,9 @@ namespace ubv
                         RawBytes[index] = NET_PROTOCOL_ID[i];
 
                     for (ushort i = 0; i < 4; i++, index++)
+                        RawBytes[index] = System.BitConverter.GetBytes(data.Length)[i];
+
+                    for (ushort i = 0; i < 4; i++, index++)
                         RawBytes[index] = System.BitConverter.GetBytes(seq)[i];
 
                     for (ushort i = 0; i < 4; i++, index++)
@@ -141,10 +144,7 @@ namespace ubv
 
                     for (ushort i = 0; i < 4; i++, index++)
                         RawBytes[index] = System.BitConverter.GetBytes(ackBitfield)[i];
-
-                    for (ushort i = 0; i < 4; i++, index++)
-                        RawBytes[index] = System.BitConverter.GetBytes(data.Length)[i];
-
+                    
                     for (ushort i = 0; i < UDP_MAX_PAYLOAD_SIZE; i++, index++)
                         RawBytes[index] = i < data.Length ? data[i] : (byte)0;
                 }

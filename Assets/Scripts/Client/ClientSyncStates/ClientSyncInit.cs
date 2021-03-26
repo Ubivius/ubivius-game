@@ -116,6 +116,7 @@ namespace ubv.client.logic
 
         private void EstablishConnectionToServer(ServerInfo serverInfo)
         {
+            Debug.Log("Trying to establish connection to game server...");
             // send a ping to the server to make it known that the player received its ID
             IdentificationMessage identificationMessage = new IdentificationMessage(m_playerID.Value);
 

@@ -14,6 +14,11 @@ namespace ubv.network
             RawBytes = bytes;
         }
 
+        public int PayloadSize()
+        {
+            return System.BitConverter.ToInt32(RawBytes, sizeof(int));
+        }
+
         public bool HasValidProtocolID()
         {
             if (RawBytes.Length < NET_PROTOCOL_ID.Length)

@@ -29,7 +29,7 @@ namespace ubv.tcp.server
 
         protected bool m_exitSignal;
 
-        private const int DATA_BUFFER_SIZE = 1024*1024;
+        private const int DATA_BUFFER_SIZE = 1024*2;
                 
         protected List<Task> m_tcpClientTasks;
 
@@ -43,7 +43,8 @@ namespace ubv.tcp.server
         [SerializeField] private int m_connectionCheckRate = 61;
         [SerializeField] private int m_connectionKeepAliveRate = 33;
         private byte[] m_keepAlivePacketBytes;
-              
+        private int m_fixedFrameCount;
+        
         private void Awake()
         {
             m_receivers = new List<ITCPServerReceiver>();
@@ -62,6 +63,7 @@ namespace ubv.tcp.server
             m_keepAlivePacketBytes = new byte[0];
 
             m_tcpListener = new TcpListener(localEndPoint);
+            m_fixedFrameCount = 0;
         }
 
         private void Start()
@@ -103,8 +105,11 @@ namespace ubv.tcp.server
                     m_endpointLastTimeSeen[ep] += Time.deltaTime;
                 }
             }
+        }
 
-            if(Time.frameCount % m_connectionCheckRate == 0)
+        private void FixedUpdate()
+        {
+            if (m_fixedFrameCount % m_connectionCheckRate == 0)
             {
                 foreach (IPEndPoint ep in m_clientConnections.Keys)
                 {
@@ -115,16 +120,16 @@ namespace ubv.tcp.server
                 }
             }
 
-            if (Time.frameCount % m_connectionKeepAliveRate == 0)
+            if (m_fixedFrameCount % m_connectionKeepAliveRate == 0)
             {
                 foreach (IPEndPoint ep in m_clientConnections.Keys)
                 {
                     Send(m_keepAlivePacketBytes, ep);
                 }
             }
+
+            ++m_fixedFrameCount;
         }
-
-
 
         private void OnDestroy()
         {
@@ -192,31 +197,44 @@ namespace ubv.tcp.server
 #endif // DEBUG_LOG
             if (!stream.CanRead)
                 return;
-
+            
             int bytesRead = 0;
 
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
-            TcpClient connection = m_clientConnections[source];
-            
-            while (!m_exitSignal && m_activeEndpoints[source])
+            int lastPacketEnd = 0;
+            int bufferOffset = 0;
+            int totalPacketBytes = 0;
+
+            bool readyToReadPacket = true;
+
+            while (!m_exitSignal && m_activeEndpoints[source] && bufferOffset >= 0)
             {
-                // read from stream
+                if (readyToReadPacket)
+                {
+                    bytesRead = 0;
+                    totalPacketBytes = 0;
+                    readyToReadPacket = false;
+                }
+
+                // read from stream until we read a full packet
                 try
                 {
-                    bytesRead = stream.Read(bytes, 0, DATA_BUFFER_SIZE);
+                    bytesRead += stream.Read(bytes, bufferOffset % DATA_BUFFER_SIZE, DATA_BUFFER_SIZE - bufferOffset);
                 }
                 catch (IOException ex)
                 {
                     Debug.Log(ex.Message);
-                    m_activeEndpoints[source] = false;
                     return;
                 }
 
                 if (bytesRead > 0)
                 {
-                    TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromBytes(bytes.SubArray(0, bytesRead));
-                    if (packet.HasValidProtocolID())
+                    TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
+                    while (packet != null && totalPacketBytes < bytesRead)
                     {
+                        readyToReadPacket = true;
+                        lastPacketEnd = packet.RawBytes.Length;
+                        totalPacketBytes += lastPacketEnd;
                         lock (m_lock)
                         {
                             m_endpointLastTimeSeen[source] = 0;
@@ -224,12 +242,23 @@ namespace ubv.tcp.server
                         // broadcast reception to listeners
                         if (packet.Data.Length > 0) // if it's not a keep-alive packet
                         {
-                            // broadcast reception to listeners
-                            foreach (ITCPServerReceiver receiver in m_receivers)
+                            lock (m_lock)
                             {
-                                receiver.ReceivePacket(packet, source);
+                                foreach (ITCPServerReceiver receiver in m_receivers)
+                                {
+                                    receiver.ReceivePacket(packet, source);
+                                }
                             }
                         }
+                        packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes.ArrayFrom(totalPacketBytes));
+                    }
+
+                    // on a un restant de bytes
+                    // we shift
+                    bufferOffset = bytesRead - totalPacketBytes;
+                    for (int i = 0; i < bufferOffset; i++)
+                    {
+                        bytes[i] = bytes[i + totalPacketBytes];
                     }
                 }
             }
