@@ -170,6 +170,7 @@ namespace ubv.tcp.server
                 Debug.Log("Removing " + key.ToString() + " TCP connection");
 #endif // DEBUG_LOG
                 m_clientConnections.Remove(key);
+                connection.Close();
             }
         }
 
@@ -299,6 +300,7 @@ namespace ubv.tcp.server
 
         private bool CheckConnection(IPEndPoint endpoint)
         {
+            Debug.Log("LAST SEEN " + endpoint.ToString() + " : " + m_endpointLastTimeSeen[endpoint] * 1000 + " ms ago");
             return (m_endpointLastTimeSeen[endpoint] * 1000 < m_connectionTimeoutInMS) ;
         }
 
