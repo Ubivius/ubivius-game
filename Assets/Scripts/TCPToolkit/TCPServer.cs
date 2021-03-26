@@ -113,9 +113,12 @@ namespace ubv.tcp.server
             {
                 foreach (IPEndPoint ep in m_clientConnections.Keys)
                 {
-                    lock (m_lock)
+                    if (m_activeEndpoints[ep])
                     {
-                        m_activeEndpoints[ep] = CheckConnection(ep);
+                        lock (m_lock)
+                        {
+                            m_activeEndpoints[ep] = CheckConnection(ep);
+                        }
                     }
                 }
             }
@@ -300,7 +303,9 @@ namespace ubv.tcp.server
 
         private bool CheckConnection(IPEndPoint endpoint)
         {
-            Debug.Log("LAST SEEN " + endpoint.ToString() + " : " + m_endpointLastTimeSeen[endpoint] * 1000 + " ms ago");
+#if DEBUG_LOG
+            Debug.Log("Last seen " + endpoint.ToString() + " : " + m_endpointLastTimeSeen[endpoint] * 1000 + " ms ago.");
+#endif // DEBUG_LOG
             return (m_endpointLastTimeSeen[endpoint] * 1000 < m_connectionTimeoutInMS) ;
         }
 
