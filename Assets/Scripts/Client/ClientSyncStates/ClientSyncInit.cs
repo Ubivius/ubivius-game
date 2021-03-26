@@ -72,8 +72,11 @@ namespace ubv.client.logic
         public void SendConnectionRequestToServer()
         {
             m_waitingOnServerResponse = true;
-            int playerID = System.Guid.NewGuid().GetHashCode(); // for now
-            m_playerID = playerID;
+            if (m_playerID == null)
+            {
+                int playerID = System.Guid.NewGuid().GetHashCode(); // for now
+                m_playerID = playerID;
+            }
 
             // mock dispatcher response for now
             HttpResponseMessage msg = new HttpResponseMessage();
