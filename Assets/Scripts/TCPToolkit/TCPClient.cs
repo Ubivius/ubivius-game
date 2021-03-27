@@ -47,7 +47,7 @@ namespace ubv.tcp.client
             m_receiversAwaitingUnsubscription = new List<ITCPClientReceiver>();
             m_exitSignal = false;
             m_dataToSend = new Queue<byte[]>();
-            m_activeEndpoint = true;
+            m_activeEndpoint = false;
             m_endpointLastTimeSeen = 0;
 
             m_iteratingTroughReceivers = false;
@@ -86,7 +86,9 @@ namespace ubv.tcp.client
 
                 using (NetworkStream stream = m_client.GetStream())
                 {
+                    m_activeEndpoint = true;
                     HandleConnection(stream);
+                    stream.Close();
                 }
 
                 m_iteratingTroughReceivers = true;
@@ -95,7 +97,6 @@ namespace ubv.tcp.client
                     receiver.OnDisconnect();
                 }
                 m_iteratingTroughReceivers = false;
-                m_client.GetStream().Close();
                 m_client.Close();
             }
         }
@@ -186,14 +187,19 @@ namespace ubv.tcp.client
                     }
                 }
             }
+
+            Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal + ", Buffer offset :" + bufferOffset);
         }
 
         private void Update()
         {
-            lock (m_lock)
+            if (m_activeEndpoint)
             {
                 m_endpointLastTimeSeen += Time.deltaTime;
-                
+            }
+
+            lock (m_lock)
+            {
                 if (!m_iteratingTroughReceivers)
                 {
                     if (m_receiversAwaitingSubscription.Count > 0)
@@ -219,9 +225,12 @@ namespace ubv.tcp.client
 
         private void FixedUpdate()
         {
-            if(m_fixedFrameCount % m_checkConnectionRate == 0)
+            if(m_fixedFrameCount % m_checkConnectionRate == 0 && m_activeEndpoint)
             {
                 m_activeEndpoint = CheckConnection();
+#if DEBUG_LOG
+                Debug.Log(m_fixedFrameCount + " Endpoint active ? " + m_activeEndpoint.ToString());
+#endif // DEBUG_LOG
             }
 
             if (m_fixedFrameCount % m_connectionKeepAliveRate == 0 && m_activeEndpoint)
@@ -258,6 +267,7 @@ namespace ubv.tcp.client
                     }
                 }
             }
+            Debug.Log("State at client sending thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal);
         }
 
         private void OnDestroy()

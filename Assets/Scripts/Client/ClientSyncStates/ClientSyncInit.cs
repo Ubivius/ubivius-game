@@ -154,6 +154,9 @@ namespace ubv.client.logic
 
         public void OnDisconnect()
         {
+#if DEBUG_LOG
+            Debug.Log("Disconnected from server");
+#endif // DEBUG_LOG
         }
     }   
 }
