@@ -88,7 +88,7 @@ namespace ubv.tcp.server
                 }
 
                 int removeAtIndex = Task.WaitAny(m_tcpClientTasks.ToArray(), m_connectionTimeoutInMS);
-                if (removeAtIndex > 0)
+                if (removeAtIndex >= 0)
                 {
 #if DEBUG_LOG
                     Debug.Log("Removing TCP task " + removeAtIndex);
@@ -166,7 +166,9 @@ namespace ubv.tcp.server
                 using (NetworkStream stream = connection.GetStream())
                 {
                     HandleConnection(stream, key);
+                    stream.Close();
                 }
+                m_activeEndpoints[key] = false;
 
                 foreach (ITCPServerReceiver receiver in m_receivers)
                 {
@@ -176,7 +178,6 @@ namespace ubv.tcp.server
                 Debug.Log("Removing " + key.ToString() + " TCP connection");
 #endif // DEBUG_LOG
                 m_clientConnections.Remove(key);
-                connection.GetStream().Close();
                 connection.Close();
             }
         }
@@ -232,6 +233,7 @@ namespace ubv.tcp.server
                 catch (IOException ex)
                 {
                     Debug.Log(ex.Message);
+                    m_activeEndpoints[source] = false;
                     return;
                 }
 

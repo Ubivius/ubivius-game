@@ -90,6 +90,7 @@ namespace ubv.tcp.client
                     HandleConnection(stream);
                     stream.Close();
                 }
+                m_activeEndpoint = false;
 
                 m_iteratingTroughReceivers = true;
                 foreach (ITCPClientReceiver receiver in m_receivers)
@@ -187,8 +188,9 @@ namespace ubv.tcp.client
                     }
                 }
             }
-
+#if DEBUG_LOG
             Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal + ", Buffer offset :" + bufferOffset);
+#endif // DEBUG_LOG
         }
 
         private void Update()

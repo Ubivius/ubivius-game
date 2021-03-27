@@ -1047,6 +1047,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_port: 9050
   m_connectionTimeout: 10
+  AcceptNewClients: 0
 --- !u!4 &1538287031
 Transform:
   m_ObjectHideFlags: 0
@@ -1107,6 +1108,8 @@ MonoBehaviour:
   m_port: 9051
   m_connectionTimeoutInMS: 10000
   m_maxConcurrentListeners: 6
+  m_connectionCheckRate: 61
+  m_connectionKeepAliveRate: 31
 --- !u!1 &2123676788
 GameObject:
   m_ObjectHideFlags: 0
