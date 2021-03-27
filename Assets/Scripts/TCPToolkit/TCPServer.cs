@@ -90,6 +90,9 @@ namespace ubv.tcp.server
                 int removeAtIndex = Task.WaitAny(m_tcpClientTasks.ToArray(), m_connectionTimeoutInMS);
                 if (removeAtIndex > 0)
                 {
+#if DEBUG_LOG
+                    Debug.Log("Removing TCP task " + removeAtIndex);
+#endif // DEBUG_LOG
                     m_tcpClientTasks.RemoveAt(removeAtIndex);
                 }
             }
@@ -173,6 +176,7 @@ namespace ubv.tcp.server
                 Debug.Log("Removing " + key.ToString() + " TCP connection");
 #endif // DEBUG_LOG
                 m_clientConnections.Remove(key);
+                connection.GetStream().Close();
                 connection.Close();
             }
         }

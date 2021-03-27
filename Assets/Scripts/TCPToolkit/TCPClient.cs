@@ -95,6 +95,7 @@ namespace ubv.tcp.client
                     receiver.OnDisconnect();
                 }
                 m_iteratingTroughReceivers = false;
+                m_client.GetStream().Close();
                 m_client.Close();
             }
         }
