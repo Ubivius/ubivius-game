@@ -26,6 +26,7 @@ namespace ubv.client.logic
 
         private const float C_REQUEST_RESEND_TIME_MS = 5000f;
         private float m_requestResendTimer;
+        private byte[] m_identificationMessageBytes;
 
         private struct ServerInfo
         {
@@ -42,12 +43,14 @@ namespace ubv.client.logic
             ClientSyncState.m_initState = this;
             ClientSyncState.m_currentState = this;
             m_cachedServerInfo = null;
-
             Init();
         }
 
         public void Init()
         {
+#if DEBUG_LOG
+            Debug.Log("Initializing client state [init]");
+#endif // DEBUG_LOG
             m_connected = false;
             m_waitingOnServerResponse = false;
             m_requestResendTimer = 0;
@@ -71,11 +74,15 @@ namespace ubv.client.logic
 
         public void SendConnectionRequestToServer()
         {
+#if DEBUG_LOG
+            Debug.Log("Sending connection request to dispatcher...");
+#endif // DEBUG_LOG
             m_waitingOnServerResponse = true;
             if (m_playerID == null)
             {
                 int playerID = System.Guid.NewGuid().GetHashCode(); // for now
                 m_playerID = playerID;
+                m_identificationMessageBytes = new IdentificationMessage(m_playerID.Value).GetBytes();
             }
 
             // mock dispatcher response for now
@@ -119,18 +126,17 @@ namespace ubv.client.logic
 
         private void EstablishConnectionToServer(ServerInfo serverInfo)
         {
+#if DEBUG_LOG
             Debug.Log("Trying to establish connection to game server...");
-            // send a ping to the server to make it known that the player received its ID
-            IdentificationMessage identificationMessage = new IdentificationMessage(m_playerID.Value);
+#endif // DEBUG_LOG
 
-            m_TCPClient.Connect(serverInfo.TCPAddress, serverInfo.TCPPort);
             m_TCPClient.Subscribe(this);
-            m_TCPClient.Send(identificationMessage.GetBytes()); // sends a ping to the server
+            m_TCPClient.Connect(serverInfo.TCPAddress, serverInfo.TCPPort);
 
             // TODO : make sure server receives UDP ping
             // maybe with TCP reception of player list and confirming itself?
             m_UDPClient.SetTargetServer(serverInfo.UDPAddress, serverInfo.UDPPort);
-            m_UDPClient.Send(identificationMessage.GetBytes());
+            m_UDPClient.Send(m_identificationMessageBytes);
         }
 
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
@@ -157,6 +163,14 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Disconnected from server");
 #endif // DEBUG_LOG
+        }
+
+        public void OnSuccessfulConnect()
+        {
+#if DEBUG_LOG
+            Debug.Log("Successful connection to server. Sending identification message with ID " + m_playerID.Value);
+#endif // DEBUG_LOG
+            m_TCPClient.Send(m_identificationMessageBytes); // sends a ping to the server
         }
     }   
 }
