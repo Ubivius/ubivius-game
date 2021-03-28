@@ -187,10 +187,10 @@ namespace ubv.common.world
                 }
             }
             // la largeur des murs autour d'une pièce est de 2
-            AddVoidCell(new Vector2Int(coord.x - 2, coord.y - 2), roomInfo.Width + 4, 2);               //Section sous la room
-            AddVoidCell(new Vector2Int(coord.x - 2, coord.y + roomInfo.Height), roomInfo.Width + 4, 2); //Section au dessus la room
-            AddVoidCell(new Vector2Int(coord.x, coord.y - 2), 2, roomInfo.Height);                      //Section à gauche la room
-            AddVoidCell(new Vector2Int(coord.x + roomInfo.Width, coord.y), 2, roomInfo.Height);         //Section à droite la room
+            AddVoidCell(new Vector2Int(coord.x - 1, coord.y - 1), roomInfo.Width + 4, 1);               //Section sous la room
+            AddVoidCell(new Vector2Int(coord.x - 1, coord.y + roomInfo.Height), roomInfo.Width + 4, 1); //Section au dessus la room
+            AddVoidCell(new Vector2Int(coord.x, coord.y - 1), 1, roomInfo.Height);                      //Section à gauche la room
+            AddVoidCell(new Vector2Int(coord.x + roomInfo.Width, coord.y), 1, roomInfo.Height);         //Section à droite la room
             
         }
 

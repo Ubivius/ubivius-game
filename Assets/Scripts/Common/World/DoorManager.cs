@@ -42,6 +42,10 @@ namespace ubv.common.world
                     Debug.LogError("MAP CREATION ALERT : Some room does not have any door");
                 }
             }
+            foreach (RoomInfo room in m_roomInMap)
+            {
+                SecondDoorCheck(room);
+            }
             AddSectionDoorNorth();
             AddSectionDoorEast();
             AddSectionDoorSouth();
@@ -71,11 +75,19 @@ namespace ubv.common.world
             return (numberDoor == 0 ? false : true);
         }
 
+        private void SecondDoorCheck(RoomInfo room)
+        {
+            SecondCheckNorth(room);
+            SecondCheckEast(room);
+            SecondCheckSouth(room);
+            SecondCheckWest(room);
+        }
+
         private int GenerateDoorNorth(RoomInfo room)
         {
             Vector2Int wallOrigin = new Vector2Int((int)room.transform.position.x, (int)room.transform.position.y + room.Height);
             List<Vector2Int> possibleDoor = new List<Vector2Int>();
-            if ((int)room.transform.position.y - c_upperLookRange > 0 && (int)room.transform.position.y + room.Height + c_upperLookRange < m_masterLogicGrid.Height)
+            if (wallOrigin.y + c_upperLookRange < m_masterLogicGrid.Height)
             {
                 for (int i = 0 + 1; i < room.Width - 1; i++)
                 {
@@ -127,6 +139,22 @@ namespace ubv.common.world
             }
         }
 
+        private void SecondCheckNorth(RoomInfo room)
+        {
+            Vector2Int wallOrigin = new Vector2Int((int)room.transform.position.x, (int)room.transform.position.y + room.Height);
+            for (int i = 0 + 1; i < room.Width - 1; i++)
+            {
+                if ((m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // 1 before
+                    &&
+                    (m_masterLogicGrid.Grid[wallOrigin.x + i, wallOrigin.y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // center
+                    &&
+                    (m_masterLogicGrid.Grid[wallOrigin.x + i + 1, wallOrigin.y])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)// 1 after
+                {
+                    CompleteNorthDoor(wallOrigin, i);
+                }
+            }
+        }
+
         private void CompleteNorthDoor(Vector2Int wallOrigin, int i)
         {
             m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
@@ -144,7 +172,7 @@ namespace ubv.common.world
         {
             Vector2Int wallOrigin = new Vector2Int((int)room.transform.position.x + room.Width, (int)room.transform.position.y);
             List<Vector2Int> possibleDoor = new List<Vector2Int>();
-            if ((int)room.transform.position.x - c_upperLookRange > 0 && (int)room.transform.position.x + room.Width + c_upperLookRange < m_masterLogicGrid.Width)
+            if (wallOrigin.x + c_upperLookRange < m_masterLogicGrid.Width)
             {
                 for (int i = 0 + 1; i < room.Height - 1; i++)
                 {
@@ -196,6 +224,22 @@ namespace ubv.common.world
             }
         }
 
+        private void SecondCheckEast(RoomInfo room)
+        {
+            Vector2Int wallOrigin = new Vector2Int((int)room.transform.position.x + room.Width, (int)room.transform.position.y);
+            for (int i = 0 + 1; i < room.Height - 1; i++)
+            {
+                if ((m_masterLogicGrid.Grid[wallOrigin.x, wallOrigin.y + i - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // 1 before
+                     &&
+                     (m_masterLogicGrid.Grid[wallOrigin.x, wallOrigin.y + i])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // center
+                     &&
+                     (m_masterLogicGrid.Grid[wallOrigin.x, wallOrigin.y + i + 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)// 1 after
+                {
+                    CompleteEastDoor(wallOrigin, i);
+                }
+            }
+        }
+
         private void CompleteEastDoor(Vector2Int wallOrigin, int i)
         {
             m_masterLogicGrid.Grid[wallOrigin.x, wallOrigin.y + i - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
@@ -209,11 +253,11 @@ namespace ubv.common.world
             m_door.SetTile(new Vector3Int(wallOrigin.x, wallOrigin.y + i + 1, 0), m_tileDoor);
         }
 
-            private int GenerateDoorSouth(RoomInfo room)
+        private int GenerateDoorSouth(RoomInfo room)
         {
             Vector2Int wallOrigin = new Vector2Int((int)room.transform.position.x, (int)room.transform.position.y);
             List<Vector2Int> possibleDoor = new List<Vector2Int>();
-            if ((int)room.transform.position.y - c_upperLookRange > 0 && (int)room.transform.position.y + room.Height + c_upperLookRange < m_masterLogicGrid.Height)
+            if (wallOrigin.y - c_upperLookRange > 0)
             {
                 for (int i = 0 + 1; i < room.Width - 1; i++)
                 {
@@ -226,11 +270,11 @@ namespace ubv.common.world
                         CompleteSouthDoor(wallOrigin, i);
                         return 1;
                     }
-                    else if ((m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y - c_upperLookRange - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // 1 before
+                    else if ((m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y - c_upperLookRange])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // 1 before
                             &&
-                            (m_masterLogicGrid.Grid[wallOrigin.x + i, wallOrigin.y - c_upperLookRange - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // center
+                            (m_masterLogicGrid.Grid[wallOrigin.x + i, wallOrigin.y - c_upperLookRange])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // center
                             &&
-                            (m_masterLogicGrid.Grid[wallOrigin.x + i + 1, wallOrigin.y - c_upperLookRange - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)// 1 after
+                            (m_masterLogicGrid.Grid[wallOrigin.x + i + 1, wallOrigin.y - c_upperLookRange])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)// 1 after
                     {
                         possibleDoor.Add(new Vector2Int(wallOrigin.x + i, wallOrigin.y - 1));
                     }
@@ -265,6 +309,22 @@ namespace ubv.common.world
             }
         }
 
+        private void SecondCheckSouth(RoomInfo room)
+        {
+            Vector2Int wallOrigin = new Vector2Int((int)room.transform.position.x, (int)room.transform.position.y);
+            for (int i = 0 + 1; i < room.Width - 1; i++)
+            {
+                if ((m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // 1 before
+                     &&
+                     (m_masterLogicGrid.Grid[wallOrigin.x + i, wallOrigin.y - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // center
+                     &&
+                     (m_masterLogicGrid.Grid[wallOrigin.x + i + 1, wallOrigin.y - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)// 1 after)
+                {
+                    CompleteSouthDoor(wallOrigin, i);
+                }
+            }
+        }
+
         private void CompleteSouthDoor(Vector2Int wallOrigin, int i)
         {
             m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
@@ -278,11 +338,11 @@ namespace ubv.common.world
             m_door.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y - 1, 0), m_tileDoor);
         }
 
-            private int GenerateDoorWest(RoomInfo room)
+        private int GenerateDoorWest(RoomInfo room)
         {
             Vector2Int wallOrigin = new Vector2Int((int)room.transform.position.x, (int)room.transform.position.y);
             List<Vector2Int> possibleDoor = new List<Vector2Int>();
-            if ((int)room.transform.position.x - c_upperLookRange > 0 && (int)room.transform.position.x + room.Width + c_upperLookRange < m_masterLogicGrid.Width)
+            if (wallOrigin.x - c_upperLookRange > 0)
             {
                 for (int i = 0 + 1; i < room.Height - 1; i++)
                 {
@@ -295,11 +355,11 @@ namespace ubv.common.world
                         CompleteWestDoor(wallOrigin, i);
                         return 1;
                     }
-                    else if ((m_masterLogicGrid.Grid[wallOrigin.x - c_upperLookRange - 1, wallOrigin.y + i - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // 1 before
+                    else if ((m_masterLogicGrid.Grid[wallOrigin.x - c_upperLookRange, wallOrigin.y + i - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // 1 before
                             &&
-                            (m_masterLogicGrid.Grid[wallOrigin.x - c_upperLookRange - 1, wallOrigin.y + i])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // center
+                            (m_masterLogicGrid.Grid[wallOrigin.x - c_upperLookRange, wallOrigin.y + i])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // center
                             &&
-                            (m_masterLogicGrid.Grid[wallOrigin.x - c_upperLookRange - 1, wallOrigin.y + i + 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)// 1 after
+                            (m_masterLogicGrid.Grid[wallOrigin.x - c_upperLookRange, wallOrigin.y + i + 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)// 1 after
                     {
                         possibleDoor.Add(new Vector2Int(wallOrigin.x - 1, wallOrigin.y + i));
                     }
@@ -331,6 +391,22 @@ namespace ubv.common.world
                 m_floor.SetTile(new Vector3Int(doorPosition.x - i, doorPosition.y - 1, 0), m_tileFloor);
                 m_floor.SetTile(new Vector3Int(doorPosition.x - i, doorPosition.y,     0), m_tileFloor);
                 m_floor.SetTile(new Vector3Int(doorPosition.x - i, doorPosition.y + 1, 0), m_tileFloor);
+            }
+        }
+
+        private void SecondCheckWest(RoomInfo room)
+        {
+            Vector2Int wallOrigin = new Vector2Int((int)room.transform.position.x, (int)room.transform.position.y);
+            for (int i = 0 + 1; i < room.Height - 1; i++)
+            {
+                if ((m_masterLogicGrid.Grid[wallOrigin.x - 1, wallOrigin.y + i - 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // 1 before
+                     &&
+                     (m_masterLogicGrid.Grid[wallOrigin.x - 1, wallOrigin.y + i])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR // center
+                     &&
+                     (m_masterLogicGrid.Grid[wallOrigin.x - 1, wallOrigin.y + i + 1])?.GetCellType() == cellType.CellInfo.CellType.CELL_FLOOR)// 1 after
+                {
+                    CompleteWestDoor(wallOrigin, i);
+                }
             }
         }
 
