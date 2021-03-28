@@ -102,7 +102,7 @@ public class PathfindingGridManager: MonoBehaviour
     public  List<PathNode> GetPath(PathNode startNode, PathNode endNode)
     {
         List<PathNode> path = m_pathfinding.FindPath(startNode, endNode);
-        if (path == null) Debug.Log("Not path found!");
+        if (path == null) Debug.Log("No path found!");
         return path;
     }
 

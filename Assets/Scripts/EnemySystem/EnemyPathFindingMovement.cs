@@ -38,7 +38,7 @@ public class EnemyPathFindingMovement : MonoBehaviour
     private void HandleMovement()
     {
         PrintPathfindingPath();
-        if (m_pathVectorList != null)
+        if (m_pathVectorList != null && m_pathVectorList.Count > 0)
         {
             Vector2 targetPosition = m_pathVectorList[m_currentPathIndex];
             float reachedTargetDistance = 5f;

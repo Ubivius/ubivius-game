@@ -193,9 +193,9 @@ public static class Utils
     }
 
     // Generate random normalized direction
-    public static Vector3 GetRandomDir()
+    public static Vector2 GetRandomDir()
     {
-        return new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f)).normalized;
+        return new Vector2(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f)).normalized;
     }
 
     public static Vector3 GetVectorFromAngle(int angle)
