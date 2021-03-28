@@ -21,20 +21,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           lfs: true
       
       # Cache
       - uses: actions/cache@v2
         with:
-          path: /home/runner/work/ubivius-game/ubivius-game/Library
-          key: Library-cache
+          path: ubivius-game/Library
+          key: Library-ubivius-game-StandaloneLinux64
+          restore-keys: |
+            Library-ubivius-game-
+            Library-
       
       # Test
-      # - name: Run tests
-      #   uses: webbertakken/unity-test-runner@v1.3
-      #   with:
-      #     projectPath: test-project
-      #     unityVersion: 2019.4.1f1
+ #     - name: Run tests
+ #       uses: webbertakken/unity-test-runner@v1.3
+ #       env:
+ #         UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+ #         UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+ #         UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+ #       with:
+ #         projectPath: Assets/Tests
 
       # Build
       - name: Server build 
@@ -47,8 +54,14 @@ jobs:
           buildMethod: Build.ServerBuild
           targetPlatform: StandaloneLinux64
           unityVersion: 2019.4.1f1
+      
+      # Return License
+      - name: Return license
+        uses: game-ci/unity-return-license@v1
+        if: failure()
 
       - name: Pre-load env-var
+        if: success()
         id: fetch-vars
         run: |
             IN=$(echo ${GITHUB_REPOSITORY})
@@ -58,6 +71,7 @@ jobs:
         shell: bash
 
       - name: Build and Push Artefact to Registry
+        if: success()
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
           name: ubiviushub/${{ steps.fetch-vars.outputs.REPO_NAME }}
@@ -68,6 +82,7 @@ jobs:
 
       # Output
       - uses: actions/upload-artifact@v1
+        if: success()
         with:
           name: Server
           path: build
@@ -80,20 +95,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           lfs: true
       
       # Cache
       - uses: actions/cache@v2
         with:
-          path: /home/runner/work/ubivius-game/ubivius-game/Library
-          key: Library-cache
+          path: ubivius-game/Library
+          key: Library-ubivius-game-StandaloneWindows64
+          restore-keys: |
+            Library-ubivius-game-
+            Library-
 
       # Test
-      # - name: Run tests
-      #   uses: webbertakken/unity-test-runner@v1.3
-      #   with:
-      #     projectPath: test-project
-      #     unityVersion: 2019.4.1f1
+#      - name: Run tests
+#        uses: webbertakken/unity-test-runner@v1.3
+#        env:
+#          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+#          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+#          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+#        with:
+#          projectPath: Assets/Tests
 
       # Build
       - name: Client build
@@ -107,8 +129,14 @@ jobs:
           targetPlatform: StandaloneWindows64
           unityVersion: 2019.4.1f1
 
+      # Return License
+      - name: Return license
+        uses: game-ci/unity-return-license@v1
+        if: failure()
+
       # Output
       - uses: actions/upload-artifact@v1
+        if: success()
         with:
           name: Client
           path: build

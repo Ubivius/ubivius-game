@@ -170,6 +170,14 @@ namespace ubv.common.world
             return m_masterLogicGrid;
         }
 
+        public LogicGrid AddOneRoom()
+        {
+            m_masterLogicGrid = new ubv.common.world.LogicGrid(m_boundariesMap.x, m_boundariesMap.y);
+            RoomInfo myRoom = GameObject.Instantiate(m_randomRoomPoolSection0[0], new Vector3(6, 6, 0), Quaternion.identity, m_grid.transform);
+            AddToMasterGrid(myRoom, new Vector2Int(6, 6));
+            return m_masterLogicGrid;
+        }
+
         private void AddRoom(RoomInfo room, Vector2Int roomOrigin)
         {
             room.transform.position = new Vector3(roomOrigin.x, roomOrigin.y, 0);
