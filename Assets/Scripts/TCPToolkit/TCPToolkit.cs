@@ -16,14 +16,15 @@ namespace ubv
         {
             public class Packet : network.Packet
             {
-                public const int TCP_HEADER_SIZE = 4 + 4; // NET PROTOCOL ID + Data length
+                public const int TCP_HEADER_SIZE = 4 + 4 + 4; // NET PROTOCOL ID + PlayerID + Data length
+                public int PlayerID { get { return System.BitConverter.ToInt32(RawBytes, 4); } }
                 public byte[] Data { get { return RawBytes.ArrayFrom(TCP_HEADER_SIZE); } }
                 
                 private Packet(byte[] bytes) : base(bytes)
                 {
                 }
                 
-                public static Packet DataToPacket(byte[] data)
+                public static Packet DataToPacket(byte[] data, int playerID)
                 {
                     Packet packet = new Packet(new byte[TCP_HEADER_SIZE + data.Length]);
                     int index = 0;
@@ -32,9 +33,12 @@ namespace ubv
 
                     byte[] payloadSizeBytes = System.BitConverter.GetBytes(data.Length);
 
+                    for (int i = 0; i < 4; i++, index++)
+                        packet.RawBytes[index] = System.BitConverter.GetBytes(playerID)[i];
+
                     for (int i = 0; i < payloadSizeBytes.Length; i++, index++)
                         packet.RawBytes[index] = payloadSizeBytes[i];
-
+                    
                     for (int i = 0; i < data.Length; i++, index++)
                         packet.RawBytes[index] = data[i];
 

@@ -12,7 +12,7 @@ namespace ubv.server.logic
     /// </summary>
     public class GameplayState : ServerState, udp.server.IUDPServerReceiver
     {
-        private Dictionary<int, IPEndPoint> m_UDPClientEndoints;
+        private HashSet<int> m_clients;
         private Dictionary<int, ClientState> m_clientStates;
                 
         private Dictionary<ClientState, Dictionary<int, InputFrame>> m_clientInputBuffers;
@@ -36,14 +36,14 @@ namespace ubv.server.logic
             ServerState.m_gameplayState = this;
         }
 
-        public void Init(Dictionary<int, IPEndPoint> UDPClientEndPoints, int simulationBuffer)
+        public void Init(HashSet<int> clients, int simulationBuffer)
         {
             m_tickAccumulator = 0;
             m_masterTick = 0;
             m_bufferedMasterTick = 0;
             m_simulationBuffer = simulationBuffer;
-            m_UDPClientEndoints = UDPClientEndPoints;
             m_clientStates = new Dictionary<int, ClientState>();
+            m_clients = new HashSet<int>();
 
             m_toRemoveCache = new List<int>();
 
@@ -52,7 +52,7 @@ namespace ubv.server.logic
             m_clientInputBuffers = new Dictionary<ClientState, Dictionary<int, InputFrame>>();
                    
             // add each player to client states
-            foreach (int id in m_UDPClientEndoints.Keys)
+            foreach (int id in m_clients)
             {
                 PlayerState player = new PlayerState();
                 player.GUID.Value = id;
@@ -158,22 +158,21 @@ namespace ubv.server.logic
                 if (++m_tickAccumulator > m_snapshotTicks)
                 {
                     m_tickAccumulator = 0;
-                    foreach (int id in m_UDPClientEndoints.Keys)
+                    foreach (int id in m_clients)
                     {
-                        m_UDPServer.Send(m_clientStates[id].GetBytes(), m_UDPClientEndoints[id]);
+                        m_UDPServer.Send(m_clientStates[id].GetBytes(), id);
                     }
                 }
             }
         }
 
-        public void Receive(udp.UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
+        public void Receive(udp.UDPToolkit.Packet packet, int playerID)
         {
             InputMessage inputs = IConvertible.CreateFromBytes<InputMessage>(packet.Data);
-            if (inputs != null && m_UDPClientEndoints.ContainsValue(clientEndPoint))
+            if (inputs != null && m_clients.Contains(playerID))
             {
                 lock (m_lock)
                 {
-                    int playerID = inputs.PlayerID.Value;
                     ClientState clientState = m_clientStates[playerID];
                     List<InputFrame> inputFrames = inputs.InputFrames.Value;
 #if DEBUG_LOG

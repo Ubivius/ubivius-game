@@ -136,7 +136,7 @@ namespace ubv.client.logic
             // TODO : make sure server receives UDP ping
             // maybe with TCP reception of player list and confirming itself?
             m_UDPClient.SetTargetServer(serverInfo.UDPAddress, serverInfo.UDPPort);
-            m_UDPClient.Send(m_identificationMessageBytes);
+            m_UDPClient.Send(m_identificationMessageBytes, m_playerID.Value);
         }
 
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)

@@ -20,8 +20,7 @@ namespace ubv.server.logic
         [SerializeField] private int m_simulationBuffer;
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
 
-        private Dictionary<int, IPEndPoint> m_TCPClientEndPoints;
-        private Dictionary<int, IPEndPoint> m_UDPClientEndPoints;
+        private HashSet<int> m_clients;
 
         private Dictionary<int, bool> m_readyClients;
         private List<PlayerState> m_players;
@@ -49,9 +48,8 @@ namespace ubv.server.logic
         public void Init()
         {
             m_players = new List<PlayerState>();
-
-            m_TCPClientEndPoints = new Dictionary<int, IPEndPoint>();
-            m_UDPClientEndPoints = new Dictionary<int, IPEndPoint>();
+            
+            m_clients = new HashSet<int>();
 
             m_readyClients = new Dictionary<int, bool>();
             
@@ -96,9 +94,9 @@ namespace ubv.server.logic
 
                     ServerInitMessage message = new ServerInitMessage(m_simulationBuffer, m_players, cellInfoArray);
 
-                    foreach (IPEndPoint ip in m_TCPClientEndPoints.Values)
+                    foreach (int id in m_clients)
                     {
-                        m_TCPServer.Send(message.GetBytes(), ip);
+                        m_TCPServer.Send(message.GetBytes(), id);
                     }
 
                     Debug.Log("Waiting for clients to load their worlds");
@@ -118,20 +116,21 @@ namespace ubv.server.logic
                 ServerStartsMessage message = new ServerStartsMessage();
 
                 Debug.Log("Starting game.");
-                foreach (IPEndPoint ip in m_TCPClientEndPoints.Values)
+                foreach (int id in m_clients)
                 {
-                    m_TCPServer.Send(message.GetBytes(), ip);
+                    m_TCPServer.Send(message.GetBytes(), id);
                 }
 
                 m_TCPServer.Unsubscribe(this);
 
-                m_gameplayState.Init(m_UDPClientEndPoints, m_simulationBuffer);
+                m_gameplayState.Init(m_clients, m_simulationBuffer);
                 m_currentState = m_gameplayState;
             }
         }
         
         private void AddNewPlayer(int playerID)
         {
+            m_clients.Add(playerID);
             m_players.Add(new PlayerState(playerID));
             m_readyClients[playerID] = false;
         }
@@ -139,33 +138,39 @@ namespace ubv.server.logic
         private void BroadcastPlayerList()
         {
             byte[] bytes = new ClientListMessage(m_players).GetBytes();
-            foreach (IPEndPoint ip in m_TCPClientEndPoints.Values)
+            foreach (int id in m_clients)
             {
-                m_TCPServer.Send(bytes, ip);
+                m_TCPServer.Send(bytes, id);
             }
         }
 
-        public void ReceivePacket(TCPToolkit.Packet packet, IPEndPoint clientIP)
+        public void ReceivePacket(TCPToolkit.Packet packet, int playerID)
         {
             IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data);
             if (identification != null)
             {
                 lock (m_lock)
                 {
-                    int playerID = identification.PlayerID.Value;
+                    int messagePlayerID = identification.PlayerID.Value;
 
-                    if (!m_TCPClientEndPoints.ContainsKey(playerID)) // it's a new player
+                    if (messagePlayerID != playerID)
+                    {
+#if DEBUG_LOG
+                        Debug.Log("Mismatch between identification ID and packet ID");
+                        return;
+#endif // DEBUG_LOG
+                    }
+
+                    if (!m_clients.Contains(playerID)) // it's a new player
                     {
                         AddNewPlayer(playerID);
                     }
-                    // we update endpoint whether or not it's a new player (could have been a disconnect)
-                    m_TCPClientEndPoints[playerID] = clientIP;
 
                     ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
-                    m_TCPServer.Send(serverSuccessPing.GetBytes(), clientIP);
+                    m_TCPServer.Send(serverSuccessPing.GetBytes(), playerID);
 
 #if DEBUG_LOG
-                    Debug.Log("Received TCP connection request from " + clientIP.ToString() + " (player ID  " + playerID + ")");
+                    Debug.Log("Received connection request from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
 
                     BroadcastPlayerList();
@@ -192,43 +197,35 @@ namespace ubv.server.logic
             
         }
 
-        public void OnConnect(IPEndPoint clientIP)
+        public void OnConnect(int playerID)
         { }
 
-        public void OnDisconnect(IPEndPoint clientIP)
+        public void OnDisconnect(int playerID)
         {
             lock (m_lock)
             {
-                foreach(int id in m_TCPClientEndPoints.Keys)
-                {
-                    if(m_TCPClientEndPoints[id] == clientIP)
-                    {
-                        m_TCPClientEndPoints[id] = null;
-                    }
-                }
-
-                foreach (int id in m_UDPClientEndPoints.Keys)
-                {
-                    if (m_UDPClientEndPoints[id] == clientIP)
-                    {
-                        m_UDPClientEndPoints[id] = null;
-                    }
-                }
+                m_clients.Remove(playerID);
             }
         }
 
-        public void Receive(UDPToolkit.Packet packet, IPEndPoint clientIP)
+        public void Receive(UDPToolkit.Packet packet, int playerID)
         {
             IdentificationMessage identification = Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data);
             if (identification != null)
             {
-                int playerID = identification.PlayerID.Value;
+                int messagePlayerID = identification.PlayerID.Value;
+                if (messagePlayerID == playerID)
+                {
 #if DEBUG_LOG
-                Debug.Log("Received UDP confirmation from " + clientIP.ToString() + " (player ID  " + playerID + ")");
+                    Debug.Log("Received UDP confirmation from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
-
-                m_UDPClientEndPoints[playerID] = clientIP;
-            }
+                }
+                {
+#if DEBUG_LOG
+                    Debug.Log("Mismatch between identification ID and packet ID");
+#endif // DEBUG_LOG
+                }
+            } 
         }
     }
 }

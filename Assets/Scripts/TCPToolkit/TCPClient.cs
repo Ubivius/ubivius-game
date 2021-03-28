@@ -40,6 +40,8 @@ namespace ubv.tcp.client
 
         private byte[] m_keepAlivePacketBytes;
 
+        private int? m_playerID;
+
         private void Awake()
         {
             m_receivers = new List<ITCPClientReceiver>();
@@ -57,6 +59,11 @@ namespace ubv.tcp.client
 
         private void Start()
         {
+        }
+
+        public void SetPlayerID(int playerID)
+        {
+            m_playerID = playerID;
         }
 
         private void CommThread()
@@ -259,7 +266,15 @@ namespace ubv.tcp.client
                 {
                     while (m_dataToSend.Count > 0)
                     {
-                        byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend.Dequeue()).RawBytes;
+                        if(m_playerID == null)
+                        {
+#if DEBUG_LOG
+                            Debug.Log("Player ID is not set. Cannot send to server.");
+                            return;
+#endif // DEBUG_LOG
+                        }
+
+                        byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend.Dequeue(), m_playerID.Value).RawBytes;
                         try
                         {
                             stream.Write(bytesToWrite, 0, bytesToWrite.Length);

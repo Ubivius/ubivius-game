@@ -1,13 +1,11 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Net;
-using System.Threading;
-using UnityEngine.SceneManagement;
-using System.Threading.Tasks;
-using System;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace ubv.tcp.server
 {
@@ -23,7 +21,7 @@ namespace ubv.tcp.server
 
         [SerializeField] int m_port = 9051;
         [SerializeField] int m_connectionTimeoutInMS;
-        [SerializeField] int m_maxConcurrentListeners = 6;
+        [SerializeField] int m_maxConcurrentListeners = 12;
                 
         private TcpListener m_tcpListener;
 
@@ -33,6 +31,8 @@ namespace ubv.tcp.server
                 
         protected List<Task> m_tcpClientTasks;
 
+        private Dictionary<int, IPEndPoint> m_clientEndpoints;
+        private Dictionary<IPEndPoint, int> m_clientIDs;
         private Dictionary<IPEndPoint, TcpClient> m_clientConnections;
         private Dictionary<IPEndPoint, Queue<byte[]>> m_dataToSend;
         private Dictionary<IPEndPoint, bool> m_activeEndpoints;
@@ -52,6 +52,9 @@ namespace ubv.tcp.server
             m_dataToSend = new Dictionary<IPEndPoint, Queue<byte[]>>();
             m_activeEndpoints = new Dictionary<IPEndPoint, bool>();
             m_endpointLastTimeSeen = new Dictionary<IPEndPoint, float>();
+
+            m_clientIDs = new Dictionary<IPEndPoint, int>();
+            m_clientEndpoints = new Dictionary<int, IPEndPoint>();
             
             m_exitSignal = false;
             m_tcpClientTasks = new List<Task>();
@@ -128,9 +131,9 @@ namespace ubv.tcp.server
 
             if (m_fixedFrameCount % m_connectionKeepAliveRate == 0)
             {
-                foreach (IPEndPoint ep in m_clientConnections.Keys)
+                foreach (int id in m_clientEndpoints.Keys)
                 {
-                    Send(m_keepAlivePacketBytes, ep);
+                    Send(m_keepAlivePacketBytes, id);
                 }
             }
 
@@ -158,22 +161,13 @@ namespace ubv.tcp.server
                 }
                 m_dataToSend[key] = new Queue<byte[]>();
 
-                foreach (ITCPServerReceiver receiver in m_receivers)
-                {
-                    receiver.OnConnect(key);
-                }
-
                 using (NetworkStream stream = connection.GetStream())
                 {
                     HandleConnection(stream, key);
                     stream.Close();
                 }
                 m_activeEndpoints[key] = false;
-
-                foreach (ITCPServerReceiver receiver in m_receivers)
-                {
-                    receiver.OnDisconnect(key);
-                }
+                
 #if DEBUG_LOG
                 Debug.Log("Removing " + key.ToString() + " TCP connection");
 #endif // DEBUG_LOG
@@ -195,6 +189,25 @@ namespace ubv.tcp.server
 
             receive.Join();
             send.Join();
+        }
+
+        private void AddNewClient(int playerID, IPEndPoint source)
+        {
+
+            m_clientEndpoints.Add(playerID, source);
+        }
+
+        private void UpdateClientEndpoint(int playerID, IPEndPoint source)
+        {
+            // ...
+            m_clientIDs.Remove(m_clientEndpoints[playerID]);
+            m_clientEndpoints[playerID] = source;
+            m_clientIDs.Add(source, playerID);
+        }
+
+        private void RemoveClient(int playerID)
+        {
+            // ...
         }
 
         private void ReceivingThread(object streamSourcePair)
@@ -242,6 +255,19 @@ namespace ubv.tcp.server
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
                     while (packet != null && totalPacketBytes < bytesRead)
                     {
+                        int playerID = packet.PlayerID;
+
+                        if (!m_clientEndpoints.ContainsKey(playerID))
+                        {
+                            // we have a new client
+                            AddNewClient(playerID, source);
+                        }
+                        else
+                        {
+                            // we replace the previous endpoint
+                            UpdateClientEndpoint(playerID, source);   
+                        }
+
                         readyToReadPacket = true;
                         lastPacketEnd = packet.RawBytes.Length;
                         totalPacketBytes += lastPacketEnd;
@@ -256,7 +282,7 @@ namespace ubv.tcp.server
                             {
                                 foreach (ITCPServerReceiver receiver in m_receivers)
                                 {
-                                    receiver.ReceivePacket(packet, source);
+                                    receiver.ReceivePacket(packet, playerID);
                                 }
                             }
                         }
@@ -291,7 +317,7 @@ namespace ubv.tcp.server
                 {
                     while (m_dataToSend[source].Count > 0)
                     {
-                        byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend[source].Dequeue()).RawBytes;
+                        byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend[source].Dequeue(), m_clientIDs[source]).RawBytes;
                         try
                         {
                             stream.Write(bytesToWrite, 0, bytesToWrite.Length);
@@ -312,11 +338,11 @@ namespace ubv.tcp.server
             return (m_endpointLastTimeSeen[endpoint] * 1000 < m_connectionTimeoutInMS) ;
         }
 
-        public void Send(byte[] bytes, IPEndPoint target)
+        public void Send(byte[] bytes, int playerID)
         {
             lock (m_lock)
             {
-                m_dataToSend[target].Enqueue(bytes);
+                m_dataToSend[m_clientEndpoints[playerID]].Enqueue(bytes);
             }
         }
 

@@ -77,7 +77,7 @@ namespace ubv
                         m_timeOutTimer += Time.deltaTime;
                         m_connectionQualityTimer += Time.deltaTime;
 
-                        if (m_timeOutTimer > m_serverTimeOut)
+                        /*if (m_timeOutTimer > m_serverTimeOut)
                         {
                             m_connectionData = new UDPToolkit.ConnectionData();
                             m_sequencesSendTime.Clear();
@@ -89,7 +89,7 @@ namespace ubv
                             {
                                 receiver.OnDisconnect();
                             }
-                        }
+                        }*/
                     }
 
                 }
@@ -99,7 +99,7 @@ namespace ubv
                 /// not good enough (if too many packets are sent), the packet is dropped.
                 /// </summary>
                 /// <param name="data"></param>
-                public void Send(byte[] data)
+                public void Send(byte[] data, int playerID)
                 {
                     if (m_connectionIsGood)
                     {
@@ -118,7 +118,7 @@ namespace ubv
 
                     try
                     {
-                        UDPToolkit.Packet packet = m_connectionData.Send(data);
+                        UDPToolkit.Packet packet = m_connectionData.Send(data, playerID);
                         uint seq = packet.Sequence;
 
                         m_sequencesSendTime.Add(seq, m_RTTTimer);

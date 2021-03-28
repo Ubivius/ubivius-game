@@ -223,7 +223,7 @@ namespace ubv.client.logic
 #if NETWORK_SIMULATE
             if (Random.Range(0f, 1f) > m_packetLossChance)
             {
-                m_UDPClient.Send(inputMessage.GetBytes());
+                m_UDPClient.Send(inputMessage.GetBytes(), m_playerID);
             }
             else
             {
@@ -289,11 +289,6 @@ namespace ubv.client.logic
                     m_lastServerState = null;
                 }
             }
-        }
-
-        public void OnDisconnect()
-        {
-
         }
     }
 }
