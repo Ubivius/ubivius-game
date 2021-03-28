@@ -80,6 +80,12 @@ namespace ubv.tcp.client
                 if (!m_client.Connected)
                         return;
 
+                m_iteratingTroughReceivers = true;
+                foreach (ITCPClientReceiver receiver in m_receivers)
+                {
+                    receiver.OnSuccessfulConnect();
+                }
+                m_iteratingTroughReceivers = false;
 #if DEBUG_LOG
                 Debug.Log("Connected to server.");
 #endif // DEBUG_LOG
@@ -230,9 +236,6 @@ namespace ubv.tcp.client
             if(m_fixedFrameCount % m_checkConnectionRate == 0 && m_activeEndpoint)
             {
                 m_activeEndpoint = CheckConnection();
-#if DEBUG_LOG
-                Debug.Log(m_fixedFrameCount + " Endpoint active ? " + m_activeEndpoint.ToString());
-#endif // DEBUG_LOG
             }
 
             if (m_fixedFrameCount % m_connectionKeepAliveRate == 0 && m_activeEndpoint)

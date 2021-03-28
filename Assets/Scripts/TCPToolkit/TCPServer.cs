@@ -309,9 +309,6 @@ namespace ubv.tcp.server
 
         private bool CheckConnection(IPEndPoint endpoint)
         {
-#if DEBUG_LOG
-            Debug.Log("Last seen " + endpoint.ToString() + " : " + m_endpointLastTimeSeen[endpoint] * 1000 + " ms ago.");
-#endif // DEBUG_LOG
             return (m_endpointLastTimeSeen[endpoint] * 1000 < m_connectionTimeoutInMS) ;
         }
 

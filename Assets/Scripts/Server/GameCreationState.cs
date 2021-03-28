@@ -165,7 +165,7 @@ namespace ubv.server.logic
                     m_TCPServer.Send(serverSuccessPing.GetBytes(), clientIP);
 
 #if DEBUG_LOG
-                    Debug.Log("Received connection request from " + clientIP.ToString() + " (player ID  " + playerID + ")");
+                    Debug.Log("Received TCP connection request from " + clientIP.ToString() + " (player ID  " + playerID + ")");
 #endif // DEBUG_LOG
 
                     BroadcastPlayerList();
