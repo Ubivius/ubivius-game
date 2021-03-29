@@ -101,6 +101,7 @@ namespace ubv.server.logic
             }
             
             m_UDPServer.Subscribe(this);
+            m_TCPServer.Subscribe(this);
         }
                 
         protected override void StateFixedUpdate()

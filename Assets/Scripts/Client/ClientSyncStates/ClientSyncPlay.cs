@@ -13,7 +13,7 @@ namespace ubv.client.logic
     /// <summary>
     /// Represents the state of the server during the game
     /// </summary>
-    public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver
+    public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
     {
         [SerializeField] private string m_physicsScene;
         private int m_playerID;
@@ -63,6 +63,7 @@ namespace ubv.client.logic
                 updater.Init(playerStates, m_playerID);
             }
             m_UDPClient.Subscribe(this);
+            m_TCPClient.Subscribe(this);
 
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
@@ -100,8 +101,6 @@ namespace ubv.client.logic
             {
                 m_updaters[i].FixedStateUpdate(Time.deltaTime);
             }
-
-            //return this;
         }
 
         protected override void StateUpdate()
@@ -289,6 +288,25 @@ namespace ubv.client.logic
                     m_lastServerState = null;
                 }
             }
+        }
+
+        public void OnSuccessfulConnect()
+        {
+#if DEBUG_LOG
+            Debug.Log("Successful connection to server.");
+#endif // DEBUG_LOG
+        }
+
+        public void ReceivePacket(TCPToolkit.Packet packet)
+        {
+            // 
+        }
+
+        public void OnDisconnect()
+        {
+#if DEBUG_LOG
+            Debug.Log("Disconnected from server.");
+#endif // DEBUG_LOG
         }
     }
 }
