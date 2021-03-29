@@ -86,7 +86,7 @@ namespace ubv.common.world
                 m_wallThickness);
 
             //GenerateWithOneRoom();
-            GenerateWorld();
+            //GenerateWorld();
         }
 
         public void GenerateWorld()

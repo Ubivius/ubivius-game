@@ -420,6 +420,7 @@ namespace ubv.common.world
 
         private bool CheckJumpNorth(Vector2Int pos)
         {
+            Vector2Int nextPos = new Vector2Int(pos.x, pos.y + distanceForJump);
             if (m_masterLogicGrid.Grid[pos.x - m_wallThickness, pos.y + distanceForJump + m_wallThickness] != null || // top-left-left
                 m_masterLogicGrid.Grid[pos.x - 1,               pos.y + distanceForJump + m_wallThickness] != null || // top-left
                 m_masterLogicGrid.Grid[pos.x,                   pos.y + distanceForJump + m_wallThickness] != null || // top
@@ -429,7 +430,8 @@ namespace ubv.common.world
                 m_masterLogicGrid.Grid[pos.x - 1,               pos.y + distanceForJump] != null ||
                 m_masterLogicGrid.Grid[pos.x,                   pos.y + distanceForJump] != null ||
                 m_masterLogicGrid.Grid[pos.x + 1,               pos.y + distanceForJump] != null ||
-                m_masterLogicGrid.Grid[pos.x + m_wallThickness, pos.y + distanceForJump] != null
+                m_masterLogicGrid.Grid[pos.x + m_wallThickness, pos.y + distanceForJump] != null ||
+                IsNearFrontier(nextPos, Direction.North)
                 )
             {
                 return false;
@@ -484,6 +486,7 @@ namespace ubv.common.world
 
         private bool CheckJumpEast(Vector2Int pos)
         {
+            Vector2Int nextPos = new Vector2Int(pos.x + distanceForJump, pos.y);
             if (m_masterLogicGrid.Grid[pos.x + distanceForJump + m_wallThickness, pos.y + m_wallThickness] != null || // right-top-top
                 m_masterLogicGrid.Grid[pos.x + distanceForJump + m_wallThickness, pos.y + 1              ] != null || // right-top
                 m_masterLogicGrid.Grid[pos.x + distanceForJump + m_wallThickness, pos.y                  ] != null || // right
@@ -493,7 +496,8 @@ namespace ubv.common.world
                 m_masterLogicGrid.Grid[pos.x + distanceForJump, pos.y + 1              ] != null ||
                 m_masterLogicGrid.Grid[pos.x + distanceForJump, pos.y                  ] != null ||
                 m_masterLogicGrid.Grid[pos.x + distanceForJump, pos.y - 1              ] != null ||
-                m_masterLogicGrid.Grid[pos.x + distanceForJump, pos.y - m_wallThickness] != null
+                m_masterLogicGrid.Grid[pos.x + distanceForJump, pos.y - m_wallThickness] != null ||
+                IsNearFrontier(nextPos, Direction.East)
                 )
             {
                 return false;
@@ -548,6 +552,7 @@ namespace ubv.common.world
 
         private bool CheckJumpSouth(Vector2Int pos)
         {
+            Vector2Int nextPos = new Vector2Int(pos.x, pos.y - distanceForJump);
             if (m_masterLogicGrid.Grid[pos.x - m_wallThickness, pos.y - distanceForJump - m_wallThickness] != null || // bottom-left-left
                 m_masterLogicGrid.Grid[pos.x - 1,               pos.y - distanceForJump - m_wallThickness] != null || // bottom-left
                 m_masterLogicGrid.Grid[pos.x,                   pos.y - distanceForJump - m_wallThickness] != null || // bottom
@@ -557,7 +562,8 @@ namespace ubv.common.world
                 m_masterLogicGrid.Grid[pos.x - 1,               pos.y - distanceForJump] != null ||
                 m_masterLogicGrid.Grid[pos.x,                   pos.y - distanceForJump] != null ||
                 m_masterLogicGrid.Grid[pos.x + 1,               pos.y - distanceForJump] != null ||
-                m_masterLogicGrid.Grid[pos.x + m_wallThickness, pos.y - distanceForJump] != null
+                m_masterLogicGrid.Grid[pos.x + m_wallThickness, pos.y - distanceForJump] != null ||
+                IsNearFrontier(nextPos, Direction.South)
                 )
             {
                 return false;
@@ -612,6 +618,7 @@ namespace ubv.common.world
 
         private bool CheckJumpWest(Vector2Int pos)
         {
+            Vector2Int nextPos = new Vector2Int(pos.x - distanceForJump, pos.y);
             if (m_masterLogicGrid.Grid[pos.x - distanceForJump - m_wallThickness, pos.y - m_wallThickness] != null || // left-bottom-bottom
                 m_masterLogicGrid.Grid[pos.x - distanceForJump - m_wallThickness, pos.y - 1              ] != null || // left-bottom
                 m_masterLogicGrid.Grid[pos.x - distanceForJump - m_wallThickness, pos.y                  ] != null || // left
@@ -621,7 +628,8 @@ namespace ubv.common.world
                 m_masterLogicGrid.Grid[pos.x - distanceForJump, pos.y - 1              ] != null ||
                 m_masterLogicGrid.Grid[pos.x - distanceForJump, pos.y                  ] != null ||
                 m_masterLogicGrid.Grid[pos.x - distanceForJump, pos.y + 1              ] != null ||
-                m_masterLogicGrid.Grid[pos.x - distanceForJump, pos.y + m_wallThickness] != null
+                m_masterLogicGrid.Grid[pos.x - distanceForJump, pos.y + m_wallThickness] != null ||
+                IsNearFrontier(nextPos, Direction.West)
                 )
             {
                 return false;
