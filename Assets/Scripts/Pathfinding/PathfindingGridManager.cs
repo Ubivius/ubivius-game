@@ -99,6 +99,16 @@ public class PathfindingGridManager: MonoBehaviour
         return null;
     }
 
+    public PathNode[,] GetPathNodeArray()
+    {
+        return m_pathNodes;
+    }
+
+    public LogicGrid GetLogicGrid()
+    {
+        return m_logicGrid;
+    }
+
     public  List<PathNode> GetPath(PathNode startNode, PathNode endNode)
     {
         List<PathNode> path = m_pathfinding.FindPath(startNode, endNode);

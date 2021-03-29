@@ -21,10 +21,10 @@ namespace ubv.server.logic.ai
         // Update is called once per frame
         public override EnemyState Update()
         {
-            m_enemyPathFindingMovement.MoveToTimer(m_roamPosition);
+            m_enemyPathFindingMovement.MoveTo(m_roamPosition);
 
-            float reachedPositionDistance = 10f;
-            if (Vector3.SqrMagnitude(m_roamPosition - m_enemyPathFindingMovement.GetPosition()) < reachedPositionDistance*reachedPositionDistance)
+            float reachedPositionDistance = 0f;
+            if (Vector3.SqrMagnitude(m_roamPosition - m_enemyPathFindingMovement.GetPosition()) <= reachedPositionDistance*reachedPositionDistance /*|| verify if target is walkable with a getnode*/)
             {
                 // Reached Roam Position
                 m_roamPosition = GetRoamingPosition();

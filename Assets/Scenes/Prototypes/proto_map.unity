@@ -861,8 +861,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1717542316}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 102.6, y: 146.1, z: -647.72253}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -44.1, y: 132.2, z: -647.72253}
+  m_LocalScale: {x: 2.532742, y: 2.2811546, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
@@ -963,7 +963,8 @@ MonoBehaviour:
   m_enemy: {fileID: 1717542316}
   m_xPos: 0
   m_yPos: 0
-  m_enemyCount: 0
+  m_enemyCount: 1
+  m_pathfindingGridManager: {fileID: 1549976837}
 --- !u!4 &1888062836
 Transform:
   m_ObjectHideFlags: 0
