@@ -3,6 +3,7 @@ using System.Net;
 using ubv.common;
 using ubv.common.data;
 using ubv.common.serialization;
+using ubv.tcp;
 using UnityEngine;
 
 namespace ubv.server.logic
@@ -10,10 +11,11 @@ namespace ubv.server.logic
     /// <summary>
     /// Represents the state of the server during the game
     /// </summary>
-    public class GameplayState : ServerState, udp.server.IUDPServerReceiver
+    public class GameplayState : ServerState, udp.server.IUDPServerReceiver, tcp.server.ITCPServerReceiver
     {
         private HashSet<int> m_clients;
         private Dictionary<int, ClientState> m_clientStates;
+        private Dictionary<int, bool> m_connectedClients;
                 
         private Dictionary<ClientState, Dictionary<int, InputFrame>> m_clientInputBuffers;
         
@@ -45,6 +47,8 @@ namespace ubv.server.logic
             m_clientStates = new Dictionary<int, ClientState>();
             m_clients = clients;
 
+            m_connectedClients = new Dictionary<int, bool>();
+
             m_toRemoveCache = new List<int>();
 
             m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(m_physicsSceneName).GetPhysicsScene2D();
@@ -58,6 +62,7 @@ namespace ubv.server.logic
                 player.GUID.Value = id;
                 m_clientStates[id] = new ClientState(id);
                 m_clientStates[id].AddPlayer(player);
+                m_connectedClients.Add(id, true);
             }
 
             // add each player to each other client state
@@ -104,15 +109,20 @@ namespace ubv.server.logic
             {
                 if (++m_bufferedMasterTick > m_simulationBuffer + m_masterTick)
                 {
-                    foreach (ClientState client in m_clientInputBuffers.Keys)
+                    foreach (int id in m_clientStates.Keys)
                     {
+                        if (!m_connectedClients[id])
+                            continue;
+
+                        ClientState client = m_clientStates[id];
                         // if input buffer has a frame corresponding to this tick
                         InputFrame frame = null;
                         if(!m_clientInputBuffers[client].ContainsKey(m_masterTick))
                         {
 #if DEBUG_LOG
-                            Debug.Log("Missed a player input from " + client.PlayerGUID + " for tick " + m_masterTick);
+                            Debug.Log("Missed a player input from " + id + " for tick " + m_masterTick);
 #endif //DEBUG_LOG
+                            // TODO : Cache new default frame ?
                             frame = new InputFrame(); // create a default frame to not move player
                         }
                         else
@@ -144,9 +154,13 @@ namespace ubv.server.logic
                     m_serverPhysics.Simulate(Time.fixedDeltaTime);
 
                     m_masterTick++;
-                            
-                    foreach (ClientState client in m_clientInputBuffers.Keys)
+
+                    foreach (int id in m_clientStates.Keys)
                     {
+                        if (!m_connectedClients[id])
+                            continue;
+
+                        ClientState client = m_clientStates[id];
                         foreach (ServerGameplayStateUpdater updater in m_updaters)
                         {
                             updater.UpdateClient(client);
@@ -158,9 +172,12 @@ namespace ubv.server.logic
                 if (++m_tickAccumulator > m_snapshotTicks)
                 {
                     m_tickAccumulator = 0;
-                    foreach (int id in m_clients)
+                    foreach (int id in m_connectedClients.Keys)
                     {
-                        m_UDPServer.Send(m_clientStates[id].GetBytes(), id);
+                        if (m_connectedClients[id])
+                        {
+                            m_UDPServer.Send(m_clientStates[id].GetBytes(), id);
+                        }
                     }
                 }
             }
@@ -168,6 +185,14 @@ namespace ubv.server.logic
 
         public void Receive(udp.UDPToolkit.Packet packet, int playerID)
         {
+            if (!m_connectedClients[playerID])
+            {
+#if DEBUG_LOG
+                Debug.Log("Received UDP packet from unconnected client (ID " + playerID + "). Ignoring.");
+                return;
+#endif //DEBUG_LOG
+            }
+
             InputMessage inputs = IConvertible.CreateFromBytes<InputMessage>(packet.Data);
             if (inputs != null && m_clients.Contains(playerID))
             {
@@ -190,6 +215,27 @@ namespace ubv.server.logic
                     }
                 }
             }
+        }
+
+        public void ReceivePacket(TCPToolkit.Packet packet, int playerID)
+        {
+
+        }
+
+        public void OnConnect(int playerID)
+        {
+#if DEBUG_LOG
+            Debug.Log("Player " + playerID + " just connected");
+            m_connectedClients[playerID] = true;
+#endif // DEBUG_LOG
+        }
+
+        public void OnDisconnect(int playerID)
+        {
+#if DEBUG_LOG
+            Debug.Log("Player " + playerID + " disconnected");
+            m_connectedClients[playerID] = false;
+#endif // DEBUG_LOG
         }
     }
 }

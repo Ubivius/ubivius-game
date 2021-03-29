@@ -918,6 +918,16 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_boundariesMap.x
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_boundariesMap.y
+      value: 60
+      objectReference: {fileID: 0}
     - target: {fileID: 4247499401278839604, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}
       propertyPath: m_Name
