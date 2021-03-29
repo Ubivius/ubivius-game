@@ -15,10 +15,6 @@ namespace ubv
         /// </summary>
         public class UDPToolkit
         {
-            public const ushort UDP_MAX_PAYLOAD_SIZE = 512 * 2 * 2; // TODO: WARN WHEN EXCEEDING THIS AND FIND RIGHT SIZE
-            public const ushort UDP_HEADER_SIZE = 6 * sizeof(int);
-            public const ushort UDP_PACKET_SIZE = UDP_HEADER_SIZE + UDP_MAX_PAYLOAD_SIZE; // size in bytes
-
             /// <summary>
             /// Manages sequence numbers and packet acknowledgement, creates packets to be sent and deals with reception
             /// </summary>
@@ -115,11 +111,13 @@ namespace ubv
 
             public class Packet : network.Packet
             {
-                public uint Sequence { get { return System.BitConverter.ToUInt32(RawBytes, 8); } }
-                public uint ACK { get { return System.BitConverter.ToUInt32(RawBytes, 12); } }
-                public int ACK_Bitfield { get { return System.BitConverter.ToInt32(RawBytes, 16); } }
-                public int DataSize { get { return System.BitConverter.ToInt32(RawBytes, 4); } }
-                public int PlayerID { get { return System.BitConverter.ToInt32(RawBytes, 20); } }
+                public const ushort UDP_MAX_PAYLOAD_SIZE = 512 * 2 * 2; // TODO: WARN WHEN EXCEEDING THIS AND FIND RIGHT SIZE
+                public const ushort UDP_HEADER_SIZE = DEFAULT_HEADER_SIZE + (3 * sizeof(int));
+                public const ushort UDP_PACKET_SIZE = UDP_HEADER_SIZE + UDP_MAX_PAYLOAD_SIZE; // size in bytes
+
+                public uint Sequence { get { return System.BitConverter.ToUInt32(RawBytes, 12); } }
+                public uint ACK { get { return System.BitConverter.ToUInt32(RawBytes, 16); } }
+                public int ACK_Bitfield { get { return System.BitConverter.ToInt32(RawBytes, 20); } }
                 public byte[] Data { get { return RawBytes.SubArray(UDP_HEADER_SIZE, DataSize); } }
                 
                 private Packet(byte[] bytes) : base(bytes)
@@ -138,6 +136,9 @@ namespace ubv
                         RawBytes[index] = System.BitConverter.GetBytes(data.Length)[i];
 
                     for (ushort i = 0; i < 4; i++, index++)
+                        RawBytes[index] = System.BitConverter.GetBytes(playerID)[i];
+
+                    for (ushort i = 0; i < 4; i++, index++)
                         RawBytes[index] = System.BitConverter.GetBytes(seq)[i];
 
                     for (ushort i = 0; i < 4; i++, index++)
@@ -146,8 +147,6 @@ namespace ubv
                     for (ushort i = 0; i < 4; i++, index++)
                         RawBytes[index] = System.BitConverter.GetBytes(ackBitfield)[i];
                     
-                    for (ushort i = 0; i < 4; i++, index++)
-                        RawBytes[index] = System.BitConverter.GetBytes(playerID)[i];
 
                     for (ushort i = 0; i < UDP_MAX_PAYLOAD_SIZE; i++, index++)
                         RawBytes[index] = i < data.Length ? data[i] : (byte)0;

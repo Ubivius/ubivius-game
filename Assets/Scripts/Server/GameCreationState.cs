@@ -220,6 +220,7 @@ namespace ubv.server.logic
                     Debug.Log("Received UDP confirmation from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
                 }
+                else
                 {
 #if DEBUG_LOG
                     Debug.Log("Mismatch between identification ID and packet ID");

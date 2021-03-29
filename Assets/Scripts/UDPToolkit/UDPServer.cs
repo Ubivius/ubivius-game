@@ -82,6 +82,15 @@ namespace ubv
                 private void EndSendCallback(System.IAsyncResult ar)
                 { }
                 
+                private void AddNewClient(int playerID, IPEndPoint ep)
+                {
+                    m_clients.Add(playerID, new UdpClient());
+                    m_clients[playerID].Connect(ep);
+                    m_clientConnections.Add(playerID, new UDPToolkit.ConnectionData());
+                    m_playerEndpoints.Add(playerID, ep);
+                    m_endpointsSet.Add(ep);
+                }
+
                 private void EndReceiveCallback(System.IAsyncResult ar)
                 {
                     IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
@@ -100,9 +109,7 @@ namespace ubv
 #if DEBUG_LOG
                                 Debug.Log("Received data from unregistered client(" + playerID.ToString() + "). Adding to clients.");
 #endif // DEBUG_LOG
-                                m_clients.Add(playerID, new UdpClient());
-                                m_clients[playerID].Connect(clientEndPoint);
-                                m_clientConnections.Add(playerID, new UDPToolkit.ConnectionData());
+                                AddNewClient(playerID, clientEndPoint);
                             }
                             else
                             {
@@ -117,9 +124,19 @@ namespace ubv
                             if (!m_endpointsSet.Contains(clientEndPoint))
                             {
                                 // this means the player client doesnt have the same UDP endpoint (probably because he DC'd)
-                                m_endpointsSet.Remove(m_playerEndpoints[playerID]);
+                                
+                                // we delete the endpoint previously paired with the playerID (if any)
+                                if(m_playerEndpoints.ContainsKey(playerID))
+                                {
+                                    if(m_playerEndpoints[playerID] != null)
+                                    {
+                                        m_endpointsSet.Remove(m_playerEndpoints[playerID]);
+                                    }
+                                }
+
                                 m_playerEndpoints[playerID] = clientEndPoint;
                                 m_endpointsSet.Add(clientEndPoint);
+
                                 m_clients[playerID].Close();
                                 m_clients[playerID].Connect(clientEndPoint);
                             }

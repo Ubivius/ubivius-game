@@ -43,7 +43,7 @@ namespace ubv.server.logic
             m_bufferedMasterTick = 0;
             m_simulationBuffer = simulationBuffer;
             m_clientStates = new Dictionary<int, ClientState>();
-            m_clients = new HashSet<int>();
+            m_clients = clients;
 
             m_toRemoveCache = new List<int>();
 

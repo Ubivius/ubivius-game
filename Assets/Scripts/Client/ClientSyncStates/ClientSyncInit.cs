@@ -83,6 +83,7 @@ namespace ubv.client.logic
                 int playerID = System.Guid.NewGuid().GetHashCode(); // for now
                 m_playerID = playerID;
                 m_identificationMessageBytes = new IdentificationMessage(m_playerID.Value).GetBytes();
+                m_TCPClient.SetPlayerID(playerID);
             }
 
             // mock dispatcher response for now

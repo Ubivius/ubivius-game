@@ -33,6 +33,7 @@ namespace ubv.tcp.server
 
         private Dictionary<int, IPEndPoint> m_clientEndpoints;
         private Dictionary<IPEndPoint, int> m_clientIDs;
+
         private Dictionary<IPEndPoint, TcpClient> m_clientConnections;
         private Dictionary<IPEndPoint, Queue<byte[]>> m_dataToSend;
         private Dictionary<IPEndPoint, bool> m_activeEndpoints;
@@ -152,26 +153,28 @@ namespace ubv.tcp.server
                 if (!connection.Connected)
                     return;
 
-                IPEndPoint key = (IPEndPoint)(connection.Client.RemoteEndPoint);
-                m_clientConnections[key] = connection;
-                m_activeEndpoints[key] = true;
+                IPEndPoint ep = (IPEndPoint)(connection.Client.RemoteEndPoint);
+                m_clientConnections[ep] = connection;
+                m_activeEndpoints[ep] = true;
                 lock (m_lock)
                 {
-                    m_endpointLastTimeSeen[key] = 0;
+                    m_endpointLastTimeSeen[ep] = 0;
                 }
-                m_dataToSend[key] = new Queue<byte[]>();
+                m_dataToSend[ep] = new Queue<byte[]>();
 
                 using (NetworkStream stream = connection.GetStream())
                 {
-                    HandleConnection(stream, key);
+                    HandleConnection(stream, ep);
                     stream.Close();
                 }
-                m_activeEndpoints[key] = false;
-                
+                m_activeEndpoints[ep] = false;
+
+                RemoveClient(m_clientIDs[ep]);
+
 #if DEBUG_LOG
-                Debug.Log("Removing " + key.ToString() + " TCP connection");
+                Debug.Log("Removing " + ep.ToString() + " TCP connection");
 #endif // DEBUG_LOG
-                m_clientConnections.Remove(key);
+                m_clientConnections.Remove(ep);
                 connection.Close();
             }
         }
@@ -193,13 +196,19 @@ namespace ubv.tcp.server
 
         private void AddNewClient(int playerID, IPEndPoint source)
         {
-
             m_clientEndpoints.Add(playerID, source);
+            m_clientIDs.Add(source, playerID);
+            lock (m_lock)
+            {
+                foreach (ITCPServerReceiver receiver in m_receivers)
+                {
+                    receiver.OnConnect(playerID);
+                }
+            }
         }
 
         private void UpdateClientEndpoint(int playerID, IPEndPoint source)
         {
-            // ...
             m_clientIDs.Remove(m_clientEndpoints[playerID]);
             m_clientEndpoints[playerID] = source;
             m_clientIDs.Add(source, playerID);
@@ -207,7 +216,15 @@ namespace ubv.tcp.server
 
         private void RemoveClient(int playerID)
         {
-            // ...
+            m_clientIDs.Remove(m_clientEndpoints[playerID]);
+            m_clientEndpoints.Remove(playerID);
+            lock (m_lock)
+            {
+                foreach (ITCPServerReceiver receiver in m_receivers)
+                {
+                    receiver.OnDisconnect(playerID);
+                }
+            }
         }
 
         private void ReceivingThread(object streamSourcePair)
