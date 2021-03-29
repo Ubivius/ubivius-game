@@ -37,7 +37,9 @@ namespace ubv.common.world
         [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolBottomRight;
 
         [SerializeField] private Tilemap m_floor;
+        [SerializeField] private Tilemap m_door;
         [SerializeField] private TileBase m_tileFloor;
+        [SerializeField] private TileBase m_tiledoor;
         [SerializeField] private int m_wallThickness;
 
         private Grid m_grid;
@@ -46,9 +48,13 @@ namespace ubv.common.world
 
         private RoomManager m_roomManager;
         private CorridorsManager m_corridorsManager;
+        private DoorManager m_doorManager;
+
+        private List<RoomInfo> m_roomInMap = new List<RoomInfo>();
 
         private dataStruct.WorldGeneratorToRoomManager m_worldGeneratorToRoomManager;
         private dataStruct.WorldGeneratorToCorridorsManager m_worldGeneratorToCorridorsManager;
+        private dataStruct.WorldGeneratorToDoorManager m_worldGeneratorToDoorManager;
 
         private void Awake()
         {
@@ -80,18 +86,23 @@ namespace ubv.common.world
                 m_wallThickness);
 
             //GenerateWithOneRoom();
-            GenerateWorld();
+            //GenerateWorld();
         }
 
         public void GenerateWorld()
         {
             m_roomManager = new RoomManager(m_worldGeneratorToRoomManager);
             m_masterLogicGrid = m_roomManager.GenerateRoomGrid();
+            m_roomInMap = m_roomManager.GetRoomInMap();
 
             m_worldGeneratorToCorridorsManager = new dataStruct.WorldGeneratorToCorridorsManager(m_masterLogicGrid, m_floor, m_tileFloor, m_wallThickness);
 
             m_corridorsManager = new CorridorsManager(m_worldGeneratorToCorridorsManager);
             m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
+
+            m_worldGeneratorToDoorManager = new dataStruct.WorldGeneratorToDoorManager(m_masterLogicGrid, m_floor, m_door, m_tileFloor, m_tiledoor, m_roomInMap);
+            m_doorManager = new DoorManager(m_worldGeneratorToDoorManager);
+            m_masterLogicGrid = m_doorManager.GenerateDoorGrid();
         }
         
         public void GenerateWithOneRoom() // For test only 
