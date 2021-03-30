@@ -194,7 +194,7 @@ namespace ubv.server.logic
 #endif //DEBUG_LOG
             }
 
-            InputMessage inputs = IConvertible.CreateFromBytes<InputMessage>(packet.Data);
+            InputMessage inputs = IConvertible.CreateFromBytes<InputMessage>(packet.Data.ArraySegment());
             if (inputs != null && m_clients.Contains(playerID))
             {
                 lock (m_lock)
@@ -222,7 +222,7 @@ namespace ubv.server.logic
         {
             // if we receive ID message from player (who's trying to reconnect)
             // ...
-            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data);
+            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data.ArraySegment());
             if (identification != null)
             {
                 if (identification.PlayerID.Value == playerID)

@@ -54,7 +54,7 @@ namespace ubv.client.logic
 
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
-            ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data);
+            ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data.ArraySegment());
             if (ready != null)
             {
 #if DEBUG_LOG
@@ -65,7 +65,7 @@ namespace ubv.client.logic
             }
             
             // loads other players in lobby, receives message from server indicating a new player joined
-            ClientListMessage clientList = common.serialization.IConvertible.CreateFromBytes<ClientListMessage>(packet.Data);
+            ClientListMessage clientList = common.serialization.IConvertible.CreateFromBytes<ClientListMessage>(packet.Data.ArraySegment());
             if (clientList != null)
             {
                 List<PlayerState> playerStates = clientList.Players.Value;
@@ -83,7 +83,7 @@ namespace ubv.client.logic
             // meanwhile maybe start in thread
             System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
             watch.Start();
-            ServerInitMessage start = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data);
+            ServerInitMessage start = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data.ArraySegment());
             watch.Stop();
             if (start != null)
             {
