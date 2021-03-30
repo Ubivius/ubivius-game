@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading;
 using System.IO;
+using System;
 
 namespace ubv.tcp.client
 {
@@ -17,7 +18,7 @@ namespace ubv.tcp.client
         protected readonly object m_lock = new object();
 
         private string m_serverAddress;
-        private int m_port;
+        private int m_serverPort;
 
         protected bool m_exitSignal;
 
@@ -206,6 +207,24 @@ namespace ubv.tcp.client
 #endif // DEBUG_LOG
         }
 
+        public void Reconnect()
+        {
+#if DEBUG_LOG
+            Debug.Log("Trying to reconnect...");
+#endif // DEBUG_LOG
+
+            if(m_serverAddress == null || m_serverPort == 0)
+            {
+#if DEBUG_LOG
+                Debug.Log("No previous connection has been made.");
+#endif // DEBUG_LOG
+            }
+            else
+            {
+                Connect(m_serverAddress, m_serverPort);
+            }
+        }
+
         private void Update()
         {
             if (m_activeEndpoint)
@@ -336,14 +355,13 @@ namespace ubv.tcp.client
         public void Connect(string address, int port)
         {
             m_serverAddress = address;
-            m_port = port;
+            m_serverPort = port;
             m_server = new IPEndPoint(IPAddress.Parse(address), port);
 
             Thread thread = new Thread(new ThreadStart(CommThread));
             thread.Start();
         }
-
-
+        
         private bool CheckConnection()
         {
             return (m_endpointLastTimeSeen * 1000 < m_connectionTimeoutInMS);

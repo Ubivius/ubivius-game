@@ -126,7 +126,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                     Debug.Log("Trying to reconnect to server...");
 #endif //DEBUG_LOG
-                    m_TCPClient.Send(new IdentificationMessage(m_playerID).GetBytes());
+                    m_TCPClient.Reconnect();
                     m_reconnectTryTimer = 0;
                 }
             }
