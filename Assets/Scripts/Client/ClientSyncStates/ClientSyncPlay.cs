@@ -317,6 +317,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Successful connection to server.");
 #endif // DEBUG_LOG
+            m_TCPClient.Send(new IdentificationMessage(m_playerID).GetBytes());
         }
 
         public void ReceivePacket(TCPToolkit.Packet packet)
