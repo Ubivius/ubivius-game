@@ -348,5 +348,10 @@ namespace ubv.tcp.client
         {
             return (m_endpointLastTimeSeen * 1000 < m_connectionTimeoutInMS);
         }
+
+        public bool IsConnected()
+        {
+            return m_activeEndpoint;
+        }
     }
 }

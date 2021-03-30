@@ -34,6 +34,10 @@ namespace ubv.client.logic
         [SerializeField] private List<ClientStateUpdater> m_updaters;
 
         private bool m_initialized;
+        private bool ConnectedToServer { get { return m_TCPClient.IsConnected(); } }
+
+        [SerializeField] private float m_reconnectTryDelayMS = 2000;
+        private float m_reconnectTryTimer;
 
 #if NETWORK_SIMULATE
         [SerializeField] private float m_packetLossChance = 0.15f;
@@ -47,6 +51,7 @@ namespace ubv.client.logic
         public void Init(int playerID, int simulationBuffer, List<PlayerState> playerStates)
         {
             m_localTick = 0;
+            m_reconnectTryTimer = 0;
             m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
 
@@ -84,7 +89,7 @@ namespace ubv.client.logic
 
         protected override void StateFixedUpdate()
         {
-            if (!m_initialized)
+            if (!m_initialized && !ConnectedToServer)
                 return;
 
             uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
@@ -108,7 +113,24 @@ namespace ubv.client.logic
             if (!m_initialized)
                 return;
 
-            m_lastInput = InputController.CurrentFrame();
+            if (ConnectedToServer)
+            {
+                m_lastInput = InputController.CurrentFrame();
+            }
+            else
+            {
+                // if not connected : try to reconnect every x second with ID message 
+                m_reconnectTryTimer += Time.deltaTime;
+                if(m_reconnectTryTimer > m_reconnectTryDelayMS)
+                {
+#if DEBUG_LOG
+                    Debug.Log("Trying to reconnect to server...");
+#endif //DEBUG_LOG
+                    m_TCPClient.Send(new IdentificationMessage(m_playerID).GetBytes());
+                    m_reconnectTryTimer = 0;
+                }
+            }
+
         }
 
         public void RegisterUpdater(ClientStateUpdater updater)
@@ -121,7 +143,7 @@ namespace ubv.client.logic
 
         private void StoreCurrentStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
         {
-            if (!m_initialized)
+            if (!m_initialized && !ConnectedToServer)
                 return;
 
             for (int i = 0; i < m_updaters.Count; i++)
@@ -134,7 +156,7 @@ namespace ubv.client.logic
                 
         private List<ClientStateUpdater> UpdatersNeedingCorrection(ClientState localState, ClientState remoteState)
         {
-            if (!m_initialized)
+            if (!m_initialized && !ConnectedToServer)
                 return null;
 
             List<ClientStateUpdater> needCorrection = new List<ClientStateUpdater>();
@@ -152,7 +174,7 @@ namespace ubv.client.logic
 
         public void ReceivePacket(UDPToolkit.Packet packet)
         {
-            if (!m_initialized)
+            if (!m_initialized && !ConnectedToServer)
                 return;
 
             // TODO remove tick from ClientSTate and add it to custom server state packet?
@@ -190,7 +212,7 @@ namespace ubv.client.logic
 
         private void UpdateInput(uint bufferIndex)
         {
-            if (!m_initialized)
+            if (!m_initialized && !ConnectedToServer)
                 return;
 
             if (m_lastInput != null)
@@ -236,7 +258,7 @@ namespace ubv.client.logic
 
         private void UpdateClientState(uint bufferIndex)
         {
-            if (!m_initialized)
+            if (!m_initialized && !ConnectedToServer)
                 return;
             // set current client state to last one then updating it
             StoreCurrentStateAndStep(
@@ -299,7 +321,7 @@ namespace ubv.client.logic
 
         public void ReceivePacket(TCPToolkit.Packet packet)
         {
-            // 
+            // empty for now
         }
 
         public void OnDisconnect()

@@ -220,14 +220,25 @@ namespace ubv.server.logic
 
         public void ReceivePacket(TCPToolkit.Packet packet, int playerID)
         {
-
+            // if we receive ID message from player (who's trying to reconnect)
+            // ...
+            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data);
+            if (identification != null)
+            {
+                if (identification.PlayerID.Value == playerID)
+                {
+#if DEBUG_LOG
+                    Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
+#endif // DEBUG_LOG
+                    m_connectedClients[playerID] = true;
+                }
+            }
         }
 
         public void OnConnect(int playerID)
         {
 #if DEBUG_LOG
-            Debug.Log("Player " + playerID + " just connected");
-            m_connectedClients[playerID] = true;
+            Debug.Log("Player " + playerID + " just connected. Awaiting identification packet.");
 #endif // DEBUG_LOG
         }
 
