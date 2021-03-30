@@ -37,8 +37,10 @@ namespace ubv.common.world
         [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolBottomRight;
 
         [SerializeField] private Tilemap m_floor;
+        [SerializeField] private Tilemap m_wall;
         [SerializeField] private Tilemap m_door;
         [SerializeField] private TileBase m_tileFloor;
+        [SerializeField] private TileBase m_tileWall;
         [SerializeField] private TileBase m_tiledoor;
         [SerializeField] private int m_wallThickness;
 
@@ -49,12 +51,14 @@ namespace ubv.common.world
         private RoomManager m_roomManager;
         private CorridorsManager m_corridorsManager;
         private DoorManager m_doorManager;
+        private WallManager m_wallManager;
 
         private List<RoomInfo> m_roomInMap = new List<RoomInfo>();
 
         private dataStruct.WorldGeneratorToRoomManager m_worldGeneratorToRoomManager;
         private dataStruct.WorldGeneratorToCorridorsManager m_worldGeneratorToCorridorsManager;
         private dataStruct.WorldGeneratorToDoorManager m_worldGeneratorToDoorManager;
+        private dataStruct.WolrdGeneratorToWallManager m_wolrdGeneratorToWallManager;
 
         private void Awake()
         {
@@ -103,6 +107,10 @@ namespace ubv.common.world
             m_worldGeneratorToDoorManager = new dataStruct.WorldGeneratorToDoorManager(m_masterLogicGrid, m_floor, m_door, m_tileFloor, m_tiledoor, m_roomInMap);
             m_doorManager = new DoorManager(m_worldGeneratorToDoorManager);
             m_masterLogicGrid = m_doorManager.GenerateDoorGrid();
+
+            m_wolrdGeneratorToWallManager = new dataStruct.WolrdGeneratorToWallManager(m_masterLogicGrid, m_wall, m_tileWall);
+            m_wallManager = new WallManager(m_wolrdGeneratorToWallManager);
+            m_masterLogicGrid = m_wallManager.GenerateWallGrid();
         }
         
         public void GenerateWithOneRoom() // For test only 

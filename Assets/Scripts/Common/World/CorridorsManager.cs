@@ -31,7 +31,7 @@ namespace ubv.common.world
         const int distanceForMove = 2;
         const int distanceForJump = 5;
 
-        private ubv.common.world.LogicGrid m_masterLogicGrid;
+        private LogicGrid m_masterLogicGrid;
         private Tilemap m_floor;
         private TileBase m_tileFloor;
 
