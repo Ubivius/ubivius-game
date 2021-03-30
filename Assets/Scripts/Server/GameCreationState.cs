@@ -92,6 +92,8 @@ namespace ubv.server.logic
 
                     common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
 
+                    GeneratePlayerListFromClients();
+
                     ServerInitMessage message = new ServerInitMessage(m_simulationBuffer, m_players, cellInfoArray);
 
                     foreach (int id in m_clients)
@@ -131,16 +133,26 @@ namespace ubv.server.logic
         private void AddNewPlayer(int playerID)
         {
             m_clients.Add(playerID);
-            m_players.Add(new PlayerState(playerID));
             m_readyClients[playerID] = false;
         }
 
         private void BroadcastPlayerList()
         {
+            GeneratePlayerListFromClients();
+
             byte[] bytes = new ClientListMessage(m_players).GetBytes();
             foreach (int id in m_clients)
             {
                 m_TCPServer.Send(bytes, id);
+            }
+        }
+
+        private void GeneratePlayerListFromClients()
+        {
+            m_players.Clear();
+            foreach (int id in m_clients)
+            {
+                m_players.Add(new PlayerState(id));
             }
         }
 
