@@ -8,7 +8,6 @@ using System.Diagnostics;
 
 namespace ubv.server.testing
 {
-
     public class PathTesting : MonoBehaviour
     {
         [SerializeField] private logic.PathfindingGridManager m_pathfindingGridManager;
@@ -29,7 +28,7 @@ namespace ubv.server.testing
             {
                 for (int i = 0; i < m_path.Count - 1; i++)
                 {
-                    UnityEngine.Debug.DrawLine(new Vector2(m_path[i].X, m_path[i].Y), new Vector2(m_path[i + 1].X, m_path[i + 1].Y));
+                    UnityEngine.Debug.DrawLine(new Vector2(m_path[i].x, m_path[i].y), new Vector2(m_path[i + 1].x, m_path[i + 1].y), Color.green);
                 }
             }
         }

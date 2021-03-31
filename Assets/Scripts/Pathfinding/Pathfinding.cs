@@ -128,8 +128,8 @@ namespace ubv.server.logic
 
         private int CalculateDistanceCost(PathNode a, PathNode b)
         {
-            int xDistance = Mathf.Abs(a.X - b.X);
-            int yDistance = Mathf.Abs(a.Y - b.Y);
+            int xDistance = Mathf.Abs(a.x - b.x);
+            int yDistance = Mathf.Abs(a.y - b.y);
             int remaining = Mathf.Abs(xDistance - yDistance);
             return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
         }

@@ -29,11 +29,11 @@ namespace ubv.server.logic
             LogicGrid logicGrid = m_worldGenerator.GetMasterLogicGrid();
             if (logicGrid != null)
             {
-                this.SetPathfindingGridManager(logicGrid);
+                this.SetPathNodesFromLogicGrid(logicGrid);
             }
         }
 
-        private void SetPathfindingGridManager(LogicGrid logicGrid)
+        private void SetPathNodesFromLogicGrid(LogicGrid logicGrid)
         {
             m_logicGrid = logicGrid;
             m_pathNodes = new PathNode[m_logicGrid.Width, m_logicGrid.Height];
@@ -45,45 +45,35 @@ namespace ubv.server.logic
                 {
                     if (m_logicGrid.Grid[x, y] != null)
                     {
-                        if (m_logicGrid.Grid[x, y].IsWalkable)
-                        {
-                            m_pathNodes[x, y] = (new PathNode(x, y));
-                            pathNodeList.Add(m_pathNodes[x, y]);
-                        }
+                        m_pathNodes[x, y] = new PathNode(x, y);
+                        pathNodeList.Add(m_pathNodes[x, y]);
                     }
                 }
             }
 
-            //Add neighbours to each pathnode
-            foreach (PathNode pathnode in m_pathNodes)
+            //Add neighbours to each walkable pathnode
+            foreach (PathNode p in m_pathNodes)
             {
-                if (pathnode != null)
+                if (p != null && m_logicGrid.Grid[p.x, p.y].IsWalkable)
                 {
-                    if (pathnode.X - 1 >= 0)
-                    {
-                        // Left
-                        pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y));
-                        // Left Down
-                        if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y - 1));
-                        // Left Up   
-                        if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y + 1));
-                    }
+                    // Left
+                    p.AddNeighbour(GetNode(p.x - 1, p.y));
+                    // Left Down
+                    p.AddNeighbour(GetNode(p.x - 1, p.y - 1));
+                    // Left Up   
+                    p.AddNeighbour(GetNode(p.x - 1, p.y + 1));
 
-                    if (pathnode.X + 1 < m_logicGrid.Width)
-                    {
-                        // Right
-                        pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y));
-                        // Right Down
-                        if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y - 1));
-                        // Right Up
-                        if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y + 1));
-                    }
+                    // Right
+                    p.AddNeighbour(GetNode(p.x + 1, p.y));
+                    // Right Down
+                    p.AddNeighbour(GetNode(p.x + 1, p.y - 1));
+                    // Right Up
+                    p.AddNeighbour(GetNode(p.x + 1, p.y + 1));
 
                     // Down
-                    if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X, pathnode.Y - 1));
+                    p.AddNeighbour(GetNode(p.x, p.y - 1));
                     // Up
-                    if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X, pathnode.Y + 1));
-
+                    p.AddNeighbour(GetNode(p.x, p.y + 1));
                 }
             }
 
@@ -109,7 +99,7 @@ namespace ubv.server.logic
         public List<PathNode> GetPath(PathNode startNode, PathNode endNode)
         {
             List<PathNode> path = m_pathfinding.FindPath(startNode, endNode);
-            if (path == null) Debug.Log("Not path found!");
+            if (path == null) Debug.Log("No path found!");
             return path;
         }
 
