@@ -34,6 +34,11 @@ public class PathNode
             return false;
     }
 
+    public void RemoveAllNeighbours()
+    {
+        m_neighbourList.Clear();
+    }
+
     public void RemoveNeighbour(PathNode pathNode)
     {
         this.m_neighbourList.Remove(pathNode);

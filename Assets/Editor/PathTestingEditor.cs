@@ -14,5 +14,15 @@ public class PathTestingEditor : Editor
         {
             myTarget.TestRandomPath();
         }
+
+        if (GUILayout.Button("Free node"))
+        {
+            myTarget.FreeNode();
+        }
+
+        if (GUILayout.Button("Block node"))
+        {
+            myTarget.BlockNode();
+        }
     }
 }

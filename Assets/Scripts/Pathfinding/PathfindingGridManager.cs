@@ -88,6 +88,25 @@ namespace ubv.server.logic
             }
         }
 
+        public void SetNodeToBlocked(int x, int y)
+        {
+            PathNode p = GetNode(x, y);
+            if (p != null)
+            {
+                RemoveAllNeighbours(p);
+            }
+        }
+
+        private void RemoveAllNeighbours(PathNode p)
+        {
+            // remove all neighbours from p 
+            foreach(PathNode n in p.GetNeighbourList())
+            {
+                n.RemoveNeighbour(p);
+            }
+            p.RemoveAllNeighbours();
+        }
+
         private void AddAllWalkableNeighbours(PathNode p)
         {
             if(!m_logicGrid.Grid[p.x, p.y].IsWalkable)
@@ -105,6 +124,11 @@ namespace ubv.server.logic
             
             p.AddNeighbour(GetIfWalkable(p.x, p.y - 1));
             p.AddNeighbour(GetIfWalkable(p.x, p.y + 1));
+
+            foreach(PathNode n in p.GetNeighbourList())
+            {
+                n.AddNeighbour(p);
+            }
         }
 
         private PathNode GetIfWalkable(int x, int y)

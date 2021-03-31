@@ -48,6 +48,22 @@ namespace ubv.server.testing
             }
         }
 
+        public void BlockNode()
+        {
+            if (m_pathfindingGridManager.IsSetUpDone() == true)
+            {
+                m_pathfindingGridManager.SetNodeToBlocked(x, y);
+            }
+        }
+
+        public void FreeNode()
+        {
+            if (m_pathfindingGridManager.IsSetUpDone() == true)
+            {
+                m_pathfindingGridManager.SetNodeToWalkable(x, y);
+            }
+        }
+
         //pt pour le faire avec la sourie
         public static Vector3 GetMouseWorldPosition()
         {
