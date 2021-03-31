@@ -117,6 +117,10 @@ namespace ubv.common.world
             m_wolrdGeneratorToWallManager = new dataStruct.WolrdGeneratorToWallManager(m_masterLogicGrid, m_wall, m_tileWall);
             m_wallManager = new generationManager.WallManager(m_wolrdGeneratorToWallManager);
             m_masterLogicGrid = m_wallManager.GenerateWallGrid();
+
+            m_floor.RefreshAllTiles();
+            m_door.RefreshAllTiles();
+            m_wall.RefreshAllTiles();
         }
         
         public void GenerateWithOneRoom() // For test only 

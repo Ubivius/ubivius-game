@@ -29,7 +29,7 @@ namespace ubv.common.world.generationManager
         }
 
         const int distanceForMove = 2;
-        const int distanceForJump = 5;
+        const int distanceForJump = 5 - 1;
 
         private LogicGrid m_masterLogicGrid;
         private Tilemap m_floor;
@@ -403,11 +403,11 @@ namespace ubv.common.world.generationManager
 
         private bool CheckMoveNorth(Vector2Int pos)
         {
-            if (m_masterLogicGrid.Grid[pos.x - m_wallThickness, pos.y + distanceForMove + m_wallThickness] != null || // top-left-left
-                m_masterLogicGrid.Grid[pos.x - 1,               pos.y + distanceForMove + m_wallThickness] != null || // top-left
-                m_masterLogicGrid.Grid[pos.x,                   pos.y + distanceForMove + m_wallThickness] != null || // top
-                m_masterLogicGrid.Grid[pos.x + 1,               pos.y + distanceForMove + m_wallThickness] != null || // top-right
-                m_masterLogicGrid.Grid[pos.x + m_wallThickness, pos.y + distanceForMove + m_wallThickness] != null || // top-right-right
+            if (m_masterLogicGrid.Grid[pos.x - m_wallThickness, pos.y + 1 + m_wallThickness] != null || // top-left-left
+                m_masterLogicGrid.Grid[pos.x - 1,               pos.y + 1 + m_wallThickness] != null || // top-left
+                m_masterLogicGrid.Grid[pos.x,                   pos.y + 1 + m_wallThickness] != null || // top
+                m_masterLogicGrid.Grid[pos.x + 1,               pos.y + 1 + m_wallThickness] != null || // top-right
+                m_masterLogicGrid.Grid[pos.x + m_wallThickness, pos.y + 1 + m_wallThickness] != null || // top-right-right
                 m_masterLogicGrid.Grid[pos.x - m_wallThickness, pos.y + distanceForMove] != null ||
                 m_masterLogicGrid.Grid[pos.x - 1,               pos.y + distanceForMove] != null ||
                 m_masterLogicGrid.Grid[pos.x,                   pos.y + distanceForMove] != null ||
@@ -469,11 +469,11 @@ namespace ubv.common.world.generationManager
         
         private bool CheckMoveEast(Vector2Int pos)
         {
-            if (m_masterLogicGrid.Grid[pos.x + distanceForMove + m_wallThickness, pos.y + m_wallThickness] != null || // right-top-top
-                m_masterLogicGrid.Grid[pos.x + distanceForMove + m_wallThickness, pos.y + 1              ] != null || // right-top
-                m_masterLogicGrid.Grid[pos.x + distanceForMove + m_wallThickness, pos.y                  ] != null || // right
-                m_masterLogicGrid.Grid[pos.x + distanceForMove + m_wallThickness, pos.y - 1              ] != null || // right-bottom
-                m_masterLogicGrid.Grid[pos.x + distanceForMove + m_wallThickness, pos.y - m_wallThickness] != null || // right-bottom-bottom
+            if (m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y + m_wallThickness] != null || // right-top-top
+                m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y + 1              ] != null || // right-top
+                m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y                  ] != null || // right
+                m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y - 1              ] != null || // right-bottom
+                m_masterLogicGrid.Grid[pos.x + 1 + m_wallThickness, pos.y - m_wallThickness] != null || // right-bottom-bottom
                 m_masterLogicGrid.Grid[pos.x + distanceForMove, pos.y + m_wallThickness] != null ||
                 m_masterLogicGrid.Grid[pos.x + distanceForMove, pos.y + 1              ] != null ||
                 m_masterLogicGrid.Grid[pos.x + distanceForMove, pos.y                  ] != null ||
@@ -535,11 +535,11 @@ namespace ubv.common.world.generationManager
 
         private bool CheckMoveSouth(Vector2Int pos)
         {
-            if (m_masterLogicGrid.Grid[pos.x - m_wallThickness, pos.y - distanceForMove - m_wallThickness] != null|| // bottom-left-left
-                m_masterLogicGrid.Grid[pos.x - 1,               pos.y - distanceForMove - m_wallThickness] != null|| // bottom-left
-                m_masterLogicGrid.Grid[pos.x,                   pos.y - distanceForMove - m_wallThickness] != null|| // bottom
-                m_masterLogicGrid.Grid[pos.x + 1,               pos.y - distanceForMove - m_wallThickness] != null|| // bottom-right
-                m_masterLogicGrid.Grid[pos.x + m_wallThickness, pos.y - distanceForMove - m_wallThickness] != null|| // bottom-right-right
+            if (m_masterLogicGrid.Grid[pos.x - m_wallThickness, pos.y - 1 - m_wallThickness] != null|| // bottom-left-left
+                m_masterLogicGrid.Grid[pos.x - 1,               pos.y - 1 - m_wallThickness] != null|| // bottom-left
+                m_masterLogicGrid.Grid[pos.x,                   pos.y - 1 - m_wallThickness] != null|| // bottom
+                m_masterLogicGrid.Grid[pos.x + 1,               pos.y - 1 - m_wallThickness] != null|| // bottom-right
+                m_masterLogicGrid.Grid[pos.x + m_wallThickness, pos.y - 1 - m_wallThickness] != null|| // bottom-right-right
                 m_masterLogicGrid.Grid[pos.x - m_wallThickness, pos.y - distanceForMove] != null ||
                 m_masterLogicGrid.Grid[pos.x - 1,               pos.y - distanceForMove] != null ||
                 m_masterLogicGrid.Grid[pos.x,                   pos.y - distanceForMove] != null ||
@@ -601,11 +601,11 @@ namespace ubv.common.world.generationManager
 
         private bool CheckMoveWest(Vector2Int pos)
         {
-            if (m_masterLogicGrid.Grid[pos.x - distanceForMove - m_wallThickness, pos.y - m_wallThickness] != null || // left-bottom-bottom
-                m_masterLogicGrid.Grid[pos.x - distanceForMove - m_wallThickness, pos.y - 1              ] != null || // left-bottom
-                m_masterLogicGrid.Grid[pos.x - distanceForMove - m_wallThickness, pos.y                  ] != null || // left
-                m_masterLogicGrid.Grid[pos.x - distanceForMove - m_wallThickness, pos.y + 1              ] != null || // left-top
-                m_masterLogicGrid.Grid[pos.x - distanceForMove - m_wallThickness, pos.y + m_wallThickness] != null || // left-top-top
+            if (m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y - m_wallThickness] != null || // left-bottom-bottom
+                m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y - 1              ] != null || // left-bottom
+                m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y                  ] != null || // left
+                m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y + 1              ] != null || // left-top
+                m_masterLogicGrid.Grid[pos.x - 1 - m_wallThickness, pos.y + m_wallThickness] != null || // left-top-top
                 m_masterLogicGrid.Grid[pos.x - distanceForMove, pos.y - m_wallThickness] != null ||
                 m_masterLogicGrid.Grid[pos.x - distanceForMove, pos.y - 1              ] != null ||
                 m_masterLogicGrid.Grid[pos.x - distanceForMove, pos.y                  ] != null ||

@@ -58,8 +58,6 @@ namespace ubv.common.world.generationManager
 
             Debug.LogError("Frontier Door Count : " + DoorCount);
 
-            m_floor.RefreshAllTiles();
-            m_door.RefreshAllTiles();
             return m_masterLogicGrid;
         }
 
@@ -328,13 +326,13 @@ namespace ubv.common.world.generationManager
         private void CompleteSouthDoor(Vector2Int wallOrigin, int i)
         {
             m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[wallOrigin.x + i, wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
+            m_masterLogicGrid.Grid[wallOrigin.x + i,     wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
             m_masterLogicGrid.Grid[wallOrigin.x + i + 1, wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
             m_floor.SetTile(new Vector3Int(wallOrigin.x + i - 1, wallOrigin.y - 1, 0), null);
-            m_floor.SetTile(new Vector3Int(wallOrigin.x + i, wallOrigin.y - 1, 0), null);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x + i,     wallOrigin.y - 1, 0), null);
             m_floor.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y - 1, 0), null);
             m_door.SetTile(new Vector3Int(wallOrigin.x + i - 1, wallOrigin.y - 1, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(wallOrigin.x + i, wallOrigin.y - 1, 0), m_tileDoor);
+            m_door.SetTile(new Vector3Int(wallOrigin.x + i,     wallOrigin.y - 1, 0), m_tileDoor);
             m_door.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y - 1, 0), m_tileDoor);
         }
 

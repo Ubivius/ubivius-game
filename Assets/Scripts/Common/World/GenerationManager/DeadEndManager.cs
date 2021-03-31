@@ -35,6 +35,7 @@ namespace ubv.common.world.generationManager
 
         private void RemoveDeadEnd(Vector2Int pos)
         {
+            //Debug.Log("X: " + pos.x + "   Y: " + pos.y);
             Direction deadEnd = IsDeadEnd(pos);
             if (deadEnd != Direction.Stop)
             {
@@ -46,6 +47,10 @@ namespace ubv.common.world.generationManager
 
         private Direction IsDeadEnd(Vector2Int pos)
         {
+            if (IsFinish(pos))
+            {
+                return Direction.Stop;
+            }
             if (IsDeadEndNorth(pos))
             {
                 return Direction.North;
@@ -65,56 +70,74 @@ namespace ubv.common.world.generationManager
             return Direction.Stop;
         }
 
+        private bool IsFinish(Vector2Int pos)
+        {
+            if (m_masterLogicGrid.Grid[pos.x,     pos.y    ] == null && // center                 
+                m_masterLogicGrid.Grid[pos.x - 1, pos.y - 1] == null && // bottom-left
+                m_masterLogicGrid.Grid[pos.x - 1, pos.y    ] == null && // left
+                m_masterLogicGrid.Grid[pos.x - 1, pos.y + 1] == null && // top-left
+                m_masterLogicGrid.Grid[pos.x,     pos.y + 1] == null && // top
+                m_masterLogicGrid.Grid[pos.x + 1, pos.y + 1] == null && // top-right
+                m_masterLogicGrid.Grid[pos.x + 1, pos.y    ] == null && // right
+                m_masterLogicGrid.Grid[pos.x + 1, pos.y - 1] == null && // bottom-right
+                m_masterLogicGrid.Grid[pos.x,     pos.y - 1] == null    // bottom
+                )
+            {
+                return true;
+            }
+            return false;
+        }
+
         private bool IsDeadEndNorth(Vector2Int pos)
         {
-            if (m_masterLogicGrid.Grid[pos.x - 2, pos.y + 1] != null ||
-                m_masterLogicGrid.Grid[pos.x - 1, pos.y + 2] != null ||
-                m_masterLogicGrid.Grid[pos.x    , pos.y + 2] != null ||
-                m_masterLogicGrid.Grid[pos.x + 1, pos.y + 2] != null ||
-                m_masterLogicGrid.Grid[pos.x + 2, pos.y + 1] != null)
+            if (m_masterLogicGrid.Grid[pos.x - 2, pos.y + 1] == null &&
+                m_masterLogicGrid.Grid[pos.x - 1, pos.y + 2] == null &&
+                m_masterLogicGrid.Grid[pos.x    , pos.y + 2] == null &&
+                m_masterLogicGrid.Grid[pos.x + 1, pos.y + 2] == null &&
+                m_masterLogicGrid.Grid[pos.x + 2, pos.y + 1] == null)
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         private bool IsDeadEndEast(Vector2Int pos)
         {
-            if (m_masterLogicGrid.Grid[pos.x + 1, pos.y - 2] != null ||
-                m_masterLogicGrid.Grid[pos.x + 2, pos.y - 1] != null ||
-                m_masterLogicGrid.Grid[pos.x + 2, pos.y    ] != null ||
-                m_masterLogicGrid.Grid[pos.x + 2, pos.y + 1] != null ||
-                m_masterLogicGrid.Grid[pos.x + 1, pos.y + 2] != null)
+            if (m_masterLogicGrid.Grid[pos.x + 1, pos.y - 2] == null &&
+                m_masterLogicGrid.Grid[pos.x + 2, pos.y - 1] == null &&
+                m_masterLogicGrid.Grid[pos.x + 2, pos.y    ] == null &&
+                m_masterLogicGrid.Grid[pos.x + 2, pos.y + 1] == null &&
+                m_masterLogicGrid.Grid[pos.x + 1, pos.y + 2] == null)
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         private bool IsDeadEndSouth(Vector2Int pos)
         {
-            if (m_masterLogicGrid.Grid[pos.x - 2, pos.y - 1] != null ||
-                m_masterLogicGrid.Grid[pos.x - 1, pos.y - 2] != null ||
-                m_masterLogicGrid.Grid[pos.x    , pos.y - 2] != null ||
-                m_masterLogicGrid.Grid[pos.x + 1, pos.y - 2] != null ||
-                m_masterLogicGrid.Grid[pos.x + 2, pos.y - 1] != null)
+            if (m_masterLogicGrid.Grid[pos.x - 2, pos.y - 1] == null &&
+                m_masterLogicGrid.Grid[pos.x - 1, pos.y - 2] == null &&
+                m_masterLogicGrid.Grid[pos.x    , pos.y - 2] == null &&
+                m_masterLogicGrid.Grid[pos.x + 1, pos.y - 2] == null &&
+                m_masterLogicGrid.Grid[pos.x + 2, pos.y - 1] == null)
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         private bool IsDeadEndWest(Vector2Int pos)
         {
-            if (m_masterLogicGrid.Grid[pos.x - 1, pos.y - 2] != null ||
-                m_masterLogicGrid.Grid[pos.x - 2, pos.y - 1] != null ||
-                m_masterLogicGrid.Grid[pos.x - 2, pos.y    ] != null ||
-                m_masterLogicGrid.Grid[pos.x - 2, pos.y + 1] != null ||
-                m_masterLogicGrid.Grid[pos.x - 1, pos.y + 2] != null)
+            if (m_masterLogicGrid.Grid[pos.x - 1, pos.y - 2] == null &&
+                m_masterLogicGrid.Grid[pos.x - 2, pos.y - 1] == null &&
+                m_masterLogicGrid.Grid[pos.x - 2, pos.y    ] == null &&
+                m_masterLogicGrid.Grid[pos.x - 2, pos.y + 1] == null &&
+                m_masterLogicGrid.Grid[pos.x - 1, pos.y + 2] == null)
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         private Vector2Int MoveCursor(Vector2Int pos, Direction dir)
@@ -122,16 +145,16 @@ namespace ubv.common.world.generationManager
             switch (dir)
             {
                 case Direction.North:
-                    pos.y++;
+                    pos.y--;
                     return pos;
                 case Direction.East:
-                    pos.x++;
-                    return pos;
-                case Direction.West:
                     pos.x--;
                     return pos;
+                case Direction.West:
+                    pos.x++;
+                    return pos;
                 case Direction.South:
-                    pos.y--;
+                    pos.y++;
                     return pos;
                 default:
                     return pos;
@@ -143,9 +166,9 @@ namespace ubv.common.world.generationManager
             switch (dir) // TODO Retirer tout les add to tilemap
             {
                 case Direction.North:
-                    m_masterLogicGrid.Grid[pos.x + 1, pos.y + 1] = new world.cellType.VoidCell();
-                    m_masterLogicGrid.Grid[pos.x - 1, pos.y + 1] = new world.cellType.VoidCell();
-                    m_masterLogicGrid.Grid[pos.x,     pos.y + 1] = new world.cellType.VoidCell();
+                    m_masterLogicGrid.Grid[pos.x + 1, pos.y + 1] = null;
+                    m_masterLogicGrid.Grid[pos.x - 1, pos.y + 1] = null;
+                    m_masterLogicGrid.Grid[pos.x,     pos.y + 1] = null;
                     m_floor.SetTile(new Vector3Int(pos.x + 1, pos.y + 1, 0), null);
                     m_floor.SetTile(new Vector3Int(pos.x - 1, pos.y + 1, 0), null);
                     m_floor.SetTile(new Vector3Int(pos.x,     pos.y + 1, 0), null);
@@ -154,9 +177,9 @@ namespace ubv.common.world.generationManager
                     m_door.SetTile(new Vector3Int(pos.x,     pos.y + 1, 0), null);
                     break;
                 case Direction.East:
-                    m_masterLogicGrid.Grid[pos.x + 1, pos.y - 1] = new world.cellType.VoidCell();
-                    m_masterLogicGrid.Grid[pos.x + 1, pos.y    ] = new world.cellType.VoidCell();
-                    m_masterLogicGrid.Grid[pos.x + 1, pos.y + 1] = new world.cellType.VoidCell();
+                    m_masterLogicGrid.Grid[pos.x + 1, pos.y - 1] = null;
+                    m_masterLogicGrid.Grid[pos.x + 1, pos.y    ] = null;
+                    m_masterLogicGrid.Grid[pos.x + 1, pos.y + 1] = null;
                     m_floor.SetTile(new Vector3Int(pos.x + 1, pos.y - 1, 0), null);
                     m_floor.SetTile(new Vector3Int(pos.x + 1, pos.y,     0), null);
                     m_floor.SetTile(new Vector3Int(pos.x + 1, pos.y + 1, 0), null);
@@ -165,9 +188,9 @@ namespace ubv.common.world.generationManager
                     m_door.SetTile(new Vector3Int(pos.x + 1, pos.y + 1, 0), null);
                     break;
                 case Direction.West:
-                    m_masterLogicGrid.Grid[pos.x - 1, pos.y - 1] = new world.cellType.VoidCell();
-                    m_masterLogicGrid.Grid[pos.x - 1, pos.y    ] = new world.cellType.VoidCell();
-                    m_masterLogicGrid.Grid[pos.x - 1, pos.y + 1] = new world.cellType.VoidCell();
+                    m_masterLogicGrid.Grid[pos.x - 1, pos.y - 1] = null;
+                    m_masterLogicGrid.Grid[pos.x - 1, pos.y    ] = null;
+                    m_masterLogicGrid.Grid[pos.x - 1, pos.y + 1] = null;
                     m_floor.SetTile(new Vector3Int(pos.x - 1, pos.y - 1, 0), null);
                     m_floor.SetTile(new Vector3Int(pos.x - 1, pos.y,     0), null);
                     m_floor.SetTile(new Vector3Int(pos.x - 1, pos.y + 1, 0), null);
@@ -176,9 +199,9 @@ namespace ubv.common.world.generationManager
                     m_door.SetTile(new Vector3Int(pos.x - 1, pos.y + 1, 0), null);
                     break;
                 case Direction.South:
-                    m_masterLogicGrid.Grid[pos.x + 1, pos.y - 1] = new world.cellType.VoidCell();
-                    m_masterLogicGrid.Grid[pos.x - 1, pos.y - 1] = new world.cellType.VoidCell();
-                    m_masterLogicGrid.Grid[pos.x,     pos.y - 1] = new world.cellType.VoidCell();
+                    m_masterLogicGrid.Grid[pos.x + 1, pos.y - 1] = null;
+                    m_masterLogicGrid.Grid[pos.x - 1, pos.y - 1] = null;
+                    m_masterLogicGrid.Grid[pos.x,     pos.y - 1] = null;
                     m_floor.SetTile(new Vector3Int(pos.x + 1, pos.y - 1, 0), null);
                     m_floor.SetTile(new Vector3Int(pos.x - 1, pos.y - 1, 0), null);
                     m_floor.SetTile(new Vector3Int(pos.x,     pos.y - 1, 0), null);
