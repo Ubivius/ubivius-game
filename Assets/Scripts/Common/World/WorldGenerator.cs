@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Tilemaps;
 
 namespace ubv.common.world
@@ -56,6 +57,8 @@ namespace ubv.common.world
         private dataStruct.WorldGeneratorToCorridorsManager m_worldGeneratorToCorridorsManager;
         private dataStruct.WorldGeneratorToDoorManager m_worldGeneratorToDoorManager;
 
+        public UnityAction OnWorldGenerated;
+
         private void Awake()
         {
             m_grid = GetComponent<Grid>();
@@ -103,6 +106,8 @@ namespace ubv.common.world
             m_worldGeneratorToDoorManager = new dataStruct.WorldGeneratorToDoorManager(m_masterLogicGrid, m_floor, m_door, m_tileFloor, m_tiledoor, m_roomInMap);
             m_doorManager = new DoorManager(m_worldGeneratorToDoorManager);
             m_masterLogicGrid = m_doorManager.GenerateDoorGrid();
+
+            OnWorldGenerated?.Invoke();
         }
         
         public void GenerateWithOneRoom() // For test only 

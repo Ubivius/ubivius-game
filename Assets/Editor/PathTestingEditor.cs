@@ -1,14 +1,14 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(PathTesting))]
+[CustomEditor(typeof(ubv.server.testing.PathTesting))]
 public class PathTestingEditor : Editor
 {
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
 
-        PathTesting myTarget = (PathTesting)target;
+        ubv.server.testing.PathTesting myTarget = (ubv.server.testing.PathTesting)target;
 
         if(GUILayout.Button("Test Random Path"))
         {

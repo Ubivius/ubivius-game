@@ -677,7 +677,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b39c7f67aeb5376499a755ff4005e6d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_worldGenerator: {fileID: 0}
+  m_worldGenerator: {fileID: 4247499401763992251}
   m_nodeSize: 1
 --- !u!4 &1549976838
 Transform:
