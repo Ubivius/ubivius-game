@@ -11,16 +11,18 @@ namespace ubv.client.logic
 {
     abstract public class ClientSyncState : MonoBehaviour
     {
+        static protected int? m_playerID;
+
         static protected ClientSyncState m_currentState = null;
 
-        static protected ClientSyncLogin m_loginState;
-        static protected ClientSyncInit m_initState;
-        static protected ClientSyncLobby m_lobbyState;
-        static protected ClientSyncPlay m_playState;
+        static protected ClientSyncLogin    m_loginState;
+        static protected ClientSyncInit     m_initState;
+        static protected ClientSyncLobby    m_lobbyState;
+        static protected ClientSyncPlay     m_playState;
         
-        protected tcp.client.TCPClient m_TCPClient;
-        protected udp.client.UDPClient m_UDPClient;
-        protected http.HTTPClient m_HTTPClient;
+        protected tcp.client.TCPClient  m_TCPClient;
+        protected udp.client.UDPClient  m_UDPClient;
+        protected http.HTTPClient       m_HTTPClient;
 
         private void Awake()
         {

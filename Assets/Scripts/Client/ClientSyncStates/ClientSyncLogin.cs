@@ -14,7 +14,17 @@ namespace ubv.client.logic
     {
         [SerializeField] IPEndPoint m_authEndPoint;
         
-        private int? m_playerID;
+        private struct JSONAuthentificationCredentials
+        {
+            public string username;
+            public string password;
+        }
+
+        private struct JSONAuthenticationResponse
+        {
+            public string   token;
+            public int      guid;
+        }
 
         protected override void StateAwake()
         {
@@ -24,41 +34,45 @@ namespace ubv.client.logic
         
         public void SendLoginRequest(string user, string password)
         {
+#if DEBUG_LOG
             Debug.Log("Trying to log in with " + user);
-            // mock dispatcher response for now
-            /*HttpResponseMessage msg = new HttpResponseMessage();
-            string jsonString = JsonUtility.ToJson(new JSONServerInfo
+#endif // DEBUG_LOG
+
+            /*
+            string request = "authenticator";
+            m_HTTPClient.Get(request, OnDispatcherResponse);
+            */
+
+            // mock auth response for now
+            HttpResponseMessage msg = new HttpResponseMessage();
+            string jsonString = JsonUtility.ToJson(new JSONAuthenticationResponse
             {
-                TCPAddress = m_serverTCPAddress,
-                TCPPort = m_serverTCPPort,
-                UDPAddress = m_serverUDPAddress,
-                UDPPort = m_serverUDPPort
+                token = "",
+                guid = System.Guid.NewGuid().GetHashCode(),
             }).ToString();
             msg.Content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
             msg.StatusCode = HttpStatusCode.OK;
-            OnDispatcherResponse(msg)*/
-
-            // uncomment when dispatcher ready
-            // m_HTTPClient.Get("dispatcher/" + playerID.ToString(), OnDispatcherResponse);
-
-            string request = "authenticator";
-            m_HTTPClient.Get(request, OnDispatcherResponse);
+            OnAuthenticationResponse(msg);
         }
 
         private void GoToLobby()
         {
-            AsyncOperation loadLobby = SceneManager.LoadSceneAsync("ClientGame");
+            AsyncOperation loadLobby = SceneManager.LoadSceneAsync("ClientLobby");
             // animation petit cercle de load to lobby
         }
 
-        private void OnDispatcherResponse(HttpResponseMessage message)
+        private void OnAuthenticationResponse(HttpResponseMessage message)
         {
             if (message.StatusCode == HttpStatusCode.OK)
             {
                 // on s'attend à recevoir un token
                 // on add le token au HTTPClient
 
-                string token = message.Content.ReadAsStringAsync().Result;
+                string JSON = message.Content.ReadAsStringAsync().Result;
+                JSONAuthenticationResponse authResponse = JsonUtility.FromJson<JSONAuthenticationResponse>(JSON);
+                string token = authResponse.token;
+                int guid = authResponse.guid;
+                m_playerID = guid;
                 m_HTTPClient.SetAuthenticationToken(token);
                 GoToLobby();
             }

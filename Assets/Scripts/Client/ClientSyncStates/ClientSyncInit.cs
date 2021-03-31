@@ -27,9 +27,7 @@ namespace ubv.client.logic
             public string UDPAddress;
             public int UDPPort;
         }
-
-        private int? m_playerID;
-
+        
         protected override void StateAwake()
         {
             ClientSyncState.m_initState = this;
