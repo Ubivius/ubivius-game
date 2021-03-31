@@ -11,6 +11,8 @@ namespace ubv.server.logic
         private const int MOVE_STRAIGHT_COST = 10;
         private const int MOVE_DIAGONAL_COST = 14;
 
+        private HashSet<PathNode> m_nodeSet;
+
         public class PriorityQueue<T>
         {
             // I'm using an unsorted array for this example, but ideally this
@@ -52,27 +54,20 @@ namespace ubv.server.logic
                 return bestItem;
             }
         }
-
-        private class NodeInfo
-        {
-            public PathNode cameFromNode;
-        }
-
-        Dictionary<PathNode, NodeInfo> m_pathNodeDict;
+        
 
         public Pathfinding(IEnumerable<PathNode> pathNodeList)
         {
-            this.m_pathNodeDict = new Dictionary<PathNode, NodeInfo>();
-
-            foreach (PathNode pathNode in pathNodeList)
+            m_nodeSet = new HashSet<PathNode>();
+            foreach(PathNode p in pathNodeList)
             {
-                m_pathNodeDict.Add(pathNode, new NodeInfo());
+                m_nodeSet.Add(p);
             }
         }
 
         public List<PathNode> FindPath(PathNode startNode, PathNode endNode)
         {
-            if (startNode == null || endNode == null || !m_pathNodeDict.ContainsKey(startNode) || !m_pathNodeDict.ContainsKey(endNode))
+            if (startNode == null || endNode == null || !m_nodeSet.Contains(startNode) || !m_nodeSet.Contains(endNode))
             {
                 // Invalid Path
                 return null;
@@ -81,8 +76,15 @@ namespace ubv.server.logic
             PriorityQueue<PathNode> frontier = new PriorityQueue<PathNode>();
             frontier.Enqueue(startNode, 0);
 
-            Dictionary<PathNode, float> costSoFar = new Dictionary<PathNode, float>();
-            costSoFar[startNode] = 0;
+            Dictionary<PathNode, float> costSoFar = new Dictionary<PathNode, float>
+            {
+                [startNode] = 0
+            };
+
+            Dictionary<PathNode, PathNode> cameFrom = new Dictionary<PathNode, PathNode>
+            {
+                [startNode] = null
+            };
 
             while (frontier.Count > 0)
             {
@@ -90,7 +92,7 @@ namespace ubv.server.logic
                 if (currentNode == endNode)
                 {
                     // Reached final node
-                    return CalculatePath(endNode); // bug live si meme place ?
+                    return CalculatePath(endNode, cameFrom); // bug live si meme place ?
                 }
 
                 foreach (PathNode next in currentNode.GetNeighbourList())
@@ -101,7 +103,7 @@ namespace ubv.server.logic
                         costSoFar[next] = newCost;
                         float priority = newCost + CalculateDistanceCost(next, endNode);
                         frontier.Enqueue(next, priority);
-                        m_pathNodeDict[next].cameFromNode = currentNode;
+                        cameFrom[next] = currentNode;
                     }
                 }
             }
@@ -110,17 +112,17 @@ namespace ubv.server.logic
             return null;
         }
 
-        private List<PathNode> CalculatePath(PathNode endNode)
+        private List<PathNode> CalculatePath(PathNode endNode, Dictionary<PathNode, PathNode> cameFrom)
         {
             List<PathNode> path = new List<PathNode>
             {
                 endNode
             };
             PathNode currentNode = endNode;
-            while (m_pathNodeDict[currentNode].cameFromNode != null)
+            while (cameFrom[currentNode] != null)
             {
-                path.Add(m_pathNodeDict[currentNode].cameFromNode);
-                currentNode = m_pathNodeDict[currentNode].cameFromNode;
+                path.Add(cameFrom[currentNode]);
+                currentNode = cameFrom[currentNode];
             }
             path.Reverse();
             return path;

@@ -111,6 +111,7 @@ namespace ubv.server.logic
         {
             if(!m_logicGrid.Grid[p.x, p.y].IsWalkable)
             {
+                Debug.Log("Node " +  p.x + ", " + p.y + "  is not walkable");
                 return;
             }
             
