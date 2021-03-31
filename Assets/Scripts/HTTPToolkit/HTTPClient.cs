@@ -18,14 +18,12 @@ namespace ubv.http
         static private readonly HttpClient m_client = new HttpClient();
 
         [SerializeField] private string m_endPoint = "http://localhost:9090";
-
-        private string m_authToken = "";
-
+        
         public delegate void HttpResponseMessageDelegate(HttpResponseMessage response);
 
         public void SetAuthenticationToken(string token)
         {
-            m_authToken = token;
+            m_client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         }
 
         public void PostJSON(string requestUrl, string jsonString, HttpResponseMessageDelegate callbackOnResponse = null)
