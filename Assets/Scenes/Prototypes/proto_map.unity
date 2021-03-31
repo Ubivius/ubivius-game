@@ -723,10 +723,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_pathfindingGridManager: {fileID: 1549976837}
-  x: 0
-  y: 0
-  endx: 0
-  endy: 0
+  x: 8
+  y: 8
+  endx: 140
+  endy: 140
 --- !u!4 &1674903299
 Transform:
   m_ObjectHideFlags: 0

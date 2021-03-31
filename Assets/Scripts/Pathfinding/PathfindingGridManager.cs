@@ -54,26 +54,9 @@ namespace ubv.server.logic
             //Add neighbours to each walkable pathnode
             foreach (PathNode p in m_pathNodes)
             {
-                if (p != null && m_logicGrid.Grid[p.x, p.y].IsWalkable)
+                if (p != null)
                 {
-                    // Left
-                    p.AddNeighbour(GetNode(p.x - 1, p.y));
-                    // Left Down
-                    p.AddNeighbour(GetNode(p.x - 1, p.y - 1));
-                    // Left Up   
-                    p.AddNeighbour(GetNode(p.x - 1, p.y + 1));
-
-                    // Right
-                    p.AddNeighbour(GetNode(p.x + 1, p.y));
-                    // Right Down
-                    p.AddNeighbour(GetNode(p.x + 1, p.y - 1));
-                    // Right Up
-                    p.AddNeighbour(GetNode(p.x + 1, p.y + 1));
-
-                    // Down
-                    p.AddNeighbour(GetNode(p.x, p.y - 1));
-                    // Up
-                    p.AddNeighbour(GetNode(p.x, p.y + 1));
+                    AddAllWalkableNeighbours(p);
                 }
             }
 
@@ -94,6 +77,40 @@ namespace ubv.server.logic
             }
 
             return null;
+        }
+        
+        public void SetNodeToWalkable(int x, int y)
+        {
+            PathNode p = GetNode(x, y);
+            if (p != null)
+            {
+                AddAllWalkableNeighbours(p);
+            }
+        }
+
+        private void AddAllWalkableNeighbours(PathNode p)
+        {
+            if(!m_logicGrid.Grid[p.x, p.y].IsWalkable)
+            {
+                return;
+            }
+            
+            p.AddNeighbour(GetIfWalkable(p.x - 1, p.y));
+            p.AddNeighbour(GetIfWalkable(p.x - 1, p.y - 1));
+            p.AddNeighbour(GetIfWalkable(p.x - 1, p.y + 1));
+            
+            p.AddNeighbour(GetIfWalkable(p.x + 1, p.y));
+            p.AddNeighbour(GetIfWalkable(p.x + 1, p.y - 1));
+            p.AddNeighbour(GetIfWalkable(p.x + 1, p.y + 1));
+            
+            p.AddNeighbour(GetIfWalkable(p.x, p.y - 1));
+            p.AddNeighbour(GetIfWalkable(p.x, p.y + 1));
+        }
+
+        private PathNode GetIfWalkable(int x, int y)
+        {
+            common.world.cellType.LogicCell cell = m_logicGrid.Grid[x, y];
+            return cell != null ? (cell.IsWalkable ? GetNode(x, y) : null) : null;
         }
 
         public List<PathNode> GetPath(PathNode startNode, PathNode endNode)
