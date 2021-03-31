@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 using ubv.common.world;
 using UnityEngine;
 
-namespace ubv.common.world
+namespace ubv.common.world.generationManager
 {
     class DoorManager
     {
@@ -14,7 +14,7 @@ namespace ubv.common.world
         private const int c_lowerLookRange = 4;
         private const int c_upperLookRange = 6;
 
-        private ubv.common.world.LogicGrid m_masterLogicGrid;
+        private LogicGrid m_masterLogicGrid;
         private Tilemap m_floor;
         private Tilemap m_door;
         private TileBase m_tileFloor;

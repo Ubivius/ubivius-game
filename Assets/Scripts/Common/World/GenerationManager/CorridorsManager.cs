@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-namespace ubv.common.world
+namespace ubv.common.world.generationManager
 {
     enum Direction
     {
@@ -39,6 +39,7 @@ namespace ubv.common.world
 
         private int PassCount = 0;
 
+        private List<Vector2Int> m_ends = new List<Vector2Int>();
 
         public CorridorsManager(dataStruct.WorldGeneratorToCorridorsManager data)
         {
@@ -165,6 +166,7 @@ namespace ubv.common.world
                 CreatePath(move);
                 move = GetRandomDirection(move.pos, move.dir);
             }
+            m_ends.Add(move.pos);
         }
 
         private Vector2Int MoveCursor(Vector2Int pos, Direction dir)
@@ -851,6 +853,11 @@ namespace ubv.common.world
                 return true;
             }
             return false;
+        }
+
+        public List<Vector2Int> GetEnds()
+        {
+            return m_ends;
         }
 
     }

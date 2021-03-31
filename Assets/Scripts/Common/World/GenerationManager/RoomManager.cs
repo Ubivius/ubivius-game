@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Collections;
 using UnityEngine;
 
-namespace ubv.common.world
+namespace ubv.common.world.generationManager
 {
     public struct BoxInfo
     {
@@ -73,7 +73,7 @@ namespace ubv.common.world
 
         private Grid m_grid;
 
-        private ubv.common.world.LogicGrid m_masterLogicGrid;
+        LogicGrid m_masterLogicGrid;
 
         private int m_wallThickness = 1;
 
