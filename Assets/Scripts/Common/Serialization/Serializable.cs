@@ -749,8 +749,8 @@ namespace ubv.common.serialization
                 int y = 0;
                 for (int i = 0; i < width * length; i++)
                 {
-                    x = i % width;
-                    y = i / width;
+                    x = i % length;
+                    y = i / length;
                     T obj = new T();
                     if (!obj.CreateFromBytes(bytes.ArrayFrom(index)))
                     {
