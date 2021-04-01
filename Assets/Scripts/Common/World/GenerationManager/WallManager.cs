@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-namespace ubv.common.world
+namespace ubv.common.world.generationManager
 {
     class WallManager
     {
