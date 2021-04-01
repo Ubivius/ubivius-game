@@ -86,9 +86,11 @@ namespace ubv.common.world.cellType
         private serialization.types.Bool m_isWalkable;
         private int m_cellID;
 
+        static private int m_cellsCreated = 0;
+
         public LogicCell()
         {
-            m_cellID = System.Guid.NewGuid().GetHashCode();
+            m_cellID = ++m_cellsCreated;
             m_isWalkable = new serialization.types.Bool(false);
 
             InitSerializableMembers(m_isWalkable);
