@@ -905,6 +905,8 @@ MonoBehaviour:
   m_port: 9051
   m_connectionTimeoutInMS: 10000
   m_maxConcurrentListeners: 6
+  m_connectionCheckRate: 61
+  m_connectionKeepAliveRate: 31
 --- !u!1001 &1802319657
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -915,6 +917,16 @@ PrefabInstance:
     - target: {fileID: 1294101224, guid: 2440ad9a813087043aff3d8131677843, type: 3}
       propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_boundariesMap.x
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_boundariesMap.y
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 4247499401278839604, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}
