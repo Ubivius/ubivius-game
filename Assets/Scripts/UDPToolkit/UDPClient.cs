@@ -84,6 +84,11 @@ namespace ubv
                             Debug.Log("Server timed out. Disconnecting.");
                             m_connected = false;
                             m_timeOutTimer = 0;
+
+                            foreach(IUDPClientReceiver receiver in m_receivers)
+                            {
+                                receiver.OnDisconnect();
+                            }
                         }*/
                     }
 
@@ -94,7 +99,7 @@ namespace ubv
                 /// not good enough (if too many packets are sent), the packet is dropped.
                 /// </summary>
                 /// <param name="data"></param>
-                public void Send(byte[] data)
+                public void Send(byte[] data, int playerID)
                 {
                     if (m_connectionIsGood)
                     {
@@ -113,7 +118,7 @@ namespace ubv
 
                     try
                     {
-                        UDPToolkit.Packet packet = m_connectionData.Send(data);
+                        UDPToolkit.Packet packet = m_connectionData.Send(data, playerID);
                         uint seq = packet.Sequence;
 
                         m_sequencesSendTime.Add(seq, m_RTTTimer);

@@ -45,8 +45,11 @@ namespace ubv.client.logic
         
         public void SendReadyToServer()
         {
-            ClientReadyMessage clientReadyMessage = new ClientReadyMessage(m_playerID.Value);
-            m_TCPClient.Send(clientReadyMessage.GetBytes());
+            if (m_currentState == this)
+            {
+                ClientReadyMessage clientReadyMessage = new ClientReadyMessage(m_playerID.Value);
+                m_TCPClient.Send(clientReadyMessage.GetBytes());
+            }
         }
 
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
@@ -54,6 +57,9 @@ namespace ubv.client.logic
             ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data);
             if (ready != null)
             {
+#if DEBUG_LOG
+                Debug.Log("Received server start message.");
+#endif // DEBUG_LOG
                 m_serverSentSignal = true;
                 return;
             }
@@ -79,9 +85,11 @@ namespace ubv.client.logic
             watch.Start();
             ServerInitMessage start = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data);
             watch.Stop();
-            Debug.Log("Time elapsed for world deserialization : " + watch.ElapsedMilliseconds + " ms");
             if (start != null)
             {
+#if DEBUG_LOG
+                Debug.Log("Time elapsed for world deserialization : " + watch.ElapsedMilliseconds + " ms");
+#endif // DEBUG_LOG
                 m_awaitedInitMessage = start;
                 return;
             }
@@ -97,6 +105,9 @@ namespace ubv.client.logic
                 Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
 
+#if DEBUG_LOG
+                Debug.Log("Starting to load world.");
+#endif // DEBUG_LOG
 
                 StartCoroutine(LoadWorldCoroutine(m_awaitedInitMessage.CellInfo2DArray.Value));
                 m_awaitedInitMessage = null;
@@ -116,7 +127,6 @@ namespace ubv.client.logic
         {
             m_playerID = playerID;
             m_TCPClient.Subscribe(this);
-            ClientListUpdate.Invoke(new List<int> { m_playerID.Value });
         }
         
         private IEnumerator LoadWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
@@ -138,6 +148,21 @@ namespace ubv.client.logic
                 yield return null;
             }
             
+        }
+
+        public void OnDisconnect()
+        {
+            m_initState.Init();
+            m_currentState = m_initState;
+            m_TCPClient.Unsubscribe(this);
+#if DEBUG_LOG
+            Debug.Log("Lobby : lost connection to game server. Leaving lobby.");
+#endif // DEBUG_LOG
+        }
+
+        public void OnSuccessfulConnect()
+        {
+
         }
     }   
 }
