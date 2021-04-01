@@ -920,14 +920,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}
-      propertyPath: m_boundariesMap.x
-      value: 60
-      objectReference: {fileID: 0}
-    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
-        type: 3}
-      propertyPath: m_boundariesMap.y
-      value: 60
-      objectReference: {fileID: 0}
+      propertyPath: m_wall
+      value: 
+      objectReference: {fileID: 1802319660}
     - target: {fileID: 4247499401278839604, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}
       propertyPath: m_Name
@@ -1008,6 +1003,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d48f061af1d36404ca1a03eb4181349d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1839735485 &1802319660 stripped
+Tilemap:
+  m_CorrespondingSourceObject: {fileID: 2840029084978360035, guid: 2440ad9a813087043aff3d8131677843,
+    type: 3}
+  m_PrefabInstance: {fileID: 1802319657}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2123676788
 GameObject:
   m_ObjectHideFlags: 0
