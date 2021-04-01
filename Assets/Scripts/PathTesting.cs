@@ -28,7 +28,7 @@ namespace ubv.server.testing
             {
                 for (int i = 0; i < m_path.Count - 1; i++)
                 {
-                    UnityEngine.Debug.DrawLine(new Vector2(m_path[i].x, m_path[i].y), new Vector2(m_path[i + 1].x, m_path[i + 1].y), Color.green);
+                    UnityEngine.Debug.DrawLine(new Vector2(m_path[i].x + 0.5f, m_path[i].y + 0.5f), new Vector2(m_path[i + 1].x + 0.5f, m_path[i + 1].y + 0.5f), Color.green);
                 }
             }
         }
