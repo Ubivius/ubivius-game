@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 using ubv.common.world;
 using UnityEngine;
 
-namespace ubv.common.world
+namespace ubv.common.world.generationManager
 {
     class DoorManager
     {
@@ -14,7 +14,7 @@ namespace ubv.common.world
         private const int c_lowerLookRange = 4;
         private const int c_upperLookRange = 6;
 
-        private ubv.common.world.LogicGrid m_masterLogicGrid;
+        private LogicGrid m_masterLogicGrid;
         private Tilemap m_floor;
         private Tilemap m_door;
         private TileBase m_tileFloor;
@@ -58,8 +58,6 @@ namespace ubv.common.world
 
             Debug.LogError("Frontier Door Count : " + DoorCount);
 
-            m_floor.RefreshAllTiles();
-            m_door.RefreshAllTiles();
             return m_masterLogicGrid;
         }
 
@@ -328,13 +326,13 @@ namespace ubv.common.world
         private void CompleteSouthDoor(Vector2Int wallOrigin, int i)
         {
             m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[wallOrigin.x + i, wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
+            m_masterLogicGrid.Grid[wallOrigin.x + i,     wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
             m_masterLogicGrid.Grid[wallOrigin.x + i + 1, wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
             m_floor.SetTile(new Vector3Int(wallOrigin.x + i - 1, wallOrigin.y - 1, 0), null);
-            m_floor.SetTile(new Vector3Int(wallOrigin.x + i, wallOrigin.y - 1, 0), null);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x + i,     wallOrigin.y - 1, 0), null);
             m_floor.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y - 1, 0), null);
             m_door.SetTile(new Vector3Int(wallOrigin.x + i - 1, wallOrigin.y - 1, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(wallOrigin.x + i, wallOrigin.y - 1, 0), m_tileDoor);
+            m_door.SetTile(new Vector3Int(wallOrigin.x + i,     wallOrigin.y - 1, 0), m_tileDoor);
             m_door.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y - 1, 0), m_tileDoor);
         }
 
