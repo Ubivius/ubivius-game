@@ -17,6 +17,8 @@ namespace ubv.server.logic
         private PathNode[,] m_pathNodes;
         private Pathfinding m_pathfinding;
 
+        private Dictionary<common.world.cellType.LogicCell, PathNode> m_cellToNodes;
+
         private bool m_setUpDone = false;
 
         private void Start()
@@ -35,6 +37,7 @@ namespace ubv.server.logic
 
         private void SetPathNodesFromLogicGrid(LogicGrid logicGrid)
         {
+            m_cellToNodes = new Dictionary<common.world.cellType.LogicCell, PathNode>();
             m_logicGrid = logicGrid;
             m_pathNodes = new PathNode[m_logicGrid.Width, m_logicGrid.Height];
             List<PathNode> pathNodeList = new List<PathNode>();
@@ -46,6 +49,8 @@ namespace ubv.server.logic
                     if (m_logicGrid.Grid[x, y] != null)
                     {
                         m_pathNodes[x, y] = new PathNode(x, y);
+                        m_cellToNodes[m_logicGrid.Grid[x, y]] = m_pathNodes[x, y];
+                        m_logicGrid.Grid[x, y].OnChange += UpdateNeighboursOnCellChange;
                         pathNodeList.Add(m_pathNodes[x, y]);
                     }
                 }
@@ -79,21 +84,27 @@ namespace ubv.server.logic
             return null;
         }
         
-        public void SetNodeToWalkable(int x, int y)
+        public void OpenDoor(int x, int y)
         {
-            PathNode p = GetNode(x, y);
-            if (p != null)
+            common.world.cellType.LogicCell cell = m_logicGrid.Grid[x, y];
+            if (cell != null)
             {
-                AddAllWalkableNeighbours(p);
+                if (cell is common.world.cellType.DoorCell door)
+                {
+                    door.OpenDoor();
+                }
             }
         }
 
-        public void SetNodeToBlocked(int x, int y)
+        public void CloseDoor(int x, int y)
         {
-            PathNode p = GetNode(x, y);
-            if (p != null)
+            common.world.cellType.LogicCell cell = m_logicGrid.Grid[x, y];
+            if (cell != null)
             {
-                RemoveAllNeighbours(p);
+                if (cell is common.world.cellType.DoorCell door)
+                {
+                    door.CloseDoor();
+                }
             }
         }
 
@@ -111,20 +122,19 @@ namespace ubv.server.logic
         {
             if(!m_logicGrid.Grid[p.x, p.y].IsWalkable)
             {
-                Debug.Log("Node " +  p.x + ", " + p.y + "  is not walkable");
                 return;
             }
             
-            p.AddNeighbour(GetIfWalkable(p.x - 1, p.y));
-            p.AddNeighbour(GetIfWalkable(p.x - 1, p.y - 1));
-            p.AddNeighbour(GetIfWalkable(p.x - 1, p.y + 1));
+            p.AddNeighbour(GetNodeIfWalkable(p.x - 1, p.y));
+            p.AddNeighbour(GetNodeIfWalkable(p.x - 1, p.y - 1));
+            p.AddNeighbour(GetNodeIfWalkable(p.x - 1, p.y + 1));
             
-            p.AddNeighbour(GetIfWalkable(p.x + 1, p.y));
-            p.AddNeighbour(GetIfWalkable(p.x + 1, p.y - 1));
-            p.AddNeighbour(GetIfWalkable(p.x + 1, p.y + 1));
+            p.AddNeighbour(GetNodeIfWalkable(p.x + 1, p.y));
+            p.AddNeighbour(GetNodeIfWalkable(p.x + 1, p.y - 1));
+            p.AddNeighbour(GetNodeIfWalkable(p.x + 1, p.y + 1));
             
-            p.AddNeighbour(GetIfWalkable(p.x, p.y - 1));
-            p.AddNeighbour(GetIfWalkable(p.x, p.y + 1));
+            p.AddNeighbour(GetNodeIfWalkable(p.x, p.y - 1));
+            p.AddNeighbour(GetNodeIfWalkable(p.x, p.y + 1));
 
             foreach(PathNode n in p.GetNeighbourList())
             {
@@ -132,7 +142,7 @@ namespace ubv.server.logic
             }
         }
 
-        private PathNode GetIfWalkable(int x, int y)
+        private PathNode GetNodeIfWalkable(int x, int y)
         {
             common.world.cellType.LogicCell cell = m_logicGrid.Grid[x, y];
             return cell != null ? (cell.IsWalkable ? GetNode(x, y) : null) : null;
@@ -153,6 +163,18 @@ namespace ubv.server.logic
             List<PathNode> pathNodeList = this.GetPath(startNode, endNode);
 
             return new PathRoute(pathNodeList, m_worldOrigin, m_nodeSize);
+        }
+
+        private void UpdateNeighboursOnCellChange(common.world.cellType.LogicCell cell)
+        {
+            if (cell.IsWalkable)
+            {
+                AddAllWalkableNeighbours(m_cellToNodes[cell]);
+            }
+            else
+            {
+                RemoveAllNeighbours(m_cellToNodes[cell]);
+            }
         }
     }
 }

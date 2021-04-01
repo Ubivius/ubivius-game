@@ -52,7 +52,7 @@ namespace ubv.server.testing
         {
             if (m_pathfindingGridManager.IsSetUpDone() == true)
             {
-                m_pathfindingGridManager.SetNodeToBlocked(x, y);
+                m_pathfindingGridManager.CloseDoor(x, y);
             }
         }
 
@@ -60,7 +60,7 @@ namespace ubv.server.testing
         {
             if (m_pathfindingGridManager.IsSetUpDone() == true)
             {
-                m_pathfindingGridManager.SetNodeToWalkable(x, y);
+                m_pathfindingGridManager.OpenDoor(x, y);
             }
         }
 
