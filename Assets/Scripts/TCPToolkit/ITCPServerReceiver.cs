@@ -5,8 +5,8 @@ namespace ubv.tcp.server
 {
     public interface ITCPServerReceiver
     {
-        void ReceivePacket(TCPToolkit.Packet packet, System.Net.IPEndPoint clientIP);
-        void OnConnect(System.Net.IPEndPoint clientIP);
-        void OnDisconnect(System.Net.IPEndPoint clientIP);
+        void ReceivePacket(TCPToolkit.Packet packet, int playerID);
+        void OnConnect(int playerID);
+        void OnDisconnect(int playerID);
     }
 }

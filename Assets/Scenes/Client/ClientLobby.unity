@@ -1604,9 +1604,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f40a56306a6e45b41bbae31a0f3a7f51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_serverTCPAddress: 127.0.0.1
+  m_serverTCPAddress: 192.168.0.141
   m_serverTCPPort: 9051
-  m_serverUDPAddress: 127.0.0.1
+  m_serverUDPAddress: 192.168.0.141
   m_serverUDPPort: 9050
 --- !u!4 &2078983260
 Transform:
