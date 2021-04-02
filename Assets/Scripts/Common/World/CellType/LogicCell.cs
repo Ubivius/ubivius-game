@@ -83,6 +83,9 @@ namespace ubv.common.world.cellType
 
     abstract public class LogicCell : serialization.Serializable
     {
+        public delegate void LogicCellDelegate(LogicCell Cell);
+        public LogicCellDelegate OnChange;
+
         private serialization.types.Bool m_isWalkable;
         private int m_cellID;
 
@@ -108,6 +111,12 @@ namespace ubv.common.world.cellType
 
         public abstract CellInfo.CellType GetCellType();
 
-        public bool IsWalkable { get => m_isWalkable.Value; protected set => m_isWalkable.Value = value; }
+        public bool IsWalkable { get => m_isWalkable.Value; protected set => SetWalkable(value); }
+
+        private void SetWalkable(bool value)
+        {
+            m_isWalkable.Value = value;
+            OnChange?.Invoke(this);
+        }
     }
 }
