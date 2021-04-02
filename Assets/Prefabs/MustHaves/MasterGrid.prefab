@@ -208,7 +208,7 @@ MonoBehaviour:
   m_numberofTryBottomRight: 50
   m_mandatoryRoomPoolBottomRight: []
   m_floor: {fileID: 4247499402815149144}
-  m_wall: {fileID: 0}
+  m_wall: {fileID: 2840029084978360035}
   m_door: {fileID: 1407024012}
   m_tileFloor: {fileID: 11400000, guid: a866d0abbfc55124a936700bab811420, type: 2}
   m_tileWall: {fileID: 11400000, guid: dc6c37140056fa747baa00143df906b8, type: 2}

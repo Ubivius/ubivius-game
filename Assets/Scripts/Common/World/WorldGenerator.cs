@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Tilemaps;
 
 namespace ubv.common.world
@@ -62,6 +63,8 @@ namespace ubv.common.world
         private dataStruct.WorldGeneratorToDeadEndManager m_worldGeneratorToDeadEndManager;
         private dataStruct.WolrdGeneratorToWallManager m_wolrdGeneratorToWallManager;
 
+        public UnityAction OnWorldGenerated;
+
         private void Awake()
         {
             m_grid = GetComponent<Grid>();
@@ -121,6 +124,8 @@ namespace ubv.common.world
             m_floor.RefreshAllTiles();
             m_door.RefreshAllTiles();
             m_wall.RefreshAllTiles();
+
+            OnWorldGenerated?.Invoke();
         }
         
         public void GenerateWithOneRoom() // For test only 
