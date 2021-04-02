@@ -179,7 +179,7 @@ namespace ubv.client.logic
             // client doesnt need its own client state ticks
             lock (m_lock)
             {
-                ClientState state = common.serialization.IConvertible.CreateFromBytes<ClientState>(packet.Data);
+                ClientState state = common.serialization.IConvertible.CreateFromBytes<ClientState>(packet.Data.ArraySegment());
                 if (state != null)
                 {
                     state.PlayerGUID = m_playerID.Value;

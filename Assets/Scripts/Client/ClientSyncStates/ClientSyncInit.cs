@@ -135,8 +135,8 @@ namespace ubv.client.logic
 
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
-            // receive auth message
-            ServerSuccessfulConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulConnectMessage>(packet.Data);
+            // receive auth message and set player id
+            ServerSuccessfulConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulConnectMessage>(packet.Data.ArraySegment());
             if (serverSuccessPing != null)
             {
                 m_waitingOnServerResponse = false;

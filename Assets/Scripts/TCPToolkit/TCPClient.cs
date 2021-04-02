@@ -30,7 +30,7 @@ namespace ubv.tcp.client
         private List<ITCPClientReceiver> m_receiversAwaitingUnsubscription;
         private bool m_iteratingTroughReceivers;
 
-        private const int DATA_BUFFER_SIZE = 1024*1024;
+        private const int DATA_BUFFER_SIZE = 1024*1024*4;
         private Queue<byte[]> m_dataToSend;
 
         private bool m_activeEndpoint;

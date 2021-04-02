@@ -158,7 +158,7 @@ namespace ubv.server.logic
 
         public void ReceivePacket(TCPToolkit.Packet packet, int playerID)
         {
-            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data);
+            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data.ArraySegment());
             if (identification != null)
             {
                 lock (m_lock)
@@ -190,7 +190,7 @@ namespace ubv.server.logic
                 return;
             }
 
-            ClientReadyMessage ready = IConvertible.CreateFromBytes<ClientReadyMessage>(packet.Data);
+            ClientReadyMessage ready = IConvertible.CreateFromBytes<ClientReadyMessage>(packet.Data.ArraySegment());
             if (ready != null && m_readyClients.ContainsKey(ready.PlayerID.Value))
             {
                 Debug.Log("Client " + ready.PlayerID.Value + " is ready to receive world.");
@@ -200,7 +200,7 @@ namespace ubv.server.logic
 
             if (m_awaitingClientLoadWorld)
             {
-                ClientWorldLoadedMessage clientWorldLoaded = IConvertible.CreateFromBytes<ClientWorldLoadedMessage>(packet.Data);
+                ClientWorldLoadedMessage clientWorldLoaded = IConvertible.CreateFromBytes<ClientWorldLoadedMessage>(packet.Data.ArraySegment());
                 if (clientWorldLoaded != null)
                 {
                     m_readyClients.Remove(clientWorldLoaded.PlayerID.Value);
@@ -222,7 +222,7 @@ namespace ubv.server.logic
 
         public void Receive(UDPToolkit.Packet packet, int playerID)
         {
-            IdentificationMessage identification = Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data);
+            IdentificationMessage identification = Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data.ArraySegment());
             if (identification != null)
             {
                 int messagePlayerID = identification.PlayerID.Value;
