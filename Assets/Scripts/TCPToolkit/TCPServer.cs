@@ -27,7 +27,7 @@ namespace ubv.tcp.server
 
         protected bool m_exitSignal;
 
-        private const int DATA_BUFFER_SIZE = 1024*2;
+        private const int DATA_BUFFER_SIZE = 1024*1024*4;
                 
         protected List<Task> m_tcpClientTasks;
 
