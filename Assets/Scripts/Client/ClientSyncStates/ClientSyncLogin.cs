@@ -12,7 +12,9 @@ namespace ubv.client.logic
 {
     public class ClientSyncLogin : ClientSyncState
     {
-        [SerializeField] IPEndPoint m_authEndPoint;
+        [SerializeField] private IPEndPoint m_authEndPoint;
+
+        private bool m_readyToGoToLobby;
         
         private struct JSONAuthentificationCredentials
         {
@@ -22,41 +24,45 @@ namespace ubv.client.logic
 
         private struct JSONAuthenticationResponse
         {
-            public string   token;
-            public int      guid;
+            public string accessToken;
+            public string id;
         }
 
         protected override void StateAwake()
         {
             ClientSyncState.m_loginState = this;
             ClientSyncState.m_currentState = this;
+            m_readyToGoToLobby = false;
         }
-        
-        public void SendLoginRequest(string user, string password)
+
+        protected override void StateUpdate()
+        {
+            if (m_readyToGoToLobby)
+            {
+                m_readyToGoToLobby = false;
+                GoToLobby();
+            }
+        }
+
+        public void SendLoginRequest(string user, string pass)
         {
 #if DEBUG_LOG
             Debug.Log("Trying to log in with " + user);
 #endif // DEBUG_LOG
 
-            /*
-            string request = "authenticator";
-            m_HTTPClient.Get(request, OnDispatcherResponse);
-            */
-
-            // mock auth response for now
-            HttpResponseMessage msg = new HttpResponseMessage();
-            string jsonString = JsonUtility.ToJson(new JSONAuthenticationResponse
+            
+            string request = "authenticator/" + user;
+            string jsonString = JsonUtility.ToJson(new JSONAuthentificationCredentials
             {
-                token = "",
-                guid = System.Guid.NewGuid().GetHashCode(),
+                username = user,
+                password = pass,
             }).ToString();
-            msg.Content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
-            msg.StatusCode = HttpStatusCode.OK;
-            OnAuthenticationResponse(msg);
+            m_HTTPClient.PostJSON("signin", jsonString, OnAuthenticationResponse);
         }
 
         private void GoToLobby()
         {
+            Debug.Log("Going to lobby.");
             AsyncOperation loadLobby = SceneManager.LoadSceneAsync("ClientLobby");
             // animation petit cercle de load to lobby
         }
@@ -70,11 +76,11 @@ namespace ubv.client.logic
 
                 string JSON = message.Content.ReadAsStringAsync().Result;
                 JSONAuthenticationResponse authResponse = JsonUtility.FromJson<JSONAuthenticationResponse>(JSON);
-                string token = authResponse.token;
-                int guid = authResponse.guid;
+                string token = authResponse.accessToken;
+                int guid = authResponse.id.GetHashCode();
                 m_playerID = guid;
                 m_HTTPClient.SetAuthenticationToken(token);
-                GoToLobby();
+                m_readyToGoToLobby = true;
             }
             else
             {

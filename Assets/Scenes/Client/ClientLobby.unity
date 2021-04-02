@@ -1605,9 +1605,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_serverTCPAddress: 192.168.0.141
-  m_serverTCPPort: 9051
+  m_serverTCPPort: 9151
   m_serverUDPAddress: 192.168.0.141
-  m_serverUDPPort: 9050
+  m_serverUDPPort: 9150
 --- !u!4 &2078983260
 Transform:
   m_ObjectHideFlags: 0
