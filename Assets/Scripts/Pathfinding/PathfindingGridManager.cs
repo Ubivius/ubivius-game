@@ -4,125 +4,177 @@ using System.Collections.Generic;
 using ubv.common.world;
 using UnityEngine;
 
-public class PathfindingGridManager: MonoBehaviour
+namespace ubv.server.logic
 {
-    [SerializeField] private WorldGenerator m_worldGenerator;
-    [SerializeField] private float m_nodeSize = 1;
-
-    private Vector3 m_worldOrigin = Vector3.zero;
-
-    private LogicGrid m_logicGrid;
-    private PathNode[,] m_pathNodes;
-    private Pathfinding m_pathfinding;
-
-    private bool m_setUpDone = false;
-
-    private void Start()
+    public class PathfindingGridManager : MonoBehaviour
     {
-        LogicGrid logicGrid = m_worldGenerator.GetMasterLogicGrid();
-        if (logicGrid != null)
+        [SerializeField] private WorldGenerator m_worldGenerator;
+        [SerializeField] private float m_nodeSize = 1;
+
+        private Vector3 m_worldOrigin = Vector3.zero;
+
+        private LogicGrid m_logicGrid;
+        private PathNode[,] m_pathNodes;
+        private Pathfinding m_pathfinding;
+
+        private Dictionary<common.world.cellType.LogicCell, PathNode> m_cellToNodes;
+
+        private bool m_setUpDone = false;
+
+        private void Start()
         {
-            this.SetPathfindingGridManager(logicGrid);
+            m_worldGenerator.OnWorldGenerated += OnWorldGenerated;            
         }
-    }
 
-    private void SetPathfindingGridManager(LogicGrid logicGrid)
-    {
-        m_logicGrid = logicGrid;
-        m_pathNodes = new PathNode[m_logicGrid.Width, m_logicGrid.Height];
-        List<PathNode> pathNodeList = new List<PathNode>();
-
-        for (int x = 0; x < m_logicGrid.Width; x++)
+        private void OnWorldGenerated()
         {
-            for (int y = 0; y < m_logicGrid.Height; y++)
+            LogicGrid logicGrid = m_worldGenerator.GetMasterLogicGrid();
+            if (logicGrid != null)
             {
-                if (m_logicGrid.Grid[x, y] != null)
+                this.SetPathNodesFromLogicGrid(logicGrid);
+            }
+        }
+
+        private void SetPathNodesFromLogicGrid(LogicGrid logicGrid)
+        {
+            m_cellToNodes = new Dictionary<common.world.cellType.LogicCell, PathNode>();
+            m_logicGrid = logicGrid;
+            m_pathNodes = new PathNode[m_logicGrid.Width, m_logicGrid.Height];
+            List<PathNode> pathNodeList = new List<PathNode>();
+
+            for (int x = 0; x < m_logicGrid.Width; x++)
+            {
+                for (int y = 0; y < m_logicGrid.Height; y++)
                 {
-                    if (m_logicGrid.Grid[x, y].IsWalkable)
+                    if (m_logicGrid.Grid[x, y] != null)
                     {
-                        m_pathNodes[x, y] = (new PathNode(x, y));
+                        m_pathNodes[x, y] = new PathNode(x, y);
+                        m_cellToNodes[m_logicGrid.Grid[x, y]] = m_pathNodes[x, y];
+                        m_logicGrid.Grid[x, y].OnChange += UpdateNeighboursOnCellChange;
                         pathNodeList.Add(m_pathNodes[x, y]);
                     }
                 }
             }
+
+            //Add neighbours to each walkable pathnode
+            foreach (PathNode p in m_pathNodes)
+            {
+                if (p != null)
+                {
+                    AddAllWalkableNeighbours(p);
+                }
+            }
+
+            m_pathfinding = new Pathfinding(pathNodeList);
+            m_setUpDone = true;
         }
 
-        //Add neighbours to each pathnode
-        foreach(PathNode pathnode in m_pathNodes)
+        public bool IsSetUpDone()
         {
-            if (pathnode != null)
+            return m_setUpDone;
+        }
+
+        public PathNode GetNode(int x, int y)
+        {
+            if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height)
             {
-                if (pathnode.X - 1 >= 0)
+                return m_pathNodes[x, y];
+            }
+
+            return null;
+        }
+        
+        public void OpenDoor(int x, int y)
+        {
+            common.world.cellType.LogicCell cell = m_logicGrid.Grid[x, y];
+            if (cell != null)
+            {
+                if (cell is common.world.cellType.DoorCell door)
                 {
-                    // Left
-                    pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y));
-                    // Left Down
-                    if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y - 1));
-                    // Left Up   
-                    if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X - 1, pathnode.Y + 1));
+                    door.OpenDoor();
                 }
-
-                if (pathnode.X + 1 < m_logicGrid.Width)
-                {
-                    // Right
-                    pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y));
-                    // Right Down
-                    if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y - 1));
-                    // Right Up
-                    if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X + 1, pathnode.Y + 1));
-                }
-
-                // Down
-                if (pathnode.Y - 1 >= 0) pathnode.AddNeighbour(GetNode(pathnode.X, pathnode.Y - 1));
-                // Up
-                if (pathnode.Y + 1 < m_logicGrid.Height) pathnode.AddNeighbour(GetNode(pathnode.X, pathnode.Y + 1));
-
             }
         }
 
-        m_pathfinding = new Pathfinding(pathNodeList);
-        m_setUpDone = true;
-    }
-
-    public bool IsSetUpDone()
-    {
-        return m_setUpDone;
-    }
-
-    public PathNode GetNode(int x, int y)
-    {
-        if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height)
+        public void CloseDoor(int x, int y)
         {
-            return m_pathNodes[x, y];
+            common.world.cellType.LogicCell cell = m_logicGrid.Grid[x, y];
+            if (cell != null)
+            {
+                if (cell is common.world.cellType.DoorCell door)
+                {
+                    door.CloseDoor();
+                }
+            }
         }
-        
-        return null;
-    }
 
-    public PathNode[,] GetPathNodeArray()
-    {
-        return m_pathNodes;
-    }
+        private void RemoveAllNeighbours(PathNode p)
+        {
+            // remove all neighbours from p 
+            foreach(PathNode n in p.GetNeighbourList())
+            {
+                n.RemoveNeighbour(p);
+            }
+            p.RemoveAllNeighbours();
+        }
 
-    public LogicGrid GetLogicGrid()
-    {
-        return m_logicGrid;
-    }
+        private void AddAllWalkableNeighbours(PathNode p)
+        {
+            if(!m_logicGrid.Grid[p.x, p.y].IsWalkable)
+            {
+                return;
+            }
+            
+            p.AddNeighbour(GetNodeIfWalkable(p.x - 1, p.y));
+            p.AddNeighbour(GetNodeIfWalkable(p.x - 1, p.y - 1));
+            p.AddNeighbour(GetNodeIfWalkable(p.x - 1, p.y + 1));
+            
+            p.AddNeighbour(GetNodeIfWalkable(p.x + 1, p.y));
+            p.AddNeighbour(GetNodeIfWalkable(p.x + 1, p.y - 1));
+            p.AddNeighbour(GetNodeIfWalkable(p.x + 1, p.y + 1));
+            
+            p.AddNeighbour(GetNodeIfWalkable(p.x, p.y - 1));
+            p.AddNeighbour(GetNodeIfWalkable(p.x, p.y + 1));
 
-    public  List<PathNode> GetPath(PathNode startNode, PathNode endNode)
-    {
-        List<PathNode> path = m_pathfinding.FindPath(startNode, endNode);
-        if (path == null) Debug.Log("No path found!");
-        return path;
-    }
+            foreach(PathNode n in p.GetNeighbourList())
+            {
+                n.AddNeighbour(p);
+            }
+        }
 
-    public PathRoute GetPathRoute(Vector2 start, Vector2 end)
-    {
-        PathNode startNode = this.GetNode(Mathf.RoundToInt(start.x), Mathf.RoundToInt(start.y));
-        PathNode endNode = this.GetNode(Mathf.RoundToInt(end.x), Mathf.RoundToInt(end.y));
+        private PathNode GetNodeIfWalkable(int x, int y)
+        {
+            common.world.cellType.LogicCell cell = m_logicGrid.Grid[x, y];
+            return cell != null ? (cell.IsWalkable ? GetNode(x, y) : null) : null;
+        }
 
-        List<PathNode> pathNodeList = this.GetPath(startNode, endNode);
+        public List<PathNode> GetPath(PathNode startNode, PathNode endNode)
+        {
+            List<PathNode> path = m_pathfinding.FindPath(startNode, endNode);
+            if (path == null) Debug.Log("No path found!");
+            return path;
+        }
 
-        return new PathRoute(pathNodeList, m_worldOrigin, m_nodeSize);
+        public PathRoute GetPathRoute(Vector2 start, Vector2 end)
+        {
+            PathNode startNode = this.GetNode(Mathf.RoundToInt(start.x), Mathf.RoundToInt(start.y));
+            PathNode endNode = this.GetNode(Mathf.RoundToInt(end.x), Mathf.RoundToInt(end.y));
+
+            List<PathNode> pathNodeList = this.GetPath(startNode, endNode);
+
+            return new PathRoute(pathNodeList, m_worldOrigin, m_nodeSize);
+        }
+
+        private void UpdateNeighboursOnCellChange(common.world.cellType.LogicCell cell)
+        {
+            if (cell.IsWalkable)
+            {
+                AddAllWalkableNeighbours(m_cellToNodes[cell]);
+            }
+            else
+            {
+                RemoveAllNeighbours(m_cellToNodes[cell]);
+            }
+        }
     }
 }

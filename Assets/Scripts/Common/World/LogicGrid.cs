@@ -86,5 +86,6 @@ namespace ubv.common.world
         public LogicCell[,] Grid { get => m_grid; private set => m_grid = value; }
         public int Width { get => m_width; private set => m_width = value; }
         public int Height { get => m_height; private set => m_height = value; }
+        
     }
 }

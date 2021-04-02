@@ -6,15 +6,15 @@ public class PathNode
 {
     private List<PathNode> m_neighbourList;
 
-    public readonly int X;
-    public readonly int Y;
+    public readonly int x;
+    public readonly int y;
 
     public int TerrainCost;
 
     public PathNode(int x, int y)
     {
-        this.X = x;
-        this.Y = y;
+        this.x = x;
+        this.y = y;
         m_neighbourList = new List<PathNode>();
     }
 
@@ -34,6 +34,11 @@ public class PathNode
             return false;
     }
 
+    public void RemoveAllNeighbours()
+    {
+        m_neighbourList.Clear();
+    }
+
     public void RemoveNeighbour(PathNode pathNode)
     {
         this.m_neighbourList.Remove(pathNode);
@@ -41,6 +46,6 @@ public class PathNode
 
     public Vector3 GetWorldVector(Vector3 worldOrigin, float nodeSize)
     {
-        return worldOrigin + new Vector3(X * nodeSize, Y * nodeSize);
+        return worldOrigin + new Vector3(x * nodeSize, y * nodeSize);
     }
 }
