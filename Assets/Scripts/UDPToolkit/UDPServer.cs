@@ -26,35 +26,26 @@ namespace ubv
                 [SerializeField] int m_port = 9050;
                 [SerializeField] float m_connectionTimeout = 10f;
 
-                private Dictionary<IPEndPoint, UdpClient> m_endPoints;
-                private Dictionary<UdpClient, ClientConnection> m_clientConnections;
-                private UdpClient m_server;
-                private float m_serverUptime = 0;
+                private Dictionary<int, IPEndPoint> m_playerEndpoints;
+                private Dictionary<int, UdpClient> m_clients;
+                private Dictionary<int, UDPToolkit.ConnectionData> m_clientConnections;
 
+                private HashSet<IPEndPoint> m_endpointsSet;
+
+                private UdpClient m_server;
                 private List<IUDPServerReceiver> m_receivers = new List<IUDPServerReceiver>();
 
                 public bool AcceptNewClients;
-
-                /// <summary>
-                /// Manages a specific client connection 
-                /// </summary>
-                private class ClientConnection
-                {
-                    public float LastConnectionTime;
-                    public UDPToolkit.ConnectionData ConnectionData;
-
-                    public ClientConnection()
-                    {
-                        ConnectionData = new UDPToolkit.ConnectionData();
-                    }
-                }
+                
 
                 private void Awake()
                 {
-                    m_endPoints = new Dictionary<IPEndPoint, UdpClient>();
-                    m_clientConnections = new Dictionary<UdpClient, ClientConnection>();
+                    m_clients = new Dictionary<int, UdpClient>();
+                    m_clientConnections = new Dictionary<int, UDPToolkit.ConnectionData>();
+                    m_playerEndpoints = new Dictionary<int, IPEndPoint>();
                     IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
-
+                    m_endpointsSet = new HashSet<IPEndPoint>();
+                    
                     m_server = new UdpClient(localEndPoint);
 #if DEBUG_LOG
                     Debug.Log("Launching UDP server at " + localEndPoint.ToString());
@@ -63,44 +54,15 @@ namespace ubv
                     m_server.BeginReceive(EndReceiveCallback, m_server);
                 }
                 
-                private void Update()
+                public void Send(byte[] data, int playerID)
                 {
-                    // TODO: Adapt to use a better time tracking? System time?  
-                    m_serverUptime += Time.deltaTime;
-                    if (Time.frameCount % 10 == 0)
+                    if (m_playerEndpoints.ContainsKey(playerID))
                     {
-                        // RemoveTimedOutClients();
-                    }
-                }
-
-                private void RemoveTimedOutClients()
-                {
-                    List<IPEndPoint> toRemove = new List<IPEndPoint>();
-                    // check if any client has disconnected (has not sent a packet in TIMEOUT seconds)
-                    foreach (IPEndPoint ep in m_endPoints.Keys)
-                    {
-                        if (m_serverUptime - m_clientConnections[m_endPoints[ep]].LastConnectionTime > m_connectionTimeout)
-                        {
-                            Debug.Log("Client timed out. Disconnecting.");
-                            toRemove.Add(ep);
-                        }
-                    }
-
-                    for (int i = 0; i < toRemove.Count; i++)
-                    {
-                        m_clientConnections.Remove(m_endPoints[toRemove[i]]);
-                        m_endPoints.Remove(toRemove[i]);
-                    }
-                }
-
-                public void Send(byte[] data, IPEndPoint clientIP)
-                {
-                    if (m_endPoints.ContainsKey(clientIP))
-                    {
+                        IPEndPoint endPoint = m_playerEndpoints[playerID];
                         try
                         {
-                            byte[] bytes = m_clientConnections[m_endPoints[clientIP]].ConnectionData.Send(data).RawBytes;
-                            m_server.BeginSend(bytes, bytes.Length, clientIP, EndSendCallback, m_server);
+                            byte[] bytes = m_clientConnections[playerID].Send(data, playerID).RawBytes;
+                            m_server.BeginSend(bytes, bytes.Length, endPoint, EndSendCallback, m_server);
                         }
                         catch (SocketException e)
                         {
@@ -112,19 +74,23 @@ namespace ubv
                     else
                     {
 #if DEBUG_LOG
-                        Debug.Log("Client " + clientIP.ToString() + " is not registered. Ignoring data send.");
+                        Debug.Log("Client " + playerID + " is not registered. Ignoring data send request.");
 #endif // DEBUG_LOG
                     }
                 }
 
                 private void EndSendCallback(System.IAsyncResult ar)
-                {
-                    UdpClient server = (UdpClient)ar.AsyncState;
-#if DEBUG_LOG
-            Debug.Log("Server sent " + server.EndSend(ar).ToString() + " bytes");
-#endif // DEBUG_LOG
-                }
+                { }
                 
+                private void AddNewClient(int playerID, IPEndPoint ep)
+                {
+                    m_clients.Add(playerID, new UdpClient());
+                    m_clients[playerID].Connect(ep);
+                    m_clientConnections.Add(playerID, new UDPToolkit.ConnectionData());
+                    m_playerEndpoints.Add(playerID, ep);
+                    m_endpointsSet.Add(ep);
+                }
+
                 private void EndReceiveCallback(System.IAsyncResult ar)
                 {
                     IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
@@ -132,45 +98,71 @@ namespace ubv
                     
                     byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
 
-                    if (!m_endPoints.ContainsKey(clientEndPoint))
+                    UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
+                    int playerID = packet.PlayerID;
+                    if (packet.HasValidProtocolID())
                     {
-                        if (AcceptNewClients)
+                        if (!m_clients.ContainsKey(playerID))
                         {
-                            m_endPoints.Add(clientEndPoint, new UdpClient());
-                            m_endPoints[clientEndPoint].Connect(clientEndPoint);
-
-                            m_clientConnections.Add(m_endPoints[clientEndPoint], new ClientConnection());
-                        }
-                        else
-                        {
+                            if (AcceptNewClients)
+                            {
 #if DEBUG_LOG
-                            Debug.Log("Received data from unregistered client(" + clientEndPoint.ToString() + "). Not accepting new connections.");
+                                Debug.Log("Received data from unregistered client(" + playerID.ToString() + "). Adding to clients.");
 #endif // DEBUG_LOG
+                                AddNewClient(playerID, clientEndPoint);
+                            }
+                            else
+                            {
+#if DEBUG_LOG
+                                Debug.Log("Received data from unregistered client(" + playerID.ToString() + "). Not accepting new connections.");
+#endif // DEBUG_LOG
+                            }
                         }
-                    }
 
-                    if (m_endPoints.ContainsKey(clientEndPoint))
-                    {
-                        m_clientConnections[m_endPoints[clientEndPoint]].LastConnectionTime = m_serverUptime;
-
-                        UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
-
-                        if(m_clientConnections[m_endPoints[clientEndPoint]].ConnectionData.Receive(packet, (UDPToolkit.Packet p) => { }))
+                        if (m_clients.ContainsKey(playerID))
                         {
-                            OnReceive(packet, clientEndPoint);
+                            if (!m_endpointsSet.Contains(clientEndPoint))
+                            {
+                                // this means the player client doesnt have the same UDP endpoint (probably because he DC'd)
+                                
+                                // we delete the endpoint previously paired with the playerID (if any)
+                                if(m_playerEndpoints.ContainsKey(playerID))
+                                {
+                                    if(m_playerEndpoints[playerID] != null)
+                                    {
+                                        m_endpointsSet.Remove(m_playerEndpoints[playerID]);
+                                    }
+                                }
+
+                                m_playerEndpoints[playerID] = clientEndPoint;
+                                m_endpointsSet.Add(clientEndPoint);
+
+                                m_clients[playerID].Close();
+                                m_clients[playerID].Connect(clientEndPoint);
+                            }
+
+                            if (m_clientConnections[playerID].Receive(packet, (UDPToolkit.Packet p) => { }))
+                            {
+                                OnReceive(packet, playerID);
+                            }
                         }
                     }
-                    
+                    else
+                    {
+#if DEBUG_LOG
+                        Debug.Log("Received invalid network protocol ID packet. Rejecting.");
+#endif //DEBUG_LOG
+                    }
                     server.BeginReceive(EndReceiveCallback, server);
                 }
 
-                private void OnReceive(UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
+                private void OnReceive(UDPToolkit.Packet packet, int playerID)
                 {
                     // TODO (maybe) : give up ticks and use only packet sequence number?
 
                     for (int i = 0; i < m_receivers.Count; i++)
                     {
-                        m_receivers[i].Receive(packet, clientEndPoint);
+                        m_receivers[i].Receive(packet, playerID);
                     }
                 }
 

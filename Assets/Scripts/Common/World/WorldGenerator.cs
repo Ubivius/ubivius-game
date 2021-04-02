@@ -37,18 +37,30 @@ namespace ubv.common.world
         [SerializeField] private List<RoomInfo> m_mandatoryRoomPoolBottomRight;
 
         [SerializeField] private Tilemap m_floor;
+        [SerializeField] private Tilemap m_wall;
+        [SerializeField] private Tilemap m_door;
         [SerializeField] private TileBase m_tileFloor;
+        [SerializeField] private TileBase m_tileWall;
+        [SerializeField] private TileBase m_tiledoor;
         [SerializeField] private int m_wallThickness;
 
         private Grid m_grid;
 
         private LogicGrid m_masterLogicGrid;
 
-        private RoomManager m_roomManager;
-        private CorridorsManager m_corridorsManager;
+        private generationManager.RoomManager m_roomManager;
+        private generationManager.CorridorsManager m_corridorsManager;
+        private generationManager.DoorManager m_doorManager;
+        private generationManager.DeadEndManager m_DeadEndManager;
+        private generationManager.WallManager m_wallManager;
+
+        private List<RoomInfo> m_roomInMap = new List<RoomInfo>();
 
         private dataStruct.WorldGeneratorToRoomManager m_worldGeneratorToRoomManager;
         private dataStruct.WorldGeneratorToCorridorsManager m_worldGeneratorToCorridorsManager;
+        private dataStruct.WorldGeneratorToDoorManager m_worldGeneratorToDoorManager;
+        private dataStruct.WorldGeneratorToDeadEndManager m_worldGeneratorToDeadEndManager;
+        private dataStruct.WolrdGeneratorToWallManager m_wolrdGeneratorToWallManager;
 
         private void Awake()
         {
@@ -80,23 +92,40 @@ namespace ubv.common.world
                 m_wallThickness);
 
             //GenerateWithOneRoom();
-            GenerateWorld();
+            //GenerateWorld();
         }
 
         public void GenerateWorld()
         {
-            m_roomManager = new RoomManager(m_worldGeneratorToRoomManager);
+            m_roomManager = new generationManager.RoomManager(m_worldGeneratorToRoomManager);
             m_masterLogicGrid = m_roomManager.GenerateRoomGrid();
+            m_roomInMap = m_roomManager.GetRoomInMap();
 
             m_worldGeneratorToCorridorsManager = new dataStruct.WorldGeneratorToCorridorsManager(m_masterLogicGrid, m_floor, m_tileFloor, m_wallThickness);
 
-            m_corridorsManager = new CorridorsManager(m_worldGeneratorToCorridorsManager);
+            m_corridorsManager = new generationManager.CorridorsManager(m_worldGeneratorToCorridorsManager);
             m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
+
+            m_worldGeneratorToDoorManager = new dataStruct.WorldGeneratorToDoorManager(m_masterLogicGrid, m_floor, m_door, m_tileFloor, m_tiledoor, m_roomInMap);
+            m_doorManager = new generationManager.DoorManager(m_worldGeneratorToDoorManager);
+            m_masterLogicGrid = m_doorManager.GenerateDoorGrid();
+
+            m_worldGeneratorToDeadEndManager = new dataStruct.WorldGeneratorToDeadEndManager(m_masterLogicGrid, m_floor, m_door, m_corridorsManager.GetEnds());
+            m_DeadEndManager = new generationManager.DeadEndManager(m_worldGeneratorToDeadEndManager);
+            m_masterLogicGrid = m_DeadEndManager.GenerateDeadEndGrid();
+
+            m_wolrdGeneratorToWallManager = new dataStruct.WolrdGeneratorToWallManager(m_masterLogicGrid, m_wall, m_tileWall);
+            m_wallManager = new generationManager.WallManager(m_wolrdGeneratorToWallManager);
+            m_masterLogicGrid = m_wallManager.GenerateWallGrid();
+
+            m_floor.RefreshAllTiles();
+            m_door.RefreshAllTiles();
+            m_wall.RefreshAllTiles();
         }
         
         public void GenerateWithOneRoom() // For test only 
         {
-            m_roomManager = new RoomManager(m_worldGeneratorToRoomManager);
+            m_roomManager = new generationManager.RoomManager(m_worldGeneratorToRoomManager);
             m_masterLogicGrid = m_roomManager.AddOneRoom();
         }
 

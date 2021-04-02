@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Collections;
 using UnityEngine;
 
-namespace ubv.common.world
+namespace ubv.common.world.generationManager
 {
     public struct BoxInfo
     {
@@ -41,6 +41,7 @@ namespace ubv.common.world
     {
         private const int c_mandatoryTry = 10000;
         private const int c_extraWidth = 2; // Il doit y avoir 2 uniter de libre autour de la room, 1 pour mur et 1 de plus pour permettre un mini corridor entre 2 pièces
+        private const int c_SectionDoorWidth = 1; 
 
         private Vector2Int m_boundariesMap;
 
@@ -72,9 +73,11 @@ namespace ubv.common.world
 
         private Grid m_grid;
 
-        private ubv.common.world.LogicGrid m_masterLogicGrid;
+        LogicGrid m_masterLogicGrid;
 
         private int m_wallThickness = 1;
+
+        private List<RoomInfo> m_instantiateRoom = new List<RoomInfo>();
 
         public RoomManager(dataStruct.WorldGeneratorToRoomManager data)
         {
@@ -178,6 +181,7 @@ namespace ubv.common.world
         private void AddRoom(RoomInfo room, Vector2Int roomOrigin)
         {
             room.transform.position = new Vector3(roomOrigin.x, roomOrigin.y, 0);
+            m_instantiateRoom.Add(room);
             AddToMasterGrid(room, roomOrigin);
         }
 
@@ -191,10 +195,10 @@ namespace ubv.common.world
                 }
             }
             // la largeur des murs autour d'une pièce est de 2
-            AddVoidCell(new Vector2Int(coord.x - 2, coord.y - 2), roomInfo.Width + 4, 2);               //Section sous la room
-            AddVoidCell(new Vector2Int(coord.x - 2, coord.y + roomInfo.Height), roomInfo.Width + 4, 2); //Section au dessus la room
-            AddVoidCell(new Vector2Int(coord.x, coord.y - 2), 2, roomInfo.Height);                      //Section à gauche la room
-            AddVoidCell(new Vector2Int(coord.x + roomInfo.Width, coord.y), 2, roomInfo.Height);         //Section à droite la room
+            AddVoidCell(new Vector2Int(coord.x - 1, coord.y - 1), roomInfo.Width + 4, 1);               //Section sous la room
+            AddVoidCell(new Vector2Int(coord.x - 1, coord.y + roomInfo.Height), roomInfo.Width + 4, 1); //Section au dessus la room
+            AddVoidCell(new Vector2Int(coord.x - 1, coord.y - 1), 1, roomInfo.Height + 1);              //Section à gauche la room
+            AddVoidCell(new Vector2Int(coord.x + roomInfo.Width, coord.y), 1, roomInfo.Height + 1);     //Section à droite la room
             
         }
 
@@ -363,11 +367,11 @@ namespace ubv.common.world
             int BB_w = m_boundariesMap.x / 2 - m_wallThickness - roomInfo.Width;
             int BB_h = m_boundariesMap.y / 2 - m_wallThickness - roomInfo.Height - SB_h;
             BoxInfo bigBox = new BoxInfo(0, 
-                                         m_boundariesMap.y / 2 + SB_h,
+                                         m_boundariesMap.y / 2 + SB_h + c_SectionDoorWidth,
                                          BB_w, 
                                          BB_h);
             BoxInfo smallBox = new BoxInfo(0,
-                                           m_boundariesMap.y / 2,
+                                           m_boundariesMap.y / 2 + c_SectionDoorWidth,
                                            SB_w,
                                            SB_h);
             Vector2Int coord = TryGetCoord(roomInfo, bigBox, smallBox, nbrTry);
@@ -398,12 +402,12 @@ namespace ubv.common.world
             int SB_y = m_boundariesMap.y / 3 - 2 * m_wallThickness - roomInfo.Height;
             int BB_x = m_boundariesMap.x / 2 - m_wallThickness - roomInfo.Width - SB_x;
             int BB_y = m_boundariesMap.y / 2 - m_wallThickness - roomInfo.Height;
-            BoxInfo bigBox = new BoxInfo(m_boundariesMap.x / 2 + SB_x,
-                                         m_boundariesMap.y / 2, 
+            BoxInfo bigBox = new BoxInfo(m_boundariesMap.x / 2 + SB_x + c_SectionDoorWidth,
+                                         m_boundariesMap.y / 2 + c_SectionDoorWidth, 
                                          BB_x, 
                                          BB_y);
-            BoxInfo smallBox = new BoxInfo(m_boundariesMap.x / 2, 
-                                           m_boundariesMap.y * 2 / 3 + m_wallThickness, 
+            BoxInfo smallBox = new BoxInfo(m_boundariesMap.x / 2 + c_SectionDoorWidth, 
+                                           m_boundariesMap.y * 2 / 3 + m_wallThickness + c_SectionDoorWidth, 
                                            SB_x, 
                                            SB_y);
             Vector2Int coord = TryGetCoord(roomInfo, bigBox, smallBox, nbrTry);
@@ -466,15 +470,15 @@ namespace ubv.common.world
                 }
                 return new Vector2Int(-1, -1);
             }
-            int SB_x = m_boundariesMap.x / 6 - m_wallThickness;
+            int SB_x = m_boundariesMap.x / 6 + m_wallThickness;
             int SB_y = m_boundariesMap.y / 3 - m_wallThickness - roomInfo.Height;
             int BB_x = m_boundariesMap.x / 2 - m_wallThickness - roomInfo.Width - SB_x;
             int BB_y = m_boundariesMap.y / 2 - m_wallThickness - roomInfo.Height;
-            BoxInfo bigBox = new BoxInfo(m_boundariesMap.x / 2 + SB_x, 
+            BoxInfo bigBox = new BoxInfo(m_boundariesMap.x / 2 + SB_x + c_SectionDoorWidth, 
                                          0, 
                                          BB_x, 
                                          BB_y);
-            BoxInfo smallBox = new BoxInfo(m_boundariesMap.x / 2, 
+            BoxInfo smallBox = new BoxInfo(m_boundariesMap.x / 2 + c_SectionDoorWidth, 
                                            0, 
                                            SB_x, 
                                            SB_y);
@@ -526,6 +530,11 @@ namespace ubv.common.world
                 }
             }
             return true;
+        }
+
+        public List<RoomInfo> GetRoomInMap()
+        {
+            return m_instantiateRoom;
         }
     }
 }
