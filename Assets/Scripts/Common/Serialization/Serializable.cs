@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ubv.common.serialization
@@ -27,11 +28,11 @@ namespace ubv.common.serialization
             return GetSourceByteCount() + 1;
         }
 
-        public bool CreateFromBytes(byte[] bytes)
+        public bool CreateFromBytes(ArraySegment<byte> bytes)
         {
-            if (bytes[0] == (byte)SerializationID())
+            if (bytes.At(0) == (byte)SerializationID())
             {
-                if (CreateFromSourceBytes(bytes.ArrayFrom(1)))
+                if (CreateFromSourceBytes(bytes.ArraySegmentFrom(1)))
                 {
                     return true;
                 }
@@ -39,7 +40,7 @@ namespace ubv.common.serialization
             return false;
         }
         
-        static public T CreateFromBytes<T>(byte[] bytes) where T : IConvertible, new()
+        static public T CreateFromBytes<T>(ArraySegment<byte> bytes) where T : IConvertible, new()
         {
             T obj = new T();
             if (obj.CreateFromBytes(bytes))
@@ -57,7 +58,7 @@ namespace ubv.common.serialization
         
         protected abstract byte[] GetSourceBytes();
         protected abstract int GetSourceByteCount();
-        protected abstract bool CreateFromSourceBytes(byte[] sourceBytes);
+        protected abstract bool CreateFromSourceBytes(ArraySegment<byte> sourceBytes);
         protected abstract ID.BYTE_TYPE SerializationID();
     }
 
@@ -108,12 +109,12 @@ namespace ubv.common.serialization
             return bytes;
         }
 
-        protected override bool CreateFromSourceBytes(byte[] bytes)
+        protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
         {
             int index = 0;
             for(int i = 0; i < m_serializableMembers.Count; i++)
             {
-                if (!m_serializableMembers[i].CreateFromBytes(bytes.ArrayFrom(index)))
+                if (!m_serializableMembers[i].CreateFromBytes(bytes.ArraySegmentFrom(index)))
                 {
                     return false;
                 }
@@ -149,7 +150,7 @@ namespace ubv.common.serialization
 
             protected abstract override byte[] GetSourceBytes();
             protected abstract override int GetSourceByteCount();
-            protected abstract override bool CreateFromSourceBytes(byte[] sourceBytes);
+            protected abstract override bool CreateFromSourceBytes(ArraySegment<byte> sourceBytes);
 
             protected abstract override ID.BYTE_TYPE SerializationID();
         }
@@ -158,9 +159,9 @@ namespace ubv.common.serialization
         {
             public Byte(byte value) : base(value) { }
 
-            protected override bool CreateFromSourceBytes(byte[] sourceBytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> sourceBytes)
             {
-                m_value = sourceBytes[0];
+                m_value = sourceBytes.At(0);
                 return true;
             }
 
@@ -184,12 +185,16 @@ namespace ubv.common.serialization
         {
             public ByteArray(byte[] value) : base(value)  { }
 
-            protected override bool CreateFromSourceBytes(byte[] sourceBytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> sourceBytes)
             {
-                int length = System.BitConverter.ToInt32(sourceBytes, 0);
-                if (length <= sourceBytes.Length - sizeof(int))
+                int length = System.BitConverter.ToInt32(sourceBytes.Array, sourceBytes.Offset);
+                m_value = new byte[length];
+                if (length <= sourceBytes.Count - sizeof(int))
                 {
-                    m_value = sourceBytes.SubArray(sizeof(int), length);
+                    for (int i = 0; i < length; i++)
+                    {
+                        m_value[i] = sourceBytes.At(i + sizeof(int));
+                    }
                     return true;
                 }
                 return false;
@@ -238,9 +243,9 @@ namespace ubv.common.serialization
                 return sizeof(int);
             }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                m_value =  System.BitConverter.ToInt32(bytes, 0);
+                m_value =  System.BitConverter.ToInt32(bytes.Array, bytes.Offset);
                 return true;
             }
 
@@ -266,9 +271,9 @@ namespace ubv.common.serialization
                 return sizeof(float);
             }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                m_value = System.BitConverter.ToSingle(bytes, 0);
+                m_value = System.BitConverter.ToSingle(bytes.Array, bytes.Offset);
                 return true;
             }
 
@@ -292,9 +297,9 @@ namespace ubv.common.serialization
                 return sizeof(int);
             }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                m_value = System.BitConverter.ToUInt32(bytes, 0);
+                m_value = System.BitConverter.ToUInt32(bytes.Array, bytes.Offset);
                 return true;
             }
 
@@ -320,9 +325,9 @@ namespace ubv.common.serialization
                 return sizeof(bool);
             }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                m_value = System.BitConverter.ToBoolean(bytes, 0);
+                m_value = System.BitConverter.ToBoolean(bytes.Array, bytes.Offset);
                 return true;
             }
 
@@ -354,9 +359,11 @@ namespace ubv.common.serialization
                 return sizeof(float) * 2;
             }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                m_value = new UnityEngine.Vector2(System.BitConverter.ToSingle(bytes, 0), System.BitConverter.ToSingle(bytes, 4));
+                m_value = new UnityEngine.Vector2(
+                    System.BitConverter.ToSingle(bytes.Array, bytes.Offset), 
+                    System.BitConverter.ToSingle(bytes.Array, bytes.Offset + sizeof(float)));
                 return true;
             }
 
@@ -388,9 +395,11 @@ namespace ubv.common.serialization
                 return sizeof(int) * 2;
             }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                m_value = new UnityEngine.Vector2Int(System.BitConverter.ToInt32(bytes, 0), System.BitConverter.ToInt32(bytes, 4));
+                m_value = new UnityEngine.Vector2Int(
+                    System.BitConverter.ToInt32(bytes.Array, bytes.Offset),
+                    System.BitConverter.ToInt32(bytes.Array, bytes.Offset + sizeof(int)));
                 return true;
             }
 
@@ -424,12 +433,13 @@ namespace ubv.common.serialization
                 return sizeof(float) * 4;
             }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                m_value = new UnityEngine.Quaternion(System.BitConverter.ToSingle(bytes, 0),
-                    System.BitConverter.ToSingle(bytes, 4),
-                    System.BitConverter.ToSingle(bytes, 8),
-                    System.BitConverter.ToSingle(bytes, 12));
+                m_value = new UnityEngine.Quaternion(
+                    System.BitConverter.ToSingle(bytes.Array, bytes.Offset),
+                    System.BitConverter.ToSingle(bytes.Array, bytes.Offset + sizeof(float)),
+                    System.BitConverter.ToSingle(bytes.Array, bytes.Offset + 2 * sizeof(float)),
+                    System.BitConverter.ToSingle(bytes.Array, bytes.Offset + 3 * sizeof(float)));
                 return true;
             }
 
@@ -470,10 +480,10 @@ namespace ubv.common.serialization
                 return GetSourceBytes().Length;
             }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                int byteCount = System.BitConverter.ToInt32(bytes, 0);
-                m_value = System.Text.Encoding.Unicode.GetString(bytes.SubArray(sizeof(int), byteCount));
+                int byteCount = System.BitConverter.ToInt32(bytes.Array, bytes.Offset);
+                m_value = System.Text.Encoding.Unicode.GetString(bytes.Array, bytes.Offset + sizeof(int), byteCount);
                 return true;
             }
 
@@ -505,9 +515,9 @@ namespace ubv.common.serialization
             
             public List(System.Collections.Generic.List<T> list) : base(list) { }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                int itemCount = System.BitConverter.ToInt32(bytes, 0);
+                int itemCount = System.BitConverter.ToInt32(bytes.Array, bytes.Offset);
 
                 if (m_value == null)
                 {
@@ -520,7 +530,7 @@ namespace ubv.common.serialization
                 for (int i = 0; i < itemCount; i++)
                 {
                     T obj = new T();
-                    if(!obj.CreateFromBytes(bytes.ArrayFrom(subIndex)))
+                    if(!obj.CreateFromBytes(bytes.ArraySegmentFrom(subIndex)))
                     {
                         m_value.Clear();
                         return false;
@@ -572,9 +582,9 @@ namespace ubv.common.serialization
         {
             public HashMap(Dictionary<int, T> dict) : base(dict) { }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                int itemCount = System.BitConverter.ToInt32(bytes, 0);
+                int itemCount = System.BitConverter.ToInt32(bytes.Array, bytes.Offset);
 
                 Dictionary<int, T> dict = new Dictionary<int, T>();
 
@@ -582,11 +592,11 @@ namespace ubv.common.serialization
                 int index = header;
                 for (int i = 0; i < itemCount; i++)
                 {
-                    int key = System.BitConverter.ToInt32(bytes, index);
+                    int key = System.BitConverter.ToInt32(bytes.Array, index + bytes.Offset);
                     index += sizeof(int);
 
                     T obj = new T();
-                    if(!obj.CreateFromBytes(bytes.ArrayFrom(index)))
+                    if(!obj.CreateFromBytes(bytes.ArraySegmentFrom(index)))
                     {
                         m_value.Clear();
                         return false;
@@ -661,9 +671,9 @@ namespace ubv.common.serialization
                 m_value = new T[size];
             }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                int itemCount = System.BitConverter.ToInt32(bytes, 0);
+                int itemCount = System.BitConverter.ToInt32(bytes.Array, bytes.Offset);
 
                 m_value = new T[itemCount];
 
@@ -672,7 +682,7 @@ namespace ubv.common.serialization
                 for (int i = 0; i < itemCount; i++)
                 {
                     T obj = new T();
-                    if (!obj.CreateFromBytes(bytes.ArrayFrom(subIndex)))
+                    if (!obj.CreateFromBytes(bytes.ArraySegmentFrom(subIndex)))
                     {
                         m_value = new T[0];
                         return false;
@@ -736,10 +746,10 @@ namespace ubv.common.serialization
 
             public Array2D(T[,] array) : base(array) { }
 
-            protected override bool CreateFromSourceBytes(byte[] bytes)
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
             {
-                int width = System.BitConverter.ToInt32(bytes, 0);
-                int length = System.BitConverter.ToInt32(bytes, sizeof(int));
+                int width = System.BitConverter.ToInt32(bytes.Array, bytes.Offset);
+                int length = System.BitConverter.ToInt32(bytes.Array, bytes.Offset + sizeof(int));
 
                 m_value = new T[width, length];
 
@@ -752,7 +762,7 @@ namespace ubv.common.serialization
                     x = i % length;
                     y = i / length;
                     T obj = new T();
-                    if (!obj.CreateFromBytes(bytes.ArrayFrom(index)))
+                    if (!obj.CreateFromBytes(bytes.ArraySegmentFrom(index)))
                     {
                         m_value = new T[0, 0];
                         return false;

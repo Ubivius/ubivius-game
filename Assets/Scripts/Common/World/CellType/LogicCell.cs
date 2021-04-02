@@ -60,16 +60,16 @@ namespace ubv.common.world.cellType
             switch((CellType)m_cellType.Value)
             {
                 case CellType.CELL_WALL:
-                    cell = CreateFromBytes<WallCell>(m_logicCellBytes.Value);
+                    cell = CreateFromBytes<WallCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_FLOOR:
-                    cell = CreateFromBytes<FloorCell>(m_logicCellBytes.Value);
+                    cell = CreateFromBytes<FloorCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_DOOR:
-                    cell = CreateFromBytes<DoorCell>(m_logicCellBytes.Value);
+                    cell = CreateFromBytes<DoorCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_BUTTON:
-                    cell = CreateFromBytes<DoorButtonCell>(m_logicCellBytes.Value);
+                    cell = CreateFromBytes<DoorButtonCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_NONE:
                     break;
