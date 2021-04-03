@@ -9,35 +9,27 @@ using UnityEngine;
  * */
 public class EnemyPathFindingMovement : MonoBehaviour
 {
-    [SerializeField] private const float SPEED = 20f;
+    [SerializeField] private const float SPEED = 5f;
     [SerializeField] private Transform m_player;
 
     private PathfindingGridManager m_pathfindingGridManager;
-    private Rigidbody2D m_rb;
     private EnemyMain m_enemyMain;
     private List<Vector2> m_pathVectorList;
     private int m_currentPathIndex;
     private float m_pathfindingTimer;
     private Vector2 m_moveDir;
     private Vector2 m_lastMoveDir;
+    private float reachedTargetDistance = 0.01f;
 
     private void Awake()
     {
         m_enemyMain = GetComponent<EnemyMain>();
-        m_rb = GetComponent<Rigidbody2D>();
     }
 
     private void Update()
     {
-        m_pathfindingTimer -= Time.deltaTime;
-
         HandleMovement();
-    }
-
-    private void FixedUpdate()
-    {
         m_enemyMain.EnemyRigidbody2D.velocity = m_moveDir * SPEED;
-        //moveEnemy(m_enemyMain.EnemyRigidbody2D.velocity);
     }
 
     private void HandleMovement()
@@ -46,8 +38,7 @@ public class EnemyPathFindingMovement : MonoBehaviour
         if (m_pathVectorList != null && m_pathVectorList.Count > 0)
         {
             Vector2 targetPosition = m_pathVectorList[m_currentPathIndex];
-            //float reachedTargetDistance = 5f;
-            if (Vector2.SqrMagnitude(GetPosition() - targetPosition) > 0)
+            if (Vector2.SqrMagnitude(GetPosition() - targetPosition) > reachedTargetDistance)
             {
                 m_moveDir = (targetPosition - GetPosition()).normalized;
                 m_lastMoveDir = m_moveDir;
@@ -105,33 +96,13 @@ public class EnemyPathFindingMovement : MonoBehaviour
         }
     }
 
-    public void MoveToTimer(Vector2 targetPosition)
-    {
-        if (m_pathfindingTimer <= 0f && targetPosition != null)
-        {
-            SetTargetPosition(targetPosition);
-        }
-    }
-
     public void SetTargetPosition(Vector2 targetPosition)
     {
         if (m_pathfindingGridManager != null && m_pathfindingGridManager.IsSetUpDone() == true)
         {
             m_currentPathIndex = 0;
-
             m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition).PathVectorList;
-            m_pathfindingTimer = .2f;
-
-            if (m_pathVectorList != null && m_pathVectorList.Count > 1)
-            {
-                //m_pathVectorList.RemoveAt(0);
-            }
         }
-    }
-
-    private void moveEnemy(Vector2 velocity)
-    {
-        m_rb.MovePosition(GetPosition() + (velocity * Time.deltaTime));
     }
 
     public Vector2 GetPosition()
@@ -162,7 +133,7 @@ public class EnemyPathFindingMovement : MonoBehaviour
 
     public bool IsPositionWalkable(Vector2 worldPosition)
     {
-        if (m_pathfindingGridManager.GetNode(worldPosition.x, worldPosition.y) != null)
+        if (m_pathfindingGridManager.GetNodeIfWalkable(worldPosition.x, worldPosition.y) != null)
         {
             return true;
         }

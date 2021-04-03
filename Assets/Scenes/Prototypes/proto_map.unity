@@ -779,7 +779,7 @@ MonoBehaviour:
   m_enemy: {fileID: 686873656258829074, guid: 0fc42a915c8c2e84b88bbc5e57441d03, type: 3}
   m_xPos: 0
   m_yPos: 0
-  m_enemyCount: 1
+  m_enemyCount: 10
   m_pathfindingGridManager: {fileID: 1549976837}
 --- !u!4 &1888062836
 Transform:

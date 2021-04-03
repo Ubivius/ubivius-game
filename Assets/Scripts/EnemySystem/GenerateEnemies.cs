@@ -36,7 +36,7 @@ namespace Assets.Scripts.EnemySystem
                 m_xPos = Random.Range(0, m_pathNodes.GetLength(0)-1);
                 m_yPos = Random.Range(0, m_pathNodes.GetLength(1)-1);
 
-                if (m_pathNodes[m_xPos, m_yPos] != null)
+                if (m_pathfindingGridManager.GetNodeIfWalkable(m_xPos, m_yPos) != null )
                 {
                     GameObject enemy = Instantiate(m_enemy, new Vector3(m_xPos, m_yPos, 0), Quaternion.identity);
                     EnemyPathFindingMovement enemyPathFindingMovement = enemy.GetComponent<EnemyPathFindingMovement>();

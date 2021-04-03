@@ -156,10 +156,13 @@ namespace ubv.server.logic
             }
         }
 
-        private PathNode GetNodeIfWalkable(int x, int y)
+        public PathNode GetNodeIfWalkable(float x, float y)
         {
-            common.world.cellType.LogicCell cell = m_logicGrid.Grid[x, y];
-            return cell != null ? (cell.IsWalkable ? GetNode(x, y) : null) : null;
+            int xi = Mathf.RoundToInt(x);
+            int yi = Mathf.RoundToInt(y);
+
+            common.world.cellType.LogicCell cell = m_logicGrid.Grid[xi, yi];
+            return cell != null ? (cell.IsWalkable ? GetNode(xi, yi) : null) : null;
         }
 
         public List<PathNode> GetPath(PathNode startNode, PathNode endNode)

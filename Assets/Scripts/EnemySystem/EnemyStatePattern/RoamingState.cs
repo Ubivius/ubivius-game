@@ -6,6 +6,7 @@ namespace ubv.server.logic.ai
     public class RoamingState : EnemyState
     {
         private EnemyPathFindingMovement m_enemyPathFindingMovement;
+        private float m_reachedPositionDistance = 1f;
         private float m_targetRange = 50f;
         private Vector2 m_startingPosition;
         private Vector2 m_roamPosition;
@@ -14,6 +15,7 @@ namespace ubv.server.logic.ai
         {
             m_enemyPathFindingMovement = enemyPathFindingMovement;
 
+            m_InMotion = false;
             m_startingPosition = m_enemyPathFindingMovement.GetPosition();
             m_roamPosition = GetRoamingPosition();
         }
@@ -21,13 +23,18 @@ namespace ubv.server.logic.ai
         // Update is called once per frame
         public override EnemyState Update()
         {
-            m_enemyPathFindingMovement.MoveToTimer(m_roamPosition);
-
-            float reachedPositionDistance = 0f;
-            if (!m_enemyPathFindingMovement.IsPositionWalkable(m_roamPosition)|| Vector3.SqrMagnitude(m_roamPosition - m_enemyPathFindingMovement.GetPosition()) <= reachedPositionDistance*reachedPositionDistance /*|| verify if target is walkable with a getnode*/)
+            if (!m_enemyPathFindingMovement.IsPositionWalkable(m_roamPosition)|| Vector3.SqrMagnitude(m_roamPosition - m_enemyPathFindingMovement.GetPosition()) < m_reachedPositionDistance * m_reachedPositionDistance /*|| verify if target is walkable with a getnode*/)
             {
                 // Reached Roam Position
                 m_roamPosition = GetRoamingPosition();
+
+                m_InMotion = false;
+            }
+            
+            else if(!m_InMotion)
+            {
+                m_enemyPathFindingMovement.MoveTo(m_roamPosition);
+                m_InMotion = true;
             }
 
             return FindTarget();
@@ -35,7 +42,7 @@ namespace ubv.server.logic.ai
 
         private Vector3 GetRoamingPosition()
         {
-            return m_startingPosition + Utils.GetRandomDir() * Random.Range(0f, 10f);
+            return m_startingPosition + Utils.GetRandomDir() * Random.Range(1f, 10f);
         }
 
         private EnemyState FindTarget()
