@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using ubv.common.world;
+using ubv.server.logic;
 using UnityEngine;
 
 namespace Assets.Scripts.EnemySystem
@@ -14,24 +15,21 @@ namespace Assets.Scripts.EnemySystem
         [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
 
         private PathNode[,] m_pathNodes;
-        private LogicGrid m_logicGrid;
 
         // Use this for initialization
         void Start()
         {
+            m_pathfindingGridManager.OnPathFindingManagerGenerated += OnPathFindingManagerGenerated;
+        }
+
+        private void OnPathFindingManagerGenerated()
+        {
             m_pathNodes = m_pathfindingGridManager.GetPathNodeArray();
-            m_logicGrid = m_pathfindingGridManager.GetLogicGrid();
             StartCoroutine(EnemySpawn());
         }
 
         IEnumerator EnemySpawn()
         {
-            // Wait until manager ready(Use event instead???)
-            while(m_pathfindingGridManager.IsSetUpDone() == false)
-            {
-
-            }
-
             int i = 0;
             while (i < m_enemyCount)
             {
@@ -40,7 +38,9 @@ namespace Assets.Scripts.EnemySystem
 
                 if (m_pathNodes[m_xPos, m_yPos] != null)
                 {
-                    Instantiate(m_enemy, new Vector3(m_xPos, m_yPos, 0), Quaternion.identity);
+                    GameObject enemy = Instantiate(m_enemy, new Vector3(m_xPos, m_yPos, 0), Quaternion.identity);
+                    EnemyPathFindingMovement enemyPathFindingMovement = enemy.GetComponent<EnemyPathFindingMovement>();
+                    enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
                     yield return new WaitForSeconds(0.1f);
                     i++;
                 }

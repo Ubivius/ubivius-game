@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using ubv.server.logic;
 using UnityEngine;
 
 /*
@@ -7,10 +9,10 @@ using UnityEngine;
  * */
 public class EnemyPathFindingMovement : MonoBehaviour
 {
-    [SerializeField] private const float SPEED = 5f;
-    [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
+    [SerializeField] private const float SPEED = 20f;
     [SerializeField] private Transform m_player;
 
+    private PathfindingGridManager m_pathfindingGridManager;
     private Rigidbody2D m_rb;
     private EnemyMain m_enemyMain;
     private List<Vector2> m_pathVectorList;
@@ -35,7 +37,7 @@ public class EnemyPathFindingMovement : MonoBehaviour
     private void FixedUpdate()
     {
         m_enemyMain.EnemyRigidbody2D.velocity = m_moveDir * SPEED;
-        moveEnemy(m_enemyMain.EnemyRigidbody2D.velocity);
+        //moveEnemy(m_enemyMain.EnemyRigidbody2D.velocity);
     }
 
     private void HandleMovement()
@@ -68,6 +70,11 @@ public class EnemyPathFindingMovement : MonoBehaviour
         }
     }
 
+    public void SetManager(PathfindingGridManager pathfindingGridManager)
+    {
+        m_pathfindingGridManager = pathfindingGridManager;
+    }
+
     public void StopMoving()
     {
         m_pathVectorList = null;
@@ -92,12 +99,15 @@ public class EnemyPathFindingMovement : MonoBehaviour
 
     public void MoveTo(Vector2 targetPosition)
     {
-        SetTargetPosition(targetPosition);
+        if (targetPosition != null)
+        {
+            SetTargetPosition(targetPosition);
+        }
     }
 
     public void MoveToTimer(Vector2 targetPosition)
     {
-        if (m_pathfindingTimer <= 0f)
+        if (m_pathfindingTimer <= 0f && targetPosition != null)
         {
             SetTargetPosition(targetPosition);
         }
@@ -105,16 +115,16 @@ public class EnemyPathFindingMovement : MonoBehaviour
 
     public void SetTargetPosition(Vector2 targetPosition)
     {
-        if (m_pathfindingGridManager.IsSetUpDone() == true)
+        if (m_pathfindingGridManager != null && m_pathfindingGridManager.IsSetUpDone() == true)
         {
             m_currentPathIndex = 0;
 
             m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition).PathVectorList;
-            //m_pathfindingTimer = .2f;
+            m_pathfindingTimer = .2f;
 
             if (m_pathVectorList != null && m_pathVectorList.Count > 1)
             {
-                m_pathVectorList.RemoveAt(0);
+                //m_pathVectorList.RemoveAt(0);
             }
         }
     }
@@ -148,5 +158,17 @@ public class EnemyPathFindingMovement : MonoBehaviour
     {
         enabled = false;
         m_enemyMain.EnemyRigidbody2D.velocity = Vector2.zero;
+    }
+
+    public bool IsPositionWalkable(Vector2 worldPosition)
+    {
+        if (m_pathfindingGridManager.GetNode(worldPosition.x, worldPosition.y) != null)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
