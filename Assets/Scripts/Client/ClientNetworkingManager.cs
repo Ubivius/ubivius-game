@@ -12,6 +12,7 @@ namespace ubv.client.logic
         public tcp.client.TCPClient TCPClient;
         public udp.client.UDPClient UDPClient;
         public http.HTTPClient HTTPClient;
+        public microservices.DispatcherMicroservice Dispatcher;
 
         public AuthenticationService Authentication;
 
