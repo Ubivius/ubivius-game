@@ -41,8 +41,7 @@ namespace ubv.microservices
                 onLogin(System.Guid.NewGuid().GetHashCode());
                 return;
             }
-
-            string request = "authenticator/" + user;
+            
             string jsonString = JsonUtility.ToJson(new JSONAuthentificationCredentials
             {
                 username = user,
