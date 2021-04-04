@@ -16,7 +16,6 @@ public class EnemyPathFindingMovement : MonoBehaviour
     private EnemyMain m_enemyMain;
     private List<Vector2> m_pathVectorList;
     private int m_currentPathIndex;
-    private float m_pathfindingTimer;
     private Vector2 m_moveDir;
     private Vector2 m_lastMoveDir;
     private float reachedTargetDistance = 0.01f;

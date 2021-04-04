@@ -161,8 +161,13 @@ namespace ubv.server.logic
             int xi = Mathf.RoundToInt(x);
             int yi = Mathf.RoundToInt(y);
 
-            common.world.cellType.LogicCell cell = m_logicGrid.Grid[xi, yi];
-            return cell != null ? (cell.IsWalkable ? GetNode(xi, yi) : null) : null;
+            if (x >= 0 && y >= 0 && x < m_logicGrid.Width && y < m_logicGrid.Height)
+            {
+                common.world.cellType.LogicCell cell = m_logicGrid.Grid[xi, yi];
+                return cell != null ? (cell.IsWalkable ? GetNode(xi, yi) : null) : null;
+            }
+
+            return null;
         }
 
         public List<PathNode> GetPath(PathNode startNode, PathNode endNode)
