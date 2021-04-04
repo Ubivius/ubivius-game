@@ -23,6 +23,7 @@ namespace ubv.client.logic
         protected tcp.client.TCPClient  m_TCPClient;
         protected udp.client.UDPClient  m_UDPClient;
         protected http.HTTPClient       m_HTTPClient;
+        protected microservices.AuthenticationService m_authenticationService;
 
         private void Awake()
         {
@@ -34,6 +35,7 @@ namespace ubv.client.logic
             m_TCPClient = ClientNetworkingManager.Instance.TCPClient;
             m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
             m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
+            m_authenticationService = ClientNetworkingManager.Instance.Authentication;
             StateStart();
         }
 

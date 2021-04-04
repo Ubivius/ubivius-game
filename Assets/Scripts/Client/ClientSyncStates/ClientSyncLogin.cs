@@ -16,18 +16,6 @@ namespace ubv.client.logic
 
         private bool m_readyToGoToLobby;
         
-        private struct JSONAuthentificationCredentials
-        {
-            public string username;
-            public string password;
-        }
-
-        private struct JSONAuthenticationResponse
-        {
-            public string accessToken;
-            public string id;
-        }
-
         protected override void StateAwake()
         {
             ClientSyncState.m_loginState = this;
@@ -50,41 +38,31 @@ namespace ubv.client.logic
             Debug.Log("Trying to log in with " + user);
 #endif // DEBUG_LOG
 
-            
-            string request = "authenticator/" + user;
-            string jsonString = JsonUtility.ToJson(new JSONAuthentificationCredentials
-            {
-                username = user,
-                password = pass,
-            }).ToString();
-            m_HTTPClient.PostJSON("signin", jsonString, OnAuthenticationResponse);
+
+            m_authenticationService.SendLoginRequest(user, pass, OnLogin);
         }
 
         private void GoToLobby()
         {
+#if DEBUG_LOG
             Debug.Log("Going to lobby.");
+#endif // DEBUG_LOG
             AsyncOperation loadLobby = SceneManager.LoadSceneAsync("ClientLobby");
             // animation petit cercle de load to lobby
         }
 
-        private void OnAuthenticationResponse(HttpResponseMessage message)
+        private void OnLogin(int? playerID)
         {
-            if (message.StatusCode == HttpStatusCode.OK)
+            if (playerID != null)
             {
-                // on s'attend à recevoir un token
-                // on add le token au HTTPClient
-
-                string JSON = message.Content.ReadAsStringAsync().Result;
-                JSONAuthenticationResponse authResponse = JsonUtility.FromJson<JSONAuthenticationResponse>(JSON);
-                string token = authResponse.accessToken;
-                int guid = authResponse.id.GetHashCode();
-                m_playerID = guid;
-                m_HTTPClient.SetAuthenticationToken(token);
+                m_playerID = playerID;
                 m_readyToGoToLobby = true;
             }
             else
             {
-                Debug.Log("Dispatcher GET request was not successful");
+#if DEBUG_LOG
+                Debug.Log("Login failed. Maybe wrong credentials ?");
+#endif // DEBUG_LOG
             }
         }
     }   
