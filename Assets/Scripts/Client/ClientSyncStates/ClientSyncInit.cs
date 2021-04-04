@@ -13,7 +13,7 @@ namespace ubv.client.logic
     public class ClientSyncInit : ClientSyncState, tcp.client.ITCPClientReceiver
     {
         // when dispatcher is ready
-        // [SerializeField] EndPoint m_dispatcherEndpoint;
+        // EndPoint m_dispatcherEndpoint;
 
         [SerializeField] string m_serverTCPAddress;
         [SerializeField] int m_serverTCPPort;
@@ -35,9 +35,7 @@ namespace ubv.client.logic
             public string UDPAddress;
             public int UDPPort;
         }
-
-        private int? m_playerID;
-
+        
         protected override void StateAwake()
         {
             ClientSyncState.m_initState = this;
@@ -78,13 +76,8 @@ namespace ubv.client.logic
             Debug.Log("Sending connection request to dispatcher...");
 #endif // DEBUG_LOG
             m_waitingOnServerResponse = true;
-            if (m_playerID == null)
-            {
-                int playerID = System.Guid.NewGuid().GetHashCode(); // for now
-                m_playerID = playerID;
-                m_identificationMessageBytes = new IdentificationMessage(m_playerID.Value).GetBytes();
-                m_TCPClient.SetPlayerID(playerID);
-            }
+            m_identificationMessageBytes = new IdentificationMessage(m_playerID.Value).GetBytes();
+            m_TCPClient.SetPlayerID(m_playerID.Value);
 
             // mock dispatcher response for now
             HttpResponseMessage msg = new HttpResponseMessage();

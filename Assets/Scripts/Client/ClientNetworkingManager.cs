@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ubv.microservices;
 using UnityEngine;
 
 namespace ubv.client.logic
@@ -11,6 +12,8 @@ namespace ubv.client.logic
         public tcp.client.TCPClient TCPClient;
         public udp.client.UDPClient UDPClient;
         public http.HTTPClient HTTPClient;
+
+        public AuthenticationService Authentication;
 
         private void Awake()
         {

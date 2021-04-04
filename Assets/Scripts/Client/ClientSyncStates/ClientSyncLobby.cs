@@ -15,7 +15,6 @@ namespace ubv.client.logic
     public class ClientSyncLobby : ClientSyncState, tcp.client.ITCPClientReceiver
     {
         private bool m_serverSentSignal;
-        private int? m_playerID; // TODO maybe : set it static/global because accessed by everything
 
         private int? m_simulationBuffer;
         private List<PlayerState> m_playerStates;
@@ -116,7 +115,7 @@ namespace ubv.client.logic
             if (m_serverSentSignal)
             {
                 OnGameStart?.Invoke();
-                ClientSyncState.m_playState.Init(m_playerID.Value, m_simulationBuffer.Value, m_playerStates);
+                ClientSyncState.m_playState.Init(m_simulationBuffer.Value, m_playerStates);
                 m_currentState = ClientSyncState.m_playState;
                 m_TCPClient.Unsubscribe(this);
                 m_serverSentSignal = false;
