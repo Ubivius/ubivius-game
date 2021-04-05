@@ -45,7 +45,9 @@ namespace ubv.tcp.server
         [SerializeField] private int m_connectionKeepAliveRate = 33;
         private byte[] m_keepAlivePacketBytes;
         private int m_fixedFrameCount;
-        
+
+        private ManualResetEvent m_requestToSendEvent;
+
         private void Awake()
         {
             m_receivers = new List<ITCPServerReceiver>();
@@ -68,6 +70,7 @@ namespace ubv.tcp.server
 
             m_tcpListener = new TcpListener(localEndPoint);
             m_fixedFrameCount = 0;
+            m_requestToSendEvent = new ManualResetEvent(false);
         }
 
         private void Start()
@@ -89,6 +92,7 @@ namespace ubv.tcp.server
                     });
 
                     m_tcpClientTasks.Add(awaiterTask);
+                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
                 }
 
                 int removeAtIndex = Task.WaitAny(m_tcpClientTasks.ToArray(), m_connectionTimeoutInMS);
@@ -99,6 +103,8 @@ namespace ubv.tcp.server
 #endif // DEBUG_LOG
                     m_tcpClientTasks.RemoveAt(removeAtIndex);
                 }
+
+                Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
             }
         }
 
@@ -314,6 +320,15 @@ namespace ubv.tcp.server
                         bytes[i] = bytes[i + totalPacketBytes];
                     }
                 }
+
+                try
+                {
+                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
             }
         }
 
@@ -329,6 +344,8 @@ namespace ubv.tcp.server
             
             while (!m_exitSignal && m_activeEndpoints[source])
             {
+                m_requestToSendEvent.WaitOne();
+                m_requestToSendEvent.Reset();
                 // write to stream (send to client)lock (m_lock)
                 lock (m_lock)
                 {
@@ -357,6 +374,7 @@ namespace ubv.tcp.server
 
         public void Send(byte[] bytes, int playerID)
         {
+            m_requestToSendEvent.Set();
             lock (m_lock)
             {
                 m_dataToSend[m_clientEndpoints[playerID]].Enqueue(bytes);
