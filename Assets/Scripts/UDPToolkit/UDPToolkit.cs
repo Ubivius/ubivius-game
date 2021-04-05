@@ -22,8 +22,6 @@ namespace ubv
             {
                 private uint m_localSequence;
                 private uint m_remoteSequence;
-                private Dictionary<uint, Packet> m_sentPackets; // buffer of sent packets
-                private Dictionary<uint, Packet> m_receivedPackets; // buffer
 
                 public ConnectionData()
                 {
