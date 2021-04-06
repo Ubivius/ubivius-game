@@ -63,7 +63,7 @@ namespace ubv.client.logic
 
             foreach (ClientStateUpdater updater in m_updaters)
             {
-                updater.Init(playerStates, m_playerID.Value);
+                updater.Init(playerStates, PlayerID.Value);
             }
             m_UDPClient.Subscribe(this);
             m_TCPClient.Subscribe(this);
@@ -71,7 +71,7 @@ namespace ubv.client.logic
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
                 m_clientStateBuffer[i] = new ClientState();
-                m_clientStateBuffer[i].PlayerGUID = m_playerID.Value;
+                m_clientStateBuffer[i].PlayerGUID = PlayerID.Value;
 
                 foreach (PlayerState playerState in playerStates)
                 {
@@ -182,7 +182,7 @@ namespace ubv.client.logic
                 ClientState state = common.serialization.IConvertible.CreateFromBytes<ClientState>(packet.Data.ArraySegment());
                 if (state != null)
                 {
-                    state.PlayerGUID = m_playerID.Value;
+                    state.PlayerGUID = PlayerID.Value;
                     m_lastServerState = state;
 #if DEBUG_LOG
                     Debug.Log("Received server state tick " + state.Tick.Value);
@@ -235,14 +235,14 @@ namespace ubv.client.logic
 
             InputMessage inputMessage = new InputMessage();
 
-            inputMessage.PlayerID.Value = m_playerID.Value;
+            inputMessage.PlayerID.Value = PlayerID.Value;
             inputMessage.StartTick.Value = m_remoteTick;
             inputMessage.InputFrames.Value = frames;
 
 #if NETWORK_SIMULATE
             if (Random.Range(0f, 1f) > m_packetLossChance)
             {
-                m_UDPClient.Send(inputMessage.GetBytes(), m_playerID.Value);
+                m_UDPClient.Send(inputMessage.GetBytes(), PlayerID.Value);
             }
             else
             {
@@ -315,7 +315,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Successful connection to server.");
 #endif // DEBUG_LOG
-            m_TCPClient.Send(new IdentificationMessage(m_playerID.Value).GetBytes());
+            m_TCPClient.Send(new IdentificationMessage(PlayerID.Value).GetBytes());
         }
 
         public void ReceivePacket(TCPToolkit.Packet packet)

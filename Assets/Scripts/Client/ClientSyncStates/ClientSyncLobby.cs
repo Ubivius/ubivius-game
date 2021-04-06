@@ -38,7 +38,7 @@ namespace ubv.client.logic
 
         private void OnWorldBuilt()
         {
-            ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage(m_playerID.Value);
+            ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage(PlayerID.Value);
             m_TCPClient.Send(worldLoaded.GetBytes());
         }
         
@@ -46,7 +46,7 @@ namespace ubv.client.logic
         {
             if (m_currentState == this)
             {
-                ClientReadyMessage clientReadyMessage = new ClientReadyMessage(m_playerID.Value);
+                ClientReadyMessage clientReadyMessage = new ClientReadyMessage(PlayerID.Value);
                 m_TCPClient.Send(clientReadyMessage.GetBytes());
             }
         }
@@ -124,7 +124,7 @@ namespace ubv.client.logic
 
         public void Init(int playerID)
         {
-            m_playerID = playerID;
+            PlayerID = playerID;
             m_TCPClient.Subscribe(this);
         }
         
