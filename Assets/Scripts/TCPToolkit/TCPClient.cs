@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.IO;
 using System;
+using System.Threading.Tasks;
 
 namespace ubv.tcp.client
 {
@@ -43,6 +44,8 @@ namespace ubv.tcp.client
 
         private int? m_playerID;
 
+        private ManualResetEvent m_requestToSendEvent;
+
         private void Awake()
         {
             m_receivers = new List<ITCPClientReceiver>();
@@ -56,12 +59,9 @@ namespace ubv.tcp.client
             m_iteratingTroughReceivers = false;
             m_keepAlivePacketBytes = new byte[0];
             m_fixedFrameCount = 0;
+            m_requestToSendEvent = new ManualResetEvent(false);
         }
-
-        private void Start()
-        {
-        }
-
+        
         public void SetPlayerID(int playerID)
         {
             m_playerID = playerID;
@@ -201,6 +201,15 @@ namespace ubv.tcp.client
                         bytes[i] = bytes[i + totalPacketBytes];
                     }
                 }
+
+                try
+                {
+                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
             }
 #if DEBUG_LOG
             Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal + ", Buffer offset :" + bufferOffset);
@@ -280,6 +289,8 @@ namespace ubv.tcp.client
             
             while (!m_exitSignal && m_activeEndpoint)
             {
+                m_requestToSendEvent.WaitOne();
+                m_requestToSendEvent.Reset();
                 // write to stream (send to client)
                 lock (m_lock)
                 {
@@ -316,6 +327,7 @@ namespace ubv.tcp.client
 
         public void Send(byte[] data)
         {
+            m_requestToSendEvent.Set();
             lock (m_lock)
             {
                 m_dataToSend.Enqueue(data);
