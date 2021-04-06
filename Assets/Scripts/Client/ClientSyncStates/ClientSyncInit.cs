@@ -11,7 +11,7 @@ using static ubv.microservices.DispatcherMicroservice;
 
 namespace ubv.client.logic
 {
-    public class ClientSyncInit : ClientSyncState, udp.client.IUDPClientReceiver
+    public class ClientSyncInit : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
     {
         private ServerInfo? m_cachedServerInfo;
         private bool m_connected;
@@ -142,5 +142,8 @@ namespace ubv.client.logic
                 GoToLobby();
             }
         }
+
+        public void ReceivePacket(TCPToolkit.Packet packet)
+        { }
     }   
 }

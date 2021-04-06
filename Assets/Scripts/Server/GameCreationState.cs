@@ -179,7 +179,7 @@ namespace ubv.server.logic
                     }
 
                     ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
-                    m_TCPServer.Send(serverSuccessPing.GetBytes(), playerID);
+                    m_UDPServer.Send(serverSuccessPing.GetBytes(), playerID);
 
 #if DEBUG_LOG
                     Debug.Log("Received connection request from player (ID  " + playerID + ")");
