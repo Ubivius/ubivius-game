@@ -62,7 +62,7 @@ namespace ubv.client.logic
                 }
             }
 
-            if (m_waitingOnUDPResponse)
+            if (m_connected && m_waitingOnUDPResponse)
             {
                 m_UDPPingTimerIntervalMS += Time.deltaTime;
                 if (m_UPDPingTimer > m_UDPPingTimerIntervalMS / 1000f)
@@ -95,21 +95,21 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                 Debug.Log("Trying to establish connection to game server...");
 #endif // DEBUG_LOG
-                
-                m_TCPClient.Connect(serverInfo.server_ip, serverInfo.tcp_port);
 
-                // TODO : make sure server receives UDP ping
-                // maybe with TCP reception of player list and confirming itself?
-                m_UDPClient.SetTargetServer(serverInfo.server_ip, serverInfo.udp_port);
-                m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
-                m_waitingOnUDPResponse = true;
+                m_TCPClient.Connect(serverInfo.server_ip, serverInfo.tcp_port);
             }
+#if DEBUG_LOG
+            else
+            {
+                Debug.Log("Already connected to game server.");
+            }
+#endif // DEBUG_LOG
         }
-        
+
         private void GoToLobby()
         {
 #if DEBUG_LOG
-            Debug.Log("Received TCP connection confirmation. Going to lobby");
+            Debug.Log("Received TCP/UDP connection confirmation. Going to lobby");
 #endif // DEBUG_LOG
 
             ClientSyncState.m_lobbyState.Init(PlayerID.Value);
@@ -133,6 +133,10 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
             m_TCPClient.Send(m_identificationMessageBytes); // sends a ping to the server
             m_connected = true;
+
+            m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_ip, m_cachedServerInfo.Value.udp_port);
+            m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
+            m_waitingOnUDPResponse = true;
         }
 
         public void ReceivePacket(UDPToolkit.Packet packet)
