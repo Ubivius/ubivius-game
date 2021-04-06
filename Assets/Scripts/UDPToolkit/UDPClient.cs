@@ -178,7 +178,7 @@ namespace ubv
                             }
                         }
 
-                        if (m_connectionData.Receive(packet, (UDPToolkit.Packet p) => { }))
+                        if (m_connectionData.Receive(packet))
                         {
                             m_connected = true;
                             Distribute(packet);
