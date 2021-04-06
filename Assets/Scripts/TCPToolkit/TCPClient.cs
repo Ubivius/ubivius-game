@@ -35,12 +35,13 @@ namespace ubv.tcp.client
         private Queue<byte[]> m_dataToSend;
 
         private bool m_activeEndpoint;
-        [SerializeField] private int m_checkConnectionRate = 61;
-        [SerializeField] private int m_connectionKeepAliveRate = 33;
+        [SerializeField] private float m_connectionCheckTimerIntervalMS = 1000;
+        [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 250;
         private float m_endpointLastTimeSeen;
-        private int m_fixedFrameCount;
-
         private byte[] m_keepAlivePacketBytes;
+
+        private float m_connectionCheckTimer;
+        private float m_connectionKeepAliveTimer;
 
         private int? m_playerID;
 
@@ -58,7 +59,10 @@ namespace ubv.tcp.client
 
             m_iteratingTroughReceivers = false;
             m_keepAlivePacketBytes = new byte[0];
-            m_fixedFrameCount = 0;
+
+            m_connectionCheckTimer = 0;
+            m_connectionKeepAliveTimer = 0;
+            
             m_requestToSendEvent = new ManualResetEvent(false);
         }
         
@@ -239,7 +243,20 @@ namespace ubv.tcp.client
             if (m_activeEndpoint)
             {
                 m_endpointLastTimeSeen += Time.deltaTime;
+
+                if (m_connectionCheckTimer > m_connectionCheckTimerIntervalMS)
+                {
+                    m_connectionCheckTimer = 0;
+                    m_activeEndpoint = CheckConnection();
+                }
+                
+                if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS && m_activeEndpoint)
+                {
+                    m_connectionKeepAliveTimer = 0;
+                    Send(m_keepAlivePacketBytes);
+                }
             }
+
 
             lock (m_lock)
             {
@@ -265,21 +282,7 @@ namespace ubv.tcp.client
                 }
             }
         }
-
-        private void FixedUpdate()
-        {
-            if(m_fixedFrameCount % m_checkConnectionRate == 0 && m_activeEndpoint)
-            {
-                m_activeEndpoint = CheckConnection();
-            }
-
-            if (m_fixedFrameCount % m_connectionKeepAliveRate == 0 && m_activeEndpoint)
-            {
-                Send(m_keepAlivePacketBytes);
-            }
-            ++m_fixedFrameCount;
-        }
-
+        
         private void SendingThread(object streamObj)
         {
             NetworkStream stream = (NetworkStream)streamObj;

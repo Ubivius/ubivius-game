@@ -41,10 +41,13 @@ namespace ubv.tcp.server
 
         private List<ITCPServerReceiver> m_receivers;
 
-        [SerializeField] private int m_connectionCheckRate = 61;
-        [SerializeField] private int m_connectionKeepAliveRate = 33;
+        [SerializeField] private float m_connectionCheckTimerIntervalMS = 1000;
+        [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 250;
+
+        private float m_connectionCheckTimer;
+        private float m_connectionKeepAliveTimer;
+
         private byte[] m_keepAlivePacketBytes;
-        private int m_fixedFrameCount;
 
         private ManualResetEvent m_requestToSendEvent;
 
@@ -69,8 +72,10 @@ namespace ubv.tcp.server
             m_keepAlivePacketBytes = new byte[0];
 
             m_tcpListener = new TcpListener(localEndPoint);
-            m_fixedFrameCount = 0;
             m_requestToSendEvent = new ManualResetEvent(false);
+
+            m_connectionCheckTimer = 0;
+            m_connectionKeepAliveTimer = 0;
         }
 
         private void Start()
@@ -118,12 +123,13 @@ namespace ubv.tcp.server
                     m_endpointLastTimeSeen[ep] += Time.deltaTime;
                 }
             }
-        }
 
-        private void FixedUpdate()
-        {
-            if (m_fixedFrameCount % m_connectionCheckRate == 0)
+            m_connectionKeepAliveTimer += Time.deltaTime;
+            m_connectionCheckTimer += Time.deltaTime;
+
+            if (m_connectionCheckTimer > m_connectionCheckTimerIntervalMS / 1000f)
             {
+                m_connectionCheckTimer = 0;
                 foreach (IPEndPoint ep in m_clientConnections.Keys)
                 {
                     if (m_activeEndpoints[ep])
@@ -136,17 +142,16 @@ namespace ubv.tcp.server
                 }
             }
 
-            if (m_fixedFrameCount % m_connectionKeepAliveRate == 0)
+            if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS / 1000f)
             {
+                m_connectionKeepAliveTimer = 0;
                 foreach (int id in m_clientEndpoints.Keys)
                 {
                     Send(m_keepAlivePacketBytes, id);
                 }
             }
-
-            ++m_fixedFrameCount;
         }
-
+        
         private void OnDestroy()
         {
             m_exitSignal = true;
