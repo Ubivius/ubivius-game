@@ -97,7 +97,14 @@ namespace ubv.tcp.server
                     });
 
                     m_tcpClientTasks.Add(awaiterTask);
-                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                    try
+                    {
+                        Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        break;
+                    }
                 }
 
                 int removeAtIndex = Task.WaitAny(m_tcpClientTasks.ToArray(), m_connectionTimeoutInMS);
@@ -109,7 +116,14 @@ namespace ubv.tcp.server
                     m_tcpClientTasks.RemoveAt(removeAtIndex);
                 }
 
-                Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                try
+                {
+                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
             }
         }
 
