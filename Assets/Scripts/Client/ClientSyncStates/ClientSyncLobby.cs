@@ -27,11 +27,6 @@ namespace ubv.client.logic
 
         public float LoadPercentage { get; private set; }
 
-        private bool ConnectedToServer { get { return m_TCPClient.IsConnected(); } }
-
-        [SerializeField] private float m_reconnectTryDelayMS = 2000;
-        private float m_reconnectTryTimer;
-
         protected override void StateAwake()
         {
             ClientListUpdate = new ClientListUpdateEvent();
@@ -101,45 +96,29 @@ namespace ubv.client.logic
 
         protected override void StateUpdate()
         {
-            if (ConnectedToServer)
+            if(m_awaitedInitMessage != null)
             {
-                if (m_awaitedInitMessage != null)
-                {
-                    m_playerStates = m_awaitedInitMessage.Players.Value;
-                    m_simulationBuffer = m_awaitedInitMessage.SimulationBuffer.Value;
+                m_playerStates = m_awaitedInitMessage.Players.Value;
+                m_simulationBuffer = m_awaitedInitMessage.SimulationBuffer.Value;
 #if DEBUG_LOG
-                    Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
+                Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
 
 #if DEBUG_LOG
-                    Debug.Log("Starting to load world.");
+                Debug.Log("Starting to load world.");
 #endif // DEBUG_LOG
 
-                    StartCoroutine(LoadWorldCoroutine(m_awaitedInitMessage.CellInfo2DArray.Value));
-                    m_awaitedInitMessage = null;
-                }
-
-                if (m_serverSentSignal)
-                {
-                    OnGameStart?.Invoke();
-                    ClientSyncState.m_playState.Init(m_simulationBuffer.Value, m_playerStates);
-                    m_currentState = ClientSyncState.m_playState;
-                    m_TCPClient.Unsubscribe(this);
-                    m_serverSentSignal = false;
-                }
+                StartCoroutine(LoadWorldCoroutine(m_awaitedInitMessage.CellInfo2DArray.Value));
+                m_awaitedInitMessage = null;
             }
-            else
+
+            if (m_serverSentSignal)
             {
-                // if not connected : try to reconnect every x second with ID message 
-                m_reconnectTryTimer += Time.deltaTime;
-                if (m_reconnectTryTimer > m_reconnectTryDelayMS)
-                {
-#if DEBUG_LOG
-                    Debug.Log("Trying to reconnect to server...");
-#endif //DEBUG_LOG
-                    m_TCPClient.Reconnect();
-                    m_reconnectTryTimer = 0;
-                }
+                OnGameStart?.Invoke();
+                ClientSyncState.m_playState.Init(m_simulationBuffer.Value, m_playerStates);
+                m_currentState = ClientSyncState.m_playState;
+                m_TCPClient.Unsubscribe(this);
+                m_serverSentSignal = false;
             }
         }
 

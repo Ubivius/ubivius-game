@@ -46,7 +46,7 @@ namespace ubv.client.logic
             if (m_cachedServerInfo != null && !m_connected && !m_waitingOnServerResponse)
             {
                 m_requestResendTimer += Time.deltaTime;
-                if(m_requestResendTimer > C_REQUEST_RESEND_TIME_MS)
+                if(m_requestResendTimer > C_REQUEST_RESEND_TIME_MS / 1000f)
                 {
 #if DEBUG_LOG
                     Debug.Log("Trying to reconnect to server : " + m_cachedServerInfo.Value.server_ip.ToString() + " ...");
