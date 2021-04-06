@@ -44,6 +44,7 @@ namespace ubv.client.logic
             m_identificationMessageBytes = new IdentificationMessage(PlayerID.Value).GetBytes();
             m_TCPClient.SetPlayerID(PlayerID.Value);
             m_UDPClient.Subscribe(this);
+            m_TCPClient.Subscribe(this);
         }
 
         protected override void StateUpdate()
@@ -114,6 +115,7 @@ namespace ubv.client.logic
             ClientSyncState.m_lobbyState.Init(PlayerID.Value);
             ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
             m_UDPClient.Unsubscribe(this);
+            m_TCPClient.Unsubscribe(this);
         }
 
         public void OnDisconnect()
