@@ -15,6 +15,7 @@ namespace ubv.common.world.cellType
             CELL_DOOR,
             CELL_BUTTON,
             CELL_FLOOR,
+            CELL_PLAYERSPAWN,
             CELL_NONE
         }
 

@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 using ubv.common.data;
 using ubv.common.serialization;
 using ubv.common;
+using UnityEngine;
 
 namespace ubv.server.logic
 {
     class GameMaster : ServerGameplayStateUpdater
     {
+        [SerializeField] private ubv.common.world.WorldGenerator m_world;
+
         public override void Setup()
         {
         }
