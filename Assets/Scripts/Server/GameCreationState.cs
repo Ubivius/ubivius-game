@@ -174,8 +174,19 @@ namespace ubv.server.logic
 #if DEBUG_LOG
                     Debug.Log("Received connection request from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
+                }
+                return;
+            }
 
-                    BroadcastPlayerList();
+            OnLobbyEnteredMessage lobbyEnter = Serializable.CreateFromBytes<OnLobbyEnteredMessage>(packet.Data.ArraySegment());
+            if (lobbyEnter != null)
+            {
+                lock (m_lock)
+                {
+                    if (m_clients.Contains(playerID))
+                    {
+                        BroadcastPlayerList();
+                    }
                 }
                 return;
             }

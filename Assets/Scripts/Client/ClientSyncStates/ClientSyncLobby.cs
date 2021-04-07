@@ -126,6 +126,7 @@ namespace ubv.client.logic
         {
             PlayerID = playerID;
             m_TCPClient.Subscribe(this);
+            m_TCPClient.Send(new OnLobbyEnteredMessage().GetBytes());
         }
         
         private IEnumerator LoadWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
