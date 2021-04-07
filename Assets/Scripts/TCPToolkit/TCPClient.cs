@@ -210,8 +210,11 @@ namespace ubv.tcp.client
                 {
                     Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
                 }
-                catch (TaskCanceledException)
+                catch (AggregateException ex)
                 {
+#if DEBUG_LOG
+                    Debug.Log(ex.Message);
+#endif // DEBUG_LOG
                     break;
                 }
             }
@@ -292,7 +295,7 @@ namespace ubv.tcp.client
             
             while (!m_exitSignal && m_activeEndpoint)
             {
-                m_requestToSendEvent.WaitOne();
+                m_requestToSendEvent.WaitOne(m_connectionTimeoutInMS);
                 m_requestToSendEvent.Reset();
                 // write to stream (send to client)
                 lock (m_lock)

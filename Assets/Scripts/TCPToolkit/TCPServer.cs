@@ -101,9 +101,11 @@ namespace ubv.tcp.server
                     {
                         Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
                     }
-                    catch (TaskCanceledException)
+                    catch (AggregateException ex)
                     {
-                        break;
+#if DEBUG_LOG
+                        Debug.Log(ex.Message);
+#endif // DEBUG_LOG
                     }
                 }
 
@@ -120,9 +122,12 @@ namespace ubv.tcp.server
                 {
                     Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
                 }
-                catch (TaskCanceledException)
+                catch (AggregateException ex)
                 {
-                    break;
+#if DEBUG_LOG
+                    Debug.Log(ex.Message);
+#endif // DEBUG_LOG
+                    m_exitSignal = true;
                 }
             }
         }
@@ -344,9 +349,12 @@ namespace ubv.tcp.server
                 {
                     Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
                 }
-                catch (TaskCanceledException)
+                catch (AggregateException ex)
                 {
-                    break;
+#if DEBUG_LOG
+                    Debug.Log(ex.Message);
+#endif // DEBUG_LOG
+                    m_exitSignal = true;
                 }
             }
         }
@@ -363,7 +371,7 @@ namespace ubv.tcp.server
             
             while (!m_exitSignal && m_activeEndpoints[source])
             {
-                m_requestToSendEvent.WaitOne();
+                m_requestToSendEvent.WaitOne(m_connectionTimeoutInMS);
                 m_requestToSendEvent.Reset();
                 // write to stream (send to client)lock (m_lock)
                 lock (m_lock)
