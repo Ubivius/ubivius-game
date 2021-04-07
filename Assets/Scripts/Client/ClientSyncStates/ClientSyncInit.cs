@@ -41,7 +41,7 @@ namespace ubv.client.logic
             m_connected = false;
             m_waitingOnUDPResponse = false;
             m_requestResendTimer = 0;
-            m_identificationMessageBytes = new IdentificationMessage(PlayerID.Value).GetBytes();
+            m_identificationMessageBytes = new IdentificationMessage().GetBytes();
             m_TCPClient.SetPlayerID(PlayerID.Value);
             m_UDPClient.Subscribe(this);
             m_TCPClient.Subscribe(this);

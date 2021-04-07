@@ -140,7 +140,7 @@ namespace ubv
                                 m_clients[playerID].Connect(clientEndPoint);
                             }
 
-                            if (m_clientConnections[playerID].Receive(packet, (UDPToolkit.Packet p) => { }))
+                            if (m_clientConnections[playerID].Receive(packet))
                             {
                                 OnReceive(packet, playerID);
                             }
