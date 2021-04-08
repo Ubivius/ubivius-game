@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Collections;
 using UnityEngine;
 
-namespace ubv.common.world
+namespace ubv.common.world.generationManager
 {
     public struct BoxInfo
     {
@@ -73,7 +73,7 @@ namespace ubv.common.world
 
         private Grid m_grid;
 
-        private ubv.common.world.LogicGrid m_masterLogicGrid;
+        LogicGrid m_masterLogicGrid;
 
         private int m_wallThickness = 1;
 
@@ -197,8 +197,8 @@ namespace ubv.common.world
             // la largeur des murs autour d'une pièce est de 2
             AddVoidCell(new Vector2Int(coord.x - 1, coord.y - 1), roomInfo.Width + 4, 1);               //Section sous la room
             AddVoidCell(new Vector2Int(coord.x - 1, coord.y + roomInfo.Height), roomInfo.Width + 4, 1); //Section au dessus la room
-            AddVoidCell(new Vector2Int(coord.x, coord.y - 1), 1, roomInfo.Height);                      //Section à gauche la room
-            AddVoidCell(new Vector2Int(coord.x + roomInfo.Width, coord.y), 1, roomInfo.Height);         //Section à droite la room
+            AddVoidCell(new Vector2Int(coord.x - 1, coord.y - 1), 1, roomInfo.Height + 1);              //Section à gauche la room
+            AddVoidCell(new Vector2Int(coord.x + roomInfo.Width, coord.y), 1, roomInfo.Height + 1);     //Section à droite la room
             
         }
 

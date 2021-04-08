@@ -60,16 +60,16 @@ namespace ubv.common.world.cellType
             switch((CellType)m_cellType.Value)
             {
                 case CellType.CELL_WALL:
-                    cell = CreateFromBytes<WallCell>(m_logicCellBytes.Value);
+                    cell = CreateFromBytes<WallCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_FLOOR:
-                    cell = CreateFromBytes<FloorCell>(m_logicCellBytes.Value);
+                    cell = CreateFromBytes<FloorCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_DOOR:
-                    cell = CreateFromBytes<DoorCell>(m_logicCellBytes.Value);
+                    cell = CreateFromBytes<DoorCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_BUTTON:
-                    cell = CreateFromBytes<DoorButtonCell>(m_logicCellBytes.Value);
+                    cell = CreateFromBytes<DoorButtonCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_NONE:
                     break;
@@ -83,6 +83,9 @@ namespace ubv.common.world.cellType
 
     abstract public class LogicCell : serialization.Serializable
     {
+        public delegate void LogicCellDelegate(LogicCell Cell);
+        public LogicCellDelegate OnChange;
+
         private serialization.types.Bool m_isWalkable;
         private int m_cellID;
 
@@ -108,6 +111,12 @@ namespace ubv.common.world.cellType
 
         public abstract CellInfo.CellType GetCellType();
 
-        public bool IsWalkable { get => m_isWalkable.Value; protected set => m_isWalkable.Value = value; }
+        public bool IsWalkable { get => m_isWalkable.Value; protected set => SetWalkable(value); }
+
+        private void SetWalkable(bool value)
+        {
+            m_isWalkable.Value = value;
+            OnChange?.Invoke(this);
+        }
     }
 }

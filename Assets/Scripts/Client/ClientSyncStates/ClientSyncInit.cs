@@ -7,19 +7,12 @@ using UnityEngine.SceneManagement;
 using ubv.common.data;
 using ubv.tcp;
 using System.Net.Http;
+using static ubv.microservices.DispatcherMicroservice;
 
 namespace ubv.client.logic
 {
     public class ClientSyncInit : ClientSyncState, tcp.client.ITCPClientReceiver
     {
-        // when dispatcher is ready
-        // [SerializeField] EndPoint m_dispatcherEndpoint;
-
-        [SerializeField] string m_serverTCPAddress;
-        [SerializeField] int m_serverTCPPort;
-        [SerializeField] string m_serverUDPAddress;
-        [SerializeField] int m_serverUDPPort;
-
         private ServerInfo? m_cachedServerInfo;
         private bool m_connected;
         private bool m_waitingOnServerResponse;
@@ -27,17 +20,7 @@ namespace ubv.client.logic
         private const float C_REQUEST_RESEND_TIME_MS = 5000f;
         private float m_requestResendTimer;
         private byte[] m_identificationMessageBytes;
-
-        private struct ServerInfo
-        {
-            public string TCPAddress;
-            public int TCPPort;
-            public string UDPAddress;
-            public int UDPPort;
-        }
-
-        private int? m_playerID;
-
+        
         protected override void StateAwake()
         {
             ClientSyncState.m_initState = this;
@@ -54,6 +37,8 @@ namespace ubv.client.logic
             m_connected = false;
             m_waitingOnServerResponse = false;
             m_requestResendTimer = 0;
+            m_identificationMessageBytes = new IdentificationMessage().GetBytes();
+            m_TCPClient.SetPlayerID(m_playerID.Value);
         }
 
         protected override void StateUpdate()
@@ -64,7 +49,7 @@ namespace ubv.client.logic
                 if(m_requestResendTimer > C_REQUEST_RESEND_TIME_MS)
                 {
 #if DEBUG_LOG
-                    Debug.Log("Trying to reconnect to server : " + m_cachedServerInfo.Value.TCPAddress.ToString() + " ...");
+                    Debug.Log("Trying to reconnect to server : " + m_cachedServerInfo.Value.server_ip.ToString() + " ...");
 #endif // DEBUG_LOG
                     m_requestResendTimer = 0;
                     EstablishConnectionToServer(m_cachedServerInfo.Value);
@@ -78,51 +63,15 @@ namespace ubv.client.logic
             Debug.Log("Sending connection request to dispatcher...");
 #endif // DEBUG_LOG
             m_waitingOnServerResponse = true;
-            if (m_playerID == null)
-            {
-                int playerID = System.Guid.NewGuid().GetHashCode(); // for now
-                m_playerID = playerID;
-                m_identificationMessageBytes = new IdentificationMessage(m_playerID.Value).GetBytes();
-                m_TCPClient.SetPlayerID(playerID);
-            }
 
-            // mock dispatcher response for now
-            HttpResponseMessage msg = new HttpResponseMessage();
-            string jsonString = JsonUtility.ToJson(new ServerInfo
-            {
-                TCPAddress = m_serverTCPAddress,
-                TCPPort = m_serverTCPPort,
-                UDPAddress = m_serverUDPAddress,
-                UDPPort = m_serverUDPPort
-            }).ToString();
-            msg.Content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
-            msg.StatusCode = HttpStatusCode.OK;
-            OnDispatcherResponse(msg);
-
-            // uncomment when dispatcher ready
-            // m_HTTPClient.Get("dispatcher/" + playerID.ToString(), OnDispatcherResponse);
+            m_dispatcherService.RequestServerInfo(m_playerID.Value, OnServerInfoReceived);
         }
 
-        private void OnDispatcherResponse(HttpResponseMessage message)
+        private void OnServerInfoReceived(ServerInfo? info)
         {
-            if (message.StatusCode == HttpStatusCode.OK)
-            {
-                string JSON = message.Content.ReadAsStringAsync().Result;
-                ServerInfo serverInfo = JsonUtility.FromJson<ServerInfo>(JSON);
-
-                m_cachedServerInfo = serverInfo;
-#if DEBUG_LOG
-                Debug.Log("Received from dispatcher : " + JSON);
-#endif // DEBUG_LOG
-
-                EstablishConnectionToServer(serverInfo);
-            }
-            else
-            {
-#if DEBUG_LOG
-                Debug.Log("Dispatcher GET request was not successful");
-#endif // DEBUG_LOG
-            }
+            m_cachedServerInfo = info;
+            m_waitingOnServerResponse = false;
+            EstablishConnectionToServer(m_cachedServerInfo.Value);
         }
 
         private void EstablishConnectionToServer(ServerInfo serverInfo)
@@ -132,18 +81,18 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
 
             m_TCPClient.Subscribe(this);
-            m_TCPClient.Connect(serverInfo.TCPAddress, serverInfo.TCPPort);
+            m_TCPClient.Connect(serverInfo.server_ip, serverInfo.tcp_port);
 
             // TODO : make sure server receives UDP ping
             // maybe with TCP reception of player list and confirming itself?
-            m_UDPClient.SetTargetServer(serverInfo.UDPAddress, serverInfo.UDPPort);
+            m_UDPClient.SetTargetServer(serverInfo.server_ip, serverInfo.udp_port);
             m_UDPClient.Send(m_identificationMessageBytes, m_playerID.Value);
         }
 
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
-            // receive auth message
-            ServerSuccessfulConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulConnectMessage>(packet.Data);
+            // receive auth message and set player id
+            ServerSuccessfulConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulConnectMessage>(packet.Data.ArraySegment());
             if (serverSuccessPing != null)
             {
                 m_waitingOnServerResponse = false;

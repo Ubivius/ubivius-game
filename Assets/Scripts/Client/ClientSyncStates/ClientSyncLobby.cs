@@ -15,7 +15,6 @@ namespace ubv.client.logic
     public class ClientSyncLobby : ClientSyncState, tcp.client.ITCPClientReceiver
     {
         private bool m_serverSentSignal;
-        private int? m_playerID; // TODO maybe : set it static/global because accessed by everything
 
         private int? m_simulationBuffer;
         private List<PlayerState> m_playerStates;
@@ -39,7 +38,7 @@ namespace ubv.client.logic
 
         private void OnWorldBuilt()
         {
-            ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage(m_playerID.Value);
+            ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage();
             m_TCPClient.Send(worldLoaded.GetBytes());
         }
         
@@ -47,14 +46,14 @@ namespace ubv.client.logic
         {
             if (m_currentState == this)
             {
-                ClientReadyMessage clientReadyMessage = new ClientReadyMessage(m_playerID.Value);
+                ClientReadyMessage clientReadyMessage = new ClientReadyMessage();
                 m_TCPClient.Send(clientReadyMessage.GetBytes());
             }
         }
 
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
-            ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data);
+            ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data.ArraySegment());
             if (ready != null)
             {
 #if DEBUG_LOG
@@ -65,7 +64,7 @@ namespace ubv.client.logic
             }
             
             // loads other players in lobby, receives message from server indicating a new player joined
-            ClientListMessage clientList = common.serialization.IConvertible.CreateFromBytes<ClientListMessage>(packet.Data);
+            ClientListMessage clientList = common.serialization.IConvertible.CreateFromBytes<ClientListMessage>(packet.Data.ArraySegment());
             if (clientList != null)
             {
                 List<PlayerState> playerStates = clientList.Players.Value;
@@ -83,7 +82,7 @@ namespace ubv.client.logic
             // meanwhile maybe start in thread
             System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
             watch.Start();
-            ServerInitMessage start = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data);
+            ServerInitMessage start = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data.ArraySegment());
             watch.Stop();
             if (start != null)
             {
@@ -116,7 +115,7 @@ namespace ubv.client.logic
             if (m_serverSentSignal)
             {
                 OnGameStart?.Invoke();
-                ClientSyncState.m_playState.Init(m_playerID.Value, m_simulationBuffer.Value, m_playerStates);
+                ClientSyncState.m_playState.Init(m_simulationBuffer.Value, m_playerStates);
                 m_currentState = ClientSyncState.m_playState;
                 m_TCPClient.Unsubscribe(this);
                 m_serverSentSignal = false;

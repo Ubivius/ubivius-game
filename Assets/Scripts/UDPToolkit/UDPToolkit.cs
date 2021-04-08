@@ -22,28 +22,11 @@ namespace ubv
             {
                 private uint m_localSequence;
                 private uint m_remoteSequence;
-                private Queue<uint> m_acknowledged; // packets we sent and know other side received
-                private Dictionary<uint, Packet> m_sentPackets; // buffer of sent packets
-                private Dictionary<uint, Packet> m_receivedPackets; // buffer
 
                 public ConnectionData()
                 {
                     m_localSequence = 1;
                     m_remoteSequence = 0;
-                    m_acknowledged = new Queue<uint>();
-                    m_sentPackets = new Dictionary<uint, Packet>();
-                    m_receivedPackets = new Dictionary<uint, Packet>();
-                }
-
-                private int GenerateACKBitfield()
-                {
-                    int bitfield = 0;
-                    for (ushort i = 0; i < sizeof(int); i++)
-                    {
-                        if (m_remoteSequence > i && m_acknowledged.Contains(m_remoteSequence - i))
-                            bitfield |= 1 << i;
-                    }
-                    return bitfield;
                 }
 
                 /// <summary>
@@ -53,8 +36,7 @@ namespace ubv
                 /// <returns></returns>
                 public Packet Send(byte[] Data, int playerID)
                 {
-                    Packet p = new Packet(Data, m_localSequence, m_remoteSequence, GenerateACKBitfield(), playerID);
-                    m_sentPackets[m_localSequence] = p;
+                    Packet p = new Packet(Data, m_localSequence, m_remoteSequence, playerID);
                     ++m_localSequence;
                     return p;
                 }
@@ -63,44 +45,12 @@ namespace ubv
                 /// Acknowledges packet and updates sequence numbers
                 /// </summary>
                 /// <param name="packet"></param>
-                public bool Receive(Packet packet, System.Action<Packet> OnPacketACK)
+                public bool Receive(Packet packet)
                 {
                     if (packet.HasValidProtocolID())
                     {
                         if (packet.Sequence > m_remoteSequence)
                             m_remoteSequence = packet.Sequence;
-
-                        uint ack = packet.ACK;
-
-                        m_receivedPackets[ack] = packet;
-
-                        // ack bitfield
-                        int bitfield = packet.ACK_Bitfield;
-                        m_acknowledged.Enqueue(ack);
-                        for (ushort i = 0; i < sizeof(int); i++)
-                        {
-                            if ((bitfield & (1 << i)) == 1 && !m_acknowledged.Contains(ack - i))
-                            {
-                                m_acknowledged.Enqueue(ack - i);
-                            }
-                        }
-                        
-                        for (int i = 0; i < m_receivedPackets.Count; i++)
-                        {
-                            if (m_sentPackets.ContainsKey(ack))
-                            {
-                                OnPacketACK(m_receivedPackets[ack]);
-                                m_sentPackets.Remove(ack);
-                            }
-                        }
-
-                        if(ack == 0) // if it's the first packet we receive
-                        {
-                            OnPacketACK(packet);
-                        }
-
-                        while (m_acknowledged.Count > sizeof(int))
-                            m_acknowledged.Dequeue();
 
                         return true;
                     }
@@ -112,12 +62,11 @@ namespace ubv
             public class Packet : network.Packet
             {
                 public const ushort UDP_MAX_PAYLOAD_SIZE = 512 * 2 * 2; // TODO: WARN WHEN EXCEEDING THIS AND FIND RIGHT SIZE
-                public const ushort UDP_HEADER_SIZE = DEFAULT_HEADER_SIZE + (3 * sizeof(int));
+                public const ushort UDP_HEADER_SIZE = DEFAULT_HEADER_SIZE + (2 * sizeof(int));
                 public const ushort UDP_PACKET_SIZE = UDP_HEADER_SIZE + UDP_MAX_PAYLOAD_SIZE; // size in bytes
 
                 public uint Sequence { get { return System.BitConverter.ToUInt32(RawBytes, 12); } }
                 public uint ACK { get { return System.BitConverter.ToUInt32(RawBytes, 16); } }
-                public int ACK_Bitfield { get { return System.BitConverter.ToInt32(RawBytes, 20); } }
                 public byte[] Data { get { return RawBytes.SubArray(UDP_HEADER_SIZE, DataSize); } }
                 
                 private Packet(byte[] bytes) : base(bytes)
@@ -125,7 +74,7 @@ namespace ubv
 
                 }
 
-                internal Packet(byte[] data, uint seq, uint ack, int ackBitfield, int playerID) : base(new byte[UDP_PACKET_SIZE])
+                internal Packet(byte[] data, uint seq, uint ack, int playerID) : base(new byte[UDP_PACKET_SIZE])
                 {
                     ushort index = 0;
                     
@@ -143,9 +92,6 @@ namespace ubv
 
                     for (ushort i = 0; i < 4; i++, index++)
                         RawBytes[index] = System.BitConverter.GetBytes(ack)[i];
-
-                    for (ushort i = 0; i < 4; i++, index++)
-                        RawBytes[index] = System.BitConverter.GetBytes(ackBitfield)[i];
                     
 
                     for (ushort i = 0; i < UDP_MAX_PAYLOAD_SIZE; i++, index++)
