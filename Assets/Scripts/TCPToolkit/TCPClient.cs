@@ -15,7 +15,6 @@ namespace ubv.tcp.client
     /// </summary>
     public class TCPClient : MonoBehaviour
     {
-        [SerializeField] int m_connectionTimeoutInMS = 500000;
         protected readonly object m_lock = new object();
 
         private string m_serverAddress;
@@ -35,7 +34,7 @@ namespace ubv.tcp.client
         private Queue<byte[]> m_dataToSend;
 
         private bool m_activeEndpoint;
-        [SerializeField] private float m_connectionCheckTimerIntervalMS = 1000;
+        [SerializeField] int m_connectionTimeoutInMS = 5000;
         [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 250;
         private float m_endpointLastTimeSeen;
         private byte[] m_keepAlivePacketBytes;
@@ -209,7 +208,7 @@ namespace ubv.tcp.client
 
                 try
                 {
-                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                    Task.Delay(50, new CancellationToken(m_exitSignal || !m_activeEndpoint)).Wait();
                 }
                 catch (AggregateException ex)
                 {
@@ -246,14 +245,16 @@ namespace ubv.tcp.client
             if (m_activeEndpoint)
             {
                 m_endpointLastTimeSeen += Time.deltaTime;
+                m_connectionCheckTimer += Time.deltaTime;
+                m_connectionKeepAliveTimer += Time.deltaTime;
 
-                if (m_connectionCheckTimer > m_connectionCheckTimerIntervalMS)
+                if (m_connectionCheckTimer > m_connectionTimeoutInMS / 1000f)
                 {
                     m_connectionCheckTimer = 0;
                     m_activeEndpoint = CheckConnection();
                 }
                 
-                if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS && m_activeEndpoint)
+                if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS / 1000f && m_activeEndpoint)
                 {
                     m_connectionKeepAliveTimer = 0;
                     Send(m_keepAlivePacketBytes);

@@ -350,7 +350,7 @@ namespace ubv.tcp.server
 
                 try
                 {
-                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                    Task.Delay(50, new CancellationToken(m_exitSignal || !m_activeEndpoints[source])).Wait();
                 }
                 catch (AggregateException ex)
                 {
