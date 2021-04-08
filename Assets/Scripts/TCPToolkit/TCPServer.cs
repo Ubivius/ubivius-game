@@ -277,6 +277,7 @@ namespace ubv.tcp.server
             int totalPacketBytes = 0;
 
             bool readyToReadPacket = true;
+            stream.ReadTimeout = m_connectionTimeoutInMS;
 
             while (!m_exitSignal && m_activeEndpoints[source] && bufferOffset >= 0)
             {

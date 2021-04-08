@@ -148,6 +148,8 @@ namespace ubv.tcp.client
 
             bool readyToReadPacket = true;
 
+            stream.ReadTimeout = m_connectionTimeoutInMS;
+
             while (!m_exitSignal && m_activeEndpoint && bufferOffset >= 0)
             {
                 if (readyToReadPacket)
