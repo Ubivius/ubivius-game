@@ -172,15 +172,16 @@ namespace ubv.tcp.client
                 if (bytesRead > 0)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
+                    lock (m_lock)
+                    {
+                        m_endpointLastTimeSeen = 0;
+                    }
+
                     while (packet != null && totalPacketBytes < bytesRead)
                     {
                         readyToReadPacket = true;
                         lastPacketEnd = packet.RawBytes.Length;
                         totalPacketBytes += lastPacketEnd;
-                        lock (m_lock)
-                        {
-                            m_endpointLastTimeSeen = 0;
-                        }
                         // broadcast reception to listeners
                         if (packet.Data.Length > 0) // if it's not a keep-alive packet
                         {
@@ -215,7 +216,6 @@ namespace ubv.tcp.client
 #if DEBUG_LOG
                     Debug.Log(ex.Message);
 #endif // DEBUG_LOG
-                    break;
                 }
             }
 #if DEBUG_LOG

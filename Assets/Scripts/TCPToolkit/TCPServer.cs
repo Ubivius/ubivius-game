@@ -20,7 +20,6 @@ namespace ubv.tcp.server
         protected readonly object m_lock = new object();
 
         [SerializeField] int m_port = 9051;
-        [SerializeField] int m_connectionTimeoutInMS;
         [SerializeField] int m_maxConcurrentListeners = 12;
                 
         private TcpListener m_tcpListener;
@@ -41,7 +40,7 @@ namespace ubv.tcp.server
 
         private List<ITCPServerReceiver> m_receivers;
 
-        [SerializeField] private float m_connectionCheckTimerIntervalMS = 1000;
+        [SerializeField] int m_connectionTimeoutInMS;
         [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 250;
 
         private float m_connectionCheckTimer;
@@ -127,7 +126,6 @@ namespace ubv.tcp.server
 #if DEBUG_LOG
                     Debug.Log(ex.Message);
 #endif // DEBUG_LOG
-                    m_exitSignal = true;
                 }
             }
         }
@@ -146,7 +144,7 @@ namespace ubv.tcp.server
             m_connectionKeepAliveTimer += Time.deltaTime;
             m_connectionCheckTimer += Time.deltaTime;
 
-            if (m_connectionCheckTimer > m_connectionCheckTimerIntervalMS / 1000f)
+            if (m_connectionCheckTimer > m_connectionTimeoutInMS / 1000f)
             {
                 m_connectionCheckTimer = 0;
                 foreach (IPEndPoint ep in m_clientConnections.Keys)
@@ -156,6 +154,10 @@ namespace ubv.tcp.server
                         lock (m_lock)
                         {
                             m_activeEndpoints[ep] = CheckConnection(ep);
+#if DEBUG_LOG
+                            if (!m_activeEndpoints[ep])
+                                Debug.Log("Endpoint became inactive.");
+#endif // DEBUG_LOG
                         }
                     }
                 }
@@ -300,6 +302,10 @@ namespace ubv.tcp.server
                 if (bytesRead > 0)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
+                    lock (m_lock)
+                    {
+                        m_endpointLastTimeSeen[source] = 0;
+                    }
                     while (packet != null && totalPacketBytes < bytesRead)
                     {
                         int playerID = packet.PlayerID;
@@ -318,10 +324,7 @@ namespace ubv.tcp.server
                         readyToReadPacket = true;
                         lastPacketEnd = packet.RawBytes.Length;
                         totalPacketBytes += lastPacketEnd;
-                        lock (m_lock)
-                        {
-                            m_endpointLastTimeSeen[source] = 0;
-                        }
+                        
                         // broadcast reception to listeners
                         if (packet.Data.Length > 0) // if it's not a keep-alive packet
                         {
@@ -354,7 +357,6 @@ namespace ubv.tcp.server
 #if DEBUG_LOG
                     Debug.Log(ex.Message);
 #endif // DEBUG_LOG
-                    m_exitSignal = true;
                 }
             }
         }
