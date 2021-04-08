@@ -169,13 +169,24 @@ namespace ubv.server.logic
                     }
 
                     ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
-                    m_TCPServer.Send(serverSuccessPing.GetBytes(), playerID);
+                    m_UDPServer.Send(serverSuccessPing.GetBytes(), playerID);
 
 #if DEBUG_LOG
                     Debug.Log("Received connection request from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
+                }
+                return;
+            }
 
-                    BroadcastPlayerList();
+            OnLobbyEnteredMessage lobbyEnter = Serializable.CreateFromBytes<OnLobbyEnteredMessage>(packet.Data.ArraySegment());
+            if (lobbyEnter != null)
+            {
+                lock (m_lock)
+                {
+                    if (m_clients.Contains(playerID))
+                    {
+                        BroadcastPlayerList();
+                    }
                 }
                 return;
             }

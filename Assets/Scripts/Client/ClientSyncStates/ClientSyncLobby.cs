@@ -51,6 +51,16 @@ namespace ubv.client.logic
             }
         }
 
+        private List<int> BuildPlayerIDListFromPlayerStates(List<PlayerState> playerStates)
+        {
+            List<int> playerIDs = new List<int>();
+            foreach (PlayerState state in playerStates)
+            {
+                playerIDs.Add(state.GUID.Value);
+            }
+            return playerIDs;
+        }
+
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
             ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data.ArraySegment());
@@ -67,14 +77,7 @@ namespace ubv.client.logic
             ClientListMessage clientList = common.serialization.IConvertible.CreateFromBytes<ClientListMessage>(packet.Data.ArraySegment());
             if (clientList != null)
             {
-                List<PlayerState> playerStates = clientList.Players.Value;
-                List<int> playerIDs = new List<int>();
-                foreach(PlayerState state in playerStates)
-                {
-                    playerIDs.Add(state.GUID.Value);
-                }
-
-                ClientListUpdate.Invoke(playerIDs);
+                ClientListUpdate.Invoke(BuildPlayerIDListFromPlayerStates(clientList.Players.Value));
                 return;
             }
 
@@ -124,8 +127,9 @@ namespace ubv.client.logic
 
         public void Init(int playerID)
         {
-            m_playerID = playerID;
+            PlayerID = playerID;
             m_TCPClient.Subscribe(this);
+            m_TCPClient.Send(new OnLobbyEnteredMessage().GetBytes());
         }
         
         private IEnumerator LoadWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
@@ -154,6 +158,7 @@ namespace ubv.client.logic
             m_initState.Init();
             m_currentState = m_initState;
             m_TCPClient.Unsubscribe(this);
+            ClientListUpdate.Invoke(new List<int>());
 #if DEBUG_LOG
             Debug.Log("Lobby : lost connection to game server. Leaving lobby.");
 #endif // DEBUG_LOG

@@ -24,7 +24,6 @@ namespace ubv
             public class UDPServer : MonoBehaviour
             {
                 [SerializeField] int m_port = 9050;
-                [SerializeField] float m_connectionTimeout = 10f;
 
                 private Dictionary<int, IPEndPoint> m_playerEndpoints;
                 private Dictionary<int, UdpClient> m_clients;

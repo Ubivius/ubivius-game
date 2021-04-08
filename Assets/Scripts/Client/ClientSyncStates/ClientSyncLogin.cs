@@ -55,7 +55,7 @@ namespace ubv.client.logic
         {
             if (playerID != null)
             {
-                m_playerID = playerID;
+                PlayerID = playerID;
                 m_readyToGoToLobby = true;
             }
             else
