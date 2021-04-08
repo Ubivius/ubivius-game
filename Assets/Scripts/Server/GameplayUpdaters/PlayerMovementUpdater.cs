@@ -25,6 +25,7 @@ namespace ubv.server.logic
             Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
             common.gameplay.PlayerController playerCtrl = playerGameObject.GetComponent<common.gameplay.PlayerController>();
             body.position = m_bodies.Count * Vector2.left * 3;
+            //body.position = m_gameMaster.GetSpawnPosition(m_bodies.Count);
             body.name = "Server player " + id.ToString();
             m_bodies.Add(id, body);
 
