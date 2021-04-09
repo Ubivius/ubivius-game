@@ -1414,10 +1414,20 @@ PrefabInstance:
       propertyPath: m_connectionTimeoutInMS
       value: 5000
       objectReference: {fileID: 0}
+    - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mock
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_authEndpoint
+      value: http://localhost:9092
+      objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_mock
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}

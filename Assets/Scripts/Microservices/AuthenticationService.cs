@@ -10,6 +10,7 @@ namespace ubv.microservices
     {
         [SerializeField] private bool m_mock;
         [SerializeField] private HTTPClient m_HTTPClient;
+        [SerializeField] string m_authEndpoint;
         public delegate void OnLogin(int? playerID);
 
         private OnLogin m_onLoginCallback;
@@ -41,7 +42,8 @@ namespace ubv.microservices
                 onLogin(System.Guid.NewGuid().GetHashCode());
                 return;
             }
-            
+
+            m_HTTPClient.SetEndpoint(m_authEndpoint);
             string jsonString = JsonUtility.ToJson(new JSONAuthentificationCredentials
             {
                 username = user,
