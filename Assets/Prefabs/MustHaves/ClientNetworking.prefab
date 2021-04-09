@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1584834600992003656}
   - component: {fileID: 6337505888355199336}
   - component: {fileID: 2629458355001083077}
+  - component: {fileID: 999820070897528844}
   m_Layer: 0
   m_Name: ClientNetworking
   m_TagString: Untagged
@@ -67,6 +68,18 @@ MonoBehaviour:
   HTTPClient: {fileID: 1775558437836293882}
   Dispatcher: {fileID: 7434323783986351494}
   Authentication: {fileID: 5996061036848143753}
+--- !u!114 &999820070897528844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1584834600992003659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a773cb84af3cba5428ca33820e20701e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1584834601242082864
 GameObject:
   m_ObjectHideFlags: 0
@@ -110,12 +123,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56f55256fc4a6704eafd0dd78732d19e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_serverTimeOut: 10
-  m_lostPacketTimeOut: 1
-  m_maximumGoodRTT: 0.15
-  m_minimumTimeToSwitchModes: 10
   m_maximumPacketsPerSecond: 60
-  m_minimumPacketsPerSecond: 10
 --- !u!1 &1584834601926501244
 GameObject:
   m_ObjectHideFlags: 0
@@ -204,6 +212,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_mock: 1
   m_HTTPClient: {fileID: 1775558437836293882}
+  m_authEndpoint: 
 --- !u!1 &5254342688879064719
 GameObject:
   m_ObjectHideFlags: 0
@@ -341,5 +350,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_connectionTimeoutInMS: 500000
-  m_checkConnectionRate: 61
-  m_connectionKeepAliveRate: 33
+  m_coonnectionKeepAliveTimerIntervalMS: 250
