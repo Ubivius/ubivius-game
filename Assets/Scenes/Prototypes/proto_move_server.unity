@@ -253,7 +253,7 @@ GameObject:
   - component: {fileID: 380608786}
   - component: {fileID: 380608787}
   m_Layer: 0
-  m_Name: WorldGenerator
+  m_Name: GameMaster
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -565,6 +565,7 @@ MonoBehaviour:
   m_physicsSceneName: proto_move_server
   m_updaters:
   - {fileID: 1470650681}
+  - {fileID: 380608787}
 --- !u!4 &1089558532
 Transform:
   m_ObjectHideFlags: 0
@@ -858,6 +859,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
+  m_gameMaster: {fileID: 380608787}
 --- !u!1 &1538287029
 GameObject:
   m_ObjectHideFlags: 0
@@ -888,7 +890,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_port: 9150
-  m_connectionTimeout: 10
   AcceptNewClients: 0
 --- !u!4 &1538287031
 Transform:
@@ -948,10 +949,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_port: 9151
-  m_connectionTimeoutInMS: 5000
   m_maxConcurrentListeners: 6
-  m_connectionCheckRate: 61
-  m_connectionKeepAliveRate: 31
+  m_connectionTimeoutInMS: 5000
+  m_coonnectionKeepAliveTimerIntervalMS: 250
 --- !u!1001 &1802319657
 PrefabInstance:
   m_ObjectHideFlags: 0
