@@ -566,7 +566,7 @@ MonoBehaviour:
   m_defaultDoorTile: {fileID: 11400000, guid: a7794f009c907584aab8cfc65dded64e, type: 2}
   m_defaultInteractableTile: {fileID: 11400000, guid: 1aed2b5887a4f1c44ac6371433201ec4,
     type: 2}
-  m_defaultPlayerSpawn: {fileID: 11400000, guid: d7869141ffc6bc243a3d1b336d7727c6,
+  m_defaultPlayerSpawnTile: {fileID: 11400000, guid: d7869141ffc6bc243a3d1b336d7727c6,
     type: 2}
 --- !u!1 &837603113
 GameObject:
@@ -864,7 +864,7 @@ TilemapRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 4
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
