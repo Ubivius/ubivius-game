@@ -11,14 +11,18 @@ using static ubv.microservices.DispatcherMicroservice;
 
 namespace ubv.client.logic
 {
-    public class ClientSyncInit : ClientSyncState, tcp.client.ITCPClientReceiver
+    public class ClientSyncInit : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
     {
         private ServerInfo? m_cachedServerInfo;
         private bool m_connected;
-        private bool m_waitingOnServerResponse;
+        private bool m_waitingOnUDPResponse;
 
-        private const float C_REQUEST_RESEND_TIME_MS = 5000f;
+        [SerializeField] private float m_reconnectTimerIntervalMS = 3000f;
         private float m_requestResendTimer;
+
+        [SerializeField] private float m_UDPPingTimerIntervalMS = 500f;
+        private float m_UPDPingTimer;
+        
         private byte[] m_identificationMessageBytes;
         
         protected override void StateAwake()
@@ -35,24 +39,36 @@ namespace ubv.client.logic
             Debug.Log("Initializing client state [init]");
 #endif // DEBUG_LOG
             m_connected = false;
-            m_waitingOnServerResponse = false;
+            m_waitingOnUDPResponse = false;
             m_requestResendTimer = 0;
-            m_identificationMessageBytes = new IdentificationMessage(m_playerID.Value).GetBytes();
-            m_TCPClient.SetPlayerID(m_playerID.Value);
+            m_identificationMessageBytes = new IdentificationMessage().GetBytes();
+            m_TCPClient.SetPlayerID(PlayerID.Value);
+            m_UDPClient.Subscribe(this);
+            m_TCPClient.Subscribe(this);
         }
 
         protected override void StateUpdate()
         {
-            if (m_cachedServerInfo != null && !m_connected && !m_waitingOnServerResponse)
+            if (m_cachedServerInfo != null && !m_connected && !m_waitingOnUDPResponse)
             {
                 m_requestResendTimer += Time.deltaTime;
-                if(m_requestResendTimer > C_REQUEST_RESEND_TIME_MS)
+                if(m_requestResendTimer > m_reconnectTimerIntervalMS / 1000f)
                 {
 #if DEBUG_LOG
                     Debug.Log("Trying to reconnect to server : " + m_cachedServerInfo.Value.server_ip.ToString() + " ...");
 #endif // DEBUG_LOG
                     m_requestResendTimer = 0;
                     EstablishConnectionToServer(m_cachedServerInfo.Value);
+                }
+            }
+
+            if (m_connected && m_waitingOnUDPResponse)
+            {
+                m_UDPPingTimerIntervalMS += Time.deltaTime;
+                if (m_UPDPingTimer > m_UDPPingTimerIntervalMS / 1000f)
+                {
+                    m_UPDPingTimer = 0;
+                    m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
                 }
             }
         }
@@ -62,50 +78,44 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Sending connection request to dispatcher...");
 #endif // DEBUG_LOG
-            m_waitingOnServerResponse = true;
 
-            m_dispatcherService.RequestServerInfo(m_playerID.Value, OnServerInfoReceived);
+            m_dispatcherService.RequestServerInfo(PlayerID.Value, OnServerInfoReceived);
         }
 
         private void OnServerInfoReceived(ServerInfo? info)
         {
             m_cachedServerInfo = info;
-            m_waitingOnServerResponse = false;
             EstablishConnectionToServer(m_cachedServerInfo.Value);
         }
 
         private void EstablishConnectionToServer(ServerInfo serverInfo)
         {
+            if (!m_connected)
+            {
 #if DEBUG_LOG
-            Debug.Log("Trying to establish connection to game server...");
+                Debug.Log("Trying to establish connection to game server...");
 #endif // DEBUG_LOG
 
-            m_TCPClient.Subscribe(this);
-            m_TCPClient.Connect(serverInfo.server_ip, serverInfo.tcp_port);
-
-            // TODO : make sure server receives UDP ping
-            // maybe with TCP reception of player list and confirming itself?
-            m_UDPClient.SetTargetServer(serverInfo.server_ip, serverInfo.udp_port);
-            m_UDPClient.Send(m_identificationMessageBytes, m_playerID.Value);
+                m_TCPClient.Connect(serverInfo.server_ip, serverInfo.tcp_port);
+            }
+#if DEBUG_LOG
+            else
+            {
+                Debug.Log("Already connected to game server.");
+            }
+#endif // DEBUG_LOG
         }
 
-        public void ReceivePacket(tcp.TCPToolkit.Packet packet)
+        private void GoToLobby()
         {
-            // receive auth message and set player id
-            ServerSuccessfulConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulConnectMessage>(packet.Data.ArraySegment());
-            if (serverSuccessPing != null)
-            {
-                m_waitingOnServerResponse = false;
-
 #if DEBUG_LOG
-                Debug.Log("Received TCP connection confirmation. Going to lobby");
+            Debug.Log("Received TCP/UDP connection confirmation. Going to lobby");
 #endif // DEBUG_LOG
 
-                // TODO : Make sure UDP is connected THEN go to lobby
-                ClientSyncState.m_lobbyState.Init(m_playerID.Value);
-                ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
-                m_TCPClient.Unsubscribe(this);
-            }
+            ClientSyncState.m_lobbyState.Init(PlayerID.Value);
+            ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
+            m_UDPClient.Unsubscribe(this);
+            m_TCPClient.Unsubscribe(this);
         }
 
         public void OnDisconnect()
@@ -113,14 +123,33 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Disconnected from server");
 #endif // DEBUG_LOG
+            m_connected = false;
         }
 
         public void OnSuccessfulConnect()
         {
 #if DEBUG_LOG
-            Debug.Log("Successful connection to server. Sending identification message with ID " + m_playerID.Value);
+            Debug.Log("Successful connection to server. Sending identification message with ID " + PlayerID.Value);
 #endif // DEBUG_LOG
             m_TCPClient.Send(m_identificationMessageBytes); // sends a ping to the server
+            m_connected = true;
+
+            m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_ip, m_cachedServerInfo.Value.udp_port);
+            m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
+            m_waitingOnUDPResponse = true;
         }
+
+        public void ReceivePacket(UDPToolkit.Packet packet)
+        {
+            ServerSuccessfulConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulConnectMessage>(packet.Data.ArraySegment());
+            if (serverSuccessPing != null)
+            {
+                m_waitingOnUDPResponse = false;
+                GoToLobby();
+            }
+        }
+
+        public void ReceivePacket(TCPToolkit.Packet packet)
+        { }
     }   
 }

@@ -948,7 +948,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_port: 9151
-  m_connectionTimeoutInMS: 10000
+  m_connectionTimeoutInMS: 5000
   m_maxConcurrentListeners: 6
   m_connectionCheckRate: 61
   m_connectionKeepAliveRate: 31

@@ -42,10 +42,24 @@ namespace ubv.ui.client
 
         private void Update()
         {
-            // TODO manage player lobby disconnect (UBI-283)
-            if (m_newPlayers != null)
+            if(m_newPlayers != null)
             {
-                foreach (int player in m_newPlayers)
+                ClearPlayers();
+                AddNewPlayersFromList(m_newPlayers);
+                m_newPlayers = null;
+            }
+
+            if (m_loadingScreen.isActiveAndEnabled)
+            {
+                m_loadingScreen.LoadPercentage = m_lobby.LoadPercentage;
+            }
+        }
+
+        private void AddNewPlayersFromList(List<int> newPlayers)
+        {
+            if (newPlayers != null)
+            {
+                foreach (int player in newPlayers)
                 {
                     if (!m_connectedPlayers.Contains(player))
                     {
@@ -53,13 +67,16 @@ namespace ubv.ui.client
                         newPlayerItem.text = player.ToString();
                         m_connectedPlayers.Add(player);
                     }
-                    m_newPlayers = null;
                 }
             }
+        }
 
-            if (m_loadingScreen.isActiveAndEnabled)
+        private void ClearPlayers()
+        {
+            m_connectedPlayers.Clear();
+            foreach (Transform child in m_playerListParent)
             {
-                m_loadingScreen.LoadPercentage = m_lobby.LoadPercentage;
+                GameObject.Destroy(child.gameObject);
             }
         }
 

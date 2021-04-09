@@ -225,13 +225,10 @@ namespace ubv.server.logic
             IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data.ArraySegment());
             if (identification != null)
             {
-                if (identification.PlayerID.Value == playerID)
-                {
 #if DEBUG_LOG
-                    Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
+                Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
 #endif // DEBUG_LOG
-                    m_connectedClients[playerID] = true;
-                }
+                m_connectedClients[playerID] = true;
             }
         }
 

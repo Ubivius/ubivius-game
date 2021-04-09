@@ -163,38 +163,39 @@ namespace ubv.server.logic
             {
                 lock (m_lock)
                 {
-                    int messagePlayerID = identification.PlayerID.Value;
-
-                    if (messagePlayerID != playerID)
-                    {
-#if DEBUG_LOG
-                        Debug.Log("Mismatch between identification ID and packet ID");
-                        return;
-#endif // DEBUG_LOG
-                    }
-
                     if (!m_clients.Contains(playerID)) // it's a new player
                     {
                         AddNewPlayer(playerID);
                     }
 
                     ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
-                    m_TCPServer.Send(serverSuccessPing.GetBytes(), playerID);
+                    m_UDPServer.Send(serverSuccessPing.GetBytes(), playerID);
 
 #if DEBUG_LOG
                     Debug.Log("Received connection request from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
+                }
+                return;
+            }
 
-                    BroadcastPlayerList();
+            OnLobbyEnteredMessage lobbyEnter = Serializable.CreateFromBytes<OnLobbyEnteredMessage>(packet.Data.ArraySegment());
+            if (lobbyEnter != null)
+            {
+                lock (m_lock)
+                {
+                    if (m_clients.Contains(playerID))
+                    {
+                        BroadcastPlayerList();
+                    }
                 }
                 return;
             }
 
             ClientReadyMessage ready = IConvertible.CreateFromBytes<ClientReadyMessage>(packet.Data.ArraySegment());
-            if (ready != null && m_readyClients.ContainsKey(ready.PlayerID.Value))
+            if (ready != null && m_readyClients.ContainsKey(playerID))
             {
-                Debug.Log("Client " + ready.PlayerID.Value + " is ready to receive world.");
-                m_readyClients[ready.PlayerID.Value] = true;
+                Debug.Log("Client " + playerID + " is ready to receive world.");
+                m_readyClients[playerID] = true;
                 return;
             }
 
@@ -203,7 +204,7 @@ namespace ubv.server.logic
                 ClientWorldLoadedMessage clientWorldLoaded = IConvertible.CreateFromBytes<ClientWorldLoadedMessage>(packet.Data.ArraySegment());
                 if (clientWorldLoaded != null)
                 {
-                    m_readyClients.Remove(clientWorldLoaded.PlayerID.Value);
+                    m_readyClients.Remove(playerID);
                 }
             }
             
@@ -225,19 +226,9 @@ namespace ubv.server.logic
             IdentificationMessage identification = Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data.ArraySegment());
             if (identification != null)
             {
-                int messagePlayerID = identification.PlayerID.Value;
-                if (messagePlayerID == playerID)
-                {
 #if DEBUG_LOG
-                    Debug.Log("Received UDP confirmation from player (ID  " + playerID + ")");
+                Debug.Log("Received UDP confirmation from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
-                }
-                else
-                {
-#if DEBUG_LOG
-                    Debug.Log("Mismatch between identification ID and packet ID");
-#endif // DEBUG_LOG
-                }
             } 
         }
     }

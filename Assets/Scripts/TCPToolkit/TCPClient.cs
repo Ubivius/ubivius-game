@@ -15,7 +15,6 @@ namespace ubv.tcp.client
     /// </summary>
     public class TCPClient : MonoBehaviour
     {
-        [SerializeField] int m_connectionTimeoutInMS = 500000;
         protected readonly object m_lock = new object();
 
         private string m_serverAddress;
@@ -35,12 +34,13 @@ namespace ubv.tcp.client
         private Queue<byte[]> m_dataToSend;
 
         private bool m_activeEndpoint;
-        [SerializeField] private int m_checkConnectionRate = 61;
-        [SerializeField] private int m_connectionKeepAliveRate = 33;
+        [SerializeField] int m_connectionTimeoutInMS = 5000;
+        [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 250;
         private float m_endpointLastTimeSeen;
-        private int m_fixedFrameCount;
-
         private byte[] m_keepAlivePacketBytes;
+
+        private float m_connectionCheckTimer;
+        private float m_connectionKeepAliveTimer;
 
         private int? m_playerID;
 
@@ -58,7 +58,10 @@ namespace ubv.tcp.client
 
             m_iteratingTroughReceivers = false;
             m_keepAlivePacketBytes = new byte[0];
-            m_fixedFrameCount = 0;
+
+            m_connectionCheckTimer = 0;
+            m_connectionKeepAliveTimer = 0;
+            
             m_requestToSendEvent = new ManualResetEvent(false);
         }
         
@@ -145,6 +148,8 @@ namespace ubv.tcp.client
 
             bool readyToReadPacket = true;
 
+            stream.ReadTimeout = m_connectionTimeoutInMS;
+
             while (!m_exitSignal && m_activeEndpoint && bufferOffset >= 0)
             {
                 if (readyToReadPacket)
@@ -168,15 +173,16 @@ namespace ubv.tcp.client
                 if (bytesRead > 0)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
+                    lock (m_lock)
+                    {
+                        m_endpointLastTimeSeen = 0;
+                    }
+
                     while (packet != null && totalPacketBytes < bytesRead)
                     {
                         readyToReadPacket = true;
                         lastPacketEnd = packet.RawBytes.Length;
                         totalPacketBytes += lastPacketEnd;
-                        lock (m_lock)
-                        {
-                            m_endpointLastTimeSeen = 0;
-                        }
                         // broadcast reception to listeners
                         if (packet.Data.Length > 0) // if it's not a keep-alive packet
                         {
@@ -204,11 +210,13 @@ namespace ubv.tcp.client
 
                 try
                 {
-                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                    Task.Delay(50, new CancellationToken(m_exitSignal || !m_activeEndpoint)).Wait();
                 }
-                catch (TaskCanceledException)
+                catch (AggregateException ex)
                 {
-                    break;
+#if DEBUG_LOG
+                    Debug.Log(ex.Message);
+#endif // DEBUG_LOG
                 }
             }
 #if DEBUG_LOG
@@ -239,7 +247,22 @@ namespace ubv.tcp.client
             if (m_activeEndpoint)
             {
                 m_endpointLastTimeSeen += Time.deltaTime;
+                m_connectionCheckTimer += Time.deltaTime;
+                m_connectionKeepAliveTimer += Time.deltaTime;
+
+                if (m_connectionCheckTimer > m_connectionTimeoutInMS / 1000f)
+                {
+                    m_connectionCheckTimer = 0;
+                    m_activeEndpoint = CheckConnection();
+                }
+                
+                if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS / 1000f && m_activeEndpoint)
+                {
+                    m_connectionKeepAliveTimer = 0;
+                    Send(m_keepAlivePacketBytes);
+                }
             }
+
 
             lock (m_lock)
             {
@@ -265,21 +288,7 @@ namespace ubv.tcp.client
                 }
             }
         }
-
-        private void FixedUpdate()
-        {
-            if(m_fixedFrameCount % m_checkConnectionRate == 0 && m_activeEndpoint)
-            {
-                m_activeEndpoint = CheckConnection();
-            }
-
-            if (m_fixedFrameCount % m_connectionKeepAliveRate == 0 && m_activeEndpoint)
-            {
-                Send(m_keepAlivePacketBytes);
-            }
-            ++m_fixedFrameCount;
-        }
-
+        
         private void SendingThread(object streamObj)
         {
             NetworkStream stream = (NetworkStream)streamObj;
@@ -289,7 +298,7 @@ namespace ubv.tcp.client
             
             while (!m_exitSignal && m_activeEndpoint)
             {
-                m_requestToSendEvent.WaitOne();
+                m_requestToSendEvent.WaitOne(m_connectionTimeoutInMS);
                 m_requestToSendEvent.Reset();
                 // write to stream (send to client)
                 lock (m_lock)
