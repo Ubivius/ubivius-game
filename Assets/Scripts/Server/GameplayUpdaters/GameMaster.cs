@@ -33,5 +33,10 @@ namespace ubv.server.logic
         public override void UpdateClient(ClientState client)
         {
         }
+
+        public Vector2Int GetPlayerSpawnPos()
+        {
+            return m_world.GetPlayerSawpnPos();
+        }
     }
 }
