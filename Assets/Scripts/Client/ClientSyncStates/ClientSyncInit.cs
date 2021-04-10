@@ -28,6 +28,7 @@ namespace ubv.client.logic
         private byte[] m_identificationMessageBytes;
 
         private bool m_readyToGoToLobby;
+        private bool m_alreadyInLobby;
         
         protected override void StateAwake()
         {
@@ -35,6 +36,7 @@ namespace ubv.client.logic
             ClientSyncState.m_initState = this;
             ClientSyncState.m_currentState = this;
             m_cachedServerInfo = null;
+            m_alreadyInLobby = false;
             Init();
         }
 
@@ -84,7 +86,15 @@ namespace ubv.client.logic
             if (m_readyToGoToLobby)
             {
                 m_readyToGoToLobby = false;
-                GoToLobby();
+                if (!m_alreadyInLobby)
+                {
+                    m_alreadyInLobby = true;
+                    GoToLobby();
+                }
+                else
+                {
+                    SetLobbyStateActive();
+                }
             }
         }
 
@@ -123,13 +133,13 @@ namespace ubv.client.logic
 
         private void GoToLobby()
         {
-            m_UDPClient.Unsubscribe(this);
-            m_TCPClient.Unsubscribe(this);
             StartCoroutine(LoadLobbyCoroutine());
         }
         
         private IEnumerator LoadLobbyCoroutine()
         {
+            m_UDPClient.Unsubscribe(this);
+            m_TCPClient.Unsubscribe(this);
             // animation petit cercle de load to scene
             AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_clientLobbyScene);
             while (!loadLobby.isDone)
@@ -137,6 +147,11 @@ namespace ubv.client.logic
                 yield return null;
             }
 
+            SetLobbyStateActive();
+        }
+
+        private void SetLobbyStateActive()
+        {
             ClientSyncState.m_lobbyState.Init(PlayerID.Value);
             ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
         }
