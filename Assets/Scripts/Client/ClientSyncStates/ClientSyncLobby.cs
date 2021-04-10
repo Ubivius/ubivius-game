@@ -14,7 +14,7 @@ namespace ubv.client.logic
 
     public class ClientSyncLobby : ClientSyncState, tcp.client.ITCPClientReceiver
     {
-        [SerializeField] private string m_clientLobbyScene;
+        [SerializeField] private string m_clientGameSearchScene;
         [SerializeField] private string m_clientPlayScene;
 
         private bool m_serverSentSignal;
@@ -29,9 +29,7 @@ namespace ubv.client.logic
         public UnityAction OnGameStart;
 
         public float LoadPercentage { get; private set; }
-
-        private bool m_mustLeaveLobby;
-
+        
         protected override void StateAwake()
         {
             ClientListUpdate = new ClientListUpdateEvent();
@@ -39,7 +37,6 @@ namespace ubv.client.logic
             ClientSyncState.m_lobbyState = this;
             m_serverSentSignal = false;
             LoadPercentage = 0;
-            m_mustLeaveLobby = false;
         }
 
         private void OnWorldBuilt()
@@ -129,12 +126,6 @@ namespace ubv.client.logic
                 m_TCPClient.Unsubscribe(this);
                 m_serverSentSignal = false;
             }
-
-            if (m_mustLeaveLobby)
-            {
-                m_mustLeaveLobby = false;
-                StartCoroutine(LeaveLobbyCoroutine());
-            }
         }
 
         private IEnumerator LeaveLobbyCoroutine()
@@ -142,11 +133,16 @@ namespace ubv.client.logic
             m_initState.Init();
             m_currentState = m_initState;
             m_TCPClient.Unsubscribe(this);
-            AsyncOperation loadGame = SceneManager.LoadSceneAsync(m_clientLobbyScene);
+            AsyncOperation loadGame = SceneManager.LoadSceneAsync(m_clientGameSearchScene);
             while (!loadGame.isDone)
             {
                 yield return null;
             }
+        }
+
+        public void LeaveLobby()
+        {
+            StartCoroutine(LeaveLobbyCoroutine());
         }
 
         public void Init(int playerID)
@@ -179,10 +175,12 @@ namespace ubv.client.logic
 
         public void OnDisconnect()
         {
-            m_mustLeaveLobby = true;
             ClientListUpdate.Invoke(new List<int>());
+            m_initState.Init(false);
+            m_currentState = m_initState;
+            m_TCPClient.Unsubscribe(this);
 #if DEBUG_LOG
-            Debug.Log("Lobby : lost connection to game server. Leaving lobby.");
+            Debug.Log("Lobby : lost connection to game server. Trying to reconnect...");
 #endif // DEBUG_LOG
         }
 

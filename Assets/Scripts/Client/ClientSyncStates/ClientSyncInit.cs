@@ -38,7 +38,7 @@ namespace ubv.client.logic
             Init();
         }
 
-        public void Init()
+        public void Init(bool clearServerInfo = true)
         {
 #if DEBUG_LOG
             Debug.Log("Initializing client state [init]");
@@ -50,6 +50,10 @@ namespace ubv.client.logic
             m_TCPClient.SetPlayerID(PlayerID.Value);
             m_UDPClient.Subscribe(this);
             m_TCPClient.Subscribe(this);
+            if (clearServerInfo)
+            {
+                m_cachedServerInfo = null;
+            }
         }
 
         protected override void StateUpdate()
