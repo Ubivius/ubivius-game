@@ -13,6 +13,8 @@ namespace ubv.client.logic
 {
     public class ClientSyncInit : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
     {
+        [SerializeField] private string m_clientLobbyScene;
+
         private ServerInfo? m_cachedServerInfo;
         private bool m_connected;
         private bool m_waitingOnUDPResponse;
@@ -24,9 +26,12 @@ namespace ubv.client.logic
         private float m_UPDPingTimer;
         
         private byte[] m_identificationMessageBytes;
+
+        private bool m_readyToGoToLobby;
         
         protected override void StateAwake()
         {
+            m_readyToGoToLobby = false;
             ClientSyncState.m_initState = this;
             ClientSyncState.m_currentState = this;
             m_cachedServerInfo = null;
@@ -71,6 +76,12 @@ namespace ubv.client.logic
                     m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
                 }
             }
+
+            if (m_readyToGoToLobby)
+            {
+                m_readyToGoToLobby = false;
+                GoToLobby();
+            }
         }
 
         public void SendConnectionRequestToServer()
@@ -108,14 +119,22 @@ namespace ubv.client.logic
 
         private void GoToLobby()
         {
-#if DEBUG_LOG
-            Debug.Log("Received TCP/UDP connection confirmation. Going to lobby");
-#endif // DEBUG_LOG
+            m_UDPClient.Unsubscribe(this);
+            m_TCPClient.Unsubscribe(this);
+            StartCoroutine(LoadLobbyCoroutine());
+        }
+        
+        private IEnumerator LoadLobbyCoroutine()
+        {
+            // animation petit cercle de load to scene
+            AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_clientLobbyScene);
+            while (!loadLobby.isDone)
+            {
+                yield return null;
+            }
 
             ClientSyncState.m_lobbyState.Init(PlayerID.Value);
             ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
-            m_UDPClient.Unsubscribe(this);
-            m_TCPClient.Unsubscribe(this);
         }
 
         public void OnDisconnect()
@@ -145,7 +164,10 @@ namespace ubv.client.logic
             if (serverSuccessPing != null)
             {
                 m_waitingOnUDPResponse = false;
-                GoToLobby();
+#if DEBUG_LOG
+                Debug.Log("Received TCP/UDP connection confirmation. Going to lobby");
+#endif // DEBUG_LOG
+                m_readyToGoToLobby = true;
             }
         }
 

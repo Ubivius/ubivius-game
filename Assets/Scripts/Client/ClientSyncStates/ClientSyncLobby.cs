@@ -14,6 +14,8 @@ namespace ubv.client.logic
 
     public class ClientSyncLobby : ClientSyncState, tcp.client.ITCPClientReceiver
     {
+        [SerializeField] private string m_clientPlayScene;
+
         private bool m_serverSentSignal;
 
         private int? m_simulationBuffer;
@@ -135,10 +137,10 @@ namespace ubv.client.logic
         private IEnumerator LoadWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
         {
             OnStartLoadWorld?.Invoke();
-            AsyncOperation loadLobby = SceneManager.LoadSceneAsync("ClientGame");
-            while (!loadLobby.isDone)
+            AsyncOperation loadGame = SceneManager.LoadSceneAsync(m_clientPlayScene);
+            while (!loadGame.isDone)
             {
-                LoadPercentage = loadLobby.progress * 0.25f;
+                LoadPercentage = loadGame.progress * 0.25f;
                 yield return null;
             }
 

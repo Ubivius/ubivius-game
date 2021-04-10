@@ -27,11 +27,6 @@ namespace ubv.microservices
             public string id;
         }
 
-        private void Awake()
-        {
-            DontDestroyOnLoad(this);
-        }
-        
         public void SendLoginRequest(string user, string pass, OnLogin onLogin)
         {
             if (m_mock)
