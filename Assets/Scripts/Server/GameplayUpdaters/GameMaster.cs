@@ -36,7 +36,7 @@ namespace ubv.server.logic
 
         public Vector2Int GetPlayerSpawnPos()
         {
-            return m_world.GetPlayerSpwanPos();
+            return m_world.GetPlayerSpawnPos();
         }
     }
 }

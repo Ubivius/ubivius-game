@@ -155,7 +155,7 @@ namespace ubv.common.world
             }
         }
 
-        public Vector2Int GetPlayerSpwanPos()
+        public Vector2Int GetPlayerSpawnPos()
         {
             int select = Random.Range(0, m_playerSpawnPos.Count - 1);
             Vector2Int pos = m_playerSpawnPos[select];
