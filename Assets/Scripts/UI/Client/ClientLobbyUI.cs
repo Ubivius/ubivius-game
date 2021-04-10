@@ -21,7 +21,6 @@ namespace ubv.ui.client
         private void Awake()
         {
             m_connectedPlayers = new List<int>();
-            m_loadingScreen.gameObject.SetActive(false);
             m_lobby.OnStartLoadWorld += () =>
             {
 
@@ -37,6 +36,7 @@ namespace ubv.ui.client
 
         private void Start()
         {
+            m_loadingScreen.gameObject.SetActive(false);
             m_lobby.ClientListUpdate.AddListener(UpdatePlayers);
         }
 
