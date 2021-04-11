@@ -15,6 +15,7 @@ namespace ubv.common.world.cellType
             CELL_DOOR,
             CELL_BUTTON,
             CELL_FLOOR,
+            CELL_PLAYERSPAWN,
             CELL_NONE
         }
 
@@ -70,6 +71,9 @@ namespace ubv.common.world.cellType
                     break;
                 case CellType.CELL_BUTTON:
                     cell = CreateFromBytes<DoorButtonCell>(m_logicCellBytes.Value.ArraySegment());
+                    break;
+                case CellType.CELL_PLAYERSPAWN:
+                    cell = CreateFromBytes<PlayerSpawnCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_NONE:
                     break;

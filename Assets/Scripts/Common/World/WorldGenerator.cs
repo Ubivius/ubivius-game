@@ -65,6 +65,8 @@ namespace ubv.common.world
 
         public UnityAction OnWorldGenerated;
 
+        private List<Vector2Int> m_playerSpawnPos;
+
         private void Awake()
         {
             m_grid = GetComponent<Grid>();
@@ -125,6 +127,8 @@ namespace ubv.common.world
             m_door.RefreshAllTiles();
             m_wall.RefreshAllTiles();
 
+            SetPlayerSpawnPosList();
+
             OnWorldGenerated?.Invoke();
         }
         
@@ -132,6 +136,31 @@ namespace ubv.common.world
         {
             m_roomManager = new generationManager.RoomManager(m_worldGeneratorToRoomManager);
             m_masterLogicGrid = m_roomManager.AddOneRoom();
+        }
+
+        private void SetPlayerSpawnPosList()
+        {
+            m_playerSpawnPos = new List<Vector2Int>();
+            int width = m_masterLogicGrid.Width;
+            int height = m_masterLogicGrid.Height;
+            for (int x = 0; x < m_masterLogicGrid.Width; x++) // On ne veut pas regarder en dehors du tableau
+            {
+                for (int y = 0; y < m_masterLogicGrid.Height; y++)
+                {
+                    if (m_masterLogicGrid.Grid[x,y].GetCellType() == cellType.CellInfo.CellType.CELL_PLAYERSPAWN)
+                    {
+                        m_playerSpawnPos.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+        }
+
+        public Vector2Int GetPlayerSpawnPos()
+        {
+            int select = Random.Range(0, m_playerSpawnPos.Count - 1);
+            Vector2Int pos = m_playerSpawnPos[select];
+            m_playerSpawnPos.RemoveAt(select);
+            return pos;
         }
 
         public cellType.CellInfo[,] GetCellInfoArray()
