@@ -12,6 +12,7 @@ namespace ubv.client.logic
     abstract public class ClientSyncState : MonoBehaviour
     {
         static public int? PlayerID { get; protected set; }
+        static public string PlayerIDString { get; protected set; }
 
         static protected ClientSyncState m_currentState = null;
 

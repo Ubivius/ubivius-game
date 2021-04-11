@@ -52,11 +52,12 @@ namespace ubv.client.logic
             // animation petit cercle de load to lobby
         }
 
-        private void OnLogin(int? playerID)
+        private void OnLogin(string playerIDString)
         {
-            if (playerID != null)
+            if (playerIDString != null)
             {
-                PlayerID = playerID;
+                PlayerID = playerIDString.GetHashCode();
+                PlayerIDString = playerIDString;
                 m_readyToGoToMenu = true;
             }
             else

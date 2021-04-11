@@ -11,7 +11,7 @@ namespace ubv.microservices
         [SerializeField] private bool m_mock;
         [SerializeField] private HTTPClient m_HTTPClient;
         [SerializeField] string m_authEndpoint;
-        public delegate void OnLogin(int? playerID);
+        public delegate void OnLogin(string playerIDString);
 
         private OnLogin m_onLoginCallback;
 
@@ -34,7 +34,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("Mocking auth. Auto logging in with random ID.");
 #endif // DEBUG_LOG
-                onLogin(System.Guid.NewGuid().GetHashCode());
+                onLogin(System.Guid.NewGuid().ToString());
                 return;
             }
 
@@ -58,10 +58,9 @@ namespace ubv.microservices
                 string JSON = message.Content.ReadAsStringAsync().Result;
                 JSONAuthenticationResponse authResponse = JsonUtility.FromJson<JSONAuthenticationResponse>(JSON);
                 string token = authResponse.accessToken;
-                int guid = authResponse.id.GetHashCode();
                 m_HTTPClient.SetAuthenticationToken(token);
 
-                m_onLoginCallback.Invoke(guid);
+                m_onLoginCallback.Invoke(authResponse.id);
                 m_onLoginCallback = null;
             }
             else
