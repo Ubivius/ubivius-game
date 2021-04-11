@@ -9,6 +9,7 @@ namespace ubv.server.logic
     public class PlayerMovementUpdater : ServerGameplayStateUpdater
     {
         [SerializeField] private PlayerSettings m_playerSettings;
+        [SerializeField] private GameMaster m_gameMaster;
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
 
@@ -24,8 +25,8 @@ namespace ubv.server.logic
             GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
             Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
             common.gameplay.PlayerController playerCtrl = playerGameObject.GetComponent<common.gameplay.PlayerController>();
-            body.position = m_bodies.Count * Vector2.left * 3;
-            //body.position = m_gameMaster.GetSpawnPosition(m_bodies.Count);
+            //body.position = m_bodies.Count * Vector2.left * 3;
+            body.position = m_gameMaster.GetPlayerSpawnPos();
             body.name = "Server player " + id.ToString();
             m_bodies.Add(id, body);
 

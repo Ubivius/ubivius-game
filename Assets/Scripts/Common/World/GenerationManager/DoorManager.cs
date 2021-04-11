@@ -39,7 +39,7 @@ namespace ubv.common.world.generationManager
             {
                 if (!GenerateDoorForRoom(room))
                 {
-                    Debug.LogError("MAP CREATION ALERT : Some room does not have any door");
+                    Debug.Log("MAP CREATION ALERT : Some room does not have any door");
                 }
             }
             foreach (RoomInfo room in m_roomInMap)
@@ -55,8 +55,6 @@ namespace ubv.common.world.generationManager
             AddSection0SouthEast();
             AddSection0SouthWest();
             AddSection0NorthWest();
-
-            Debug.LogError("Frontier Door Count : " + DoorCount);
 
             return m_masterLogicGrid;
         }
