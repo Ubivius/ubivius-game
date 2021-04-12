@@ -1,31 +1,13 @@
 fileFormatVersion: 2
-guid: 5f258fbcafb502d4ba405755b3f8eb2f
+guid: 37680d863559d9c478a19f2866b4e749
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2712449896295907293
-    second: PlayerSideRun_0
+      213: -277153921769468689
+    second: PlayerIdleRight_0
   - first:
-      213: 4501749752469450362
-    second: PlayerSideRun_1
-  - first:
-      213: -7784978248921333670
-    second: PlayerSideRun_2
-  - first:
-      213: 6585630830180204328
-    second: PlayerSideRun_3
-  - first:
-      213: 1851335194396512409
-    second: PlayerSideRun_4
-  - first:
-      213: -4637273149391696275
-    second: PlayerSideRun_5
-  - first:
-      213: 3395470672988189114
-    second: PlayerSideRun_6
-  - first:
-      213: -4655902175616868818
-    second: PlayerSideRun_7
+      213: -5695481570160788154
+    second: PlayerIdleRight_1
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -135,133 +117,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayerSideRun_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 256
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ddf33cb3fce84a520800000000000000
-      internalID: 2712449896295907293
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerSideRun_1
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 256
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a7ee4af6c8d697e30800000000000000
-      internalID: 4501749752469450362
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerSideRun_2
-      rect:
-        serializedVersion: 2
-        x: 256
-        y: 256
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a50c6e8778336f390800000000000000
-      internalID: -7784978248921333670
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerSideRun_3
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 128
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 82f70ce095cd46b50800000000000000
-      internalID: 6585630830180204328
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerSideRun_4
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 128
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 990de2eec8341b910800000000000000
-      internalID: 1851335194396512409
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerSideRun_5
-      rect:
-        serializedVersion: 2
-        x: 256
-        y: 128
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d6e0d04d3a815afb0800000000000000
-      internalID: -4637273149391696275
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerSideRun_6
+      name: PlayerIdleRight_0
       rect:
         serializedVersion: 2
         x: 0
@@ -275,14 +131,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ab1b7bc46922f1f20800000000000000
-      internalID: 3395470672988189114
+      spriteID: fec03d00af9572cf0800000000000000
+      internalID: -277153921769468689
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerSideRun_7
+      name: PlayerIdleRight_1
       rect:
         serializedVersion: 2
         x: 128
@@ -296,8 +152,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e2e5369a3a9e26fb0800000000000000
-      internalID: -4655902175616868818
+      spriteID: 64d38c910b595f0b0800000000000000
+      internalID: -5695481570160788154
       vertices: []
       indices: 
       edges: []

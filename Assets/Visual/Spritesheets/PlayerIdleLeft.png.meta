@@ -1,13 +1,13 @@
 fileFormatVersion: 2
-guid: 8eefb72b7f21ea74387ebf8657f733b8
+guid: 1270da15fa4ccdc4db51041c3866f0cd
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3520407410973295777
-    second: PlayerSideIdle_0
+      213: -554677931794783555
+    second: PlayerIdleLeft_0
   - first:
-      213: 1645540880781523185
-    second: PlayerSideIdle_1
+      213: 910145881625344420
+    second: PlayerIdleLeft_0
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -117,7 +117,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayerSideIdle_0
+      name: PlayerIdleLeft_1
       rect:
         serializedVersion: 2
         x: 0
@@ -125,20 +125,20 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1a447bb63effad030800000000000000
-      internalID: 3520407410973295777
+      spriteID: db2af9e1c536d48f0800000000000000
+      internalID: -554677931794783555
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerSideIdle_1
+      name: PlayerIdleLeft_0
       rect:
         serializedVersion: 2
         x: 128
@@ -146,14 +146,14 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1f8bd5e66b226d610800000000000000
-      internalID: 1645540880781523185
+      spriteID: 4a930107bdc71ac00800000000000000
+      internalID: 910145881625344420
       vertices: []
       indices: 
       edges: []
