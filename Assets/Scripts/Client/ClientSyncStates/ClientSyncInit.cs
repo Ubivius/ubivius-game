@@ -8,6 +8,8 @@ using ubv.common.data;
 using ubv.tcp;
 using System.Net.Http;
 using static ubv.microservices.DispatcherMicroservice;
+using static ubv.microservices.CharacterDataService;
+using UnityEngine.Events;
 
 namespace ubv.client.logic
 {
@@ -29,6 +31,8 @@ namespace ubv.client.logic
 
         private bool m_readyToGoToLobby;
         private bool m_alreadyInLobby;
+
+        private CharacterData m_activeCharacter;
         
         protected override void StateAwake()
         {
@@ -52,10 +56,33 @@ namespace ubv.client.logic
             m_TCPClient.SetPlayerID(PlayerID.Value);
             m_UDPClient.Subscribe(this);
             m_TCPClient.Subscribe(this);
+            m_activeCharacter = null;
             if (clearServerInfo)
             {
                 m_cachedServerInfo = null;
             }
+        }
+
+        private void Start()
+        {
+            // try to fetch characters from microservice
+            m_characterService.GetCharacters(PlayerIDString, OnCharactersFetchedFromService);
+        }
+
+        private void OnCharactersFetchedFromService(CharacterData[] characters)
+        {
+            // for now, assume only one character 
+            // take the only character available and treat it as active
+            m_activeCharacter = characters[0];
+#if DEBUG_LOG
+            Debug.Log("Fetched character " + m_activeCharacter.Name + " from microservice.");
+#endif //DEBUG_LOG
+            
+        }
+
+        public CharacterData GetActiveCharacter()
+        {
+            return m_activeCharacter;
         }
 
         protected override void StateUpdate()

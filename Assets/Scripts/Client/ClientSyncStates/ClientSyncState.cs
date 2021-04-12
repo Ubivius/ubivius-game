@@ -26,6 +26,7 @@ namespace ubv.client.logic
         static protected http.HTTPClient m_HTTPClient;
         static protected microservices.DispatcherMicroservice m_dispatcherService;
         static protected microservices.AuthenticationService m_authenticationService;
+        static protected microservices.CharacterDataService m_characterService;
 
         static private bool m_isSetup = false;
 
@@ -43,6 +44,8 @@ namespace ubv.client.logic
                 m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
                 m_dispatcherService = ClientNetworkingManager.Instance.Dispatcher;
                 m_authenticationService = ClientNetworkingManager.Instance.Authentication;
+                m_characterService = ClientNetworkingManager.Instance.CharacterData;
+
                 m_isSetup = true;
             }
             StateStart();

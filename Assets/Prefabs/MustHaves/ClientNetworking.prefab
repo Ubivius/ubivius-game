@@ -55,6 +55,7 @@ MonoBehaviour:
   HTTPClient: {fileID: 1775558437836293882}
   Dispatcher: {fileID: 7434323783986351494}
   Authentication: {fileID: 5996061036848143753}
+  CharacterData: {fileID: 6793292407888554963}
 --- !u!1 &1584834601242082864
 GameObject:
   m_ObjectHideFlags: 0
@@ -185,9 +186,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51495b9d4b5acef459ae08d6054305ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_forceUserID: murphy-id-123
   m_mock: 1
   m_HTTPClient: {fileID: 1775558437836293882}
-  m_authEndpoint: 
+  m_authEndpoint: http://localhost:9092
 --- !u!1 &5254342688879064719
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,7 +279,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_mock: 0
   m_HTTPClient: {fileID: 1775558437836293882}
-  m_authEndpoint: 
+  m_characterDataEndpoint: http://localhost:9093
 --- !u!1 &8747356472878904221
 GameObject:
   m_ObjectHideFlags: 0
@@ -323,10 +325,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HTTPClient: {fileID: 1775558437836293882}
   m_dispatcherEndpoint: http://localhost:9090
-  m_mock: 0
-  m_serverAddress: 
-  m_serverTCPPort: 0
-  m_serverUDPPort: 0
+  m_mock: 1
+  m_serverAddress: 192.168.0.141
+  m_serverTCPPort: 9191
+  m_serverUDPPort: 9190
 --- !u!1 &8752211695502532364
 GameObject:
   m_ObjectHideFlags: 0

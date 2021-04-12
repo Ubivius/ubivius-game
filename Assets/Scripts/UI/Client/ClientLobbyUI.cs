@@ -64,7 +64,7 @@ namespace ubv.ui.client
                     if (!m_connectedPlayers.Contains(player))
                     {
                         TextMeshProUGUI newPlayerItem = GameObject.Instantiate(m_defaultPlayerNameItem, m_playerListParent);
-                        newPlayerItem.text = player.ToString();
+                        newPlayerItem.text = player.ToString() + "(" + ")";
                         m_connectedPlayers.Add(player);
                     }
                 }

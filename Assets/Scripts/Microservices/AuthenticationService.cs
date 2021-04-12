@@ -8,6 +8,7 @@ namespace ubv.microservices
 {
     public class AuthenticationService : MonoBehaviour
     {
+        [SerializeField] private string m_forceUserID;
         [SerializeField] private bool m_mock;
         [SerializeField] private HTTPClient m_HTTPClient;
         [SerializeField] string m_authEndpoint;
@@ -32,9 +33,10 @@ namespace ubv.microservices
             if (m_mock)
             {
 #if DEBUG_LOG
-                Debug.Log("Mocking auth. Auto logging in with random ID.");
+                Debug.Log("Mocking auth. Auto logging in with random ID (or forced ID provided if any)");
 #endif // DEBUG_LOG
-                onLogin(System.Guid.NewGuid().ToString());
+                string id = m_forceUserID.Length > 0 ? m_forceUserID : System.Guid.NewGuid().ToString();
+                onLogin(id);
                 return;
             }
 

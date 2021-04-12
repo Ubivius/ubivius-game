@@ -83,9 +83,7 @@ namespace ubv.client.logic
                 ClientListUpdate.Invoke(BuildPlayerIDListFromPlayerStates(clientList.Players.Value));
                 return;
             }
-
-            // TODO : see why createfrombytes takes SO LONG
-            // meanwhile maybe start in thread
+            
             System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
             watch.Start();
             ServerInitMessage start = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data.ArraySegment());
