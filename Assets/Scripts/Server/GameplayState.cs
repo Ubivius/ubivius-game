@@ -38,14 +38,14 @@ namespace ubv.server.logic
             ServerState.m_gameplayState = this;
         }
 
-        public void Init(HashSet<int> clients, int simulationBuffer)
+        public void Init(Dictionary<int, common.serialization.types.String> clients, int simulationBuffer)
         {
             m_tickAccumulator = 0;
             m_masterTick = 0;
             m_bufferedMasterTick = 0;
             m_simulationBuffer = simulationBuffer;
             m_clientStates = new Dictionary<int, ClientState>();
-            m_clients = clients;
+            m_clients = new HashSet<int>(clients.Keys);
 
             m_connectedClients = new Dictionary<int, bool>();
 

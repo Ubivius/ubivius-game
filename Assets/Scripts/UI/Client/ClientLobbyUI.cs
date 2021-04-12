@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using static ubv.microservices.CharacterDataService;
 
 namespace ubv.ui.client
 {
@@ -12,18 +13,19 @@ namespace ubv.ui.client
         [SerializeField] private TextMeshProUGUI m_defaultPlayerNameItem;
         [SerializeField] private LoadingScreen m_loadingScreen;
 
+        private Dictionary<int, TextMeshProUGUI> m_playerTextsObjects;
+
         // TODO : switch type from int to something more adapted
         // to UI, which would contain more client-specific info 
         // (with future Lobby UI task)
-        private List<int> m_connectedPlayers;
-        private List<int> m_newPlayers;
+        private List<CharacterData> m_players;
 
         private void Awake()
         {
-            m_connectedPlayers = new List<int>();
+            m_players = new List<CharacterData>();
+            m_playerTextsObjects = new Dictionary<int, TextMeshProUGUI>();
             m_lobby.OnStartLoadWorld += () =>
             {
-
                 m_loadingScreen.gameObject.SetActive(true);
                 m_loadingScreen.FadeLoadingScreen(1, 0.5f);
             };
@@ -42,11 +44,19 @@ namespace ubv.ui.client
 
         private void Update()
         {
-            if(m_newPlayers != null)
+            if(Time.frameCount % 69 == 0)
             {
-                ClearPlayers();
-                AddNewPlayersFromList(m_newPlayers);
-                m_newPlayers = null;
+                foreach (CharacterData player in m_players)
+                {
+                    int playerIntID = player.PlayerID.GetHashCode();
+                    if (!m_playerTextsObjects.ContainsKey(playerIntID))
+                    {
+                        TextMeshProUGUI playerItem = GameObject.Instantiate(m_defaultPlayerNameItem, m_playerListParent);
+                        m_playerTextsObjects[playerIntID] = playerItem;
+                    }
+
+                    m_playerTextsObjects[playerIntID].text = player.Name + "(" + player.PlayerID + ")";
+                }
             }
 
             if (m_loadingScreen.isActiveAndEnabled)
@@ -55,34 +65,13 @@ namespace ubv.ui.client
             }
         }
 
-        private void AddNewPlayersFromList(List<int> newPlayers)
+        private void AddNewPlayersFromList(List<CharacterData> newPlayers)
         {
-            if (newPlayers != null)
-            {
-                foreach (int player in newPlayers)
-                {
-                    if (!m_connectedPlayers.Contains(player))
-                    {
-                        TextMeshProUGUI newPlayerItem = GameObject.Instantiate(m_defaultPlayerNameItem, m_playerListParent);
-                        newPlayerItem.text = player.ToString() + "(" + ")";
-                        m_connectedPlayers.Add(player);
-                    }
-                }
-            }
         }
 
-        private void ClearPlayers()
+        private void UpdatePlayers(List<CharacterData> players)
         {
-            m_connectedPlayers.Clear();
-            foreach (Transform child in m_playerListParent)
-            {
-                GameObject.Destroy(child.gameObject);
-            }
-        }
-
-        private void UpdatePlayers(List<int> players)
-        {
-            m_newPlayers = players;
+            m_players = players;
         }
     }
 }

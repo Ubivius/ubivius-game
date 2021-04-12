@@ -179,7 +179,7 @@ namespace ubv.client.logic
 
         private void SetLobbyStateActive()
         {
-            ClientSyncState.m_lobbyState.Init(PlayerID.Value);
+            ClientSyncState.m_lobbyState.Init(PlayerID.Value, GetActiveCharacter().ID);
             ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
         }
 

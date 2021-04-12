@@ -7,10 +7,11 @@ using UnityEngine.SceneManagement;
 using ubv.common.data;
 using ubv.tcp;
 using UnityEngine.Events;
+using static ubv.microservices.CharacterDataService;
 
 namespace ubv.client.logic
 {
-    public class ClientListUpdateEvent : UnityEvent<List<int>>  { }
+    public class ClientListUpdateEvent : UnityEvent<List<CharacterData>>  { }
 
     public class ClientSyncLobby : ClientSyncState, tcp.client.ITCPClientReceiver
     {
@@ -20,7 +21,7 @@ namespace ubv.client.logic
         private bool m_serverSentSignal;
 
         private int? m_simulationBuffer;
-        private List<PlayerState> m_playerStates;
+        private Dictionary<int, CharacterData> m_clientCharacters;
 
         private ServerInitMessage m_awaitedInitMessage;
 
@@ -37,6 +38,7 @@ namespace ubv.client.logic
             ClientSyncState.m_lobbyState = this;
             m_serverSentSignal = false;
             LoadPercentage = 0;
+            m_clientCharacters = new Dictionary<int, CharacterData>();
         }
 
         private void OnWorldBuilt()
@@ -53,17 +55,7 @@ namespace ubv.client.logic
                 m_TCPClient.Send(clientReadyMessage.GetBytes());
             }
         }
-
-        private List<int> BuildPlayerIDListFromPlayerStates(List<PlayerState> playerStates)
-        {
-            List<int> playerIDs = new List<int>();
-            foreach (PlayerState state in playerStates)
-            {
-                playerIDs.Add(state.GUID.Value);
-            }
-            return playerIDs;
-        }
-
+        
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
             ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data.ArraySegment());
@@ -77,10 +69,18 @@ namespace ubv.client.logic
             }
             
             // loads other players in lobby, receives message from server indicating a new player joined
-            ClientListMessage clientList = common.serialization.IConvertible.CreateFromBytes<ClientListMessage>(packet.Data.ArraySegment());
+            CharacterListMessage clientList = common.serialization.IConvertible.CreateFromBytes<CharacterListMessage>(packet.Data.ArraySegment());
             if (clientList != null)
             {
-                ClientListUpdate.Invoke(BuildPlayerIDListFromPlayerStates(clientList.Players.Value));
+                foreach (common.serialization.types.String id in clientList.Characters.Value)
+                {
+                    // fetch character data from microservice
+                    m_characterService.GetCharacter(id.Value, (CharacterData character) =>
+                    {
+                        m_clientCharacters[character.PlayerID.GetHashCode()] = character;
+                        ClientListUpdate.Invoke(new List<CharacterData>(m_clientCharacters.Values));
+                    });
+                }
                 return;
             }
             
@@ -102,10 +102,9 @@ namespace ubv.client.logic
         {
             if(m_awaitedInitMessage != null)
             {
-                m_playerStates = m_awaitedInitMessage.Players.Value;
                 m_simulationBuffer = m_awaitedInitMessage.SimulationBuffer.Value;
 #if DEBUG_LOG
-                Debug.Log("Client received confirmation that server is about to start game with " + m_playerStates.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
+                Debug.Log("Client received confirmation that server is about to start game with " + m_clientCharacters.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
 
 #if DEBUG_LOG
@@ -119,7 +118,12 @@ namespace ubv.client.logic
             if (m_serverSentSignal)
             {
                 OnGameStart?.Invoke();
-                ClientSyncState.m_playState.Init(m_simulationBuffer.Value, m_playerStates);
+                List<PlayerState> playerStates = new List<PlayerState>();
+                foreach(int id in m_clientCharacters.Keys)
+                {
+                    playerStates.Add(new PlayerState(id));
+                }
+                ClientSyncState.m_playState.Init(m_simulationBuffer.Value, playerStates);
                 m_currentState = ClientSyncState.m_playState;
                 m_TCPClient.Unsubscribe(this);
                 m_serverSentSignal = false;
@@ -143,11 +147,11 @@ namespace ubv.client.logic
             StartCoroutine(LeaveLobbyCoroutine());
         }
 
-        public void Init(int playerID)
+        public void Init(int playerID, string activeCharacterID)
         {
             PlayerID = playerID;
             m_TCPClient.Subscribe(this);
-            m_TCPClient.Send(new OnLobbyEnteredMessage().GetBytes());
+            m_TCPClient.Send(new OnLobbyEnteredMessage(activeCharacterID).GetBytes());
         }
         
         private IEnumerator LoadWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
@@ -173,7 +177,7 @@ namespace ubv.client.logic
 
         public void OnDisconnect()
         {
-            ClientListUpdate.Invoke(new List<int>());
+            ClientListUpdate.Invoke(new List<CharacterData>());
             m_initState.Init(false);
             m_currentState = m_initState;
             m_TCPClient.Unsubscribe(this);

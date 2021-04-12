@@ -15,15 +15,20 @@ namespace ubv.microservices
         public delegate void OnGetCharacters(CharacterData[] characters);
         private OnGetCharacters m_onGetCharactersCallback;
 
+        public delegate void OnGetCharacter(CharacterData character);
+        private OnGetCharacter m_onGetCharacterCallback;
+
         public class CharacterData
         {
+            public string PlayerID { get; private set; }
             public string Name { get; private set; }
             public string ID { get; private set; }
 
-            public CharacterData(string name, string id)
+            public CharacterData(string name, string id, string playerID)
             {
                 Name = name;
                 ID = id;
+                PlayerID = playerID;
             }
         }
         
@@ -34,6 +39,23 @@ namespace ubv.microservices
             public string user_id;
             public string name;
         }
+
+        public void GetCharacter(string characterID, OnGetCharacter onGetCharacter)
+        {
+            if (m_mock)
+            {
+#if DEBUG_LOG
+                Debug.Log("Mocking char-data.");
+#endif // DEBUG_LOG
+                CharacterData character = new CharacterData("mock-murphy", "mock-murphy-id-1234", "murphy-id-123");
+                onGetCharacter(character);
+                return;
+            }
+            
+            m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
+            m_onGetCharacterCallback = onGetCharacter;
+            m_HTTPClient.Get("characters/" + characterID, OnCharacterDataResponse);
+        }
         
         public void GetCharacters(string playerID, OnGetCharacters onGetCharacters)
         {
@@ -42,7 +64,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("Mocking char-data.");
 #endif // DEBUG_LOG
-                CharacterData character = new CharacterData("mock-murphy", "mock-murphy-id-1234");
+                CharacterData character = new CharacterData("mock-murphy", "mock-murphy-id-1234", "murphy-id-123");
                 CharacterData[] characters = new CharacterData[]
                 {
                     character
@@ -54,21 +76,20 @@ namespace ubv.microservices
             
             m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
             m_onGetCharactersCallback = onGetCharacters;
-            m_HTTPClient.Get("characters/user/" + playerID, OnCharacterDataResponse);
+            m_HTTPClient.Get("characters/user/" + playerID, OnCharactersDataResponse);
         }
         
-        private void OnCharacterDataResponse(HttpResponseMessage message)
+        private void OnCharactersDataResponse(HttpResponseMessage message)
         {
             if (message.StatusCode == HttpStatusCode.OK)
             {
-                // check https://stackoverflow.com/questions/36239705/serialize-and-deserialize-json-and-json-array-in-unity
                 string JSON = JsonHelper.FixJsonArrayFromServer(message.Content.ReadAsStringAsync().Result);
                 JSONCharacterData[] authResponse = JsonHelper.FromJson<JSONCharacterData>(JSON);
 
                 CharacterData[] characters = new CharacterData[authResponse.Length];
                 for (int i = 0; i < authResponse.Length; i++)
                 {
-                    characters[i] = new CharacterData(authResponse[i].name, authResponse[i].id);
+                    characters[i] = new CharacterData(authResponse[i].name, authResponse[i].id, authResponse[i].user_id);
                 }
 
                 m_onGetCharactersCallback.Invoke(characters);
@@ -77,7 +98,27 @@ namespace ubv.microservices
             else
             {
 #if DEBUG_LOG
-                Debug.Log("Authentication login request was not successful");
+                Debug.Log("Character data request was not successful");
+#endif // DEBUG_LOG
+            }
+        }
+
+        private void OnCharacterDataResponse(HttpResponseMessage message)
+        {
+            if (message.StatusCode == HttpStatusCode.OK)
+            {
+                string JSON = message.Content.ReadAsStringAsync().Result;
+                JSONCharacterData authResponse = JsonUtility.FromJson<JSONCharacterData>(JSON);
+
+                CharacterData character = new CharacterData(authResponse.name, authResponse.id, authResponse.user_id);
+                
+                m_onGetCharacterCallback.Invoke(character);
+                m_onGetCharacterCallback = null;
+            }
+            else
+            {
+#if DEBUG_LOG
+                Debug.Log("Character data request was not successful");
 #endif // DEBUG_LOG
             }
         }
