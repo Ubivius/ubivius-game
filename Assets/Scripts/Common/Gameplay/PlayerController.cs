@@ -25,7 +25,7 @@ namespace ubv.common.gameplay
             m_currentSuit.MainItem = GameObject.Instantiate(m_currentSuit.MainItem, transform).GetComponent<PlayerItem>();
             m_currentSuit.SideItem = GameObject.Instantiate(m_currentSuit.SideItem, transform).GetComponent<PlayerItem>();
         }
-
+            
         public PlayerStats GetStats()
         {
             return m_currentSuit ? m_currentSuit.Stats : m_defaultStats;
