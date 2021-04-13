@@ -6,12 +6,15 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using ubv.common.data;
 using ubv.tcp;
+using ubv.microservices;
 
 namespace ubv.client.logic
 {
     abstract public class ClientSyncState : MonoBehaviour
     {
         static public int? PlayerID { get; protected set; }
+
+        static public UserService.UserInfo UserInfo { get; protected set; }
 
         static protected ClientSyncState m_currentState = null;
 
@@ -23,8 +26,10 @@ namespace ubv.client.logic
         static protected tcp.client.TCPClient m_TCPClient;
         static protected udp.client.UDPClient m_UDPClient;
         static protected http.HTTPClient m_HTTPClient;
-        static protected microservices.DispatcherMicroservice m_dispatcherService;
-        static protected microservices.AuthenticationService m_authenticationService;
+        static protected DispatcherMicroservice m_dispatcherService;
+        static protected AuthenticationService m_authenticationService;
+        static protected CharacterDataService m_characterService;
+        static protected UserService m_userService;
 
         static private bool m_isSetup = false;
 
@@ -42,6 +47,9 @@ namespace ubv.client.logic
                 m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
                 m_dispatcherService = ClientNetworkingManager.Instance.Dispatcher;
                 m_authenticationService = ClientNetworkingManager.Instance.Authentication;
+                m_characterService = ClientNetworkingManager.Instance.CharacterData;
+                m_userService = ClientNetworkingManager.Instance.User;
+
                 m_isSetup = true;
             }
             StateStart();
