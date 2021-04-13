@@ -12,6 +12,10 @@ namespace ubv.common.world
         [SerializeField] private Tilemap m_wall;
         [SerializeField] private Tilemap m_door;
         [SerializeField] private Tilemap m_interactable;
+        [SerializeField] private Tilemap m_finalDoor;
+        [SerializeField] private Tilemap m_zoneButton;
+        [SerializeField] private Tilemap m_activationButton;
+        [SerializeField] private Tilemap m_fianlButton;
         [SerializeField] private Tilemap m_playerSpawnZone;
 
         [SerializeField] private int m_height;
