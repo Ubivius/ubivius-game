@@ -42,7 +42,7 @@ jobs:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
           projectPath: .
-          githubToken: ${{ secrets.UNITY_TEST_RUNNER_TOKEN }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
 
       # Build
       - name: Server build 
