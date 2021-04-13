@@ -165,10 +165,13 @@ namespace ubv.tcp.server
 
             if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS / 1000f)
             {
-                m_connectionKeepAliveTimer = 0;
-                foreach (int id in m_clientEndpoints.Keys)
+                lock (m_lock)
                 {
-                    Send(m_keepAlivePacketBytes, id);
+                    m_connectionKeepAliveTimer = 0;
+                    foreach (int id in m_clientEndpoints.Keys)
+                    {
+                        Send(m_keepAlivePacketBytes, id);
+                    }
                 }
             }
         }
