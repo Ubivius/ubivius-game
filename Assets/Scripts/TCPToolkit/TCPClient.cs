@@ -15,9 +15,8 @@ namespace ubv.tcp.client
     {
         protected readonly object m_lock = new object();
 
-        [Header("Connection parameters")]
-        [SerializeField] private string m_serverAddress;
-        [SerializeField] private int m_port;
+        private string m_serverAddress;
+        private int m_port;
 
         protected bool m_exitSignal;
 
@@ -25,18 +24,23 @@ namespace ubv.tcp.client
         private IPEndPoint m_server;
 
         private List<ITCPClientReceiver> m_receivers;
+        private List<ITCPClientReceiver> m_receiversAwaitingSubscription;
+        private List<ITCPClientReceiver> m_receiversAwaitingUnsubscription;
+        private bool m_iteratingTroughReceivers;
 
         private const int DATA_BUFFER_SIZE = 1024*1024;
         private Queue<byte[]> m_dataToSend;
-
+        
         private void Awake()
         {
             m_receivers = new List<ITCPClientReceiver>();
+            m_receiversAwaitingSubscription = new List<ITCPClientReceiver>();
+            m_receiversAwaitingUnsubscription = new List<ITCPClientReceiver>();
             m_exitSignal = false;
             m_dataToSend = new Queue<byte[]>();
             m_client = new TcpClient();
-            m_server = new IPEndPoint(IPAddress.Parse(m_serverAddress), m_port);
 
+            m_iteratingTroughReceivers = false;
         }
 
         private void Start()
@@ -115,10 +119,42 @@ namespace ubv.tcp.client
                     if (packet.HasValidProtocolID())
                     {
                         // broadcast reception to listeners
-                        foreach (ITCPClientReceiver receiver in m_receivers)
+                        lock (m_lock)
                         {
-                            receiver.ReceivePacket(packet);
+                            m_iteratingTroughReceivers = true;
+                            foreach (ITCPClientReceiver receiver in m_receivers)
+                            {
+                                receiver.ReceivePacket(packet);
+                            }
+                            m_iteratingTroughReceivers = false;
                         }
+                    }
+                }
+            }
+        }
+
+        private void Update()
+        {
+            lock (m_lock)
+            {
+                if (!m_iteratingTroughReceivers)
+                {
+                    if (m_receiversAwaitingSubscription.Count > 0)
+                    {
+                        for (int i = 0; i < m_receiversAwaitingSubscription.Count; i++)
+                        {
+                            Subscribe(m_receiversAwaitingSubscription[i]);
+                        }
+                        m_receiversAwaitingSubscription.Clear();
+                    }
+
+                    if (m_receiversAwaitingUnsubscription.Count > 0)
+                    {
+                        for (int i = 0; i < m_receiversAwaitingUnsubscription.Count; i++)
+                        {
+                            Unsubscribe(m_receiversAwaitingUnsubscription[i]);
+                        }
+                        m_receiversAwaitingUnsubscription.Clear();
                     }
                 }
             }
@@ -168,17 +204,39 @@ namespace ubv.tcp.client
 
         public void Subscribe(ITCPClientReceiver receiver)
         {
-            if (!m_receivers.Contains(receiver))
-                m_receivers.Add(receiver);
+            lock (m_lock)
+            {
+                if (m_iteratingTroughReceivers)
+                {
+                    m_receiversAwaitingSubscription.Add(receiver);
+                }
+                else if (!m_receivers.Contains(receiver))
+                {
+                    m_receivers.Add(receiver);
+                }
+            }
         }
 
         public void Unsubscribe(ITCPClientReceiver receiver)
         {
-            m_receivers.Remove(receiver);
+            lock (m_lock)
+            {
+                if (m_iteratingTroughReceivers)
+                {
+                    m_receiversAwaitingUnsubscription.Add(receiver);
+                }
+                else
+                {
+                    m_receivers.Remove(receiver);
+                }
+            }
         }
 
-        public void Connect()
+        public void Connect(string address, int port)
         {
+            m_serverAddress = address;
+            m_port = port;
+            m_server = new IPEndPoint(IPAddress.Parse(address), port);
             Thread thread = new Thread(new ThreadStart(CommThread));
             thread.Start();
         }

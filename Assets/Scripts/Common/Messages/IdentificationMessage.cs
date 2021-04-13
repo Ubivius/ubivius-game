@@ -26,7 +26,7 @@ namespace ubv
 
                 protected override ID.BYTE_TYPE SerializationID()
                 {
-                    return ID.BYTE_TYPE.AUTH_MESSAGE;
+                    return ID.BYTE_TYPE.IDENTIFICATION_MESSAGE;
                 }
             }
         }

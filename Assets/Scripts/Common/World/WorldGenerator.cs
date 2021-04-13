@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 namespace ubv.common.world
 {
     [RequireComponent(typeof(Grid))]
-    public class WorldGenerator : MonoBehaviour
+    public class WorldGenerator : ServerInitializer
     {
         [SerializeField] private Vector2Int m_boundariesMap;
 
@@ -42,10 +42,10 @@ namespace ubv.common.world
 
         private Grid m_grid;
 
-        private ubv.common.world.LogicGrid m_masterLogicGrid;
+        private LogicGrid m_masterLogicGrid;
 
-        private ubv.common.world.RoomManager m_roomManager;
-        private ubv.common.world.CorridorsManager m_corridorsManager;
+        private RoomManager m_roomManager;
+        private CorridorsManager m_corridorsManager;
 
         private dataStruct.WorldGeneratorToRoomManager m_worldGeneratorToRoomManager;
         private dataStruct.WorldGeneratorToCorridorsManager m_worldGeneratorToCorridorsManager;
@@ -78,6 +78,9 @@ namespace ubv.common.world
                 m_mandatoryRoomPoolBottomRight,
                 m_grid,
                 m_wallThickness);
+
+            //GenerateWithOneRoom();
+            GenerateWorld();
         }
 
         public void GenerateWorld()
@@ -91,11 +94,26 @@ namespace ubv.common.world
             m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
         }
         
+        public void GenerateWithOneRoom() // For test only 
+        {
+            m_roomManager = new RoomManager(m_worldGeneratorToRoomManager);
+            m_masterLogicGrid = m_roomManager.AddOneRoom();
+        }
+
         public cellType.CellInfo[,] GetCellInfoArray()
         {
             return m_masterLogicGrid.GetCellInfo();
         }
 
+        public LogicGrid GetMasterLogicGrid()
+        {
+            return m_masterLogicGrid;
+        }
+
+        public override void Init()
+        {
+            GenerateWorld();
+        }
     }
 }
 

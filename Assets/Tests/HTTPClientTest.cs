@@ -16,8 +16,8 @@ namespace Tests
 
             CreateMockHTTPServer();
 
-            Assert.IsTrue(client.Get("products/1", out string content).Equals(System.Net.HttpStatusCode.OK));
-            Assert.IsTrue(client.Get("products/99", out string content2).Equals(System.Net.HttpStatusCode.NotFound));
+            client.Get("products/1", (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.OK)); });
+            client.Get("products/1", (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.NotFound)); });
         }
 
         [Test]
@@ -26,8 +26,8 @@ namespace Tests
             ubv.http.HTTPClient client = new GameObject().AddComponent<ubv.http.HTTPClient>();
 
             CreateMockHTTPServer();
-
-            Assert.IsTrue(client.Post("products", new object()).Equals(System.Net.HttpStatusCode.Created));
+            
+            client.Post("products", new object(), (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.Created)); });
         }
 
         [Test]
@@ -37,7 +37,7 @@ namespace Tests
 
             CreateMockHTTPServer();
 
-            Assert.IsTrue(client.Put("products", new object()).Equals(System.Net.HttpStatusCode.OK));
+            client.Put("products", new object(), (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.Created)); });
         }
 
         [Test]
@@ -47,8 +47,8 @@ namespace Tests
 
             CreateMockHTTPServer();
 
-            Assert.IsTrue(client.Delete("products/1").Equals(System.Net.HttpStatusCode.NoContent));
-            Assert.IsTrue(client.Delete("products/99").Equals(System.Net.HttpStatusCode.NotFound));
+            client.Delete("products/1", (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.NoContent)); });
+            client.Delete("products/99", (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.NotFound)); });
         }
         
         private void CreateMockHTTPServer()

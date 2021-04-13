@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ubv.common.world.cellType;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -16,83 +17,102 @@ namespace ubv.client.world
         [SerializeField] private Tilemap m_interactable;
 
         // list of tiles 
-
         [SerializeField] private Tile m_defaultWallTile;
         [SerializeField] private Tile m_defaultFloorTile;
         [SerializeField] private Tile m_defaultDoorTile;
         [SerializeField] private Tile m_defaultInteractableTile;
+        
+        private int m_totalTiles;
+        private int m_loadedTiles;
 
-        common.world.cellType.CellInfo[,] m_cellInfos;
-        private bool m_isBuildingWorld;
+        public bool IsRebuilt { get; private set; }
 
         private void Awake()
         {
-            m_cellInfos = null;
-            m_isBuildingWorld = false;
+            m_totalTiles = 0;
+            m_loadedTiles = 0;
+            LoadingData.WorldRebuilder = this;
+            IsRebuilt = false;
         }
 
-        // Start is called before the first frame update
-        void Start()
+        private IEnumerator BuildWorldFromCellInfoCoroutine(CellInfo[,] cellInfos)
         {
+            // voir https://docs.unity3d.com/ScriptReference/Tilemaps.Tilemap.SetTiles.html
+            // créer arrays de tile ensuite call setTiles ?
+            Vector3Int pos = new Vector3Int(0, 0, 0);
+            m_totalTiles = cellInfos.GetLength(0) * cellInfos.GetLength(1);
 
-        }
+            List<Tile> wallCells =          new List<Tile>();
+            List<Tile> floorCells =         new List<Tile>();
+            List<Tile> doorCells =          new List<Tile>();
+            List<Tile> doorButtonCells =    new List<Tile>();
 
-        // Update is called once per frame
-        void Update()
-        {
-            if(m_cellInfos != null && !m_isBuildingWorld)
+            List<Vector3Int> wallPos =      new List<Vector3Int>();
+            List<Vector3Int> floorPos =     new List<Vector3Int>();
+            List<Vector3Int> doorPos =      new List<Vector3Int>();
+            List<Vector3Int> doorButtonPos =new List<Vector3Int>();
+
+            for (int x = 0; x < cellInfos.GetLength(0); x++)
             {
-                m_isBuildingWorld = true;
-                StartCoroutine(RebuildWorldCoroutine(m_cellInfos));
+                for (int y = 0; y < cellInfos.GetLength(1); y++)
+                {
+                    LogicCell cell = cellInfos[x, y].CellFromBytes();
+                    pos.x = x;
+                    pos.y = y;
+                    if (cell is WallCell)
+                    {
+                        wallCells.Add(m_defaultWallTile);
+                        wallPos.Add(pos);
+                    }
+                    else if (cell is FloorCell)
+                    {
+                        floorCells.Add(m_defaultFloorTile);
+                        floorPos.Add(pos);
+                    }
+                    else if (cell is DoorCell)
+                    {
+                        doorCells.Add(m_defaultDoorTile);
+                        doorPos.Add(pos);
+                    }
+                    else if (cell is DoorButtonCell)
+                    {
+                        doorButtonCells.Add(m_defaultInteractableTile);
+                        doorButtonPos.Add(pos);
+                    }
+                    m_loadedTiles++;
+                }
+                yield return null;
             }
+
+            m_walls.SetTiles(wallPos.ToArray(), wallCells.ToArray());
+            m_floor.SetTiles(floorPos.ToArray(), floorCells.ToArray());
+            m_doors.SetTiles(doorPos.ToArray(), doorCells.ToArray());
+            m_interactable.SetTiles(doorButtonPos.ToArray(), doorButtonCells.ToArray());
+
+            IsRebuilt = true;
+            m_onWorldBuilt.Invoke();
         }
 
         public void BuildWorldFromCellInfo(common.world.cellType.CellInfo[,] cellInfos)
         {
-            m_cellInfos = cellInfos;
+            StartCoroutine(BuildWorldFromCellInfoCoroutine(cellInfos));
+        }
+
+        public float GetWorldBuildProgress()
+        {
+            if (m_totalTiles == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return (float)m_loadedTiles / (float)m_totalTiles;
+            }
         }
 
         public void OnWorldBuilt(UnityEngine.Events.UnityAction action)
         {
             m_onWorldBuilt += action;
-        }
-        
-        // every new cell created must also be added here
-        // not pretty but it'll work for now
-        private IEnumerator RebuildWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
-        {
-            m_isBuildingWorld = true;
-            Vector3Int pos = new Vector3Int(0, 0, 0);
-            for (int x = 0; x < cellInfos.GetLength(0); x++)
-            {
-                for (int y = 0; y < cellInfos.GetLength(1); y++)
-                {
-                    common.world.cellType.LogicCell cell = cellInfos[x, y].CellFromBytes();
-                    pos.x = x;
-                    pos.y = y;
-                    if (cell is common.world.cellType.WallCell)
-                    {
-                        m_walls.SetTile(pos, m_defaultWallTile);
-                    }
-                    else if (cell is common.world.cellType.FloorCell)
-                    {
-                        m_floor.SetTile(pos, m_defaultFloorTile);
-                    }
-                    else if (cell is common.world.cellType.DoorCell)
-                    {
-                        m_doors.SetTile(pos, m_defaultDoorTile);
-                    }
-                    else if (cell is common.world.cellType.DoorButtonCell)
-                    {
-                        m_interactable.SetTile(pos, m_defaultInteractableTile);
-                    }
-
-                    yield return null;
-                }
-            }
-            m_cellInfos = null;
-            m_isBuildingWorld = false;
-            m_onWorldBuilt.Invoke();
         }
     }
 }

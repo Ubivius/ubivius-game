@@ -13,7 +13,7 @@ namespace ubv.server.logic.ai
         // Use this for initialization
         void Start()
         {
-            //m_currentEnemyState = new RoamingState();
+            //m_currentEnemyState = new RoamingState()
         }
 
         // Update is called once per frame
