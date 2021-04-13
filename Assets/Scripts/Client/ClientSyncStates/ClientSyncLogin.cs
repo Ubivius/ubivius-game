@@ -57,8 +57,7 @@ namespace ubv.client.logic
             if (playerIDString != null)
             {
                 PlayerID = playerIDString.GetHashCode();
-                PlayerIDString = playerIDString;
-                m_readyToGoToMenu = true;
+                m_userService.SendUserInfoRequest(playerIDString, OnGetUserInfo);
             }
             else
             {
@@ -66,6 +65,12 @@ namespace ubv.client.logic
                 Debug.Log("Login failed. Maybe wrong credentials ?");
 #endif // DEBUG_LOG
             }
+        }
+
+        private void OnGetUserInfo(microservices.UserService.UserInfo info)
+        {
+            UserInfo = info;
+            m_readyToGoToMenu = true;
         }
     }   
 }

@@ -35,6 +35,7 @@ Transform:
   - {fileID: 2971893872073089457}
   - {fileID: 7676663511256152388}
   - {fileID: 1424532028110512240}
+  - {fileID: 9190401287086597186}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -56,6 +57,7 @@ MonoBehaviour:
   Dispatcher: {fileID: 7434323783986351494}
   Authentication: {fileID: 5996061036848143753}
   CharacterData: {fileID: 6793292407888554963}
+  User: {fileID: 0}
 --- !u!1 &1584834601242082864
 GameObject:
   m_ObjectHideFlags: 0
@@ -143,6 +145,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fca65deabe2d13e438e8d0e9b7183f69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &4594403952613993035
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9190401287086597186}
+  - component: {fileID: 7756809264957448054}
+  m_Layer: 0
+  m_Name: User
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9190401287086597186
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4594403952613993035}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1584834600992003656}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7756809264957448054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4594403952613993035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb690e47281ac4347af0f980681b44d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_mock: 0
+  m_forceUserID: 
+  m_forceUserName: 
+  m_HTTPClient: {fileID: 1775558437836293882}
+  m_userEndpoint: http://localhost:9091
 --- !u!1 &4998171549256964432
 GameObject:
   m_ObjectHideFlags: 0
@@ -233,7 +283,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f571978d471691c4eb1222fb51982cdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_endPoint: http://localhost:9090
 --- !u!1 &5927109276514483343
 GameObject:
   m_ObjectHideFlags: 0

@@ -66,7 +66,7 @@ namespace ubv.client.logic
         private void Start()
         {
             // try to fetch characters from microservice
-            m_characterService.GetCharacters(PlayerIDString, OnCharactersFetchedFromService);
+            m_characterService.GetCharacters(UserInfo.ID, OnCharactersFetchedFromService);
         }
 
         private void OnCharactersFetchedFromService(CharacterData[] characters)
@@ -179,7 +179,7 @@ namespace ubv.client.logic
 
         private void SetLobbyStateActive()
         {
-            ClientSyncState.m_lobbyState.Init(PlayerID.Value, GetActiveCharacter().ID);
+            ClientSyncState.m_lobbyState.Init(PlayerID.Value, GetActiveCharacter()?.ID);
             ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
         }
 

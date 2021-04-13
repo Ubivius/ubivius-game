@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using static ubv.microservices.CharacterDataService;
+using ubv.microservices;
 
 namespace ubv.ui.client
 {
@@ -12,17 +13,17 @@ namespace ubv.ui.client
         [SerializeField] private ubv.client.logic.ClientSyncLobby m_lobby;
         [SerializeField] private TextMeshProUGUI m_defaultPlayerNameItem;
         [SerializeField] private LoadingScreen m_loadingScreen;
+        private UserService m_userService;
 
         private Dictionary<int, TextMeshProUGUI> m_playerTextsObjects;
-
-        // TODO : switch type from int to something more adapted
-        // to UI, which would contain more client-specific info 
-        // (with future Lobby UI task)
-        private List<CharacterData> m_players;
+        
+        private List<CharacterData> m_characters;
+        private Dictionary<int, UserService.UserInfo> m_users;
 
         private void Awake()
         {
-            m_players = new List<CharacterData>();
+            m_characters = new List<CharacterData>();
+            m_users = new Dictionary<int, microservices.UserService.UserInfo>();
             m_playerTextsObjects = new Dictionary<int, TextMeshProUGUI>();
             m_lobby.OnStartLoadWorld += () =>
             {
@@ -38,6 +39,7 @@ namespace ubv.ui.client
 
         private void Start()
         {
+            m_userService = ubv.client.logic.ClientNetworkingManager.Instance.User;
             m_loadingScreen.gameObject.SetActive(false);
             m_lobby.ClientListUpdate.AddListener(UpdatePlayers);
         }
@@ -46,16 +48,19 @@ namespace ubv.ui.client
         {
             if(Time.frameCount % 69 == 0)
             {
-                foreach (CharacterData player in m_players)
+                foreach (CharacterData character in m_characters)
                 {
-                    int playerIntID = player.PlayerID.GetHashCode();
-                    if (!m_playerTextsObjects.ContainsKey(playerIntID))
+                    int playerIntID = character.PlayerID.GetHashCode();
+                    if (m_users.ContainsKey(playerIntID))
                     {
-                        TextMeshProUGUI playerItem = GameObject.Instantiate(m_defaultPlayerNameItem, m_playerListParent);
-                        m_playerTextsObjects[playerIntID] = playerItem;
-                    }
+                        if (!m_playerTextsObjects.ContainsKey(playerIntID))
+                        {
+                            TextMeshProUGUI playerItem = GameObject.Instantiate(m_defaultPlayerNameItem, m_playerListParent);
+                            m_playerTextsObjects[playerIntID] = playerItem;
+                        }
 
-                    m_playerTextsObjects[playerIntID].text = player.Name + "(" + player.PlayerID + ")";
+                        m_playerTextsObjects[playerIntID].text = character.Name + "(" + m_users[playerIntID].UserName + ")";
+                    }
                 }
             }
 
@@ -64,14 +69,22 @@ namespace ubv.ui.client
                 m_loadingScreen.LoadPercentage = m_lobby.LoadPercentage;
             }
         }
-
-        private void AddNewPlayersFromList(List<CharacterData> newPlayers)
+        
+        private void UpdatePlayers(List<CharacterData> characters)
         {
+            m_characters = characters;
+            foreach(CharacterData character in m_characters)
+            {
+                if (!m_users.ContainsKey(character.PlayerID.GetHashCode()))
+                {
+                    m_userService.SendUserInfoRequest(character.PlayerID, OnGetUserInfo);
+                }
+            }
         }
 
-        private void UpdatePlayers(List<CharacterData> players)
+        private void OnGetUserInfo(UserService.UserInfo info)
         {
-            m_players = players;
+            m_users[info.ID.GetHashCode()] = info;
         }
     }
 }
