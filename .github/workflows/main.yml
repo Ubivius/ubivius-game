@@ -41,7 +41,8 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
-          projectPath: Assets/Tests
+          projectPath: .
+          githubToken: ${{ secrets.UNITY_TEST_RUNNER_TOKEN }}
 
       # Build
       - name: Server build 
