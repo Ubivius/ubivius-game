@@ -10,7 +10,14 @@ namespace ubv.common.world.cellType
     public enum DoorType
     {
         Standard,
-        Section
+        Section_North,
+        Section_East,
+        Section_South,
+        Section_West,
+        Section0_NorthEast,
+        Section0_SouthEast,
+        Section0_SouthWest,
+        Section0_NorthWest
     }
 
     public class DoorCell : LogicCell
@@ -20,13 +27,13 @@ namespace ubv.common.world.cellType
 
         public DoorCell(DoorType doorType) : base()
         {
-            IsWalkable = true;
-            DoorType = doorType;
-
             m_IsClosed = new serialization.types.Bool(false);
             m_doorType = new serialization.types.Int32((int)doorType);
 
             InitSerializableMembers(m_IsClosed, m_doorType);
+
+            IsWalkable = true;
+            DoorType = doorType;
         }
 
         public void CloseDoor()

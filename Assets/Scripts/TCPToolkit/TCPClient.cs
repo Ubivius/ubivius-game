@@ -5,6 +5,8 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading;
 using System.IO;
+using System;
+using System.Threading.Tasks;
 
 namespace ubv.tcp.client
 {
@@ -16,7 +18,7 @@ namespace ubv.tcp.client
         protected readonly object m_lock = new object();
 
         private string m_serverAddress;
-        private int m_port;
+        private int m_serverPort;
 
         protected bool m_exitSignal;
 
@@ -28,9 +30,22 @@ namespace ubv.tcp.client
         private List<ITCPClientReceiver> m_receiversAwaitingUnsubscription;
         private bool m_iteratingTroughReceivers;
 
-        private const int DATA_BUFFER_SIZE = 1024*1024;
+        private const int DATA_BUFFER_SIZE = 1024*1024*4;
         private Queue<byte[]> m_dataToSend;
-        
+
+        private bool m_activeEndpoint;
+        [SerializeField] int m_connectionTimeoutInMS = 5000;
+        [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 250;
+        private float m_endpointLastTimeSeen;
+        private byte[] m_keepAlivePacketBytes;
+
+        private float m_connectionCheckTimer;
+        private float m_connectionKeepAliveTimer;
+
+        private int? m_playerID;
+
+        private ManualResetEvent m_requestToSendEvent;
+
         private void Awake()
         {
             m_receivers = new List<ITCPClientReceiver>();
@@ -38,17 +53,27 @@ namespace ubv.tcp.client
             m_receiversAwaitingUnsubscription = new List<ITCPClientReceiver>();
             m_exitSignal = false;
             m_dataToSend = new Queue<byte[]>();
-            m_client = new TcpClient();
+            m_activeEndpoint = false;
+            m_endpointLastTimeSeen = 0;
 
             m_iteratingTroughReceivers = false;
-        }
+            m_keepAlivePacketBytes = new byte[0];
 
-        private void Start()
+            m_connectionCheckTimer = 0;
+            m_connectionKeepAliveTimer = 0;
+            
+            m_requestToSendEvent = new ManualResetEvent(false);
+        }
+        
+        public void SetPlayerID(int playerID)
         {
+            m_playerID = playerID;
         }
 
         private void CommThread()
         {
+            m_client = new TcpClient();
+            m_exitSignal = false;
             using (m_client)
             {
                 try
@@ -66,14 +91,31 @@ namespace ubv.tcp.client
                 if (!m_client.Connected)
                         return;
 
+                m_iteratingTroughReceivers = true;
+                foreach (ITCPClientReceiver receiver in m_receivers)
+                {
+                    receiver.OnSuccessfulConnect();
+                }
+                m_iteratingTroughReceivers = false;
 #if DEBUG_LOG
                 Debug.Log("Connected to server.");
 #endif // DEBUG_LOG
 
                 using (NetworkStream stream = m_client.GetStream())
                 {
+                    m_activeEndpoint = true;
                     HandleConnection(stream);
+                    stream.Close();
                 }
+                m_activeEndpoint = false;
+
+                m_iteratingTroughReceivers = true;
+                foreach (ITCPClientReceiver receiver in m_receivers)
+                {
+                    receiver.OnDisconnect();
+                }
+                m_iteratingTroughReceivers = false;
+                m_client.Close();
             }
         }
 
@@ -99,13 +141,28 @@ namespace ubv.tcp.client
             int bytesRead = 0;
 
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
+            int lastPacketEnd = 0;
+            byte[] packetBytes = new byte[0];
+            int bufferOffset = 0;
+            int totalPacketBytes = 0;
 
-            while (!m_exitSignal)
+            bool readyToReadPacket = true;
+
+            stream.ReadTimeout = m_connectionTimeoutInMS;
+
+            while (!m_exitSignal && m_activeEndpoint && bufferOffset >= 0)
             {
-                // read from stream
+                if (readyToReadPacket)
+                {
+                    bytesRead = 0;
+                    totalPacketBytes = 0;
+                    readyToReadPacket = false;
+                }
+                
+                // read from stream until we read a full packet
                 try
                 {
-                    bytesRead = stream.Read(bytes, 0, DATA_BUFFER_SIZE);
+                    bytesRead += stream.Read(bytes, bufferOffset % DATA_BUFFER_SIZE, DATA_BUFFER_SIZE - bufferOffset);
                 }
                 catch (IOException ex)
                 {
@@ -115,26 +172,98 @@ namespace ubv.tcp.client
 
                 if (bytesRead > 0)
                 {
-                    TCPToolkit.Packet packet = TCPToolkit.Packet.PacketFromBytes(bytes.SubArray(0, bytesRead));
-                    if (packet.HasValidProtocolID())
+                    TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
+                    lock (m_lock)
                     {
+                        m_endpointLastTimeSeen = 0;
+                    }
+
+                    while (packet != null && totalPacketBytes < bytesRead)
+                    {
+                        readyToReadPacket = true;
+                        lastPacketEnd = packet.RawBytes.Length;
+                        totalPacketBytes += lastPacketEnd;
                         // broadcast reception to listeners
-                        lock (m_lock)
+                        if (packet.Data.Length > 0) // if it's not a keep-alive packet
                         {
-                            m_iteratingTroughReceivers = true;
-                            foreach (ITCPClientReceiver receiver in m_receivers)
+                            lock (m_lock)
                             {
-                                receiver.ReceivePacket(packet);
+                                m_iteratingTroughReceivers = true;
+                                foreach (ITCPClientReceiver receiver in m_receivers)
+                                {
+                                    receiver.ReceivePacket(packet);
+                                }
+                                m_iteratingTroughReceivers = false;
                             }
-                            m_iteratingTroughReceivers = false;
                         }
+                        packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes.ArrayFrom(totalPacketBytes));
+                    }
+
+                    // on a un restant de bytes
+                    // we shift
+                    bufferOffset = bytesRead - totalPacketBytes;
+                    for (int i = 0; i < bufferOffset; i++)
+                    {
+                        bytes[i] = bytes[i + totalPacketBytes];
                     }
                 }
+
+                try
+                {
+                    Task.Delay(50, new CancellationToken(m_exitSignal || !m_activeEndpoint)).Wait();
+                }
+                catch (AggregateException ex)
+                {
+#if DEBUG_LOG
+                    Debug.Log(ex.Message);
+#endif // DEBUG_LOG
+                }
+            }
+#if DEBUG_LOG
+            Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal + ", Buffer offset :" + bufferOffset);
+#endif // DEBUG_LOG
+        }
+
+        public void Reconnect()
+        {
+#if DEBUG_LOG
+            Debug.Log("Trying to reconnect...");
+#endif // DEBUG_LOG
+
+            if(m_serverAddress == null || m_serverPort == 0)
+            {
+#if DEBUG_LOG
+                Debug.Log("No previous connection has been made.");
+#endif // DEBUG_LOG
+            }
+            else
+            {
+                Connect(m_serverAddress, m_serverPort);
             }
         }
 
         private void Update()
         {
+            if (m_activeEndpoint)
+            {
+                m_endpointLastTimeSeen += Time.deltaTime;
+                m_connectionCheckTimer += Time.deltaTime;
+                m_connectionKeepAliveTimer += Time.deltaTime;
+
+                if (m_connectionCheckTimer > m_connectionTimeoutInMS / 1000f)
+                {
+                    m_connectionCheckTimer = 0;
+                    m_activeEndpoint = CheckConnection();
+                }
+                
+                if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS / 1000f && m_activeEndpoint)
+                {
+                    m_connectionKeepAliveTimer = 0;
+                    Send(m_keepAlivePacketBytes);
+                }
+            }
+
+
             lock (m_lock)
             {
                 if (!m_iteratingTroughReceivers)
@@ -159,7 +288,7 @@ namespace ubv.tcp.client
                 }
             }
         }
-
+        
         private void SendingThread(object streamObj)
         {
             NetworkStream stream = (NetworkStream)streamObj;
@@ -167,14 +296,24 @@ namespace ubv.tcp.client
             if (!stream.CanWrite)
                 return;
             
-            while (!m_exitSignal)
+            while (!m_exitSignal && m_activeEndpoint)
             {
+                m_requestToSendEvent.WaitOne(m_connectionTimeoutInMS);
+                m_requestToSendEvent.Reset();
                 // write to stream (send to client)
                 lock (m_lock)
                 {
                     while (m_dataToSend.Count > 0)
                     {
-                        byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend.Dequeue()).RawBytes;
+                        if(m_playerID == null)
+                        {
+#if DEBUG_LOG
+                            Debug.Log("Player ID is not set. Cannot send to server.");
+                            return;
+#endif // DEBUG_LOG
+                        }
+
+                        byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend.Dequeue(), m_playerID.Value).RawBytes;
                         try
                         {
                             stream.Write(bytesToWrite, 0, bytesToWrite.Length);
@@ -187,6 +326,7 @@ namespace ubv.tcp.client
                     }
                 }
             }
+            Debug.Log("State at client sending thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal);
         }
 
         private void OnDestroy()
@@ -196,6 +336,7 @@ namespace ubv.tcp.client
 
         public void Send(byte[] data)
         {
+            m_requestToSendEvent.Set();
             lock (m_lock)
             {
                 m_dataToSend.Enqueue(data);
@@ -235,10 +376,21 @@ namespace ubv.tcp.client
         public void Connect(string address, int port)
         {
             m_serverAddress = address;
-            m_port = port;
+            m_serverPort = port;
             m_server = new IPEndPoint(IPAddress.Parse(address), port);
+
             Thread thread = new Thread(new ThreadStart(CommThread));
             thread.Start();
+        }
+        
+        private bool CheckConnection()
+        {
+            return (m_endpointLastTimeSeen * 1000 < m_connectionTimeoutInMS);
+        }
+
+        public bool IsConnected()
+        {
+            return m_activeEndpoint;
         }
     }
 }

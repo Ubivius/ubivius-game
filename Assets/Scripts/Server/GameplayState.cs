@@ -1,21 +1,21 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections.Generic;
 using System.Net;
-using ubv.udp;
-using System.Collections.Generic;
-using ubv.tcp;
+using ubv.common;
 using ubv.common.data;
 using ubv.common.serialization;
-using ubv.common;
+using ubv.tcp;
+using UnityEngine;
 
 namespace ubv.server.logic
 {
     /// <summary>
     /// Represents the state of the server during the game
     /// </summary>
-    public class GameplayState : ServerState, udp.server.IUDPServerReceiver
+    public class GameplayState : ServerState, udp.server.IUDPServerReceiver, tcp.server.ITCPServerReceiver
     {
-        private Dictionary<IPEndPoint, ClientState> m_UDPClientStates;
+        private HashSet<int> m_clients;
+        private Dictionary<int, ClientState> m_clientStates;
+        private Dictionary<int, bool> m_connectedClients;
                 
         private Dictionary<ClientState, Dictionary<int, InputFrame>> m_clientInputBuffers;
         
@@ -38,14 +38,17 @@ namespace ubv.server.logic
             ServerState.m_gameplayState = this;
         }
 
-        public void Init(Dictionary<IPEndPoint, ClientState> UDPClientStates, int simulationBuffer)
+        public void Init(HashSet<int> clients, int simulationBuffer)
         {
             m_tickAccumulator = 0;
             m_masterTick = 0;
             m_bufferedMasterTick = 0;
             m_simulationBuffer = simulationBuffer;
-            m_UDPClientStates = UDPClientStates;
-            
+            m_clientStates = new Dictionary<int, ClientState>();
+            m_clients = clients;
+
+            m_connectedClients = new Dictionary<int, bool>();
+
             m_toRemoveCache = new List<int>();
 
             m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(m_physicsSceneName).GetPhysicsScene2D();
@@ -53,36 +56,35 @@ namespace ubv.server.logic
             m_clientInputBuffers = new Dictionary<ClientState, Dictionary<int, InputFrame>>();
                    
             // add each player to client states
-            foreach (IPEndPoint ip in m_UDPClientStates.Keys)
+            foreach (int id in m_clients)
             {
                 PlayerState player = new PlayerState();
-                player.GUID.Value = m_UDPClientStates[ip].PlayerGUID;
-                
-                m_UDPClientStates[ip].AddPlayer(player);
-                m_UDPClientStates[ip].PlayerGUID = player.GUID.Value;
+                player.GUID.Value = id;
+                m_clientStates[id] = new ClientState(id);
+                m_clientStates[id].AddPlayer(player);
+                m_connectedClients.Add(id, true);
             }
 
             // add each player to each other client state
-            foreach (ClientState baseState in m_UDPClientStates.Values)
+            foreach (ClientState baseState in m_clientStates.Values)
             {
                 m_clientInputBuffers[baseState] = new Dictionary<int, common.data.InputFrame>();
-                foreach (ClientState conn in m_UDPClientStates.Values)
+                foreach (ClientState otherState in m_clientStates.Values)
                 {
-                    PlayerState currentPlayer = conn.GetPlayer();
-                    if (baseState.PlayerGUID != conn.PlayerGUID)
+                    PlayerState currentPlayer = otherState.GetPlayer();
+                    if (baseState.PlayerGUID != otherState.PlayerGUID)
                     {
                         baseState.AddPlayer(currentPlayer);
                     }
                 }
             }
-
-
+            
             foreach (ServerGameplayStateUpdater updater in m_updaters)
             {
                 updater.Setup();
             }
 
-            foreach (ClientState state in m_UDPClientStates.Values)
+            foreach (ClientState state in m_clientStates.Values)
             {
                 foreach(ServerGameplayStateUpdater updater in m_updaters)
                 {
@@ -90,7 +92,7 @@ namespace ubv.server.logic
                 }
             }
 
-            foreach (ClientState state in m_UDPClientStates.Values)
+            foreach (ClientState state in m_clientStates.Values)
             {
                 foreach (ServerGameplayStateUpdater updater in m_updaters)
                 {
@@ -99,6 +101,7 @@ namespace ubv.server.logic
             }
             
             m_UDPServer.Subscribe(this);
+            m_TCPServer.Subscribe(this);
         }
                 
         protected override void StateFixedUpdate()
@@ -107,15 +110,20 @@ namespace ubv.server.logic
             {
                 if (++m_bufferedMasterTick > m_simulationBuffer + m_masterTick)
                 {
-                    foreach (ClientState client in m_clientInputBuffers.Keys)
+                    foreach (int id in m_clientStates.Keys)
                     {
+                        if (!m_connectedClients[id])
+                            continue;
+
+                        ClientState client = m_clientStates[id];
                         // if input buffer has a frame corresponding to this tick
                         InputFrame frame = null;
                         if(!m_clientInputBuffers[client].ContainsKey(m_masterTick))
                         {
 #if DEBUG_LOG
-                            Debug.Log("Missed a player input from " + client.PlayerGUID + " for tick " + m_masterTick);
+                            Debug.Log("Missed a player input from " + id + " for tick " + m_masterTick);
 #endif //DEBUG_LOG
+                            // TODO : Cache new default frame ?
                             frame = new InputFrame(); // create a default frame to not move player
                         }
                         else
@@ -147,9 +155,13 @@ namespace ubv.server.logic
                     m_serverPhysics.Simulate(Time.fixedDeltaTime);
 
                     m_masterTick++;
-                            
-                    foreach (ClientState client in m_clientInputBuffers.Keys)
+
+                    foreach (int id in m_clientStates.Keys)
                     {
+                        if (!m_connectedClients[id])
+                            continue;
+
+                        ClientState client = m_clientStates[id];
                         foreach (ServerGameplayStateUpdater updater in m_updaters)
                         {
                             updater.UpdateClient(client);
@@ -161,25 +173,36 @@ namespace ubv.server.logic
                 if (++m_tickAccumulator > m_snapshotTicks)
                 {
                     m_tickAccumulator = 0;
-                    foreach (IPEndPoint ip in m_UDPClientStates.Keys)
+                    foreach (int id in m_connectedClients.Keys)
                     {
-                        m_UDPServer.Send(m_UDPClientStates[ip].GetBytes(), ip);
+                        if (m_connectedClients[id])
+                        {
+                            m_UDPServer.Send(m_clientStates[id].GetBytes(), id);
+                        }
                     }
                 }
             }
         }
 
-        public void Receive(udp.UDPToolkit.Packet packet, IPEndPoint clientEndPoint)
+        public void Receive(udp.UDPToolkit.Packet packet, int playerID)
         {
-            InputMessage inputs = IConvertible.CreateFromBytes<InputMessage>(packet.Data);
-            if (inputs != null && m_UDPClientStates.ContainsKey(clientEndPoint))
+            if (!m_connectedClients[playerID])
+            {
+#if DEBUG_LOG
+                Debug.Log("Received UDP packet from unconnected client (ID " + playerID + "). Ignoring.");
+                return;
+#endif //DEBUG_LOG
+            }
+
+            InputMessage inputs = IConvertible.CreateFromBytes<InputMessage>(packet.Data.ArraySegment());
+            if (inputs != null && m_clients.Contains(playerID))
             {
                 lock (m_lock)
                 {
-                    ClientState conn = m_UDPClientStates[clientEndPoint];
+                    ClientState clientState = m_clientStates[playerID];
                     List<InputFrame> inputFrames = inputs.InputFrames.Value;
 #if DEBUG_LOG
-                    Debug.Log("(NOW = " + m_masterTick + ") Received tick " + inputs.StartTick.Value + " to " +  (inputs.StartTick.Value + inputFrames.Count) +  " from " + conn.PlayerGUID);
+                    Debug.Log("(NOW = " + m_masterTick + ") Received tick " + inputs.StartTick.Value + " to " +  (inputs.StartTick.Value + inputFrames.Count) +  " from " + clientState.PlayerGUID);
 #endif //DEBUG_LOG
 
                     int frameIndex = 0;
@@ -188,11 +211,40 @@ namespace ubv.server.logic
                         frameIndex = (int)inputs.StartTick.Value + i;
                         if (frameIndex >= m_masterTick)
                         {
-                            m_clientInputBuffers[conn][frameIndex] = inputFrames[i];
+                            m_clientInputBuffers[clientState][frameIndex] = inputFrames[i];
                         }
                     }
                 }
             }
+        }
+
+        public void ReceivePacket(TCPToolkit.Packet packet, int playerID)
+        {
+            // if we receive ID message from player (who's trying to reconnect)
+            // ...
+            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data.ArraySegment());
+            if (identification != null)
+            {
+#if DEBUG_LOG
+                Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
+#endif // DEBUG_LOG
+                m_connectedClients[playerID] = true;
+            }
+        }
+
+        public void OnConnect(int playerID)
+        {
+#if DEBUG_LOG
+            Debug.Log("Player " + playerID + " just connected. Awaiting identification packet.");
+#endif // DEBUG_LOG
+        }
+
+        public void OnDisconnect(int playerID)
+        {
+#if DEBUG_LOG
+            Debug.Log("Player " + playerID + " disconnected");
+            m_connectedClients[playerID] = false;
+#endif // DEBUG_LOG
         }
     }
 }

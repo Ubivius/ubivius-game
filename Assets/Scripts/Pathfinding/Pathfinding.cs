@@ -3,131 +3,137 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Pathfinding {
-
-    private const int MOVE_STRAIGHT_COST = 10;
-    private const int MOVE_DIAGONAL_COST = 14;
-
-    public class PriorityQueue<T>
+namespace ubv.server.logic
+{
+    public class Pathfinding
     {
-        // I'm using an unsorted array for this example, but ideally this
-        // would be a binary heap. There's an open issue for adding a binary
-        // heap to the standard C# library: https://github.com/dotnet/corefx/issues/574
-        //
-        // Until then, find a binary heap class:
-        // * https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
-        // * http://visualstudiomagazine.com/articles/2012/11/01/priority-queues-with-c.aspx
-        // * http://xfleury.github.io/graphsearch.html
-        // * http://stackoverflow.com/questions/102398/priority-queue-in-net
 
-        private List<System.Tuple<T, double>> elements = new List<Tuple<T, double>>();
+        private const int MOVE_STRAIGHT_COST = 10;
+        private const int MOVE_DIAGONAL_COST = 14;
 
-        public int Count
+        private HashSet<PathNode> m_nodeSet;
+
+        public class PriorityQueue<T>
         {
-            get { return elements.Count; }
-        }
+            // I'm using an unsorted array for this example, but ideally this
+            // would be a binary heap. There's an open issue for adding a binary
+            // heap to the standard C# library: https://github.com/dotnet/corefx/issues/574
+            //
+            // Until then, find a binary heap class:
+            // * https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
+            // * http://visualstudiomagazine.com/articles/2012/11/01/priority-queues-with-c.aspx
+            // * http://xfleury.github.io/graphsearch.html
+            // * http://stackoverflow.com/questions/102398/priority-queue-in-net
 
-        public void Enqueue(T item, double priority)
-        {
-            elements.Add(System.Tuple.Create(item, priority));
-        }
+            private List<System.Tuple<T, double>> elements = new List<Tuple<T, double>>();
 
-        public T Dequeue()
-        {
-            int bestIndex = 0;
-
-            for (int i = 0; i < elements.Count; i++)
+            public int Count
             {
-                if (elements[i].Item2 < elements[bestIndex].Item2)
+                get { return elements.Count; }
+            }
+
+            public void Enqueue(T item, double priority)
+            {
+                elements.Add(System.Tuple.Create(item, priority));
+            }
+
+            public T Dequeue()
+            {
+                int bestIndex = 0;
+
+                for (int i = 0; i < elements.Count; i++)
                 {
-                    bestIndex = i;
+                    if (elements[i].Item2 < elements[bestIndex].Item2)
+                    {
+                        bestIndex = i;
+                    }
+                }
+
+                T bestItem = elements[bestIndex].Item1;
+                elements.RemoveAt(bestIndex);
+                return bestItem;
+            }
+        }
+        
+
+        public Pathfinding(IEnumerable<PathNode> pathNodeList)
+        {
+            m_nodeSet = new HashSet<PathNode>();
+            foreach(PathNode p in pathNodeList)
+            {
+                m_nodeSet.Add(p);
+            }
+        }
+
+        public List<PathNode> FindPath(PathNode startNode, PathNode endNode)
+        {
+            if (startNode == null || endNode == null || !m_nodeSet.Contains(startNode) || !m_nodeSet.Contains(endNode))
+            {
+                // Invalid Path
+                return null;
+            }
+
+            PriorityQueue<PathNode> frontier = new PriorityQueue<PathNode>();
+            frontier.Enqueue(startNode, 0);
+
+            Dictionary<PathNode, float> costSoFar = new Dictionary<PathNode, float>
+            {
+                [startNode] = 0
+            };
+
+            Dictionary<PathNode, PathNode> cameFrom = new Dictionary<PathNode, PathNode>
+            {
+                [startNode] = null
+            };
+
+            while (frontier.Count > 0)
+            {
+                PathNode currentNode = frontier.Dequeue();
+                if (currentNode == endNode)
+                {
+                    // Reached final node
+                    return CalculatePath(endNode, cameFrom); // bug live si meme place ?
+                }
+
+                foreach (PathNode next in currentNode.GetNeighbourList())
+                {
+                    float newCost = costSoFar[currentNode] + CalculateDistanceCost(currentNode, next);
+                    if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
+                    {
+                        costSoFar[next] = newCost;
+                        float priority = newCost + CalculateDistanceCost(next, endNode);
+                        frontier.Enqueue(next, priority);
+                        cameFrom[next] = currentNode;
+                    }
                 }
             }
 
-            T bestItem = elements[bestIndex].Item1;
-            elements.RemoveAt(bestIndex);
-            return bestItem;
-        }
-    }
-
-    private class NodeInfo
-    {
-        public PathNode cameFromNode;
-    }
-
-    Dictionary<PathNode, NodeInfo> m_pathNodeDict;
-
-    public Pathfinding(IEnumerable<PathNode> pathNodeList) 
-    {
-        this.m_pathNodeDict = new Dictionary<PathNode, NodeInfo>();
-
-        foreach (PathNode pathNode in pathNodeList)
-        {
-            m_pathNodeDict.Add(pathNode, new NodeInfo());
-        }
-    }
-
-    public List<PathNode> FindPath(PathNode startNode, PathNode endNode) 
-    {
-        if (startNode == null || endNode == null || !m_pathNodeDict.ContainsKey(startNode) || !m_pathNodeDict.ContainsKey(endNode)) 
-        {
-            // Invalid Path
+            // Out of nodes
             return null;
         }
 
-        PriorityQueue<PathNode> frontier = new PriorityQueue<PathNode>();
-        frontier.Enqueue(startNode, 0);
-
-        Dictionary<PathNode, float> costSoFar = new Dictionary<PathNode, float>();
-        costSoFar[startNode] = 0;
-
-        while (frontier.Count > 0)
+        private List<PathNode> CalculatePath(PathNode endNode, Dictionary<PathNode, PathNode> cameFrom)
         {
-            PathNode currentNode = frontier.Dequeue();
-            if (currentNode == endNode)
+            List<PathNode> path = new List<PathNode>
             {
-                // Reached final node
-                return CalculatePath(endNode); // bug live si meme place ?
-            }
-
-            foreach (PathNode next in currentNode.GetNeighbourList()) 
+                endNode
+            };
+            PathNode currentNode = endNode;
+            while (cameFrom[currentNode] != null)
             {
-                float newCost = costSoFar[currentNode] + CalculateDistanceCost(currentNode, next);
-                if(!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
-                {
-                    costSoFar[next] = newCost;
-                    float priority = newCost + CalculateDistanceCost(next, endNode);
-                    frontier.Enqueue(next, priority);
-                    m_pathNodeDict[next].cameFromNode = currentNode;
-                }
+                path.Add(cameFrom[currentNode]);
+                currentNode = cameFrom[currentNode];
             }
+            path.Reverse();
+            return path;
         }
 
-        // Out of nodes
-        return null;
-    }
-
-    private List<PathNode> CalculatePath(PathNode endNode) 
-    {
-        List<PathNode> path = new List<PathNode>
+        private int CalculateDistanceCost(PathNode a, PathNode b)
         {
-            endNode
-        };
-        PathNode currentNode = endNode;
-        while (m_pathNodeDict[currentNode].cameFromNode != null) 
-        {
-            path.Add(m_pathNodeDict[currentNode].cameFromNode);
-            currentNode = m_pathNodeDict[currentNode].cameFromNode;
+            int xDistance = Mathf.Abs(a.x - b.x);
+            int yDistance = Mathf.Abs(a.y - b.y);
+            int remaining = Mathf.Abs(xDistance - yDistance);
+            return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
         }
-        path.Reverse();
-        return path;
-    }
-
-    private int CalculateDistanceCost(PathNode a, PathNode b) 
-    {
-        int xDistance = Mathf.Abs(a.X - b.X);
-        int yDistance = Mathf.Abs(a.Y - b.Y);
-        int remaining = Mathf.Abs(xDistance - yDistance);
-        return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
     }
 }

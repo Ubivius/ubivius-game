@@ -12,6 +12,7 @@ namespace ubv.common.world
         [SerializeField] private Tilemap m_wall;
         [SerializeField] private Tilemap m_door;
         [SerializeField] private Tilemap m_interactable;
+        [SerializeField] private Tilemap m_playerSpawnZone;
 
         [SerializeField] private int m_height;
         [SerializeField] private int m_width;
@@ -36,6 +37,7 @@ namespace ubv.common.world
             DoorManagement();
             InteractableManagement();
             WallManagement();
+            PlayerSpawnManagement();
             FloorManagement();
         }
         private void RoomManagement()
@@ -123,6 +125,29 @@ namespace ubv.common.world
                             if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
                             {
                                 LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.DoorButtonCell();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void PlayerSpawnManagement()
+        {
+            if (m_playerSpawnZone)
+            {
+                m_playerSpawnZone.CompressBounds();
+                Vector3Int originOffset = m_playerSpawnZone.origin - m_roomOrigin;
+                Vector3Int iterateur = new Vector3Int();
+                for (iterateur.x = originOffset.x; iterateur.x < m_playerSpawnZone.cellBounds.size.x + originOffset.x; iterateur.x++)
+                {
+                    for (iterateur.y = originOffset.y; iterateur.y < m_playerSpawnZone.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    {
+                        if (m_playerSpawnZone.HasTile(iterateur))
+                        {
+                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
+                            {
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.PlayerSpawnCell();
                             }
                         }
                     }

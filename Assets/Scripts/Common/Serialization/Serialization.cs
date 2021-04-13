@@ -18,6 +18,7 @@ namespace ubv.common.serialization
             LOGIC_CELL_FLOOR,
             LOGIC_CELL_WALL,
             LOGIC_CELL_INTERACTABLE,
+            LOGIC_CELL_PLAYERSPAWN,
             LOGIC_GRID,
             INT32,
             FLOAT,
@@ -40,7 +41,8 @@ namespace ubv.common.serialization
             CLIENT_LIST_MESSAGE,
             SERVER_STARTS_MESSAGE,
             CLIENT_WORLD_LOADED_MESSAGE,
-            SERVER_SUCCESSFUL_CONNECT_MESSAGE
+            SERVER_SUCCESSFUL_CONNECT_MESSAGE,
+            LOBBY_ENTER_MESSAGE
         }
     }
 }

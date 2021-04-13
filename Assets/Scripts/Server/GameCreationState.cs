@@ -19,8 +19,8 @@ namespace ubv.server.logic
     {
         [SerializeField] private int m_simulationBuffer;
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
-        private Dictionary<IPEndPoint, ClientState> m_TCPClientStates;
-        private Dictionary<IPEndPoint, ClientState> m_UDPClientStates;
+
+        private HashSet<int> m_clients;
 
         private Dictionary<int, bool> m_readyClients;
         private List<PlayerState> m_players;
@@ -37,6 +37,7 @@ namespace ubv.server.logic
             m_currentState = this;
             m_readyToStartGame = false;
             m_awaitingClientLoadWorld = false;
+
         }
 
         protected override void StateStart()
@@ -47,8 +48,8 @@ namespace ubv.server.logic
         public void Init()
         {
             m_players = new List<PlayerState>();
-            m_TCPClientStates = new Dictionary<IPEndPoint, ClientState>();
-            m_UDPClientStates = new Dictionary<IPEndPoint, ClientState>();
+            
+            m_clients = new HashSet<int>();
 
             m_readyClients = new Dictionary<int, bool>();
             
@@ -91,11 +92,13 @@ namespace ubv.server.logic
 
                     common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
 
+                    GeneratePlayerListFromClients();
+
                     ServerInitMessage message = new ServerInitMessage(m_simulationBuffer, m_players, cellInfoArray);
 
-                    foreach (IPEndPoint ip in m_TCPClientStates.Keys)
+                    foreach (int id in m_clients)
                     {
-                        m_TCPServer.Send(message.GetBytes(), ip);
+                        m_TCPServer.Send(message.GetBytes(), id);
                     }
 
                     Debug.Log("Waiting for clients to load their worlds");
@@ -115,106 +118,118 @@ namespace ubv.server.logic
                 ServerStartsMessage message = new ServerStartsMessage();
 
                 Debug.Log("Starting game.");
-                foreach (IPEndPoint ip in m_TCPClientStates.Keys)
+                foreach (int id in m_clients)
                 {
-                    m_TCPServer.Send(message.GetBytes(), ip);
+                    m_TCPServer.Send(message.GetBytes(), id);
                 }
 
                 m_TCPServer.Unsubscribe(this);
 
-                m_gameplayState.Init(m_UDPClientStates, m_simulationBuffer);
+                m_gameplayState.Init(m_clients, m_simulationBuffer);
                 m_currentState = m_gameplayState;
             }
         }
         
-        public void ReceivePacket(TCPToolkit.Packet packet, IPEndPoint clientIP)
+        private void AddNewPlayer(int playerID)
         {
-            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data);
+            m_clients.Add(playerID);
+            m_readyClients[playerID] = false;
+        }
+
+        private void BroadcastPlayerList()
+        {
+            GeneratePlayerListFromClients();
+
+            byte[] bytes = new ClientListMessage(m_players).GetBytes();
+            foreach (int id in m_clients)
+            {
+                m_TCPServer.Send(bytes, id);
+            }
+        }
+
+        private void GeneratePlayerListFromClients()
+        {
+            m_players.Clear();
+            foreach (int id in m_clients)
+            {
+                m_players.Add(new PlayerState(id));
+            }
+        }
+
+        public void ReceivePacket(TCPToolkit.Packet packet, int playerID)
+        {
+            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data.ArraySegment());
             if (identification != null)
             {
                 lock (m_lock)
                 {
-                    if (!m_TCPClientStates.ContainsKey(clientIP))
+                    if (!m_clients.Contains(playerID)) // it's a new player
                     {
-                        int playerID = identification.PlayerID.Value;
+                        AddNewPlayer(playerID);
+                    }
 
-                        // TODO get rid of client connection data and only use serializable list of int after serialize rework
-                        m_TCPClientStates[clientIP] = new ClientState(playerID);
-                        
-                        PlayerState playerState = new PlayerState(playerID);
-
-                        // set rotation / position according to existing players?
-
-                        m_players.Add(playerState);
-                        m_readyClients[playerID] = false;
-
-                        ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
-
-                        m_TCPServer.Send(serverSuccessPing.GetBytes(), clientIP);
+                    ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
+                    m_UDPServer.Send(serverSuccessPing.GetBytes(), playerID);
 
 #if DEBUG_LOG
-                        Debug.Log("Received connection request from " + clientIP.ToString() + " (player ID  " + playerID + ")");
+                    Debug.Log("Received connection request from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
+                }
+                return;
+            }
 
-                        byte[] bytes = new ClientListMessage(m_players).GetBytes();
-                        foreach (IPEndPoint ip in m_TCPClientStates.Keys)
-                        {
-                            m_TCPServer.Send(bytes, ip);
-                        }
+            OnLobbyEnteredMessage lobbyEnter = Serializable.CreateFromBytes<OnLobbyEnteredMessage>(packet.Data.ArraySegment());
+            if (lobbyEnter != null)
+            {
+                lock (m_lock)
+                {
+                    if (m_clients.Contains(playerID))
+                    {
+                        BroadcastPlayerList();
                     }
                 }
                 return;
             }
 
-            ClientReadyMessage ready = IConvertible.CreateFromBytes<ClientReadyMessage>(packet.Data);
-            if (ready != null && m_readyClients.ContainsKey(ready.PlayerID.Value))
+            ClientReadyMessage ready = IConvertible.CreateFromBytes<ClientReadyMessage>(packet.Data.ArraySegment());
+            if (ready != null && m_readyClients.ContainsKey(playerID))
             {
-                Debug.Log("Client " + ready.PlayerID.Value + " is ready to receive world.");
-                m_readyClients[ready.PlayerID.Value] = true;
+                Debug.Log("Client " + playerID + " is ready to receive world.");
+                m_readyClients[playerID] = true;
                 return;
             }
 
             if (m_awaitingClientLoadWorld)
             {
-                ClientWorldLoadedMessage clientWorldLoaded = IConvertible.CreateFromBytes<ClientWorldLoadedMessage>(packet.Data);
+                ClientWorldLoadedMessage clientWorldLoaded = IConvertible.CreateFromBytes<ClientWorldLoadedMessage>(packet.Data.ArraySegment());
                 if (clientWorldLoaded != null)
                 {
-                    m_readyClients.Remove(clientWorldLoaded.PlayerID.Value);
+                    m_readyClients.Remove(playerID);
                 }
             }
             
         }
 
-        public void OnConnect(IPEndPoint clientIP)
+        public void OnConnect(int playerID)
         { }
 
-        public void OnDisconnect(IPEndPoint clientIP)
+        public void OnDisconnect(int playerID)
         {
             lock (m_lock)
             {
-                m_TCPClientStates.Remove(clientIP);
+                m_clients.Remove(playerID);
             }
         }
 
-        public void Receive(UDPToolkit.Packet packet, IPEndPoint clientIP)
+        public void Receive(UDPToolkit.Packet packet, int playerID)
         {
-            if (m_UDPClientStates.ContainsKey(clientIP))
-            {
-#if DEBUG_LOG
-                Debug.Log("UDP Client " + clientIP.ToString() + " already connected. Ignoring.");
-#endif // DEBUG_LOG
-                return;
-            }
-
-            IdentificationMessage identification = Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data);
+            IdentificationMessage identification = Serializable.CreateFromBytes<common.data.IdentificationMessage>(packet.Data.ArraySegment());
             if (identification != null)
             {
 #if DEBUG_LOG
-                Debug.Log("Received UDP confirmation from " + clientIP.ToString() + " (player ID  " + identification.PlayerID.Value + ")");
+                Debug.Log("Received UDP confirmation from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
-                
-                m_UDPClientStates[clientIP] = new ClientState(identification.PlayerID.Value);
-            }
+            } 
         }
     }
 }
