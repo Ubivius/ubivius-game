@@ -27,7 +27,7 @@ jobs:
       # Cache
       - uses: actions/cache@v2
         with:
-          path: ubivius-game/Library
+          path: Library
           key: Library-ubivius-game-StandaloneLinux64
           restore-keys: |
             Library-ubivius-game-
@@ -104,7 +104,7 @@ jobs:
       # Cache
       - uses: actions/cache@v2
         with:
-          path: ubivius-game/Library
+          path: Library
           key: Library-ubivius-game-StandaloneWindows64
           restore-keys: |
             Library-ubivius-game-
