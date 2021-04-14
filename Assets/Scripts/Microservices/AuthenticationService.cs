@@ -8,9 +8,11 @@ namespace ubv.microservices
 {
     public class AuthenticationService : MonoBehaviour
     {
+        [SerializeField] private string m_forceUserID;
         [SerializeField] private bool m_mock;
         [SerializeField] private HTTPClient m_HTTPClient;
-        public delegate void OnLogin(int? playerID);
+        [SerializeField] string m_authEndpoint;
+        public delegate void OnLogin(string playerIDString);
 
         private OnLogin m_onLoginCallback;
 
@@ -26,22 +28,19 @@ namespace ubv.microservices
             public string id;
         }
 
-        private void Awake()
-        {
-            DontDestroyOnLoad(this);
-        }
-        
         public void SendLoginRequest(string user, string pass, OnLogin onLogin)
         {
             if (m_mock)
             {
 #if DEBUG_LOG
-                Debug.Log("Mocking auth. Auto logging in with random ID.");
+                Debug.Log("Mocking auth. Auto logging in with random ID (or forced ID provided if any)");
 #endif // DEBUG_LOG
-                onLogin(System.Guid.NewGuid().GetHashCode());
+                string id = m_forceUserID.Length > 0 ? m_forceUserID : System.Guid.NewGuid().ToString();
+                onLogin(id);
                 return;
             }
-            
+
+            m_HTTPClient.SetEndpoint(m_authEndpoint);
             string jsonString = JsonUtility.ToJson(new JSONAuthentificationCredentials
             {
                 username = user,
@@ -61,10 +60,9 @@ namespace ubv.microservices
                 string JSON = message.Content.ReadAsStringAsync().Result;
                 JSONAuthenticationResponse authResponse = JsonUtility.FromJson<JSONAuthenticationResponse>(JSON);
                 string token = authResponse.accessToken;
-                int guid = authResponse.id.GetHashCode();
                 m_HTTPClient.SetAuthenticationToken(token);
 
-                m_onLoginCallback.Invoke(guid);
+                m_onLoginCallback.Invoke(authResponse.id);
                 m_onLoginCallback = null;
             }
             else

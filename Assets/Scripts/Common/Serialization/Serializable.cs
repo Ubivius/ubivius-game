@@ -451,6 +451,8 @@ namespace ubv.common.serialization
 
         public class String : Serialized<string>
         {
+            public String() : base() { }
+
             public String(string value) : base(value)
             {
             }

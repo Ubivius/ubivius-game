@@ -5,27 +5,38 @@ using System.Collections.Generic;
 
 namespace ubv.common.data
 {
-    public class ClientListMessage : serialization.Serializable
+    public class CharacterListMessage : serialization.Serializable
     {
-        public PlayerStateList Players { get; protected set; }
-
-        public ClientListMessage()
+        public class CharacterIDList : serialization.types.List<serialization.types.String>
         {
-            Players = new PlayerStateList(null);
+            public CharacterIDList(List<serialization.types.String> players) : base(players)
+            { }
 
-            InitSerializableMembers(Players);
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.LIST_CHARACTERIDS;
+            }
         }
 
-        public ClientListMessage(List<PlayerState> players) : base()
-        {
-            Players = new PlayerStateList(players);
+        public CharacterIDList Characters { get; protected set; }
 
-            InitSerializableMembers(Players);
+        public CharacterListMessage()
+        {
+            Characters = new CharacterIDList(null);
+
+            InitSerializableMembers(Characters);
+        }
+
+        public CharacterListMessage(List<serialization.types.String> players) : base()
+        {
+            Characters = new CharacterIDList(players);
+
+            InitSerializableMembers(Characters);
         }
                 
         protected override ID.BYTE_TYPE SerializationID()
         {
-            return ID.BYTE_TYPE.CLIENT_LIST_MESSAGE;
+            return ID.BYTE_TYPE.CHARACTER_LIST_MESSAGE;
         }
     }
 }

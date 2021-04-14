@@ -9,12 +9,16 @@ namespace ubv.client.logic
     {
         static public ClientNetworkingManager Instance { get; private set; } = null;
         
+        [Header("Networking")]
         public tcp.client.TCPClient TCPClient;
         public udp.client.UDPClient UDPClient;
         public http.HTTPClient HTTPClient;
-        public microservices.DispatcherMicroservice Dispatcher;
+        public DispatcherMicroservice Dispatcher;
 
+        [Header("Microservices")]
         public AuthenticationService Authentication;
+        public CharacterDataService CharacterData;
+        public UserService User;
 
         private void Awake()
         {
