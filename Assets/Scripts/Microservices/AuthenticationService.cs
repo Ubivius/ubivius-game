@@ -3,18 +3,34 @@ using System.Collections;
 using ubv.http;
 using System.Net.Http;
 using System.Net;
+using System.Collections.Generic;
 
 namespace ubv.microservices
 {
     public class AuthenticationService : MonoBehaviour
     {
+        public delegate void OnLogin(string playerIDString);
+
+        private class LoginRequest
+        {
+            public string User;
+            public string Pass;
+            public OnLogin Callback;
+        }
+
         [SerializeField] private string m_forceUserID;
         [SerializeField] private bool m_mock;
         [SerializeField] private HTTPClient m_HTTPClient;
         [SerializeField] string m_authEndpoint;
-        public delegate void OnLogin(string playerIDString);
+        private bool m_readyForNextCall;
 
-        private OnLogin m_onLoginCallback;
+        private Queue<LoginRequest> m_onLoginCallbacks;
+
+        private void Awake()
+        {
+            m_onLoginCallbacks = new Queue<LoginRequest>();
+            m_readyForNextCall = false;
+        }
 
         private struct JSONAuthentificationCredentials
         {
@@ -26,6 +42,18 @@ namespace ubv.microservices
         {
             public string accessToken;
             public string id;
+        }
+
+        private void Update()
+        {
+            if (m_readyForNextCall)
+            {
+                if(m_onLoginCallbacks.Count > 0)
+                {
+                    LoginRequest request = m_onLoginCallbacks.Dequeue();
+                    SendLoginRequest(request.User, request.Pass, request.Callback);
+                }
+            }
         }
 
         public void SendLoginRequest(string user, string pass, OnLogin onLogin)
@@ -40,13 +68,21 @@ namespace ubv.microservices
                 return;
             }
 
-            m_HTTPClient.SetEndpoint(m_authEndpoint);
+            m_onLoginCallbacks.Enqueue(new LoginRequest() { User = user, Pass = pass, Callback = onLogin });
+            if (!m_readyForNextCall)
+            {
+                return;
+            }
+
+            m_readyForNextCall = false;
+
             string jsonString = JsonUtility.ToJson(new JSONAuthentificationCredentials
             {
                 username = user,
                 password = pass,
             }).ToString();
-            m_onLoginCallback = onLogin;
+            
+            m_HTTPClient.SetEndpoint(m_authEndpoint);
             m_HTTPClient.PostJSON("signin", jsonString, OnAuthenticationResponse);
         }
 
@@ -62,8 +98,8 @@ namespace ubv.microservices
                 string token = authResponse.accessToken;
                 m_HTTPClient.SetAuthenticationToken(token);
 
-                m_onLoginCallback.Invoke(authResponse.id);
-                m_onLoginCallback = null;
+                m_onLoginCallbacks.Dequeue().Callback.Invoke(authResponse.id);
+                m_readyForNextCall = true;
             }
             else
             {

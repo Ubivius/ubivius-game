@@ -3,6 +3,7 @@ using System.Collections;
 using ubv.http;
 using System.Net.Http;
 using System.Net;
+using System.Collections.Generic;
 
 namespace ubv.microservices
 {
@@ -18,9 +19,15 @@ namespace ubv.microservices
         [SerializeField] int m_serverUDPPort;
 
         public delegate void OnServerInfo(ServerInfo? info);
+        private class ServerInfoRequest
+        {
+            public int PlayerID;
+            public OnServerInfo Callback;
+        }
 
-        private OnServerInfo m_onServerInfoCallback;
-
+        private bool m_readyForNextRequest;
+        private Queue<ServerInfoRequest> m_serverInfoRequests;
+        
         public struct ServerInfo
         {
             public string server_ip;
@@ -32,6 +39,24 @@ namespace ubv.microservices
         {
             public int id;
             public string ip;
+        }
+
+        private void Awake()
+        {
+            m_readyForNextRequest = false;
+            m_serverInfoRequests = new Queue<ServerInfoRequest>();
+        }
+
+        private void Update()
+        {
+            if (m_readyForNextRequest)
+            {
+                if(m_serverInfoRequests.Count > 0)
+                {
+                    ServerInfoRequest request = m_serverInfoRequests.Dequeue();
+                    RequestServerInfo(request.PlayerID, request.Callback);
+                }
+            }
         }
 
         public void RequestServerInfo(int playerID, OnServerInfo onServerInfo)
@@ -47,7 +72,9 @@ namespace ubv.microservices
                 return;
             }
 
-            m_onServerInfoCallback = onServerInfo;
+            m_readyForNextRequest = false;
+
+            m_serverInfoRequests.Enqueue(new ServerInfoRequest() { PlayerID = playerID, Callback = onServerInfo });
             m_HTTPClient.SetEndpoint(m_dispatcherEndpoint);
 
             string jsonString = JsonUtility.ToJson(new JSONDispatcherRequest
@@ -70,8 +97,8 @@ namespace ubv.microservices
                 Debug.Log("Received from dispatcher : " + JSON);
 #endif // DEBUG_LOG
 
-                m_onServerInfoCallback.Invoke(serverInfo);
-                m_onServerInfoCallback = null;
+                m_serverInfoRequests.Dequeue().Callback.Invoke(serverInfo);
+                m_readyForNextRequest = true;
             }
             else
             {
