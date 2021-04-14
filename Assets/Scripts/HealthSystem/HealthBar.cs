@@ -4,6 +4,7 @@ using UnityEngine;
 public class HealthBar : MonoBehaviour
 {
     private HealthSystem m_healthSystem;
+    //Passer la healthbar via seraizable
 
     public void Setup(HealthSystem healthSystem)
     {
@@ -20,6 +21,6 @@ public class HealthBar : MonoBehaviour
 
     private void UpdateHealthBar()
     {
-        transform.Find("Bar").localScale = new Vector3(m_healthSystem.GetHealthPercent(), 1);
+        //transform.Find("Bar").localScale = new Vector3(m_healthSystem.GetHealthPercent(), 1);
     }
 }
