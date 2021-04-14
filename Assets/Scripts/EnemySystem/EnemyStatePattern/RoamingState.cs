@@ -6,6 +6,7 @@ namespace ubv.server.logic.ai
     public class RoamingState : EnemyState
     {
         private EnemyPathFindingMovement m_enemyPathFindingMovement;
+        private bool m_inMotion;
         private float m_reachedPositionDistance = 1f;
         private float m_targetRange = 50f;
         private Vector2 m_startingPosition;
@@ -15,7 +16,7 @@ namespace ubv.server.logic.ai
         {
             m_enemyPathFindingMovement = enemyPathFindingMovement;
 
-            m_InMotion = false;
+            m_inMotion = false;
             m_startingPosition = m_enemyPathFindingMovement.GetPosition();
             m_roamPosition = GetRoamingPosition();
         }
@@ -28,13 +29,13 @@ namespace ubv.server.logic.ai
                 // Reached Roam Position
                 m_roamPosition = GetRoamingPosition();
 
-                m_InMotion = false;
+                m_inMotion = false;
             }
             
-            else if(!m_InMotion)
+            else if(!m_inMotion)
             {
                 m_enemyPathFindingMovement.MoveTo(m_roamPosition);
-                m_InMotion = true;
+                m_inMotion = true;
             }
 
             return FindTarget();

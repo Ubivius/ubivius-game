@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using ubv.common.world;
 using ubv.server.logic;
 using UnityEngine;
@@ -14,6 +15,8 @@ namespace Assets.Scripts.EnemySystem
         [SerializeField]  private int m_enemyCount;
         [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
 
+        private int [] m_enemyID;
+        private Dictionary<int, Rigidbody2D> m_bodies;
         private EnemyBehaviorUpdater m_enemyBehaviorUpdater;
         private PathNode[,] m_pathNodes;
 
@@ -40,9 +43,13 @@ namespace Assets.Scripts.EnemySystem
 
                 if (m_pathfindingGridManager.GetNodeIfWalkable(m_xPos, m_yPos) != null )
                 {
-                    int id = System.Guid.NewGuid().GetHashCode();
-
+                    //Penser pour une future intégration dans clientstate pour identification des enemies
+                    m_enemyID[i] = System.Guid.NewGuid().GetHashCode();
                     GameObject enemy = Instantiate(m_enemy, new Vector3(m_xPos, m_yPos, 0), Quaternion.identity);
+                    Rigidbody2D body = enemy.GetComponent<Rigidbody2D>(); ;
+                    body.name = "Server enemy " + m_enemyID[i].ToString();
+                    m_bodies.Add(m_enemyID[i], body);
+
                     EnemyPathFindingMovement enemyPathFindingMovement = enemy.GetComponent<EnemyPathFindingMovement>();
                     enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
                     yield return new WaitForSeconds(0.1f);

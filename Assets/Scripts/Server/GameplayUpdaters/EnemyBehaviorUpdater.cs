@@ -36,12 +36,13 @@ namespace ubv.server.logic
             Rigidbody2D body = m_bodies[client.PlayerGUID];
         }
 
-        public override void UpdateClient(ClientState client)
+        public override void UpdateClient(ref ClientState client)
         {
             Rigidbody2D body = m_bodies[client.PlayerGUID];
             PlayerState player = client.GetPlayer();
             player.Position.Value = body.position;
             player.Rotation.Value = body.rotation;
+            //enemystate = state blasblabla
         }
     }
 }

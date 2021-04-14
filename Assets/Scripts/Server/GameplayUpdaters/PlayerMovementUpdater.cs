@@ -42,7 +42,7 @@ namespace ubv.server.logic
             common.logic.PlayerMovement.Execute(ref body, m_playerControllers[client.PlayerGUID].GetStats(), frame, Time.fixedDeltaTime);
         }
 
-        public override void UpdateClient(ClientState client)
+        public override void UpdateClient(ref ClientState client)
         {
             Rigidbody2D body = m_bodies[client.PlayerGUID];
             PlayerState player = client.GetPlayer();

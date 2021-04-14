@@ -23,10 +23,23 @@ namespace ubv.common
             }
         }
 
+        public class EnemyHashMap : HashMap<common.data.EnemyStateData>
+        {
+            public EnemyHashMap(Dictionary<int, common.data.EnemyStateData> enemies) : base(enemies)
+            { }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.HASHMAP_INT_ENEMYSTATEDATA;
+            }
+        }
+
         private PlayerHashMap m_playerStates;
+        private EnemyHashMap m_enemyStateData;
         public Uint32 Tick { get; protected set; }
 
         public int PlayerGUID;
+        public int EnemyGUID;
 
         public ClientState() : base()
         {
@@ -79,6 +92,30 @@ namespace ubv.common
         public Dictionary<int, common.data.PlayerState> Players()
         {
             return m_playerStates.Value;
+        }
+
+        public data.EnemyStateData GetEnemy()
+        {
+            return m_enemyStateData.Value[EnemyGUID];
+        }
+
+        public void AddEnemy(data.EnemyStateData enemyStateData)
+        {
+            m_enemyStateData.Value[enemyStateData.GUID.Value] = enemyStateData;
+        }
+
+        public void SetEnemies(Dictionary<int, common.data.EnemyStateData> enemyStateData)
+        {
+            m_enemyStateData.Value.Clear();
+            foreach (common.data.EnemyStateData enemy in enemyStateData.Values)
+            {
+                m_enemyStateData.Value[enemy.GUID.Value] = new common.data.EnemyStateData(enemy);
+            }
+        }
+
+        public Dictionary<int, common.data.EnemyStateData> Enemies()
+        {
+            return m_enemyStateData.Value;
         }
     }
 }

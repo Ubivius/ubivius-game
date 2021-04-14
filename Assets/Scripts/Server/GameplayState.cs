@@ -164,7 +164,7 @@ namespace ubv.server.logic
                         ClientState client = m_clientStates[id];
                         foreach (ServerGameplayStateUpdater updater in m_updaters)
                         {
-                            updater.UpdateClient(client);
+                            updater.UpdateClient(ref client);
                         }
                         client.Tick.Value = (uint)m_masterTick;
                     }
