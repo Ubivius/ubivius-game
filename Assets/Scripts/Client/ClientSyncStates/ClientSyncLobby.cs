@@ -118,12 +118,7 @@ namespace ubv.client.logic
             if (m_serverSentSignal)
             {
                 OnGameStart?.Invoke();
-                List<PlayerState> playerStates = new List<PlayerState>();
-                foreach(int id in m_clientCharacters.Keys)
-                {
-                    playerStates.Add(new PlayerState(id));
-                }
-                ClientSyncState.m_playState.Init(m_simulationBuffer.Value, playerStates);
+                ClientSyncState.m_playState.Init(m_simulationBuffer.Value, new ClientGameInfo(m_clientCharacters.Values));
                 m_currentState = ClientSyncState.m_playState;
                 m_TCPClient.Unsubscribe(this);
                 m_serverSentSignal = false;

@@ -3,27 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class ClientMenuUI : MonoBehaviour
+namespace ubv.ui.client
 {
-    [SerializeField] private string m_gameSearchScene;
-
-    public void Play()
+    public class ClientMenuUI : MonoBehaviour
     {
-        AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_gameSearchScene);
-    }
+        [SerializeField] private string m_gameSearchScene;
 
-    public void Stats()
-    {
-        // to be implemented
-    }
+        public void Play()
+        {
+            AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_gameSearchScene);
+        }
 
-    public void Options()
-    {
-        // to be implemented
-    }
+        public void Stats()
+        {
+            // to be implemented
+        }
 
-    public void Quit()
-    {
-        Application.Quit();
+        public void Options()
+        {
+            // to be implemented
+        }
+
+        public void Quit()
+        {
+            Application.Quit();
+        }
     }
 }
