@@ -53,8 +53,8 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
-          projectPath: .
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Server tests results
       
       # Return License if steps failed to ensure it was returned
       - name: Return license
@@ -130,8 +130,8 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
-          projectPath: .
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Client tests results
 
       # Return License if steps failed to ensure it was returned
       - name: Return license
