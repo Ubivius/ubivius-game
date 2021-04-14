@@ -8,11 +8,15 @@ using ubv.common.data;
 using ubv.tcp;
 using System.Net.Http;
 using static ubv.microservices.DispatcherMicroservice;
+using static ubv.microservices.CharacterDataService;
+using UnityEngine.Events;
 
 namespace ubv.client.logic
 {
     public class ClientSyncInit : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
     {
+        [SerializeField] private string m_clientLobbyScene;
+
         private ServerInfo? m_cachedServerInfo;
         private bool m_connected;
         private bool m_waitingOnUDPResponse;
@@ -24,16 +28,23 @@ namespace ubv.client.logic
         private float m_UPDPingTimer;
         
         private byte[] m_identificationMessageBytes;
+
+        private bool m_readyToGoToLobby;
+        private bool m_alreadyInLobby;
+
+        private CharacterData m_activeCharacter;
         
         protected override void StateAwake()
         {
+            m_readyToGoToLobby = false;
             ClientSyncState.m_initState = this;
             ClientSyncState.m_currentState = this;
             m_cachedServerInfo = null;
+            m_alreadyInLobby = false;
             Init();
         }
 
-        public void Init()
+        public void Init(bool clearServerInfo = true)
         {
 #if DEBUG_LOG
             Debug.Log("Initializing client state [init]");
@@ -45,6 +56,33 @@ namespace ubv.client.logic
             m_TCPClient.SetPlayerID(PlayerID.Value);
             m_UDPClient.Subscribe(this);
             m_TCPClient.Subscribe(this);
+            m_activeCharacter = null;
+            if (clearServerInfo)
+            {
+                m_cachedServerInfo = null;
+            }
+        }
+
+        private void Start()
+        {
+            // try to fetch characters from microservice
+            m_characterService.GetCharacters(UserInfo.ID, OnCharactersFetchedFromService);
+        }
+
+        private void OnCharactersFetchedFromService(CharacterData[] characters)
+        {
+            // for now, assume only one character 
+            // take the only character available and treat it as active
+            m_activeCharacter = characters[0];
+#if DEBUG_LOG
+            Debug.Log("Fetched character " + m_activeCharacter.Name + " from microservice.");
+#endif //DEBUG_LOG
+            
+        }
+
+        public CharacterData GetActiveCharacter()
+        {
+            return m_activeCharacter;
         }
 
         protected override void StateUpdate()
@@ -69,6 +107,20 @@ namespace ubv.client.logic
                 {
                     m_UPDPingTimer = 0;
                     m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
+                }
+            }
+
+            if (m_readyToGoToLobby)
+            {
+                m_readyToGoToLobby = false;
+                if (!m_alreadyInLobby)
+                {
+                    m_alreadyInLobby = true;
+                    GoToLobby();
+                }
+                else
+                {
+                    SetLobbyStateActive();
                 }
             }
         }
@@ -108,14 +160,27 @@ namespace ubv.client.logic
 
         private void GoToLobby()
         {
-#if DEBUG_LOG
-            Debug.Log("Received TCP/UDP connection confirmation. Going to lobby");
-#endif // DEBUG_LOG
-
-            ClientSyncState.m_lobbyState.Init(PlayerID.Value);
-            ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
+            StartCoroutine(LoadLobbyCoroutine());
+        }
+        
+        private IEnumerator LoadLobbyCoroutine()
+        {
             m_UDPClient.Unsubscribe(this);
             m_TCPClient.Unsubscribe(this);
+            // animation petit cercle de load to scene
+            AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_clientLobbyScene);
+            while (!loadLobby.isDone)
+            {
+                yield return null;
+            }
+
+            SetLobbyStateActive();
+        }
+
+        private void SetLobbyStateActive()
+        {
+            ClientSyncState.m_lobbyState.Init(PlayerID.Value, GetActiveCharacter()?.ID);
+            ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
         }
 
         public void OnDisconnect()
@@ -145,7 +210,10 @@ namespace ubv.client.logic
             if (serverSuccessPing != null)
             {
                 m_waitingOnUDPResponse = false;
-                GoToLobby();
+#if DEBUG_LOG
+                Debug.Log("Received TCP/UDP connection confirmation. Going to lobby");
+#endif // DEBUG_LOG
+                m_readyToGoToLobby = true;
             }
         }
 
