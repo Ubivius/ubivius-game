@@ -13,9 +13,9 @@ namespace ubv.common.world
         [SerializeField] private Tilemap m_door;
         [SerializeField] private Tilemap m_interactable;
         [SerializeField] private Tilemap m_finalDoor;
-        [SerializeField] private Tilemap m_zoneButton;
-        [SerializeField] private Tilemap m_activationButton;
-        [SerializeField] private Tilemap m_fianlButton;
+        [SerializeField] private Tilemap m_sectionDoorButton;
+        [SerializeField] private Tilemap m_sectionButton;
+        [SerializeField] private Tilemap m_finalButton;
         [SerializeField] private Tilemap m_playerSpawnZone;
 
         [SerializeField] private int m_height;
@@ -43,6 +43,8 @@ namespace ubv.common.world
             WallManagement();
             PlayerSpawnManagement();
             FloorManagement();
+            FinalButtonManagement();
+            FinalDoorManagement();
         }
         private void RoomManagement()
         {
@@ -152,6 +154,78 @@ namespace ubv.common.world
                             if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
                             {
                                 LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.PlayerSpawnCell();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //[SerializeField] private Tilemap m_sectionDoorButton;
+        //[SerializeField] private Tilemap m_sectionButton;
+
+        private void SectionButtonManagement()
+        {
+            if (m_sectionButton)
+            {
+                m_sectionButton.CompressBounds();
+                Vector3Int originOffset = m_sectionButton.origin - m_roomOrigin;
+                Vector3Int iterateur = new Vector3Int();
+                for (iterateur.x = originOffset.x; iterateur.x < m_sectionButton.cellBounds.size.x + originOffset.x; iterateur.x++)
+                {
+                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionButton.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    {
+                        if (m_sectionButton.HasTile(iterateur))
+                        {
+                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
+                            {
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void FinalButtonManagement()
+        {
+            if (m_finalButton)
+            {
+                m_finalButton.CompressBounds();
+                Vector3Int originOffset = m_finalButton.origin - m_roomOrigin;
+                Vector3Int iterateur = new Vector3Int();
+                for (iterateur.x = originOffset.x; iterateur.x < m_finalButton.cellBounds.size.x + originOffset.x; iterateur.x++)
+                {
+                    for (iterateur.y = originOffset.y; iterateur.y < m_finalButton.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    {
+                        if (m_finalButton.HasTile(iterateur))
+                        {
+                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
+                            {
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.FinalButtonCell();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void FinalDoorManagement()
+        {
+            if (m_finalDoor)
+            {
+                m_finalDoor.CompressBounds();
+                Vector3Int originOffset = m_finalDoor.origin - m_roomOrigin;
+                Vector3Int iterateur = new Vector3Int();
+                for (iterateur.x = originOffset.x; iterateur.x < m_finalDoor.cellBounds.size.x + originOffset.x; iterateur.x++)
+                {
+                    for (iterateur.y = originOffset.y; iterateur.y < m_finalDoor.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    {
+                        if (m_finalDoor.HasTile(iterateur))
+                        {
+                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
+                            {
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.DoorCell(cellType.DoorType.FinalDoor);
                             }
                         }
                     }

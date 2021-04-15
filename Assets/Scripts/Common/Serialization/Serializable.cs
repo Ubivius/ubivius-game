@@ -232,6 +232,7 @@ namespace ubv.common.serialization
         public class Int32 : Serialized<int>
         {
             public Int32(int value) : base(value) { }
+            public Int32() : base() { }
             
             protected override byte[] GetSourceBytes()
             {

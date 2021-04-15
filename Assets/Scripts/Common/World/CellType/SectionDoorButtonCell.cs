@@ -10,7 +10,7 @@ namespace ubv.common.world.cellType
     class SectionDoorButtonCell : LogicCell
     {
         private List<DoorCell> m_linkedDoor = new List<DoorCell>();
-        private serialization.types.List<Int32> m_linkedDoorCellID;
+        private serialization.types.List<serialization.types.Int32> m_linkedDoorCellID;
 
         protected override ID.BYTE_TYPE SerializationID()
         {
