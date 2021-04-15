@@ -57,6 +57,8 @@ namespace ubv.microservices
 
         private void Awake()
         {
+            m_readyForNextCharactersRequest = true;
+            m_readyForNextSingleRequest = true;
             m_onGetSingleRequests = new Queue<SingleRequest>();
             m_onGetCharactersRequests = new Queue<CharactersRequest>();
         }
@@ -84,12 +86,6 @@ namespace ubv.microservices
 
         public void GetCharacter(string characterID, OnGetSingle onGetCharacter)
         {
-            m_onGetSingleRequests.Enqueue(new SingleRequest() { CharacterID = characterID, Callback = onGetCharacter });
-            if (!m_readyForNextSingleRequest)
-            {
-                return;
-            }
-
             if (m_mock)
             {
 #if DEBUG_LOG
@@ -100,6 +96,12 @@ namespace ubv.microservices
                 return;
             }
 
+            m_onGetSingleRequests.Enqueue(new SingleRequest() { CharacterID = characterID, Callback = onGetCharacter });
+            if (!m_readyForNextSingleRequest)
+            {
+                return;
+            }
+            
             m_readyForNextSingleRequest = false;
             m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
             m_HTTPClient.Get("characters/" + characterID, OnCharacterDataResponse);
@@ -120,10 +122,9 @@ namespace ubv.microservices
                 onGetCharacters(characters);
                 return;
             }
-
-
+            
             m_onGetCharactersRequests.Enqueue(new CharactersRequest() { PlayerID = playerID, Callback = onGetCharacters });
-            if (m_readyForNextCharactersRequest)
+            if (!m_readyForNextCharactersRequest)
             {
                 return;
             }

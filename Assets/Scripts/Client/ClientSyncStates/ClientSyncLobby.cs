@@ -74,7 +74,7 @@ namespace ubv.client.logic
             CharacterListMessage clientList = common.serialization.IConvertible.CreateFromBytes<CharacterListMessage>(packet.Data.ArraySegment());
             if (clientList != null)
             {
-                foreach (common.serialization.types.String id in clientList.Characters.Value)
+                foreach (common.serialization.types.String id in clientList.PlayerCharacters.Value.Values)
                 {
                     // fetch character data from microservice
                     m_characterService.GetCharacter(id.Value, (CharacterData character) =>
@@ -107,9 +107,9 @@ namespace ubv.client.logic
                 m_simulationBuffer = m_awaitedInitMessage.SimulationBuffer.Value;
                 m_playerIDs = new List<int>();
 
-                foreach(common.serialization.types.String str in m_awaitedInitMessage.Characters.Value)
+                foreach(int id in m_awaitedInitMessage.PlayerCharacters.Value.Keys)
                 {
-                    m_playerIDs.Add(str.GetHashCode());
+                    m_playerIDs.Add(id);
                 }
 
 #if DEBUG_LOG
@@ -151,9 +151,8 @@ namespace ubv.client.logic
             StartCoroutine(LeaveLobbyCoroutine());
         }
 
-        public void Init(int playerID, string activeCharacterID)
+        public void Init(string activeCharacterID)
         {
-            PlayerID = playerID;
             m_TCPClient.Subscribe(this);
             m_TCPClient.Send(new OnLobbyEnteredMessage(activeCharacterID).GetBytes());
         }

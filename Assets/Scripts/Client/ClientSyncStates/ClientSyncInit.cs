@@ -193,7 +193,7 @@ namespace ubv.client.logic
         private void SetLobbyStateActive()
         {
             m_loadingLobby = false;
-            ClientSyncState.m_lobbyState.Init(PlayerID.Value, GetActiveCharacter().ID);
+            ClientSyncState.m_lobbyState.Init(GetActiveCharacter().ID);
             ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
         }
 

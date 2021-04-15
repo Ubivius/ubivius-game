@@ -43,7 +43,7 @@ namespace ubv.microservices
 
         private void Awake()
         {
-            m_readyForNextRequest = false;
+            m_readyForNextRequest = true;
             m_serverInfoRequests = new Queue<ServerInfoRequest>();
         }
 
@@ -72,9 +72,14 @@ namespace ubv.microservices
                 return;
             }
 
+            if (!m_readyForNextRequest)
+            {
+                m_serverInfoRequests.Enqueue(new ServerInfoRequest() { PlayerID = playerID, Callback = onServerInfo });
+                return;
+            }
+
             m_readyForNextRequest = false;
 
-            m_serverInfoRequests.Enqueue(new ServerInfoRequest() { PlayerID = playerID, Callback = onServerInfo });
             m_HTTPClient.SetEndpoint(m_dispatcherEndpoint);
 
             string jsonString = JsonUtility.ToJson(new JSONDispatcherRequest

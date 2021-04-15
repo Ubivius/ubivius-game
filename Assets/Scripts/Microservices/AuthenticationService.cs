@@ -29,7 +29,7 @@ namespace ubv.microservices
         private void Awake()
         {
             m_onLoginCallbacks = new Queue<LoginRequest>();
-            m_readyForNextCall = false;
+            m_readyForNextCall = true;
         }
 
         private struct JSONAuthentificationCredentials

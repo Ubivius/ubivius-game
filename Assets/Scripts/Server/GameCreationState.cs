@@ -89,7 +89,7 @@ namespace ubv.server.logic
 
                     common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
                     
-                    ServerInitMessage message = new ServerInitMessage(m_simulationBuffer, new List<common.serialization.types.String>(m_clientCharacters.Values), cellInfoArray);
+                    ServerInitMessage message = new ServerInitMessage(m_simulationBuffer, m_clientCharacters, cellInfoArray);
 
                     foreach (int id in m_clientCharacters.Keys)
                     {
@@ -133,7 +133,7 @@ namespace ubv.server.logic
 
         private void BroadcastPlayerList()
         {
-            byte[] bytes = new CharacterListMessage(new List<common.serialization.types.String>(m_clientCharacters.Values)).GetBytes();
+            byte[] bytes = new CharacterListMessage(m_clientCharacters).GetBytes();
             foreach (int id in m_clientCharacters.Keys)
             {
                 m_TCPServer.Send(bytes, id);
