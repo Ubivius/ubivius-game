@@ -151,13 +151,13 @@ namespace ubv.server.logic
                     {
                         AddNewPlayer(playerID);
                     }
+                    
+#if DEBUG_LOG
+                    Debug.Log("Received TCP connection request from player (ID  " + playerID + ")");
+#endif // DEBUG_LOG
 
                     ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
-                    m_UDPServer.Send(serverSuccessPing.GetBytes(), playerID);
-
-#if DEBUG_LOG
-                    Debug.Log("Received connection request from player (ID  " + playerID + ")");
-#endif // DEBUG_LOG
+                    m_TCPServer.Send(serverSuccessPing.GetBytes(), playerID);
                 }
                 return;
             }
@@ -215,6 +215,8 @@ namespace ubv.server.logic
 #if DEBUG_LOG
                 Debug.Log("Received UDP confirmation from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
+                ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
+                m_UDPServer.Send(serverSuccessPing.GetBytes(), playerID);
             } 
         }
     }

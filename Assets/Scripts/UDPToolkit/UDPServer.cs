@@ -83,10 +83,10 @@ namespace ubv
                 
                 private void AddNewClient(int playerID, IPEndPoint ep)
                 {
-                    m_clients.Add(playerID, new UdpClient());
-                    m_clients[playerID].Connect(ep);
-                    m_clientConnections.Add(playerID, new UDPToolkit.ConnectionData());
                     m_playerEndpoints.Add(playerID, ep);
+                    m_clients.Add(playerID, new UdpClient());
+                    m_clientConnections.Add(playerID, new UDPToolkit.ConnectionData());
+                    m_clients[playerID].Connect(ep);
                     m_endpointsSet.Add(ep);
                 }
 

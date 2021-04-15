@@ -20,6 +20,7 @@ namespace ubv.client.logic
         private ServerInfo? m_cachedServerInfo;
         private bool m_connected;
         private bool m_waitingOnUDPResponse;
+        private bool m_waitingOnTCPResponse;
 
         [SerializeField] private float m_reconnectTimerIntervalMS = 3000f;
         private float m_requestResendTimer;
@@ -51,6 +52,7 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
             m_connected = false;
             m_waitingOnUDPResponse = false;
+            m_waitingOnTCPResponse = false;
             m_requestResendTimer = 0;
             m_identificationMessageBytes = new IdentificationMessage().GetBytes();
             m_TCPClient.SetPlayerID(PlayerID.Value);
@@ -98,6 +100,11 @@ namespace ubv.client.logic
                     m_requestResendTimer = 0;
                     EstablishConnectionToServer(m_cachedServerInfo.Value);
                 }
+            }
+
+            if(!m_waitingOnTCPResponse && !m_waitingOnUDPResponse && m_connected && !m_readyToGoToLobby)
+            {
+                m_readyToGoToLobby = true;
             }
 
             if (m_connected && m_waitingOnUDPResponse)
@@ -202,6 +209,7 @@ namespace ubv.client.logic
             m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_ip, m_cachedServerInfo.Value.udp_port);
             m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
             m_waitingOnUDPResponse = true;
+            m_waitingOnTCPResponse = true;
         }
 
         public void ReceivePacket(UDPToolkit.Packet packet)
@@ -213,11 +221,19 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                 Debug.Log("Received TCP/UDP connection confirmation. Going to lobby");
 #endif // DEBUG_LOG
-                m_readyToGoToLobby = true;
             }
         }
 
         public void ReceivePacket(TCPToolkit.Packet packet)
-        { }
+        {
+            ServerSuccessfulConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulConnectMessage>(packet.Data.ArraySegment());
+            if (serverSuccessPing != null)
+            {
+                m_waitingOnTCPResponse = false;
+#if DEBUG_LOG
+                Debug.Log("Received TCP/UDP connection confirmation. Going to lobby");
+#endif // DEBUG_LOG
+            }
+        }
     }   
 }
