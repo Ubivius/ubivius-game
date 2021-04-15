@@ -8,6 +8,7 @@ using ubv.common.data;
 using ubv.tcp;
 using UnityEngine.Events;
 using static ubv.microservices.CharacterDataService;
+using static ubv.common.data.CharacterListMessage;
 
 namespace ubv.client.logic
 {
@@ -24,6 +25,7 @@ namespace ubv.client.logic
         private Dictionary<int, CharacterData> m_clientCharacters;
 
         private ServerInitMessage m_awaitedInitMessage;
+        private List<int> m_playerIDs;
 
         public ClientListUpdateEvent ClientListUpdate { get; private set; }
         public UnityAction OnStartLoadWorld;
@@ -103,8 +105,15 @@ namespace ubv.client.logic
             if(m_awaitedInitMessage != null)
             {
                 m_simulationBuffer = m_awaitedInitMessage.SimulationBuffer.Value;
+                m_playerIDs = new List<int>();
+
+                foreach(common.serialization.types.String str in m_awaitedInitMessage.Characters.Value)
+                {
+                    m_playerIDs.Add(str.GetHashCode());
+                }
+
 #if DEBUG_LOG
-                Debug.Log("Client received confirmation that server is about to start game with " + m_clientCharacters.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
+                Debug.Log("Client received confirmation that server is about to start game with " + m_playerIDs.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
 #endif // DEBUG_LOG
 
 #if DEBUG_LOG
@@ -117,16 +126,11 @@ namespace ubv.client.logic
 
             if (m_serverSentSignal)
             {
-                OnGameStart?.Invoke();
-                List<PlayerState> playerStates = new List<PlayerState>();
-                foreach(int id in m_clientCharacters.Keys)
-                {
-                    playerStates.Add(new PlayerState(id));
-                }
-                ClientSyncState.m_playState.Init(m_simulationBuffer.Value, playerStates);
-                m_currentState = ClientSyncState.m_playState;
                 m_TCPClient.Unsubscribe(this);
                 m_serverSentSignal = false;
+                OnGameStart?.Invoke();
+                ClientSyncState.m_playState.Init(m_simulationBuffer.Value, m_playerIDs, new ClientGameInfo(m_clientCharacters.Values));
+                m_currentState = ClientSyncState.m_playState;
             }
         }
 
