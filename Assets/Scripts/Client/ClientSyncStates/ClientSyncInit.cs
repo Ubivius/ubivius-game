@@ -108,7 +108,10 @@ namespace ubv.client.logic
             {
                 if (!m_waitingOnTCPResponse && !m_waitingOnUDPResponse && m_connected && !m_readyToGoToLobby)
                 {
-                    m_readyToGoToLobby = true;
+                    if (!m_loadingLobby)
+                    {
+                        m_readyToGoToLobby = true;
+                    }
                 }
             }
 
