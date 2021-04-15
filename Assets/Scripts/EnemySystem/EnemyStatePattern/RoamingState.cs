@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using ubv.common.serialization;
 
 namespace ubv.server.logic.ai
 {
@@ -11,6 +12,10 @@ namespace ubv.server.logic.ai
         private float m_targetRange = 50f;
         private Vector2 m_startingPosition;
         private Vector2 m_roamPosition;
+
+        public RoamingState(): base()
+        {
+        }
 
         public RoamingState(EnemyPathFindingMovement enemyPathFindingMovement)
         {
@@ -56,6 +61,16 @@ namespace ubv.server.logic.ai
             //}
 
             return this;
+        }
+
+        protected override ID.BYTE_TYPE SerializationID()
+        {
+            return ID.BYTE_TYPE.ROAMING_STATE;
+        }
+
+        public override EnemyStateInfo.EnemyStateType GetEnemyStateType()
+        {
+            return EnemyStateInfo.EnemyStateType.ROAMING;
         }
     }
 }

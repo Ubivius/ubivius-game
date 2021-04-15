@@ -19,6 +19,11 @@ namespace ubv.common.serialization
             LOGIC_CELL_WALL,
             LOGIC_CELL_INTERACTABLE,
             LOGIC_GRID,
+            ENEMY_STATE,
+            ROAMING_STATE,
+            SEARCHING_STATE,
+            CHASING_STATE,
+            FIGHTING_STATE,
             INT32,
             FLOAT,
             UINT32,
@@ -32,6 +37,7 @@ namespace ubv.common.serialization
             LIST_INPUTFRAME,
             LOGIC_CELL_INFO,
             ARRAY2D_CELLINFO,
+            ENEMY_STATE_INFO,
             BYTEARRAY,
             BYTE,
             NULL,
@@ -41,7 +47,6 @@ namespace ubv.common.serialization
             SERVER_STARTS_MESSAGE,
             CLIENT_WORLD_LOADED_MESSAGE,
             SERVER_SUCCESSFUL_CONNECT_MESSAGE,
-            ENEMY_STATE
         }
     }
 }

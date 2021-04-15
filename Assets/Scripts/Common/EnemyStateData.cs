@@ -13,6 +13,9 @@ namespace ubv
             /// Class reprensenting individual enemy state 
             /// Add here the data of a single enemy
             /// </summary>
+            ///
+            
+            // add enemystateinfo comme cellinfo
             public class EnemyStateData : serialization.Serializable
             {
                 // send this over network
