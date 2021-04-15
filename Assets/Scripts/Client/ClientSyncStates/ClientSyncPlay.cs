@@ -52,7 +52,7 @@ namespace ubv.client.logic
             ClientSyncState.m_playState = this;
         }
 
-        public void Init(int simulationBuffer, ClientGameInfo gameInfo)
+        public void Init(int simulationBuffer, List<int> playerIDs, ClientGameInfo gameInfo)
         {
             m_localTick = 0;
             m_reconnectTryTimer = 0;
@@ -69,7 +69,7 @@ namespace ubv.client.logic
             GameInfo = gameInfo;
 
             List<PlayerState> playerStates = new List<PlayerState>();
-            foreach (int id in gameInfo.PlayerCharacters.Keys)
+            foreach (int id in playerIDs)
             {
                 playerStates.Add(new PlayerState(id));
             }
