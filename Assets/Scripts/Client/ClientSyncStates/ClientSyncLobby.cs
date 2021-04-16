@@ -74,8 +74,10 @@ namespace ubv.client.logic
             CharacterListMessage clientList = common.serialization.IConvertible.CreateFromBytes<CharacterListMessage>(packet.Data.ArraySegment());
             if (clientList != null)
             {
+                Debug.Log("Received " + clientList.PlayerCharacters.Value.Count + " characters from server");
                 foreach (common.serialization.types.String id in clientList.PlayerCharacters.Value.Values)
                 {
+                    Debug.Log("Fetching character " + id.Value + " from microservice");
                     // fetch character data from microservice
                     string strID = id.Value;
                     m_characterService.GetCharacter(strID, (CharacterData character) =>
