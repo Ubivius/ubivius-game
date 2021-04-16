@@ -102,12 +102,12 @@ namespace ubv.microservices
                 return;
             }
             
-            m_readyForNextSingleRequest = false;
             GetCharacter(characterID);
         }
 
         private void GetCharacter(string characterID)
         {
+            m_readyForNextSingleRequest = false;
             Debug.Log("Fetching character " + characterID + " from character data (call from service class)");
             m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
             m_HTTPClient.Get("characters/" + characterID, OnCharacterDataResponse);
@@ -115,6 +115,7 @@ namespace ubv.microservices
 
         private void GetCharacters(string userID)
         {
+            m_readyForNextCharactersRequest = false;
             m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
             m_HTTPClient.Get("characters/user/" + userID, OnCharactersDataResponse);
         }
@@ -141,7 +142,6 @@ namespace ubv.microservices
                 return;
             }
 
-            m_readyForNextCharactersRequest = false;
             GetCharacters(playerID);
         }
         
