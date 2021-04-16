@@ -3,8 +3,9 @@ using UnityEngine;
 
 public class HealthBar : MonoBehaviour
 {
+    [SerializeField] private Transform m_bar;
+
     private HealthSystem m_healthSystem;
-    //Passer la healthbar via seraizable
 
     public void Setup(HealthSystem healthSystem)
     {
@@ -14,13 +15,13 @@ public class HealthBar : MonoBehaviour
         UpdateHealthBar();
     }
 
-    public void HealthSystemOnHealthChanged(int amount)
+    public void HealthSystemOnHealthChanged()
     {
         UpdateHealthBar();
     }
 
     private void UpdateHealthBar()
     {
-        //transform.Find("Bar").localScale = new Vector3(m_healthSystem.GetHealthPercent(), 1);
+        m_bar.localScale = new Vector3(m_healthSystem.GetHealthPercent(), 1);
     }
 }

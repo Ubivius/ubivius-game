@@ -4,10 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class HealthSystem : MonoBehaviour
+public class HealthSystem
 {
-
-    public UnityEvent<int> OnHealthChanged;
+    public UnityEvent OnHealthChanged;
     public UnityEvent OnDead;
 
     private int m_healthMax;
@@ -17,6 +16,11 @@ public class HealthSystem : MonoBehaviour
     {
         this.m_healthMax = healthMax;
         this.m_health = healthMax;
+
+        if (OnHealthChanged == null)
+        {
+            OnHealthChanged = new UnityEvent();
+        }
     }
         
     public float GetHealthPercent() 
@@ -32,7 +36,7 @@ public class HealthSystem : MonoBehaviour
             m_health = 0;
         }
 
-        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke(amount);
+        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke();
 
         if (m_health <= 0) 
         {
@@ -53,6 +57,6 @@ public class HealthSystem : MonoBehaviour
             m_health = m_healthMax;
         }
 
-        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke(amount);
+        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke();
     }
 }
