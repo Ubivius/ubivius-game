@@ -50,8 +50,8 @@ namespace ubv.microservices
             {
                 if(m_onLoginCallbacks.Count > 0)
                 {
-                    LoginRequest request = m_onLoginCallbacks.Dequeue();
-                    SendLoginRequest(request.User, request.Pass, request.Callback);
+                    LoginRequest request = m_onLoginCallbacks.Peek();
+                    SendLoginRequest(request.User, request.Pass);
                 }
             }
         }
@@ -75,13 +75,18 @@ namespace ubv.microservices
             }
 
             m_readyForNextCall = false;
+            
+            SendLoginRequest(user, pass);
+        }
 
+        private void SendLoginRequest(string user, string pass)
+        {
             string jsonString = JsonUtility.ToJson(new JSONAuthentificationCredentials
             {
                 username = user,
                 password = pass,
             }).ToString();
-            
+
             m_HTTPClient.SetEndpoint(m_authEndpoint);
             m_HTTPClient.PostJSON("signin", jsonString, OnAuthenticationResponse);
         }

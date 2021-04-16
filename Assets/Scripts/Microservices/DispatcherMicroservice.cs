@@ -53,8 +53,8 @@ namespace ubv.microservices
             {
                 if(m_serverInfoRequests.Count > 0)
                 {
-                    ServerInfoRequest request = m_serverInfoRequests.Dequeue();
-                    RequestServerInfo(request.PlayerID, request.Callback);
+                    ServerInfoRequest request = m_serverInfoRequests.Peek();
+                    RequestServerInfo(request.PlayerID);
                 }
             }
         }
@@ -79,7 +79,11 @@ namespace ubv.microservices
             }
 
             m_readyForNextRequest = false;
+            RequestServerInfo(playerID);
+        }
 
+        private void RequestServerInfo(int playerID)
+        {
             m_HTTPClient.SetEndpoint(m_dispatcherEndpoint);
 
             string jsonString = JsonUtility.ToJson(new JSONDispatcherRequest

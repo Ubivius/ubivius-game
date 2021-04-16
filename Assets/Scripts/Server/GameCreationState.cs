@@ -136,6 +136,7 @@ namespace ubv.server.logic
             byte[] bytes = new CharacterListMessage(m_clientCharacters).GetBytes();
             foreach (int id in m_clientCharacters.Keys)
             {
+                Debug.Log("Broadcasting player/char " + m_clientCharacters[id].Value + " (from player " + id + ")");
                 m_TCPServer.Send(bytes, id);
             }
         }
@@ -169,7 +170,7 @@ namespace ubv.server.logic
                 {
                     if (m_clientCharacters.ContainsKey(playerID))
                     {
-                        Debug.Log("Adding character " + lobbyEnter.CharacterID + " to player " + playerID);
+                        Debug.Log("Adding character " + lobbyEnter.CharacterID.Value + " to player " + playerID);
                         m_clientCharacters[playerID] = lobbyEnter.CharacterID;
                         BroadcastPlayerList();
                     }

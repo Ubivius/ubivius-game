@@ -77,8 +77,10 @@ namespace ubv.client.logic
                 foreach (common.serialization.types.String id in clientList.PlayerCharacters.Value.Values)
                 {
                     // fetch character data from microservice
-                    m_characterService.GetCharacter(id.Value, (CharacterData character) =>
+                    string strID = id.Value;
+                    m_characterService.GetCharacter(strID, (CharacterData character) =>
                     {
+                        Debug.Log("Got character from " + character.PlayerID + " : " + character.Name);
                         m_clientCharacters[character.PlayerID.GetHashCode()] = character;
                         ClientListUpdate.Invoke(new List<CharacterData>(m_clientCharacters.Values));
                     });

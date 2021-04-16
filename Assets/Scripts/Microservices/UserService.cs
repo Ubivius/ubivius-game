@@ -62,8 +62,8 @@ namespace ubv.microservices
             {
                 if (m_userRequests.Count > 0)
                 {
-                    UserInfoRequest request = m_userRequests.Dequeue();
-                    SendUserInfoRequest(request.ID, request.Callback);
+                    UserInfoRequest request = m_userRequests.Peek();
+                    SendUserInfoRequest(request.ID);
                 }
             }
         }
@@ -92,7 +92,11 @@ namespace ubv.microservices
             }
 
             m_readyForNextRequest = false;
+            SendUserInfoRequest(id);
+        }
 
+        private void SendUserInfoRequest(string id)
+        {
             m_HTTPClient.SetEndpoint(m_userEndpoint);
             m_HTTPClient.Get("users/" + id, OnUserResponse);
         }

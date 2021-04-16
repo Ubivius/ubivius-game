@@ -69,8 +69,8 @@ namespace ubv.microservices
             {
                 if (m_onGetSingleRequests.Count > 0)
                 {
-                    SingleRequest request = m_onGetSingleRequests.Dequeue();
-                    GetCharacter(request.CharacterID, request.Callback);
+                    SingleRequest request = m_onGetSingleRequests.Peek();
+                    GetCharacter(request.CharacterID);
                 }
             }
 
@@ -78,8 +78,8 @@ namespace ubv.microservices
             {
                 if (m_onGetCharactersRequests.Count > 0)
                 {
-                    CharactersRequest request = m_onGetCharactersRequests.Dequeue();
-                    GetCharacters(request.PlayerID, request.Callback);
+                    CharactersRequest request = m_onGetCharactersRequests.Peek();
+                    GetCharacters(request.PlayerID);
                 }
             }
         }
@@ -103,10 +103,21 @@ namespace ubv.microservices
             }
             
             m_readyForNextSingleRequest = false;
+            GetCharacter(characterID);
+        }
+
+        private void GetCharacter(string characterID)
+        {
             m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
             m_HTTPClient.Get("characters/" + characterID, OnCharacterDataResponse);
         }
-        
+
+        private void GetCharacters(string userID)
+        {
+            m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
+            m_HTTPClient.Get("characters/user/" + userID, OnCharactersDataResponse);
+        }
+
         public void GetCharacters(string playerID, OnGetCharacters onGetCharacters)
         {
             if (m_mock)
@@ -130,8 +141,7 @@ namespace ubv.microservices
             }
 
             m_readyForNextCharactersRequest = false;
-            m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
-            m_HTTPClient.Get("characters/user/" + playerID, OnCharactersDataResponse);
+            GetCharacters(playerID);
         }
         
         private void OnCharactersDataResponse(HttpResponseMessage message)

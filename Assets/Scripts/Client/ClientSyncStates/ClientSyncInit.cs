@@ -52,9 +52,11 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Initializing client state [init]");
 #endif // DEBUG_LOG
+
             m_connected = false;
             m_waitingOnUDPResponse = false;
             m_waitingOnTCPResponse = false;
+
             m_requestResendTimer = 0;
             m_identificationMessageBytes = new IdentificationMessage().GetBytes();
             m_TCPClient.SetPlayerID(PlayerID.Value);
