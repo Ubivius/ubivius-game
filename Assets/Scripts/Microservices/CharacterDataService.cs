@@ -108,6 +108,7 @@ namespace ubv.microservices
 
         private void GetCharacter(string characterID)
         {
+            Debug.Log("Fetching character " + characterID + " from character data (call from service class)");
             m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
             m_HTTPClient.Get("characters/" + characterID, OnCharacterDataResponse);
         }
@@ -156,7 +157,7 @@ namespace ubv.microservices
                 {
                     characters[i] = new CharacterData(authResponse[i].name, authResponse[i].id, authResponse[i].user_id);
                 }
-
+                
                 m_onGetCharactersRequests.Dequeue().Callback.Invoke(characters);
                 m_readyForNextCharactersRequest = true;
             }
@@ -177,6 +178,7 @@ namespace ubv.microservices
 
                 CharacterData character = new CharacterData(authResponse.name, authResponse.id, authResponse.user_id);
 
+                Debug.Log("Calling callback on " + m_onGetSingleRequests.Peek().CharacterID);
                 m_onGetSingleRequests.Dequeue().Callback.Invoke(character);
                 m_readyForNextSingleRequest = true;
             }
