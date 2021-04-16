@@ -34,7 +34,7 @@ namespace ubv.client.logic
         private bool m_alreadyInLobby;
         private bool m_loadingLobby;
 
-        private CharacterData m_activeCharacter;
+        static private CharacterData m_activeCharacter = null;
         
         protected override void StateAwake()
         {
@@ -62,7 +62,6 @@ namespace ubv.client.logic
             m_TCPClient.SetPlayerID(PlayerID.Value);
             m_UDPClient.Subscribe(this);
             m_TCPClient.Subscribe(this);
-            m_activeCharacter = null;
             if (clearServerInfo)
             {
                 m_cachedServerInfo = null;
@@ -72,7 +71,10 @@ namespace ubv.client.logic
         private void Start()
         {
             // try to fetch characters from microservice
-            m_characterService.GetCharacters(UserInfo.ID, OnCharactersFetchedFromService);
+            if (m_activeCharacter == null)
+            { 
+                m_characterService.GetCharacters(UserInfo.ID, OnCharactersFetchedFromService);
+            }
         }
 
         private void OnCharactersFetchedFromService(CharacterData[] characters)
