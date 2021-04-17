@@ -178,12 +178,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 01a6b42a1d84b664c890d8dcb066becd, type: 3}
---- !u!4 &176775840 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4090514546342678, guid: 01a6b42a1d84b664c890d8dcb066becd,
+--- !u!114 &176775840 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114340675852667052, guid: 01a6b42a1d84b664c890d8dcb066becd,
     type: 3}
   m_PrefabInstance: {fileID: 176775839}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33a6a679984a965479e1d38aaef7ae67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1839735485 &228570826 stripped
 Tilemap:
   m_CorrespondingSourceObject: {fileID: 2840029084978360035, guid: 2440ad9a813087043aff3d8131677843,
@@ -349,7 +355,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8a992f596ff6f14cb4637aaabfcf574, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PfHealthBar: {fileID: 176775840}
+  m_healthBar: {fileID: 176775840}
+  HealthBarTransform: {fileID: 0}
 --- !u!4 &690756455
 Transform:
   m_ObjectHideFlags: 0

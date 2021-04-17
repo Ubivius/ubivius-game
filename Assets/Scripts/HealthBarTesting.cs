@@ -6,15 +6,14 @@ namespace ubv.server.testing
 {
     public class HealthBarTesting : MonoBehaviour
     {
+        [SerializeField] private HealthBar m_healthBar;
         private HealthSystem m_healthSystem;
-        public Transform PfHealthBar;
 
         // Start is called before the first frame update
         void Start()
         {
             m_healthSystem = new HealthSystem(100);
-            HealthBar healthBar = PfHealthBar.GetComponent<HealthBar>();
-            healthBar.Setup(m_healthSystem);
+            m_healthBar.Setup(m_healthSystem);
         }
 
         public void Heal()
