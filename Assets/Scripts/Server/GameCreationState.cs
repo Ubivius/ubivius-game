@@ -89,7 +89,7 @@ namespace ubv.server.logic
 
                     common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
                     
-                    ServerInitMessage message = new ServerInitMessage(m_simulationBuffer, new List<common.serialization.types.String>(m_clientCharacters.Values), cellInfoArray);
+                    ServerInitMessage message = new ServerInitMessage(m_simulationBuffer, m_clientCharacters, cellInfoArray);
 
                     foreach (int id in m_clientCharacters.Keys)
                     {
@@ -133,9 +133,10 @@ namespace ubv.server.logic
 
         private void BroadcastPlayerList()
         {
-            byte[] bytes = new CharacterListMessage(new List<common.serialization.types.String>(m_clientCharacters.Values)).GetBytes();
+            byte[] bytes = new CharacterListMessage(m_clientCharacters).GetBytes();
             foreach (int id in m_clientCharacters.Keys)
             {
+                Debug.Log("Broadcasting player/char " + m_clientCharacters[id].Value + " (from player " + id + ")");
                 m_TCPServer.Send(bytes, id);
             }
         }
@@ -151,13 +152,13 @@ namespace ubv.server.logic
                     {
                         AddNewPlayer(playerID);
                     }
+                    
+#if DEBUG_LOG
+                    Debug.Log("Received TCP connection request from player (ID  " + playerID + ")");
+#endif // DEBUG_LOG
 
                     ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
-                    m_UDPServer.Send(serverSuccessPing.GetBytes(), playerID);
-
-#if DEBUG_LOG
-                    Debug.Log("Received connection request from player (ID  " + playerID + ")");
-#endif // DEBUG_LOG
+                    m_TCPServer.Send(serverSuccessPing.GetBytes(), playerID);
                 }
                 return;
             }
@@ -169,7 +170,7 @@ namespace ubv.server.logic
                 {
                     if (m_clientCharacters.ContainsKey(playerID))
                     {
-                        Debug.Log("Adding character " + lobbyEnter.CharacterID + " to player " + playerID);
+                        Debug.Log("Adding character " + lobbyEnter.CharacterID.Value + " to player " + playerID);
                         m_clientCharacters[playerID] = lobbyEnter.CharacterID;
                         BroadcastPlayerList();
                     }
@@ -215,6 +216,8 @@ namespace ubv.server.logic
 #if DEBUG_LOG
                 Debug.Log("Received UDP confirmation from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
+                ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
+                m_UDPServer.Send(serverSuccessPing.GetBytes(), playerID);
             } 
         }
     }

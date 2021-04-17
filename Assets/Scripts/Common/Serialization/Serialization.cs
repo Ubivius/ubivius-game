@@ -28,7 +28,7 @@ namespace ubv.common.serialization
             VECTOR2INT,
             QUATERNION,
             STRING,
-            LIST_CHARACTERIDS,
+            LIST_STRING,
             HASHMAP_INT_PLAYERSTATE,
             LIST_INPUTFRAME,
             LOGIC_CELL_INFO,
@@ -42,7 +42,8 @@ namespace ubv.common.serialization
             SERVER_STARTS_MESSAGE,
             CLIENT_WORLD_LOADED_MESSAGE,
             SERVER_SUCCESSFUL_CONNECT_MESSAGE,
-            LOBBY_ENTER_MESSAGE
+            LOBBY_ENTER_MESSAGE,
+            HASHMAP_INT_STRING
         }
     }
 }
