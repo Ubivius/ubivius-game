@@ -28,6 +28,14 @@ namespace ubv.common.world
         public int Width { get => m_width; private set => m_width = value; }
         public LogicGrid LogicGrid { get => m_logicGrid; private set => m_logicGrid = value; }
 
+        private List<cellType.Section> m_listSection = new List<cellType.Section>() 
+        { 
+            cellType.Section.NorthEast, 
+            cellType.Section.NorthWest, 
+            cellType.Section.SouthEast, 
+            cellType.Section.SouthWest 
+        }; 
+
         private void Awake()
         {
 #if DEBUG
@@ -43,8 +51,10 @@ namespace ubv.common.world
             WallManagement();
             PlayerSpawnManagement();
             FloorManagement();
-            FinalButtonManagement();
+
+
             FinalDoorManagement();
+            FinalButtonManagement();
         }
         private void RoomManagement()
         {
@@ -161,8 +171,30 @@ namespace ubv.common.world
             }
         }
 
-        //[SerializeField] private Tilemap m_sectionDoorButton;
-        //[SerializeField] private Tilemap m_sectionButton;
+        private void SectionDoorButtonManagement() // m_listSection //  Random.Range(0, dir.Count - 1); // dir.RemoveAt(select);
+        {
+            if (m_sectionDoorButton)
+            {
+                m_sectionDoorButton.CompressBounds();
+                Vector3Int originOffset = m_sectionDoorButton.origin - m_roomOrigin;
+                Vector3Int iterateur = new Vector3Int();
+                for (iterateur.x = originOffset.x; iterateur.x < m_sectionDoorButton.cellBounds.size.x + originOffset.x; iterateur.x++)
+                {
+                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionDoorButton.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    {
+                        if (m_sectionDoorButton.HasTile(iterateur))
+                        {
+                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
+                            {
+                                int select = Random.Range(0, m_listSection.Count - 1);
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(m_listSection[select]);
+                                m_listSection.RemoveAt(select);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         private void SectionButtonManagement()
         {
@@ -179,7 +211,9 @@ namespace ubv.common.world
                         {
                             if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
                             {
-                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton();
+                                int select = Random.Range(0, m_listSection.Count - 1);
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(m_listSection[select]);
+                                m_listSection.RemoveAt(select);
                             }
                         }
                     }

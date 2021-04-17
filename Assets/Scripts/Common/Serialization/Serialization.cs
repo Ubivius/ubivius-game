@@ -32,6 +32,7 @@ namespace ubv.common.serialization
             QUATERNION,
             STRING,
             LIST_CHARACTERIDS,
+            LIST_INT32,
             HASHMAP_INT_PLAYERSTATE,
             LIST_INPUTFRAME,
             LOGIC_CELL_INFO,
