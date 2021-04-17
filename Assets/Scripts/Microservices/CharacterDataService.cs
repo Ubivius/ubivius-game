@@ -3,20 +3,35 @@ using System.Collections;
 using ubv.http;
 using System.Net.Http;
 using System.Net;
+using System.Collections.Generic;
 
 namespace ubv.microservices
 {
     public class CharacterDataService : MonoBehaviour
     {
+        public delegate void OnGetCharacters(CharacterData[] characters);
+        public delegate void OnGetSingle(CharacterData character);
+
+        private class SingleRequest
+        {
+            public string CharacterID;
+            public OnGetSingle Callback;
+        }
+
+        private class CharactersRequest
+        {
+            public string PlayerID;
+            public OnGetCharacters Callback;
+        }
+
         [SerializeField] private bool m_mock;
         [SerializeField] private HTTPClient m_HTTPClient;
         [SerializeField] string m_characterDataEndpoint;
 
-        public delegate void OnGetCharacters(CharacterData[] characters);
-        private OnGetCharacters m_onGetCharactersCallback;
-
-        public delegate void OnGetCharacter(CharacterData character);
-        private OnGetCharacter m_onGetCharacterCallback;
+        private bool m_readyForNextSingleRequest;
+        private bool m_readyForNextCharactersRequest;
+        private Queue<CharactersRequest> m_onGetCharactersRequests;
+        private Queue<SingleRequest> m_onGetSingleRequests;
 
         public class CharacterData
         {
@@ -40,7 +55,36 @@ namespace ubv.microservices
             public string name;
         }
 
-        public void GetCharacter(string characterID, OnGetCharacter onGetCharacter)
+        private void Awake()
+        {
+            m_readyForNextCharactersRequest = true;
+            m_readyForNextSingleRequest = true;
+            m_onGetSingleRequests = new Queue<SingleRequest>();
+            m_onGetCharactersRequests = new Queue<CharactersRequest>();
+        }
+
+        private void Update()
+        {
+            if (m_readyForNextSingleRequest)
+            {
+                if (m_onGetSingleRequests.Count > 0)
+                {
+                    SingleRequest request = m_onGetSingleRequests.Peek();
+                    GetCharacter(request.CharacterID);
+                }
+            }
+
+            if (m_readyForNextCharactersRequest)
+            {
+                if (m_onGetCharactersRequests.Count > 0)
+                {
+                    CharactersRequest request = m_onGetCharactersRequests.Peek();
+                    GetCharacters(request.PlayerID);
+                }
+            }
+        }
+
+        public void GetCharacter(string characterID, OnGetSingle onGetCharacter)
         {
             if (m_mock)
             {
@@ -51,12 +95,31 @@ namespace ubv.microservices
                 onGetCharacter(character);
                 return;
             }
+
+            m_onGetSingleRequests.Enqueue(new SingleRequest() { CharacterID = characterID, Callback = onGetCharacter });
+            if (!m_readyForNextSingleRequest)
+            {
+                return;
+            }
             
+            GetCharacter(characterID);
+        }
+
+        private void GetCharacter(string characterID)
+        {
+            m_readyForNextSingleRequest = false;
+            Debug.Log("Fetching character " + characterID + " from character data (call from service class)");
             m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
-            m_onGetCharacterCallback = onGetCharacter;
             m_HTTPClient.Get("characters/" + characterID, OnCharacterDataResponse);
         }
-        
+
+        private void GetCharacters(string userID)
+        {
+            m_readyForNextCharactersRequest = false;
+            m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
+            m_HTTPClient.Get("characters/user/" + userID, OnCharactersDataResponse);
+        }
+
         public void GetCharacters(string playerID, OnGetCharacters onGetCharacters)
         {
             if (m_mock)
@@ -72,11 +135,14 @@ namespace ubv.microservices
                 onGetCharacters(characters);
                 return;
             }
-
             
-            m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
-            m_onGetCharactersCallback = onGetCharacters;
-            m_HTTPClient.Get("characters/user/" + playerID, OnCharactersDataResponse);
+            m_onGetCharactersRequests.Enqueue(new CharactersRequest() { PlayerID = playerID, Callback = onGetCharacters });
+            if (!m_readyForNextCharactersRequest)
+            {
+                return;
+            }
+
+            GetCharacters(playerID);
         }
         
         private void OnCharactersDataResponse(HttpResponseMessage message)
@@ -91,9 +157,9 @@ namespace ubv.microservices
                 {
                     characters[i] = new CharacterData(authResponse[i].name, authResponse[i].id, authResponse[i].user_id);
                 }
-
-                m_onGetCharactersCallback.Invoke(characters);
-                m_onGetCharactersCallback = null;
+                
+                m_onGetCharactersRequests.Dequeue().Callback.Invoke(characters);
+                m_readyForNextCharactersRequest = true;
             }
             else
             {
@@ -111,9 +177,10 @@ namespace ubv.microservices
                 JSONCharacterData authResponse = JsonUtility.FromJson<JSONCharacterData>(JSON);
 
                 CharacterData character = new CharacterData(authResponse.name, authResponse.id, authResponse.user_id);
-                
-                m_onGetCharacterCallback.Invoke(character);
-                m_onGetCharacterCallback = null;
+
+                Debug.Log("Calling callback on " + m_onGetSingleRequests.Peek().CharacterID);
+                m_onGetSingleRequests.Dequeue().Callback.Invoke(character);
+                m_readyForNextSingleRequest = true;
             }
             else
             {

@@ -27,25 +27,15 @@ jobs:
       # Cache
       - uses: actions/cache@v2
         with:
-          path: ubivius-game/Library
+          path: Library
           key: Library-ubivius-game-StandaloneLinux64
           restore-keys: |
             Library-ubivius-game-
             Library-
       
-      # Test
- #     - name: Run tests
- #       uses: webbertakken/unity-test-runner@v1.3
- #       env:
- #         UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
- #         UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
- #         UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
- #       with:
- #         projectPath: Assets/Tests
-
       # Build
       - name: Server build 
-        uses: webbertakken/unity-builder@v1.5
+        uses: webbertakken/unity-builder@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -53,13 +43,25 @@ jobs:
         with:
           buildMethod: Build.ServerBuild
           targetPlatform: StandaloneLinux64
-          unityVersion: 2019.4.1f1
+          unityVersion: 2019.4.24f1
       
-      # Return License
+      # Test edit and play mode
+      - name: Run tests
+        uses: webbertakken/unity-test-runner@v2
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Server tests results
+      
+      # Return License if steps failed to ensure it was returned
       - name: Return license
         uses: game-ci/unity-return-license@v1
         if: failure()
 
+      # Prepare Docker variables
       - name: Pre-load env-var
         if: success()
         id: fetch-vars
@@ -70,6 +72,7 @@ jobs:
             echo "::set-output name=BRANCH::$(echo $GITHUB_REF)"
         shell: bash
 
+      # Docker publish server image
       - name: Build and Push Artefact to Registry
         if: success()
         uses: elgohr/Publish-Docker-Github-Action@master
@@ -80,8 +83,8 @@ jobs:
           dockerfile: Dockerfile
           tags: "${{ env.REPO_VERSION }}"
 
-      # Output
-      - uses: actions/upload-artifact@v1
+      # Also publish build output as zip archive
+      - uses: actions/upload-artifact@v2
         if: success()
         with:
           name: Server
@@ -101,25 +104,15 @@ jobs:
       # Cache
       - uses: actions/cache@v2
         with:
-          path: ubivius-game/Library
+          path: Library
           key: Library-ubivius-game-StandaloneWindows64
           restore-keys: |
             Library-ubivius-game-
             Library-
 
-      # Test
-#      - name: Run tests
-#        uses: webbertakken/unity-test-runner@v1.3
-#        env:
-#          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-#          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-#          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
-#        with:
-#          projectPath: Assets/Tests
-
       # Build
       - name: Client build
-        uses: webbertakken/unity-builder@v1.5
+        uses: webbertakken/unity-builder@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -127,15 +120,26 @@ jobs:
         with:
           buildMethod: Build.ClientBuild
           targetPlatform: StandaloneWindows64
-          unityVersion: 2019.4.1f1
+          unityVersion: 2019.4.24f1
 
-      # Return License
+      # Test edit and play mode
+      - name: Run tests
+        uses: webbertakken/unity-test-runner@v2
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Client tests results
+
+      # Return License if steps failed to ensure it was returned
       - name: Return license
         uses: game-ci/unity-return-license@v1
         if: failure()
 
-      # Output
-      - uses: actions/upload-artifact@v1
+      # Publish build output as zip archive
+      - uses: actions/upload-artifact@v2
         if: success()
         with:
           name: Client

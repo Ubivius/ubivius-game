@@ -20,6 +20,7 @@ namespace ubv.client.logic
         private ServerInfo? m_cachedServerInfo;
         private bool m_connected;
         private bool m_waitingOnUDPResponse;
+        private bool m_waitingOnTCPResponse;
 
         [SerializeField] private float m_reconnectTimerIntervalMS = 3000f;
         private float m_requestResendTimer;
@@ -31,12 +32,14 @@ namespace ubv.client.logic
 
         private bool m_readyToGoToLobby;
         private bool m_alreadyInLobby;
+        private bool m_loadingLobby;
 
-        private CharacterData m_activeCharacter;
+        static private CharacterData m_activeCharacter = null;
         
         protected override void StateAwake()
         {
             m_readyToGoToLobby = false;
+            m_loadingLobby = false;
             ClientSyncState.m_initState = this;
             ClientSyncState.m_currentState = this;
             m_cachedServerInfo = null;
@@ -49,14 +52,16 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Initializing client state [init]");
 #endif // DEBUG_LOG
+
             m_connected = false;
             m_waitingOnUDPResponse = false;
+            m_waitingOnTCPResponse = false;
+
             m_requestResendTimer = 0;
             m_identificationMessageBytes = new IdentificationMessage().GetBytes();
             m_TCPClient.SetPlayerID(PlayerID.Value);
             m_UDPClient.Subscribe(this);
             m_TCPClient.Subscribe(this);
-            m_activeCharacter = null;
             if (clearServerInfo)
             {
                 m_cachedServerInfo = null;
@@ -66,7 +71,10 @@ namespace ubv.client.logic
         private void Start()
         {
             // try to fetch characters from microservice
-            m_characterService.GetCharacters(UserInfo.ID, OnCharactersFetchedFromService);
+            if (m_activeCharacter == null)
+            { 
+                m_characterService.GetCharacters(UserInfo.ID, OnCharactersFetchedFromService);
+            }
         }
 
         private void OnCharactersFetchedFromService(CharacterData[] characters)
@@ -87,7 +95,7 @@ namespace ubv.client.logic
 
         protected override void StateUpdate()
         {
-            if (m_cachedServerInfo != null && !m_connected && !m_waitingOnUDPResponse)
+            if (m_cachedServerInfo != null && !m_connected && !m_waitingOnUDPResponse && !m_waitingOnTCPResponse)
             {
                 m_requestResendTimer += Time.deltaTime;
                 if(m_requestResendTimer > m_reconnectTimerIntervalMS / 1000f)
@@ -97,6 +105,17 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
                     m_requestResendTimer = 0;
                     EstablishConnectionToServer(m_cachedServerInfo.Value);
+                }
+            }
+
+            lock (m_lock)
+            {
+                if (!m_waitingOnTCPResponse && !m_waitingOnUDPResponse && m_connected && !m_readyToGoToLobby)
+                {
+                    if (!m_loadingLobby)
+                    {
+                        m_readyToGoToLobby = true;
+                    }
                 }
             }
 
@@ -118,7 +137,7 @@ namespace ubv.client.logic
                     m_alreadyInLobby = true;
                     GoToLobby();
                 }
-                else
+                else if(!m_loadingLobby)
                 {
                     SetLobbyStateActive();
                 }
@@ -165,6 +184,7 @@ namespace ubv.client.logic
         
         private IEnumerator LoadLobbyCoroutine()
         {
+            m_loadingLobby = true;
             m_UDPClient.Unsubscribe(this);
             m_TCPClient.Unsubscribe(this);
             // animation petit cercle de load to scene
@@ -179,7 +199,8 @@ namespace ubv.client.logic
 
         private void SetLobbyStateActive()
         {
-            ClientSyncState.m_lobbyState.Init(PlayerID.Value, GetActiveCharacter()?.ID);
+            m_loadingLobby = false;
+            ClientSyncState.m_lobbyState.Init(GetActiveCharacter().ID);
             ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
         }
 
@@ -196,12 +217,17 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Successful connection to server. Sending identification message with ID " + PlayerID.Value);
 #endif // DEBUG_LOG
-            m_TCPClient.Send(m_identificationMessageBytes); // sends a ping to the server
-            m_connected = true;
+
+            lock (m_lock)
+            {
+                m_waitingOnUDPResponse = true;
+                m_waitingOnTCPResponse = true;
+                m_connected = true;
+            }
 
             m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_ip, m_cachedServerInfo.Value.udp_port);
             m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
-            m_waitingOnUDPResponse = true;
+            m_TCPClient.Send(m_identificationMessageBytes); // sends a ping to the server
         }
 
         public void ReceivePacket(UDPToolkit.Packet packet)
@@ -211,13 +237,21 @@ namespace ubv.client.logic
             {
                 m_waitingOnUDPResponse = false;
 #if DEBUG_LOG
-                Debug.Log("Received TCP/UDP connection confirmation. Going to lobby");
+                Debug.Log("Received UDP connection confirmation.");
 #endif // DEBUG_LOG
-                m_readyToGoToLobby = true;
             }
         }
 
         public void ReceivePacket(TCPToolkit.Packet packet)
-        { }
+        {
+            ServerSuccessfulConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulConnectMessage>(packet.Data.ArraySegment());
+            if (serverSuccessPing != null)
+            {
+                m_waitingOnTCPResponse = false;
+#if DEBUG_LOG
+                Debug.Log("Received TCP connection confirmation.");
+#endif // DEBUG_LOG
+            }
+        }
     }   
 }

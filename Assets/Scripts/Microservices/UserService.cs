@@ -3,6 +3,7 @@ using System.Collections;
 using ubv.http;
 using System.Net.Http;
 using System.Net;
+using System.Collections.Generic;
 
 namespace ubv.microservices
 {
@@ -15,8 +16,15 @@ namespace ubv.microservices
         [SerializeField] private HTTPClient m_HTTPClient;
         [SerializeField] string m_userEndpoint;
         public delegate void OnGetInfo(UserInfo info);
-        
-        private OnGetInfo m_onGetInfoCallback;
+
+        private bool m_readyForNextRequest;
+        private Queue<UserInfoRequest> m_userRequests;
+
+        private class UserInfoRequest
+        {
+            public string ID;
+            public OnGetInfo Callback;
+        }
         
         private struct JSONUserInfoResponse
         {
@@ -42,6 +50,24 @@ namespace ubv.microservices
             }
         }
 
+        private void Awake()
+        {
+            m_readyForNextRequest = true;
+            m_userRequests = new Queue<UserInfoRequest>();
+        }
+
+        private void Update()
+        {
+            if (m_readyForNextRequest)
+            {
+                if (m_userRequests.Count > 0)
+                {
+                    UserInfoRequest request = m_userRequests.Peek();
+                    SendUserInfoRequest(request.ID);
+                }
+            }
+        }
+
         public void SendUserInfoRequest(string id, OnGetInfo onGetInfo)
         {
             if (m_mock)
@@ -57,8 +83,21 @@ namespace ubv.microservices
 #if DEBUG_LOG
             Debug.Log("Requesting user info from " + id);
 #endif // DEBUG_LOG
+
+            m_userRequests.Enqueue(new UserInfoRequest() { ID = id, Callback = onGetInfo });
+            
+            if (!m_readyForNextRequest)
+            {
+                return;
+            }
+
+            m_readyForNextRequest = false;
+            SendUserInfoRequest(id);
+        }
+
+        private void SendUserInfoRequest(string id)
+        {
             m_HTTPClient.SetEndpoint(m_userEndpoint);
-            m_onGetInfoCallback = onGetInfo;
             m_HTTPClient.Get("users/" + id, OnUserResponse);
         }
 
@@ -72,8 +111,8 @@ namespace ubv.microservices
                 string JSON = message.Content.ReadAsStringAsync().Result;
                 JSONUserInfoResponse userInfoResponse = JsonUtility.FromJson<JSONUserInfoResponse>(JSON);
                 UserInfo userInfo = new UserInfo(userInfoResponse.id, userInfoResponse.username, userInfoResponse.email, userInfoResponse.dateofbirth); 
-                m_onGetInfoCallback.Invoke(userInfo);
-                m_onGetInfoCallback = null;
+                m_userRequests.Dequeue().Callback.Invoke(userInfo);
+                m_readyForNextRequest = true;
             }
             else
             {
