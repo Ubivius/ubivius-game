@@ -17,7 +17,7 @@ namespace ubv.http
     {
         static private readonly HttpClient m_client = new HttpClient();
 
-        [SerializeField] private string m_endPoint = "http://localhost:9090";
+        private string m_endPoint = "http://localhost:9090";
         
         public delegate void HttpResponseMessageDelegate(HttpResponseMessage response);
 

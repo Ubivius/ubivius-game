@@ -15,20 +15,19 @@ namespace ubv.common.world.cellType
             CELL_DOOR,
             CELL_BUTTON,
             CELL_FLOOR,
+            CELL_PLAYERSPAWN,
             CELL_NONE
         }
 
         private serialization.types.Byte m_cellType;
-        private serialization.types.Int32 m_cellID;
         private serialization.types.ByteArray m_logicCellBytes;
 
         public CellInfo() : base()
         {
             m_cellType = new serialization.types.Byte((byte)CellType.CELL_NONE);
-            m_cellID = new serialization.types.Int32(0);
             m_logicCellBytes = new serialization.types.ByteArray(new byte[0]);
 
-            InitSerializableMembers(m_cellType, m_cellID, m_logicCellBytes);
+            InitSerializableMembers(m_cellType, m_logicCellBytes);
         }
 
         public CellInfo(LogicCell parentCell)
@@ -36,17 +35,15 @@ namespace ubv.common.world.cellType
             if (parentCell != null)
             {
                 m_cellType = new serialization.types.Byte((byte)parentCell.GetCellType());
-                m_cellID = new serialization.types.Int32(parentCell.GetCellID());
                 m_logicCellBytes = new serialization.types.ByteArray(parentCell.GetBytes());
             }
             else
             {
                 m_cellType = new serialization.types.Byte((byte)CellType.CELL_NONE);
-                m_cellID = new serialization.types.Int32(0);
                 m_logicCellBytes = new serialization.types.ByteArray(new byte[0]);
             }
 
-            InitSerializableMembers(m_cellType, m_cellID, m_logicCellBytes);
+            InitSerializableMembers(m_cellType, m_logicCellBytes);
         }
 
         protected override ID.BYTE_TYPE SerializationID()
@@ -71,12 +68,14 @@ namespace ubv.common.world.cellType
                 case CellType.CELL_BUTTON:
                     cell = CreateFromBytes<DoorButtonCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
+                case CellType.CELL_PLAYERSPAWN:
+                    cell = CreateFromBytes<PlayerSpawnCell>(m_logicCellBytes.Value.ArraySegment());
+                    break;
                 case CellType.CELL_NONE:
                     break;
                 default:
                     break;
             }
-
             return cell;
         }
     }
@@ -87,16 +86,16 @@ namespace ubv.common.world.cellType
         public LogicCellDelegate OnChange;
 
         private serialization.types.Bool m_isWalkable;
-        private int m_cellID;
+        private serialization.types.Int32 m_cellID;
 
         static private int m_cellsCreated = 0;
 
         public LogicCell()
         {
-            m_cellID = ++m_cellsCreated;
+            m_cellID = new serialization.types.Int32(m_cellsCreated++);
             m_isWalkable = new serialization.types.Bool(false);
 
-            InitSerializableMembers(m_isWalkable);
+            InitSerializableMembers(m_cellID, m_isWalkable);
         }
         
         protected override ID.BYTE_TYPE SerializationID()
@@ -106,7 +105,7 @@ namespace ubv.common.world.cellType
 
         public int GetCellID()
         {
-            return m_cellID;
+            return m_cellID.Value;
         }
 
         public abstract CellInfo.CellType GetCellType();

@@ -18,6 +18,7 @@ namespace ubv.common.serialization
             LOGIC_CELL_FLOOR,
             LOGIC_CELL_WALL,
             LOGIC_CELL_INTERACTABLE,
+            LOGIC_CELL_PLAYERSPAWN,
             LOGIC_GRID,
             INT32,
             FLOAT,
@@ -27,7 +28,7 @@ namespace ubv.common.serialization
             VECTOR2INT,
             QUATERNION,
             STRING,
-            LIST_PLAYERSTATE,
+            LIST_STRING,
             HASHMAP_INT_PLAYERSTATE,
             LIST_INPUTFRAME,
             LOGIC_CELL_INFO,
@@ -37,10 +38,12 @@ namespace ubv.common.serialization
             NULL,
             CLIENT_READY_MESSAGE,
             LOGIC_CELL_VOID,
-            CLIENT_LIST_MESSAGE,
+            CHARACTER_LIST_MESSAGE,
             SERVER_STARTS_MESSAGE,
             CLIENT_WORLD_LOADED_MESSAGE,
-            SERVER_SUCCESSFUL_CONNECT_MESSAGE
+            SERVER_SUCCESSFUL_CONNECT_MESSAGE,
+            LOBBY_ENTER_MESSAGE,
+            HASHMAP_INT_STRING
         }
     }
 }

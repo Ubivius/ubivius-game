@@ -12,23 +12,24 @@ namespace ubv.client.logic
 {
     public class ClientSyncLogin : ClientSyncState
     {
+        [SerializeField] private string m_clientMenuScene;
         [SerializeField] private IPEndPoint m_authEndPoint;
 
-        private bool m_readyToGoToLobby;
+        private bool m_readyToGoToMenu;
         
         protected override void StateAwake()
         {
             ClientSyncState.m_loginState = this;
             ClientSyncState.m_currentState = this;
-            m_readyToGoToLobby = false;
+            m_readyToGoToMenu = false;
         }
 
         protected override void StateUpdate()
         {
-            if (m_readyToGoToLobby)
+            if (m_readyToGoToMenu)
             {
-                m_readyToGoToLobby = false;
-                GoToLobby();
+                m_readyToGoToMenu = false;
+                GoToMenu();
             }
         }
 
@@ -42,21 +43,21 @@ namespace ubv.client.logic
             m_authenticationService.SendLoginRequest(user, pass, OnLogin);
         }
 
-        private void GoToLobby()
+        private void GoToMenu()
         {
 #if DEBUG_LOG
-            Debug.Log("Going to lobby.");
+            Debug.Log("Going to menu.");
 #endif // DEBUG_LOG
-            AsyncOperation loadLobby = SceneManager.LoadSceneAsync("ClientLobby");
+            AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_clientMenuScene);
             // animation petit cercle de load to lobby
         }
 
-        private void OnLogin(int? playerID)
+        private void OnLogin(string playerIDString)
         {
-            if (playerID != null)
+            if (playerIDString != null)
             {
-                m_playerID = playerID;
-                m_readyToGoToLobby = true;
+                PlayerID = playerIDString.GetHashCode();
+                m_userService.SendUserInfoRequest(playerIDString, OnGetUserInfo);
             }
             else
             {
@@ -64,6 +65,12 @@ namespace ubv.client.logic
                 Debug.Log("Login failed. Maybe wrong credentials ?");
 #endif // DEBUG_LOG
             }
+        }
+
+        private void OnGetUserInfo(microservices.UserService.UserInfo info)
+        {
+            UserInfo = info;
+            m_readyToGoToMenu = true;
         }
     }   
 }

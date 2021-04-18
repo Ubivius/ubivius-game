@@ -20,7 +20,6 @@ namespace ubv.tcp.server
         protected readonly object m_lock = new object();
 
         [SerializeField] int m_port = 9051;
-        [SerializeField] int m_connectionTimeoutInMS;
         [SerializeField] int m_maxConcurrentListeners = 12;
                 
         private TcpListener m_tcpListener;
@@ -41,10 +40,13 @@ namespace ubv.tcp.server
 
         private List<ITCPServerReceiver> m_receivers;
 
-        [SerializeField] private int m_connectionCheckRate = 61;
-        [SerializeField] private int m_connectionKeepAliveRate = 33;
+        [SerializeField] int m_connectionTimeoutInMS;
+        [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 250;
+
+        private float m_connectionCheckTimer;
+        private float m_connectionKeepAliveTimer;
+
         private byte[] m_keepAlivePacketBytes;
-        private int m_fixedFrameCount;
 
         private ManualResetEvent m_requestToSendEvent;
 
@@ -69,8 +71,10 @@ namespace ubv.tcp.server
             m_keepAlivePacketBytes = new byte[0];
 
             m_tcpListener = new TcpListener(localEndPoint);
-            m_fixedFrameCount = 0;
             m_requestToSendEvent = new ManualResetEvent(false);
+
+            m_connectionCheckTimer = 0;
+            m_connectionKeepAliveTimer = 0;
         }
 
         private void Start()
@@ -92,7 +96,16 @@ namespace ubv.tcp.server
                     });
 
                     m_tcpClientTasks.Add(awaiterTask);
-                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                    try
+                    {
+                        Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                    }
+                    catch (AggregateException ex)
+                    {
+#if DEBUG_LOG
+                        Debug.Log(ex.Message);
+#endif // DEBUG_LOG
+                    }
                 }
 
                 int removeAtIndex = Task.WaitAny(m_tcpClientTasks.ToArray(), m_connectionTimeoutInMS);
@@ -104,7 +117,16 @@ namespace ubv.tcp.server
                     m_tcpClientTasks.RemoveAt(removeAtIndex);
                 }
 
-                Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                try
+                {
+                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                }
+                catch (AggregateException ex)
+                {
+#if DEBUG_LOG
+                    Debug.Log(ex.Message);
+#endif // DEBUG_LOG
+                }
             }
         }
 
@@ -118,12 +140,13 @@ namespace ubv.tcp.server
                     m_endpointLastTimeSeen[ep] += Time.deltaTime;
                 }
             }
-        }
 
-        private void FixedUpdate()
-        {
-            if (m_fixedFrameCount % m_connectionCheckRate == 0)
+            m_connectionKeepAliveTimer += Time.deltaTime;
+            m_connectionCheckTimer += Time.deltaTime;
+
+            if (m_connectionCheckTimer > m_connectionTimeoutInMS / 1000f)
             {
+                m_connectionCheckTimer = 0;
                 foreach (IPEndPoint ep in m_clientConnections.Keys)
                 {
                     if (m_activeEndpoints[ep])
@@ -131,22 +154,28 @@ namespace ubv.tcp.server
                         lock (m_lock)
                         {
                             m_activeEndpoints[ep] = CheckConnection(ep);
+#if DEBUG_LOG
+                            if (!m_activeEndpoints[ep])
+                                Debug.Log("Endpoint became inactive.");
+#endif // DEBUG_LOG
                         }
                     }
                 }
             }
 
-            if (m_fixedFrameCount % m_connectionKeepAliveRate == 0)
+            if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS / 1000f)
             {
-                foreach (int id in m_clientEndpoints.Keys)
+                lock (m_lock)
                 {
-                    Send(m_keepAlivePacketBytes, id);
+                    m_connectionKeepAliveTimer = 0;
+                    foreach (int id in m_clientEndpoints.Keys)
+                    {
+                        Send(m_keepAlivePacketBytes, id);
+                    }
                 }
             }
-
-            ++m_fixedFrameCount;
         }
-
+        
         private void OnDestroy()
         {
             m_exitSignal = true;
@@ -251,6 +280,7 @@ namespace ubv.tcp.server
             int totalPacketBytes = 0;
 
             bool readyToReadPacket = true;
+            stream.ReadTimeout = m_connectionTimeoutInMS;
 
             while (!m_exitSignal && m_activeEndpoints[source] && bufferOffset >= 0)
             {
@@ -276,6 +306,10 @@ namespace ubv.tcp.server
                 if (bytesRead > 0)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
+                    lock (m_lock)
+                    {
+                        m_endpointLastTimeSeen[source] = 0;
+                    }
                     while (packet != null && totalPacketBytes < bytesRead)
                     {
                         int playerID = packet.PlayerID;
@@ -294,10 +328,7 @@ namespace ubv.tcp.server
                         readyToReadPacket = true;
                         lastPacketEnd = packet.RawBytes.Length;
                         totalPacketBytes += lastPacketEnd;
-                        lock (m_lock)
-                        {
-                            m_endpointLastTimeSeen[source] = 0;
-                        }
+                        
                         // broadcast reception to listeners
                         if (packet.Data.Length > 0) // if it's not a keep-alive packet
                         {
@@ -323,11 +354,13 @@ namespace ubv.tcp.server
 
                 try
                 {
-                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+                    Task.Delay(50, new CancellationToken(m_exitSignal || !m_activeEndpoints[source])).Wait();
                 }
-                catch (TaskCanceledException)
+                catch (AggregateException ex)
                 {
-                    break;
+#if DEBUG_LOG
+                    Debug.Log(ex.Message);
+#endif // DEBUG_LOG
                 }
             }
         }
@@ -344,7 +377,7 @@ namespace ubv.tcp.server
             
             while (!m_exitSignal && m_activeEndpoints[source])
             {
-                m_requestToSendEvent.WaitOne();
+                m_requestToSendEvent.WaitOne(m_connectionTimeoutInMS);
                 m_requestToSendEvent.Reset();
                 // write to stream (send to client)lock (m_lock)
                 lock (m_lock)

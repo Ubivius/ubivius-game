@@ -13,8 +13,8 @@ namespace ubv.client.logic
     {
         [SerializeField] private PlayerSettings m_playerSettings;
 
-        private Dictionary<int, Rigidbody2D> m_bodies;
-        private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
+        public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
+        public Dictionary<int, common.gameplay.PlayerController> PlayerControllers { get; private set; }
         private Rigidbody2D m_localPlayerBody;
 
         private int m_playerGUID;
@@ -23,29 +23,29 @@ namespace ubv.client.logic
         
         public override void Init(List<PlayerState> playerStates, int localID)
         {
-            m_bodies = new Dictionary<int, Rigidbody2D>();
+            Bodies = new Dictionary<int, Rigidbody2D>();
             m_goalStates = new Dictionary<int, PlayerState>();
-            m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
+            PlayerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             int id = 0;
             foreach(PlayerState state in playerStates)
             {
                 id = state.GUID.Value;
                 GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
-                m_bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
-                m_bodies[id].name = "Client player " + id.ToString();
+                Bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
+                Bodies[id].name = "Client player " + id.ToString();
 
-                m_playerControllers[id] = playerGameObject.GetComponent<common.gameplay.PlayerController>();
+                PlayerControllers[id] = playerGameObject.GetComponent<common.gameplay.PlayerController>();
 
                 if (id != localID)
                 {
-                    m_bodies[id].bodyType = RigidbodyType2D.Kinematic;
+                    Bodies[id].bodyType = RigidbodyType2D.Kinematic;
                 }
                 
                 m_goalStates[id] = state;
             }
 
             m_playerGUID = localID;
-            m_localPlayerBody = m_bodies[localID];
+            m_localPlayerBody = Bodies[localID];
         }
 
         public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
@@ -66,11 +66,11 @@ namespace ubv.client.logic
         {
             foreach (PlayerState player in state.Players().Values)
             {
-                player.Position.Value = m_bodies[player.GUID.Value].position;
-                player.Rotation.Value = m_bodies[player.GUID.Value].rotation;
+                player.Position.Value = Bodies[player.GUID.Value].position;
+                player.Rotation.Value = Bodies[player.GUID.Value].rotation;
             }
             
-            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, m_playerControllers[state.PlayerGUID].GetStats(), input, deltaTime);
+            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[state.PlayerGUID].GetStats(), input, deltaTime);
         }
 
         public override void UpdateFromState(ClientState state)
@@ -83,8 +83,8 @@ namespace ubv.client.logic
                 }
                 else
                 {
-                    m_bodies[player.GUID.Value].position = player.Position.Value;
-                    m_bodies[player.GUID.Value].rotation = player.Rotation.Value;
+                    Bodies[player.GUID.Value].position = player.Position.Value;
+                    Bodies[player.GUID.Value].rotation = player.Rotation.Value;
                 }
             }
         }
@@ -95,13 +95,13 @@ namespace ubv.client.logic
             {
                 if (player.GUID.Value != m_playerGUID)
                 {
-                    m_bodies[player.GUID.Value].position = Vector2.LerpUnclamped(m_bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, 0.25f);
-                    if((m_bodies[player.GUID.Value].position - m_goalStates[player.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
+                    Bodies[player.GUID.Value].position = Vector2.LerpUnclamped(Bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, 0.25f);
+                    if((Bodies[player.GUID.Value].position - m_goalStates[player.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
                     {
-                        m_bodies[player.GUID.Value].position = m_goalStates[player.GUID.Value].Position.Value;
+                        Bodies[player.GUID.Value].position = m_goalStates[player.GUID.Value].Position.Value;
                     }
 
-                    m_bodies[player.GUID.Value].rotation = player.Rotation.Value;
+                    Bodies[player.GUID.Value].rotation = player.Rotation.Value;
                 }
             }
         }
