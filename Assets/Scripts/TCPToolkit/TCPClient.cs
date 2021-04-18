@@ -15,6 +15,8 @@ namespace ubv.tcp.client
     /// </summary>
     public class TCPClient : MonoBehaviour
     {
+        public bool AutoReconnect;
+
         protected readonly object m_lock = new object();
 
         private string m_serverAddress;
@@ -35,7 +37,11 @@ namespace ubv.tcp.client
 
         private bool m_activeEndpoint;
         [SerializeField] int m_connectionTimeoutInMS = 5000;
-        [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 250;
+        [SerializeField] private float m_connectionKeepAliveIntervalMS = 250;
+        
+        [SerializeField] private float m_reconnectTryIntervalMS = 2000;
+        private float m_reconnectTryTimer;
+
         private float m_endpointLastTimeSeen;
         private byte[] m_keepAlivePacketBytes;
 
@@ -242,7 +248,23 @@ namespace ubv.tcp.client
             }
         }
 
-        private void Update()
+        private void ReconnectCheck()
+        {
+            if (!m_activeEndpoint && AutoReconnect)
+            {
+                m_reconnectTryTimer += Time.deltaTime;
+                if (m_reconnectTryTimer > m_reconnectTryIntervalMS)
+                {
+#if DEBUG_LOG
+                    Debug.Log("Trying to reconnect to server...");
+#endif //DEBUG_LOG
+                    Reconnect();
+                    m_reconnectTryTimer = 0;
+                }
+            }
+        }
+
+        private void ConnectionCheck()
         {
             if (m_activeEndpoint)
             {
@@ -255,18 +277,21 @@ namespace ubv.tcp.client
                     m_connectionCheckTimer = 0;
                     m_activeEndpoint = CheckConnection();
                 }
-                
-                if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS / 1000f && m_activeEndpoint)
+
+                if (m_connectionKeepAliveTimer > m_connectionKeepAliveIntervalMS / 1000f && m_activeEndpoint)
                 {
                     m_connectionKeepAliveTimer = 0;
                     Send(m_keepAlivePacketBytes);
                 }
             }
+        }
 
+        private void UpdateSubscriptions()
+        {
 
             lock (m_lock)
             {
-                if (!m_iteratingTroughReceivers)
+                if (!m_iteratingTroughReceivers && m_activeEndpoint)
                 {
                     if (m_receiversAwaitingSubscription.Count > 0)
                     {
@@ -287,6 +312,13 @@ namespace ubv.tcp.client
                     }
                 }
             }
+        }
+
+        private void Update()
+        {
+            ConnectionCheck();
+            ReconnectCheck();
+            UpdateSubscriptions();
         }
         
         private void SendingThread(object streamObj)

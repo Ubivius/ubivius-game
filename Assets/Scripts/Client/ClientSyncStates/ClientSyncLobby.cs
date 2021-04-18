@@ -138,21 +138,21 @@ namespace ubv.client.logic
             }
         }
 
-        private IEnumerator LeaveLobbyCoroutine()
+        private IEnumerator LeaveLobbyCoroutine(bool leaveServer)
         {
-            m_initState.Init();
-            m_currentState = m_initState;
             m_TCPClient.Unsubscribe(this);
             AsyncOperation loadGame = SceneManager.LoadSceneAsync(m_clientGameSearchScene);
             while (!loadGame.isDone)
             {
                 yield return null;
             }
+            m_initState.Init(leaveServer);
+            m_currentState = m_initState;
         }
 
-        public void LeaveLobby()
+        public void LeaveLobby(bool leaveServer)
         {
-            StartCoroutine(LeaveLobbyCoroutine());
+            StartCoroutine(LeaveLobbyCoroutine(leaveServer));
         }
 
         public void Init(string activeCharacterID)
@@ -185,9 +185,6 @@ namespace ubv.client.logic
         public void OnDisconnect()
         {
             ClientListUpdate.Invoke(new List<CharacterData>());
-            m_initState.Init(false);
-            m_currentState = m_initState;
-            m_TCPClient.Unsubscribe(this);
 #if DEBUG_LOG
             Debug.Log("Lobby : lost connection to game server. Trying to reconnect...");
 #endif // DEBUG_LOG
