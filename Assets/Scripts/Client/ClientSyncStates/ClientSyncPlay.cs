@@ -37,10 +37,7 @@ namespace ubv.client.logic
 
         public bool Initialized { get; private set; }
         private bool ConnectedToServer { get { return m_TCPClient.IsConnected(); } }
-
-        [SerializeField] private float m_reconnectTryDelayMS = 2000;
-        private float m_reconnectTryTimer;
-
+        
         public UnityAction OnInitializationDone;
 
 #if NETWORK_SIMULATE
@@ -55,7 +52,6 @@ namespace ubv.client.logic
         public void Init(int simulationBuffer, List<int> playerIDs, ClientGameInfo gameInfo)
         {
             m_localTick = 0;
-            m_reconnectTryTimer = 0;
             m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
 
@@ -102,7 +98,7 @@ namespace ubv.client.logic
 
         protected override void StateFixedUpdate()
         {
-            if (!Initialized && !ConnectedToServer)
+            if (!ShouldUpdate())
                 return;
 
             uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
@@ -130,20 +126,6 @@ namespace ubv.client.logic
             {
                 m_lastInput = InputController.CurrentFrame();
             }
-            else
-            {
-                // if not connected : try to reconnect every x second with ID message 
-                m_reconnectTryTimer += Time.deltaTime;
-                if(m_reconnectTryTimer > m_reconnectTryDelayMS)
-                {
-#if DEBUG_LOG
-                    Debug.Log("Trying to reconnect to server...");
-#endif //DEBUG_LOG
-                    m_TCPClient.Reconnect();
-                    m_reconnectTryTimer = 0;
-                }
-            }
-
         }
 
         public void RegisterUpdater(ClientStateUpdater updater)
@@ -156,7 +138,7 @@ namespace ubv.client.logic
 
         private void StoreCurrentStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
         {
-            if (!Initialized && !ConnectedToServer)
+            if (!ShouldUpdate())
                 return;
 
             for (int i = 0; i < m_updaters.Count; i++)
@@ -169,7 +151,7 @@ namespace ubv.client.logic
                 
         private List<ClientStateUpdater> UpdatersNeedingCorrection(ClientState localState, ClientState remoteState)
         {
-            if (!Initialized && !ConnectedToServer)
+            if (!ShouldUpdate())
                 return null;
 
             List<ClientStateUpdater> needCorrection = new List<ClientStateUpdater>();
@@ -187,7 +169,7 @@ namespace ubv.client.logic
 
         public void ReceivePacket(UDPToolkit.Packet packet)
         {
-            if (!Initialized && !ConnectedToServer)
+            if (!ShouldUpdate())
                 return;
 
             // TODO remove tick from ClientSTate and add it to custom server state packet?
@@ -225,7 +207,7 @@ namespace ubv.client.logic
 
         private void UpdateInput(uint bufferIndex)
         {
-            if (!Initialized && !ConnectedToServer)
+            if (!ShouldUpdate())
                 return;
 
             if (m_lastInput != null)
@@ -269,9 +251,14 @@ namespace ubv.client.logic
                     
         }
 
+        private bool ShouldUpdate()
+        {
+            return Initialized && ConnectedToServer;
+        }
+
         private void UpdateClientState(uint bufferIndex)
         {
-            if (!Initialized && !ConnectedToServer)
+            if (!ShouldUpdate())
                 return;
             // set current client state to last one then updating it
             StoreCurrentStateAndStep(
@@ -282,7 +269,7 @@ namespace ubv.client.logic
 
         private void ClientCorrection(uint remoteIndex)
         {
-            if (!Initialized)
+            if (!ShouldUpdate())
                 return;
             
             // receive a state from server

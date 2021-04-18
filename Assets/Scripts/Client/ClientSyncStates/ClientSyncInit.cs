@@ -22,16 +22,12 @@ namespace ubv.client.logic
         private bool m_waitingOnUDPResponse;
         private bool m_waitingOnTCPResponse;
 
-        [SerializeField] private float m_reconnectTimerIntervalMS = 3000f;
-        private float m_requestResendTimer;
-
         [SerializeField] private float m_UDPPingTimerIntervalMS = 500f;
         private float m_UPDPingTimer;
         
         private byte[] m_identificationMessageBytes;
 
         private bool m_readyToGoToLobby;
-        private bool m_alreadyInLobby;
         private bool m_loadingLobby;
 
         static private CharacterData m_activeCharacter = null;
@@ -43,7 +39,6 @@ namespace ubv.client.logic
             ClientSyncState.m_initState = this;
             ClientSyncState.m_currentState = this;
             m_cachedServerInfo = null;
-            m_alreadyInLobby = false;
             Init();
         }
 
@@ -56,8 +51,7 @@ namespace ubv.client.logic
             m_connected = false;
             m_waitingOnUDPResponse = false;
             m_waitingOnTCPResponse = false;
-
-            m_requestResendTimer = 0;
+            
             m_identificationMessageBytes = new IdentificationMessage().GetBytes();
             m_TCPClient.SetPlayerID(PlayerID.Value);
             m_UDPClient.Subscribe(this);
@@ -95,19 +89,6 @@ namespace ubv.client.logic
 
         protected override void StateUpdate()
         {
-            if (m_cachedServerInfo != null && !m_connected && !m_waitingOnUDPResponse && !m_waitingOnTCPResponse)
-            {
-                m_requestResendTimer += Time.deltaTime;
-                if(m_requestResendTimer > m_reconnectTimerIntervalMS / 1000f)
-                {
-#if DEBUG_LOG
-                    Debug.Log("Trying to reconnect to server : " + m_cachedServerInfo.Value.server_ip.ToString() + " ...");
-#endif // DEBUG_LOG
-                    m_requestResendTimer = 0;
-                    EstablishConnectionToServer(m_cachedServerInfo.Value);
-                }
-            }
-
             lock (m_lock)
             {
                 if (!m_waitingOnTCPResponse && !m_waitingOnUDPResponse && m_connected && !m_readyToGoToLobby)
@@ -132,15 +113,7 @@ namespace ubv.client.logic
             if (m_readyToGoToLobby)
             {
                 m_readyToGoToLobby = false;
-                if (!m_alreadyInLobby)
-                {
-                    m_alreadyInLobby = true;
-                    GoToLobby();
-                }
-                else if(!m_loadingLobby)
-                {
-                    SetLobbyStateActive();
-                }
+                GoToLobby();
             }
         }
 

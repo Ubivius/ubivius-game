@@ -22,8 +22,6 @@ namespace ubv
                 private float m_currentTime;
                 private float m_lastPacketSentTime;
                 
-                private bool m_connected;
-
                 private Dictionary<uint, float> m_sequencesSendTime;
                 private UDPToolkit.ConnectionData m_connectionData;
                 private UdpClient m_client;
@@ -35,7 +33,6 @@ namespace ubv
                 {
                     m_connectionData = new UDPToolkit.ConnectionData();
                     m_sequencesSendTime = new Dictionary<uint, float>();
-                    m_connected = false;
                     
                     m_lastPacketSentTime = 0;
 
@@ -112,7 +109,6 @@ namespace ubv
                         
                         if (m_connectionData.Receive(packet))
                         {
-                            m_connected = true;
                             Distribute(packet);
                         }
                     }
