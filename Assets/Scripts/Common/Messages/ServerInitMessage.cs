@@ -9,25 +9,25 @@ namespace ubv.common.data
     public class ServerInitMessage : serialization.Serializable
     {
         public serialization.types.Int32 SimulationBuffer { get; protected set; }
-        public CharacterIDList Characters { get; protected set; }
+        public StringHashMap PlayerCharacters { get; protected set; }
         public world.LogicGrid.CellInfo2DArray CellInfo2DArray;
 
         public ServerInitMessage()
         {
             SimulationBuffer = new serialization.types.Int32(0);
-            Characters = new CharacterIDList(null);
+            PlayerCharacters = new StringHashMap(null);
             CellInfo2DArray = new world.LogicGrid.CellInfo2DArray(null);
 
-            InitSerializableMembers(SimulationBuffer, Characters, CellInfo2DArray);
+            InitSerializableMembers(SimulationBuffer, PlayerCharacters, CellInfo2DArray);
         }
 
-        public ServerInitMessage(int simulationBuffer, List<common.serialization.types.String> players, world.cellType.CellInfo[,] array) : base()
+        public ServerInitMessage(int simulationBuffer, Dictionary<int, serialization.types.String> playersCharacters, world.cellType.CellInfo[,] array) : base()
         {
             SimulationBuffer = new serialization.types.Int32(simulationBuffer);
-            Characters = new CharacterIDList(players);
+            PlayerCharacters = new StringHashMap(playersCharacters);
             CellInfo2DArray = new world.LogicGrid.CellInfo2DArray(array);
 
-            InitSerializableMembers(SimulationBuffer, Characters, CellInfo2DArray);
+            InitSerializableMembers(SimulationBuffer, PlayerCharacters, CellInfo2DArray);
         }
                 
         protected override ID.BYTE_TYPE SerializationID()
