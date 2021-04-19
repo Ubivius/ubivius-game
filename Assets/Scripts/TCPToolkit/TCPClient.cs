@@ -100,7 +100,7 @@ namespace ubv.tcp.client
                 m_iteratingTroughReceivers = true;
                 foreach (ITCPClientReceiver receiver in m_receivers)
                 {
-                    receiver.OnSuccessfulConnect();
+                    receiver.OnSuccessfulTCPConnect();
                 }
                 m_iteratingTroughReceivers = false;
 #if DEBUG_LOG

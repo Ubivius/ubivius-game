@@ -312,7 +312,7 @@ namespace ubv.client.logic
             }
         }
 
-        public void OnSuccessfulConnect()
+        public void OnSuccessfulTCPConnect()
         {
 #if DEBUG_LOG
             Debug.Log("Successful connection to server.");

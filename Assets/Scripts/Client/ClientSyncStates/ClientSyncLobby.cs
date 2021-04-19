@@ -9,6 +9,7 @@ using ubv.tcp;
 using UnityEngine.Events;
 using static ubv.microservices.CharacterDataService;
 using static ubv.common.data.CharacterListMessage;
+using ubv.utils;
 
 namespace ubv.client.logic
 {
@@ -19,7 +20,7 @@ namespace ubv.client.logic
         [SerializeField] private string m_clientGameSearchScene;
         [SerializeField] private string m_clientPlayScene;
 
-        private bool m_serverSentSignal;
+        private Flag m_serverSignal;
 
         private int? m_simulationBuffer;
         private Dictionary<int, CharacterData> m_clientCharacters;
@@ -38,7 +39,7 @@ namespace ubv.client.logic
             ClientListUpdate = new ClientListUpdateEvent();
             m_awaitedInitMessage = null;
             ClientSyncState.m_lobbyState = this;
-            m_serverSentSignal = false;
+            m_serverSignal = new Flag();
             LoadPercentage = 0;
             m_clientCharacters = new Dictionary<int, CharacterData>();
         }
@@ -51,11 +52,8 @@ namespace ubv.client.logic
         
         public void SendReadyToServer()
         {
-            if (m_currentState == this)
-            {
-                ClientReadyMessage clientReadyMessage = new ClientReadyMessage();
-                m_TCPClient.Send(clientReadyMessage.GetBytes());
-            }
+            ClientReadyMessage clientReadyMessage = new ClientReadyMessage();
+            m_TCPClient.Send(clientReadyMessage.GetBytes());
         }
         
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
@@ -66,7 +64,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                 Debug.Log("Received server start message.");
 #endif // DEBUG_LOG
-                m_serverSentSignal = true;
+                m_serverSignal.Raise();
                 return;
             }
             
@@ -128,10 +126,9 @@ namespace ubv.client.logic
                 m_awaitedInitMessage = null;
             }
 
-            if (m_serverSentSignal)
+            if (m_serverSignal.Read())
             {
                 m_TCPClient.Unsubscribe(this);
-                m_serverSentSignal = false;
                 OnGameStart?.Invoke();
                 ClientSyncState.m_playState.Init(m_simulationBuffer.Value, m_playerIDs, new ClientGameInfo(m_clientCharacters.Values));
                 m_currentState = ClientSyncState.m_playState;
@@ -190,7 +187,7 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
         }
 
-        public void OnSuccessfulConnect()
+        public void OnSuccessfulTCPConnect()
         {
 
         }

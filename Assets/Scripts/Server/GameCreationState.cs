@@ -7,6 +7,7 @@ using ubv.tcp;
 using ubv.common.data;
 using ubv.common.serialization;
 using ubv.common;
+using ubv.utils;
 
 namespace ubv.server.logic
 {
@@ -28,13 +29,13 @@ namespace ubv.server.logic
         [SerializeField] private List<ServerInitializer> m_serverInitializers;
         
         // Flags
-        private bool m_readyToStartGame;
+        private Flag m_readyToStartGame;
 
         protected override void StateAwake()
         {
             ServerState.m_gameCreationState = this;
             m_currentState = this;
-            m_readyToStartGame = false;
+            m_readyToStartGame = new Flag();
         }
 
         protected override void StateStart()
@@ -76,6 +77,7 @@ namespace ubv.server.logic
             {
                 if (EveryoneIsReady())
                 {
+                    m_readyClients.Clear();
                     m_UDPServer.Unsubscribe(this);
 
                     common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
@@ -92,13 +94,13 @@ namespace ubv.server.logic
                 
                 if (EveryoneHasWorld())
                 {
-                    m_readyToStartGame = true;
+                    m_readyToStartGame.Raise();
                 }
             }
                     
-            if (m_readyToStartGame)
+            if (m_readyToStartGame.Read())
             {
-                m_readyToStartGame = false;
+                m_worldLoadedClients.Clear();
                 ServerStartsMessage message = new ServerStartsMessage();
 
                 Debug.Log("Starting game.");
@@ -157,9 +159,10 @@ namespace ubv.server.logic
             ClientWorldLoadedMessage clientWorldLoaded = IConvertible.CreateFromBytes<ClientWorldLoadedMessage>(packet.Data.ArraySegment());
             if (clientWorldLoaded != null)
             {
+                Debug.Log("Client " + playerID + " has loaded its world.");
                 m_worldLoadedClients.Add(playerID);
+                return;
             }
-            
         }
 
         public void OnConnect(int playerID)
@@ -174,9 +177,6 @@ namespace ubv.server.logic
 #if DEBUG_LOG
                 Debug.Log("Received TCP connection request from player (ID  " + playerID + ")");
 #endif // DEBUG_LOG
-
-                ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
-                m_TCPServer.Send(serverSuccessPing.GetBytes(), playerID);
             }
         }
 
@@ -185,6 +185,8 @@ namespace ubv.server.logic
             lock (m_lock)
             {
                 m_clientCharacters.Remove(playerID);
+                m_readyClients.Remove(playerID);
+                m_worldLoadedClients.Remove(playerID);
             }
         }
 
