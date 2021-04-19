@@ -28,17 +28,5 @@ namespace ubv.client
             PlayerMovement.Execute(ref m_body, m_player.GetStats(), InputController.CurrentFrame(), Time.fixedDeltaTime);
             m_physics.Simulate(Time.fixedDeltaTime);
         }
-
-        public float GetSpeed() {
-            return m_body.velocity.magnitude;
-        }
-
-        public float GetOrientationX() {
-            return m_body.velocity.x;
-        }
-
-        public float GetOrientationY() {
-            return m_body.velocity.y;
-        }
     }
 }
