@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ubv.client.logic;
 using UnityEngine;
 
 namespace ubv
@@ -9,7 +10,15 @@ namespace ubv
         public class CameraController : MonoBehaviour
         {
             // Manages the movement of the main camera
-            [SerializeField] private Transform m_playerTransform;
+            private Transform m_playerTransform;
+            [SerializeField] private PlayerGameObjectUpdater m_playerUpdater;
+
+            private void Awake()
+            {
+                m_playerUpdater.OnInitialized += () => {
+                    m_playerTransform = m_playerUpdater.GetLocalPlayerTransform();
+                };
+            }
 
             // Start is called before the first frame update
             void Start()

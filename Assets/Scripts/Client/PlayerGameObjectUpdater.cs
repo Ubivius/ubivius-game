@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using System.Collections;
-using ubv.common.data;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ubv.common;
+using ubv.common.data;
+using UnityEngine;
+using UnityEngine.Events;
 
 namespace ubv.client.logic
 {
@@ -20,6 +20,8 @@ namespace ubv.client.logic
         private int m_playerGUID;
 
         private Dictionary<int, PlayerState> m_goalStates;
+
+        public UnityAction OnInitialized;
         
         public override void Init(List<PlayerState> playerStates, int localID)
         {
@@ -46,6 +48,7 @@ namespace ubv.client.logic
 
             m_playerGUID = localID;
             m_localPlayerBody = Bodies[localID];
+            OnInitialized?.Invoke();
         }
 
         public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
@@ -104,6 +107,11 @@ namespace ubv.client.logic
                     Bodies[player.GUID.Value].rotation = player.Rotation.Value;
                 }
             }
+        }
+
+        public Transform GetLocalPlayerTransform()
+        {
+            return m_localPlayerBody.transform;
         }
     }
 }
