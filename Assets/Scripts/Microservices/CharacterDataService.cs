@@ -9,6 +9,9 @@ namespace ubv.microservices
 {
     public class CharacterDataService : MonoBehaviour
     {
+        [SerializeField] private string m_mockCharacterID;
+        [SerializeField] private string m_mockCharacterName;
+        [SerializeField] private string m_mockCharacterPlayerID;
         public delegate void OnGetCharacters(CharacterData[] characters);
         public delegate void OnGetSingle(CharacterData character);
 
@@ -91,7 +94,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("Mocking char-data.");
 #endif // DEBUG_LOG
-                CharacterData character = new CharacterData("mock-murphy", "mock-murphy-id-1234", "murphy-id-123");
+                CharacterData character = new CharacterData(m_mockCharacterName, m_mockCharacterID, m_mockCharacterPlayerID);
                 onGetCharacter(character);
                 return;
             }
