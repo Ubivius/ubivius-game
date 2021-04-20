@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using System;
 
 namespace ubv.utils
 {
@@ -31,6 +31,11 @@ namespace ubv.utils
         public void Raise()
         {
             m_value = true;
+        }
+
+        public void Reset()
+        {
+            m_value = false;
         }
     }
 }

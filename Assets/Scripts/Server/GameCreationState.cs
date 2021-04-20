@@ -181,6 +181,11 @@ namespace ubv.server.logic
 
         public void OnDisconnect(int playerID)
         {
+            RemovePlayerFromLobby(playerID);
+        }
+
+        private void RemovePlayerFromLobby(int playerID)
+        {
             lock (m_lock)
             {
                 m_clientCharacters.Remove(playerID);

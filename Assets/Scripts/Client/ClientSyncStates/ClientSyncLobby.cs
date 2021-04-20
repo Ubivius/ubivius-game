@@ -32,15 +32,17 @@ namespace ubv.client.logic
         public UnityAction OnStartLoadWorld;
         public UnityAction OnGameStart;
 
+        private string m_cachedActiveCharacterID;
+
         public float LoadPercentage { get; private set; }
         
         protected override void StateAwake()
         {
             ClientListUpdate = new ClientListUpdateEvent();
-            m_awaitedInitMessage = null;
             ClientSyncState.m_lobbyState = this;
             m_serverSignal = new Flag();
             LoadPercentage = 0;
+            m_cachedActiveCharacterID = null;
             m_clientCharacters = new Dictionary<int, CharacterData>();
         }
 
@@ -128,11 +130,16 @@ namespace ubv.client.logic
 
             if (m_serverSignal.Read())
             {
-                m_TCPClient.Unsubscribe(this);
-                OnGameStart?.Invoke();
-                ClientSyncState.m_playState.Init(m_simulationBuffer.Value, m_playerIDs, new ClientGameInfo(m_clientCharacters.Values));
-                m_currentState = ClientSyncState.m_playState;
+                GoToGame();
             }
+        }
+
+        private void GoToGame()
+        {
+            m_TCPClient.Unsubscribe(this);
+            OnGameStart?.Invoke();
+            ClientSyncState.m_playState.Init(m_simulationBuffer.Value, m_playerIDs, new ClientGameInfo(m_clientCharacters.Values));
+            m_currentState = ClientSyncState.m_playState;
         }
 
         private IEnumerator LeaveLobbyCoroutine(bool leaveServer)
@@ -154,8 +161,11 @@ namespace ubv.client.logic
 
         public void Init(string activeCharacterID)
         {
+            m_cachedActiveCharacterID = activeCharacterID;
+            m_awaitedInitMessage = null;
+            m_clientCharacters?.Clear();
             m_TCPClient.Subscribe(this);
-            m_TCPClient.Send(new OnLobbyEnteredMessage(activeCharacterID).GetBytes());
+            OnSuccessfulTCPConnect();
         }
         
         private IEnumerator LoadWorldCoroutine(common.world.cellType.CellInfo[,] cellInfos)
@@ -181,7 +191,6 @@ namespace ubv.client.logic
 
         public void OnDisconnect()
         {
-            ClientListUpdate.Invoke(new List<CharacterData>());
 #if DEBUG_LOG
             Debug.Log("Lobby : lost connection to game server. Trying to reconnect...");
 #endif // DEBUG_LOG
@@ -189,7 +198,17 @@ namespace ubv.client.logic
 
         public void OnSuccessfulTCPConnect()
         {
-
+            if (m_cachedActiveCharacterID != null)
+            {
+#if DEBUG_LOG
+                Debug.Log("Connected to game server.");
+#endif // DEBUG_LOG
+                m_TCPClient.Send(new OnLobbyEnteredMessage(m_cachedActiveCharacterID).GetBytes());
+            }
+            else
+            {
+                Debug.LogError("No active character on reconnect. Aborting.");
+            }
         }
     }   
 }

@@ -36,7 +36,6 @@ namespace ubv.client.logic
             m_loadingLobby = false;
             ClientSyncState.m_initState = this;
             ClientSyncState.m_currentState = this;
-            m_cachedServerInfo = null;
             Init();
         }
 
@@ -173,6 +172,8 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Disconnected from server");
 #endif // DEBUG_LOG
+
+            m_readyToGoToLobby.Reset();
         }
 
         public void OnSuccessfulTCPConnect()
@@ -180,8 +181,9 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Successful TCP connection to server. Sending UDP identification message with ID " + PlayerID.Value);
 #endif // DEBUG_LOG
-
+            
             m_UDPClient.Subscribe(this);
+            m_readyToGoToLobby.Reset();
             m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_udp_ip, m_cachedServerInfo.Value.udp_port);
             m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
         }
@@ -200,7 +202,6 @@ namespace ubv.client.logic
         }
 
         public void ReceivePacket(TCPToolkit.Packet packet)
-        {
-        }
+        { }
     }   
 }
