@@ -24,7 +24,7 @@ namespace ubv.tcp.server
                 
         private TcpListener m_tcpListener;
 
-        protected bool m_exitSignal;
+        protected volatile bool m_exitSignal;
 
         private const int DATA_BUFFER_SIZE = 1024*1024*4;
                 
@@ -35,8 +35,9 @@ namespace ubv.tcp.server
 
         private Dictionary<IPEndPoint, TcpClient> m_clientConnections;
         private Dictionary<IPEndPoint, Queue<byte[]>> m_dataToSend;
-        private Dictionary<IPEndPoint, bool> m_activeEndpoints;
-        private Dictionary<IPEndPoint, float> m_endpointLastTimeSeen;
+        private volatile Dictionary<IPEndPoint, bool> m_activeEndpoints;
+        private volatile Dictionary<IPEndPoint, bool> m_endpointsDoingNetIO;
+        private volatile Dictionary<IPEndPoint, float> m_endpointLastTimeSeen;
 
         private List<ITCPServerReceiver> m_receivers;
 
@@ -52,6 +53,7 @@ namespace ubv.tcp.server
 
         private void Awake()
         {
+            m_endpointsDoingNetIO = new Dictionary<IPEndPoint, bool>();
             m_receivers = new List<ITCPServerReceiver>();
             m_clientConnections = new Dictionary<IPEndPoint, TcpClient>();
             m_dataToSend = new Dictionary<IPEndPoint, Queue<byte[]>>();
@@ -141,7 +143,13 @@ namespace ubv.tcp.server
                 }
             }
 
-            m_connectionKeepAliveTimer += Time.deltaTime;
+            ConnectionsCheck();
+
+            ConnectionsKeepAlive();
+        }
+
+        private void ConnectionsCheck()
+        {
             m_connectionCheckTimer += Time.deltaTime;
 
             if (m_connectionCheckTimer > m_connectionTimeoutInMS / 1000f)
@@ -153,16 +161,25 @@ namespace ubv.tcp.server
                     {
                         lock (m_lock)
                         {
-                            m_activeEndpoints[ep] = CheckConnection(ep);
+                            if (!m_endpointsDoingNetIO[ep])
+                            {
+                                m_activeEndpoints[ep] = CheckConnection(ep);
 #if DEBUG_LOG
-                            if (!m_activeEndpoints[ep])
-                                Debug.Log("Endpoint became inactive.");
+                                if (!m_activeEndpoints[ep])
+                                {
+                                    Debug.Log("Endpoint became inactive.");
+                                }
 #endif // DEBUG_LOG
+                            }
                         }
                     }
                 }
             }
+        }
 
+        private void ConnectionsKeepAlive()
+        {
+            m_connectionKeepAliveTimer += Time.deltaTime;
             if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS / 1000f)
             {
                 lock (m_lock)
@@ -191,6 +208,7 @@ namespace ubv.tcp.server
                 IPEndPoint ep = (IPEndPoint)(connection.Client.RemoteEndPoint);
                 m_clientConnections[ep] = connection;
                 m_activeEndpoints[ep] = true;
+                m_endpointsDoingNetIO[ep] = false;
                 lock (m_lock)
                 {
                     m_endpointLastTimeSeen[ep] = 0;
@@ -203,6 +221,7 @@ namespace ubv.tcp.server
                     stream.Close();
                 }
                 m_activeEndpoints[ep] = false;
+                m_endpointsDoingNetIO[ep] = false;
 
                 RemoveClient(m_clientIDs[ep]);
 
@@ -291,6 +310,11 @@ namespace ubv.tcp.server
                     readyToReadPacket = false;
                 }
 
+                lock (m_lock)
+                {
+                    m_endpointsDoingNetIO[source] = true;
+                }
+
                 // read from stream until we read a full packet
                 try
                 {
@@ -299,8 +323,17 @@ namespace ubv.tcp.server
                 catch (IOException ex)
                 {
                     Debug.Log(ex.Message);
-                    m_activeEndpoints[source] = false;
+                    lock (m_lock)
+                    {
+                        m_endpointsDoingNetIO[source] = false;
+                        m_activeEndpoints[source] = false;
+                    }
                     return;
+                }
+
+                lock (m_lock)
+                {
+                    m_endpointsDoingNetIO[source] = false;
                 }
 
                 if (bytesRead > 0)
@@ -384,6 +417,7 @@ namespace ubv.tcp.server
                 {
                     while (m_dataToSend[source].Count > 0)
                     {
+                        m_endpointsDoingNetIO[source] = true;
                         byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend[source].Dequeue(), m_clientIDs[source]).RawBytes;
                         try
                         {
@@ -395,6 +429,7 @@ namespace ubv.tcp.server
                             m_activeEndpoints[source] = false;
                             return;
                         }
+                        m_endpointsDoingNetIO[source] = false;
                     }
                 }
             }
