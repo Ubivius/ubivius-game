@@ -22,7 +22,7 @@ namespace ubv.tcp.client
         private string m_serverAddress;
         private int m_serverPort;
 
-        protected bool m_exitSignal;
+        protected volatile bool m_exitSignal;
 
         private TcpClient m_client;
         private IPEndPoint m_server;
@@ -35,7 +35,8 @@ namespace ubv.tcp.client
         private const int DATA_BUFFER_SIZE = 1024*1024*4;
         private Queue<byte[]> m_dataToSend;
 
-        private bool m_activeEndpoint;
+        private volatile bool m_activeEndpoint;
+        private volatile bool m_currentlyDoingNetIO;
         [SerializeField] int m_connectionTimeoutInMS = 5000;
         [SerializeField] private float m_connectionKeepAliveIntervalMS = 250;
         
@@ -54,6 +55,7 @@ namespace ubv.tcp.client
 
         private void Awake()
         {
+            m_currentlyDoingNetIO = false;
             m_receivers = new List<ITCPClientReceiver>();
             m_receiversAwaitingSubscription = new List<ITCPClientReceiver>();
             m_receiversAwaitingUnsubscription = new List<ITCPClientReceiver>();
@@ -164,7 +166,11 @@ namespace ubv.tcp.client
                     totalPacketBytes = 0;
                     readyToReadPacket = false;
                 }
-                
+
+                lock (m_lock)
+                {
+                    m_currentlyDoingNetIO = true;
+                }
                 // read from stream until we read a full packet
                 try
                 {
@@ -173,7 +179,16 @@ namespace ubv.tcp.client
                 catch (IOException ex)
                 {
                     Debug.Log(ex.Message);
+                    lock (m_lock)
+                    {
+                        m_currentlyDoingNetIO = false;
+                    }
                     return;
+                }
+
+                lock (m_lock)
+                {
+                    m_currentlyDoingNetIO = false;
                 }
 
                 if (bytesRead > 0)
@@ -266,29 +281,31 @@ namespace ubv.tcp.client
 
         private void ConnectionCheck()
         {
-            if (m_activeEndpoint)
+            if (m_activeEndpoint && !m_currentlyDoingNetIO)
             {
                 m_endpointLastTimeSeen += Time.deltaTime;
                 m_connectionCheckTimer += Time.deltaTime;
-                m_connectionKeepAliveTimer += Time.deltaTime;
 
                 if (m_connectionCheckTimer > m_connectionTimeoutInMS / 1000f)
                 {
                     m_connectionCheckTimer = 0;
                     m_activeEndpoint = CheckConnection();
                 }
+            }
+        }
 
-                if (m_connectionKeepAliveTimer > m_connectionKeepAliveIntervalMS / 1000f && m_activeEndpoint)
-                {
-                    m_connectionKeepAliveTimer = 0;
-                    Send(m_keepAlivePacketBytes);
-                }
+        private void ConnectionKeepAlive()
+        {
+            m_connectionKeepAliveTimer += Time.deltaTime;
+            if (m_connectionKeepAliveTimer > m_connectionKeepAliveIntervalMS / 1000f && m_activeEndpoint)
+            {
+                m_connectionKeepAliveTimer = 0;
+                Send(m_keepAlivePacketBytes);
             }
         }
 
         private void UpdateSubscriptions()
         {
-
             lock (m_lock)
             {
                 if (!m_iteratingTroughReceivers && m_activeEndpoint)
@@ -317,6 +334,7 @@ namespace ubv.tcp.client
         private void Update()
         {
             ConnectionCheck();
+            ConnectionKeepAlive();
             ReconnectCheck();
             UpdateSubscriptions();
         }
@@ -348,13 +366,16 @@ namespace ubv.tcp.client
                         byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend.Dequeue(), m_playerID.Value).RawBytes;
                         try
                         {
+                            m_currentlyDoingNetIO = true;
                             stream.Write(bytesToWrite, 0, bytesToWrite.Length);
                         }
                         catch (IOException ex)
                         {
                             Debug.Log(ex.Message);
+                            m_currentlyDoingNetIO = false;
                             return;
                         }
+                        m_currentlyDoingNetIO = false;
                     }
                 }
             }
