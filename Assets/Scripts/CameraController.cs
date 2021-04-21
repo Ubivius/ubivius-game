@@ -36,12 +36,15 @@ namespace ubv
 
             private void LateUpdate()
             {
-                Vector3 temp = transform.position;
+                if (m_playerTransform != null)
+                {
+                    Vector3 temp = transform.position;
 
-                temp.x = m_playerTransform.position.x;
-                temp.y = m_playerTransform.position.y;
+                    temp.x = m_playerTransform.position.x;
+                    temp.y = m_playerTransform.position.y;
 
-                transform.position = temp;
+                    transform.position = temp;
+                }
             }
         }
     }
