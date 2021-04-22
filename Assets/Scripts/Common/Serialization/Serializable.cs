@@ -636,25 +636,26 @@ namespace ubv.common.serialization
                 {
                     bytes[i] = itemCountBytes[i];
                 }
-
-                int header = itemCountBytes.Length;
-                int index = 0;
+                
+                int index = itemCountBytes.Length;
                 foreach (int key in m_value.Keys)
                 {
                     T obj = m_value[key];
                     byte[] keyBytes = System.BitConverter.GetBytes(key);
                     byte[] objBytes = obj.GetBytes();
-
+                    
                     for (int b = 0; b < keyBytes.Length; b++)
                     {
-                        bytes[header + (index * (objBytes.Length + keyBytes.Length)) + b] = keyBytes[b];
+                        bytes[index + b] = keyBytes[b];
                     }
+
+                    index += keyBytes.Length;
 
                     for (int b = 0; b < objBytes.Length; b++)
                     {
-                        bytes[header + keyBytes.Length + (index * (objBytes.Length + keyBytes.Length)) + b] = objBytes[b];
+                        bytes[index + b] = objBytes[b];
                     }
-                    ++index;
+                    index += objBytes.Length;
                 }
                 return bytes;
             }
