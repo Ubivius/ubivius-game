@@ -109,7 +109,7 @@ namespace ubv.microservices
             else
             {
 #if DEBUG_LOG
-                Debug.Log("Authentication login request was not successful");
+                Debug.Log("Authentication login request was not successful : " + message.ReasonPhrase );
 #endif // DEBUG_LOG
             }
         }
