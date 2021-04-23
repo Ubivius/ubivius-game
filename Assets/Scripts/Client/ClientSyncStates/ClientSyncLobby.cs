@@ -186,13 +186,13 @@ namespace ubv.client.logic
                 LoadPercentage = 0.25f + (worldRebuilder.GetWorldBuildProgress() * 0.75f);
                 yield return null;
             }
-            
         }
 
         public void OnDisconnect()
         {
+            ClientListUpdate.Invoke(new List<CharacterData>());
 #if DEBUG_LOG
-            Debug.Log("Lobby : lost connection to game server. Trying to reconnect...");
+            Debug.Log("Lobby : lost connection to game server.");
 #endif // DEBUG_LOG
         }
 
@@ -207,7 +207,7 @@ namespace ubv.client.logic
             }
             else
             {
-                Debug.LogError("No active character on reconnect. Aborting.");
+                Debug.LogError("No active character on connect. Aborting.");
             }
         }
     }   
