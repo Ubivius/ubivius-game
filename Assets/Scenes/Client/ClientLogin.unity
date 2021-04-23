@@ -1788,6 +1788,11 @@ PrefabInstance:
       objectReference: {fileID: 1425392626}
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
+      propertyPath: AutoReconnect
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
       propertyPath: m_serverAddress
       value: 192.168.0.141
       objectReference: {fileID: 0}
