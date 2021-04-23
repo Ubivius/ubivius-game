@@ -40,7 +40,11 @@ namespace ubv.tcp.server
         private List<ITCPServerReceiver> m_receivers;
 
         [SerializeField] int m_connectionTimeoutInMS;
-        
+
+        [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 1000;
+        private float m_connectionKeepAliveTimer;
+        private byte[] m_keepAlivePacketBytes;
+
         private ManualResetEvent m_requestToSendEvent;
 
         private void Awake()
@@ -55,6 +59,9 @@ namespace ubv.tcp.server
             
             m_exitSignal = false;
             m_tcpClientTasks = new List<Task>();
+
+            m_keepAlivePacketBytes = new byte[0];
+            m_connectionKeepAliveTimer = 0;
 
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, m_port);
 #if DEBUG_LOG
@@ -117,7 +124,28 @@ namespace ubv.tcp.server
                 }
             }
         }
-        
+
+        private void Update()
+        {
+            ConnectionsKeepAlive();
+        }
+
+        private void ConnectionsKeepAlive()
+        {
+            m_connectionKeepAliveTimer += Time.deltaTime;
+            if (m_connectionKeepAliveTimer * 1000 > m_coonnectionKeepAliveTimerIntervalMS)
+            {
+                lock (m_lock)
+                {
+                    m_connectionKeepAliveTimer = 0;
+                    foreach (int id in m_clientEndpoints.Keys)
+                    {
+                        Send(m_keepAlivePacketBytes, id);
+                    }
+                }
+            }
+        }
+
         private void OnDestroy()
         {
             m_exitSignal = true;

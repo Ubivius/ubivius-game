@@ -41,6 +41,10 @@ namespace ubv.tcp.client
         [SerializeField] private float m_reconnectTryIntervalMS = 2000;
         private float m_reconnectTryTimer;
         
+        [SerializeField] private float m_connectionKeepAliveIntervalMS = 250;
+        private byte[] m_keepAlivePacketBytes;
+        private float m_connectionKeepAliveTimer;
+
         private int? m_playerID;
 
         private ManualResetEvent m_requestToSendEvent;
@@ -55,8 +59,11 @@ namespace ubv.tcp.client
             m_activeEndpoint = false;
 
             m_iteratingTroughReceivers = false;
-            
+
             m_requestToSendEvent = new ManualResetEvent(false);
+
+            m_keepAlivePacketBytes = new byte[0];
+            m_connectionKeepAliveTimer = 0;
         }
         
         public void SetPlayerID(int playerID)
@@ -236,7 +243,7 @@ namespace ubv.tcp.client
             if (!m_activeEndpoint && AutoReconnect)
             {
                 m_reconnectTryTimer += Time.deltaTime;
-                if (m_reconnectTryTimer > m_reconnectTryIntervalMS)
+                if (m_reconnectTryTimer * 1000 > m_reconnectTryIntervalMS)
                 {
 #if DEBUG_LOG
                     Debug.Log("Trying to reconnect to server...");
@@ -279,7 +286,17 @@ namespace ubv.tcp.client
             ReconnectCheck();
             UpdateSubscriptions();
         }
-        
+
+        private void ConnectionKeepAlive()
+        {
+            m_connectionKeepAliveTimer += Time.deltaTime;
+            if (m_connectionKeepAliveTimer > m_connectionKeepAliveIntervalMS / 1000f && m_activeEndpoint)
+            {
+                m_connectionKeepAliveTimer = 0;
+                Send(m_keepAlivePacketBytes);
+            }
+        }
+
         private void SendingThread(object streamObj)
         {
             NetworkStream stream = (NetworkStream)streamObj;
