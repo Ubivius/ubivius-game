@@ -107,7 +107,6 @@ namespace ubv.microservices
 #endif // DEBUG_LOG
 
                 m_serverInfoRequests.Dequeue().Callback.Invoke(serverInfo);
-                m_readyForNextRequest = true;
             }
             else
             {
@@ -115,6 +114,7 @@ namespace ubv.microservices
                 Debug.Log("Dispatcher request was not successful");
 #endif // DEBUG_LOG
             }
+            m_readyForNextRequest = true;
         }
     }
 }
