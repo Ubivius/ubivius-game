@@ -36,29 +36,19 @@ namespace ubv.tcp.server
         private Dictionary<IPEndPoint, TcpClient> m_clientConnections;
         private Dictionary<IPEndPoint, Queue<byte[]>> m_dataToSend;
         private volatile Dictionary<IPEndPoint, bool> m_activeEndpoints;
-        private volatile Dictionary<IPEndPoint, bool> m_endpointsDoingNetIO;
-        private volatile Dictionary<IPEndPoint, float> m_endpointLastTimeSeen;
 
         private List<ITCPServerReceiver> m_receivers;
 
         [SerializeField] int m_connectionTimeoutInMS;
-        [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 250;
-
-        private float m_connectionCheckTimer;
-        private float m_connectionKeepAliveTimer;
-
-        private byte[] m_keepAlivePacketBytes;
-
+        
         private ManualResetEvent m_requestToSendEvent;
 
         private void Awake()
         {
-            m_endpointsDoingNetIO = new Dictionary<IPEndPoint, bool>();
             m_receivers = new List<ITCPServerReceiver>();
             m_clientConnections = new Dictionary<IPEndPoint, TcpClient>();
             m_dataToSend = new Dictionary<IPEndPoint, Queue<byte[]>>();
             m_activeEndpoints = new Dictionary<IPEndPoint, bool>();
-            m_endpointLastTimeSeen = new Dictionary<IPEndPoint, float>();
 
             m_clientIDs = new Dictionary<IPEndPoint, int>();
             m_clientEndpoints = new Dictionary<int, IPEndPoint>();
@@ -70,13 +60,9 @@ namespace ubv.tcp.server
 #if DEBUG_LOG
             Debug.Log("Launching TCP server at " + localEndPoint.ToString());
 #endif // DEBUG_LOG
-            m_keepAlivePacketBytes = new byte[0];
 
             m_tcpListener = new TcpListener(localEndPoint);
             m_requestToSendEvent = new ManualResetEvent(false);
-
-            m_connectionCheckTimer = 0;
-            m_connectionKeepAliveTimer = 0;
         }
 
         private void Start()
@@ -131,67 +117,6 @@ namespace ubv.tcp.server
                 }
             }
         }
-
-        private void Update()
-        {
-            lock (m_lock)
-            {
-                List<IPEndPoint> keys = new List<IPEndPoint>(m_endpointLastTimeSeen.Keys);
-                foreach (IPEndPoint ep in keys)
-                {
-                    m_endpointLastTimeSeen[ep] += Time.deltaTime;
-                }
-            }
-
-            ConnectionsCheck();
-
-            ConnectionsKeepAlive();
-        }
-
-        private void ConnectionsCheck()
-        {
-            m_connectionCheckTimer += Time.deltaTime;
-
-            if (m_connectionCheckTimer > m_connectionTimeoutInMS / 1000f)
-            {
-                m_connectionCheckTimer = 0;
-                foreach (IPEndPoint ep in m_clientConnections.Keys)
-                {
-                    if (m_activeEndpoints[ep])
-                    {
-                        lock (m_lock)
-                        {
-                            if (!m_endpointsDoingNetIO[ep])
-                            {
-                                m_activeEndpoints[ep] = CheckConnection(ep);
-#if DEBUG_LOG
-                                if (!m_activeEndpoints[ep])
-                                {
-                                    Debug.Log("Endpoint became inactive.");
-                                }
-#endif // DEBUG_LOG
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void ConnectionsKeepAlive()
-        {
-            m_connectionKeepAliveTimer += Time.deltaTime;
-            if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS / 1000f)
-            {
-                lock (m_lock)
-                {
-                    m_connectionKeepAliveTimer = 0;
-                    foreach (int id in m_clientEndpoints.Keys)
-                    {
-                        Send(m_keepAlivePacketBytes, id);
-                    }
-                }
-            }
-        }
         
         private void OnDestroy()
         {
@@ -208,11 +133,6 @@ namespace ubv.tcp.server
                 IPEndPoint ep = (IPEndPoint)(connection.Client.RemoteEndPoint);
                 m_clientConnections[ep] = connection;
                 m_activeEndpoints[ep] = true;
-                m_endpointsDoingNetIO[ep] = false;
-                lock (m_lock)
-                {
-                    m_endpointLastTimeSeen[ep] = 0;
-                }
                 m_dataToSend[ep] = new Queue<byte[]>();
 
                 using (NetworkStream stream = connection.GetStream())
@@ -221,7 +141,6 @@ namespace ubv.tcp.server
                     stream.Close();
                 }
                 m_activeEndpoints[ep] = false;
-                m_endpointsDoingNetIO[ep] = false;
 
                 RemoveClient(m_clientIDs[ep]);
 
@@ -309,12 +228,7 @@ namespace ubv.tcp.server
                     totalPacketBytes = 0;
                     readyToReadPacket = false;
                 }
-
-                lock (m_lock)
-                {
-                    m_endpointsDoingNetIO[source] = true;
-                }
-
+                
                 // read from stream until we read a full packet
                 try
                 {
@@ -325,24 +239,14 @@ namespace ubv.tcp.server
                     Debug.Log(ex.Message);
                     lock (m_lock)
                     {
-                        m_endpointsDoingNetIO[source] = false;
                         m_activeEndpoints[source] = false;
                     }
                     return;
                 }
-
-                lock (m_lock)
-                {
-                    m_endpointsDoingNetIO[source] = false;
-                }
-
+                
                 if (bytesRead > 0)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
-                    lock (m_lock)
-                    {
-                        m_endpointLastTimeSeen[source] = 0;
-                    }
                     while (packet != null && totalPacketBytes < bytesRead)
                     {
                         int playerID = packet.PlayerID;
@@ -417,7 +321,6 @@ namespace ubv.tcp.server
                 {
                     while (m_dataToSend[source].Count > 0)
                     {
-                        m_endpointsDoingNetIO[source] = true;
                         byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend[source].Dequeue(), m_clientIDs[source]).RawBytes;
                         try
                         {
@@ -426,20 +329,17 @@ namespace ubv.tcp.server
                         catch (IOException ex)
                         {
                             Debug.Log(ex.Message);
-                            m_activeEndpoints[source] = false;
+                            lock (m_lock)
+                            {
+                                m_activeEndpoints[source] = false;
+                            }
                             return;
                         }
-                        m_endpointsDoingNetIO[source] = false;
                     }
                 }
             }
         }
-
-        private bool CheckConnection(IPEndPoint endpoint)
-        {
-            return (m_endpointLastTimeSeen[endpoint] * 1000 < m_connectionTimeoutInMS) ;
-        }
-
+        
         public void Send(byte[] bytes, int playerID)
         {
             m_requestToSendEvent.Set();
