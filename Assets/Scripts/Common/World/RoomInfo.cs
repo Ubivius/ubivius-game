@@ -14,7 +14,10 @@ namespace ubv.common.world
         [SerializeField] private Tilemap m_interactable;
         [SerializeField] private Tilemap m_finalDoor;
         [SerializeField] private Tilemap m_sectionDoorButton;
-        [SerializeField] private Tilemap m_sectionButton;
+        [SerializeField] private Tilemap m_sectionButton_NorthEast;
+        [SerializeField] private Tilemap m_sectionButton_SouthEast;
+        [SerializeField] private Tilemap m_sectionButton_SouthWest;
+        [SerializeField] private Tilemap m_sectionButton_NorthWest;
         [SerializeField] private Tilemap m_finalButton;
         [SerializeField] private Tilemap m_playerSpawnZone;
 
@@ -27,14 +30,6 @@ namespace ubv.common.world
         public int Height { get => m_height; private set => m_height = value; }
         public int Width { get => m_width; private set => m_width = value; }
         public LogicGrid LogicGrid { get => m_logicGrid; private set => m_logicGrid = value; }
-
-        private List<cellType.Section> m_listSection = new List<cellType.Section>() 
-        { 
-            cellType.Section.NorthEast, 
-            cellType.Section.NorthWest, 
-            cellType.Section.SouthEast, 
-            cellType.Section.SouthWest 
-        }; 
 
         private void Awake()
         {
@@ -55,6 +50,11 @@ namespace ubv.common.world
 
             FinalDoorManagement();
             FinalButtonManagement();
+            SectionDoorButtonManagement();
+            SectionButton_NorthEast_Management();
+            SectionButton_SouthEast_Management();
+            SectionButton_SouthWest_Management();
+            SectionButton_NorthWest_Management();
         }
         private void RoomManagement()
         {
@@ -171,7 +171,7 @@ namespace ubv.common.world
             }
         }
 
-        private void SectionDoorButtonManagement() // m_listSection //  Random.Range(0, dir.Count - 1); // dir.RemoveAt(select);
+        private void SectionDoorButtonManagement()
         {
             if (m_sectionDoorButton)
             {
@@ -186,9 +186,7 @@ namespace ubv.common.world
                         {
                             if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
                             {
-                                int select = Random.Range(0, m_listSection.Count - 1);
-                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(m_listSection[select]);
-                                m_listSection.RemoveAt(select);
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionDoorButtonCell();
                             }
                         }
                     }
@@ -196,24 +194,91 @@ namespace ubv.common.world
             }
         }
 
-        private void SectionButtonManagement()
+        private void SectionButton_NorthEast_Management()
         {
-            if (m_sectionButton)
+            if (m_sectionButton_NorthEast)
             {
-                m_sectionButton.CompressBounds();
-                Vector3Int originOffset = m_sectionButton.origin - m_roomOrigin;
+                m_sectionButton_NorthEast.CompressBounds();
+                Vector3Int originOffset = m_sectionButton_NorthEast.origin - m_roomOrigin;
                 Vector3Int iterateur = new Vector3Int();
-                for (iterateur.x = originOffset.x; iterateur.x < m_sectionButton.cellBounds.size.x + originOffset.x; iterateur.x++)
+                for (iterateur.x = originOffset.x; iterateur.x < m_sectionButton_NorthEast.cellBounds.size.x + originOffset.x; iterateur.x++)
                 {
-                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionButton.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionButton_NorthEast.cellBounds.size.y + originOffset.y; iterateur.y++)
                     {
-                        if (m_sectionButton.HasTile(iterateur))
+                        if (m_sectionButton_NorthEast.HasTile(iterateur))
                         {
                             if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
                             {
-                                int select = Random.Range(0, m_listSection.Count - 1);
-                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(m_listSection[select]);
-                                m_listSection.RemoveAt(select);
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(cellType.Section.NorthEast);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SectionButton_SouthEast_Management()
+        {
+            if (m_sectionButton_SouthEast)
+            {
+                m_sectionButton_SouthEast.CompressBounds();
+                Vector3Int originOffset = m_sectionButton_SouthEast.origin - m_roomOrigin;
+                Vector3Int iterateur = new Vector3Int();
+                for (iterateur.x = originOffset.x; iterateur.x < m_sectionButton_SouthEast.cellBounds.size.x + originOffset.x; iterateur.x++)
+                {
+                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionButton_SouthEast.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    {
+                        if (m_sectionButton_SouthEast.HasTile(iterateur))
+                        {
+                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
+                            {
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(cellType.Section.SouthEast);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SectionButton_SouthWest_Management()
+        {
+            if (m_sectionButton_SouthWest)
+            {
+                m_sectionButton_SouthWest.CompressBounds();
+                Vector3Int originOffset = m_sectionButton_SouthWest.origin - m_roomOrigin;
+                Vector3Int iterateur = new Vector3Int();
+                for (iterateur.x = originOffset.x; iterateur.x < m_sectionButton_SouthWest.cellBounds.size.x + originOffset.x; iterateur.x++)
+                {
+                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionButton_SouthWest.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    {
+                        if (m_sectionButton_SouthWest.HasTile(iterateur))
+                        {
+                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
+                            {
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(cellType.Section.SouthWest);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SectionButton_NorthWest_Management()
+        {
+            if (m_sectionButton_NorthWest)
+            {
+                m_sectionButton_NorthWest.CompressBounds();
+                Vector3Int originOffset = m_sectionButton_NorthWest.origin - m_roomOrigin;
+                Vector3Int iterateur = new Vector3Int();
+                for (iterateur.x = originOffset.x; iterateur.x < m_sectionButton_NorthWest.cellBounds.size.x + originOffset.x; iterateur.x++)
+                {
+                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionButton_NorthWest.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    {
+                        if (m_sectionButton_NorthWest.HasTile(iterateur))
+                        {
+                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
+                            {
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(cellType.Section.NorthWest);
                             }
                         }
                     }
