@@ -18,8 +18,6 @@ namespace ubv.tcp.client
         public bool AutoReconnect;
 
         protected readonly object m_lock = new object();
-        protected readonly object m_netIOlock = new object();
-        protected readonly object m_endPointTimeLock = new object();
 
         private string m_serverAddress;
         private int m_serverPort;
@@ -38,7 +36,6 @@ namespace ubv.tcp.client
         private Queue<byte[]> m_dataToSend;
 
         private volatile bool m_activeEndpoint;
-        private volatile bool m_currentlyDoingNetIO;
         [SerializeField] int m_connectionTimeoutInMS = 5000;
         
         [SerializeField] private float m_reconnectTryIntervalMS = 2000;
@@ -50,7 +47,6 @@ namespace ubv.tcp.client
 
         private void Awake()
         {
-            m_currentlyDoingNetIO = false;
             m_receivers = new List<ITCPClientReceiver>();
             m_receiversAwaitingSubscription = new List<ITCPClientReceiver>();
             m_receiversAwaitingUnsubscription = new List<ITCPClientReceiver>();
