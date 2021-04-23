@@ -1170,7 +1170,7 @@ PrefabInstance:
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_connectionTimeoutInMS
-      value: 5000
+      value: 10000
       objectReference: {fileID: 0}
     - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
