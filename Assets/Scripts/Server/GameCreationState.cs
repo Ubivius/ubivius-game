@@ -181,6 +181,9 @@ namespace ubv.server.logic
 
         public void OnDisconnect(int playerID)
         {
+#if DEBUG_LOG
+            Debug.Log("Player (ID  " + playerID + ") disconnected.");
+#endif // DEBUG_LOG
             RemovePlayerFromLobby(playerID);
             BroadcastPlayerList();
         }
