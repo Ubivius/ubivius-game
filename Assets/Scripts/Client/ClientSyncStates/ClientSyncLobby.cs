@@ -70,11 +70,12 @@ namespace ubv.client.logic
                 return;
             }
             
-            // loads other players in lobby, receives message from server indicating a new player joined
+            // loads other players in lobby, receives message from server indicating a new player joined / left
             CharacterListMessage clientList = common.serialization.IConvertible.CreateFromBytes<CharacterListMessage>(packet.Data.ArraySegment());
             if (clientList != null)
             {
                 Debug.Log("Received " + clientList.PlayerCharacters.Value.Count + " characters from server");
+                m_clientCharacters.Clear(); // clear old list
                 foreach (common.serialization.types.String id in clientList.PlayerCharacters.Value.Values)
                 {
                     Debug.Log("Fetching character " + id.Value + " from microservice");
