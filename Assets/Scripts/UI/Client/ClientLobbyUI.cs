@@ -62,6 +62,21 @@ namespace ubv.ui.client
                         m_playerTextsObjects[playerIntID].text = character.Name + "(" + m_users[playerIntID].UserName + ")";
                     }
                 }
+
+                List<int> toRemove = new List<int>();
+                foreach(int id in m_playerTextsObjects.Keys)
+                {
+                    if (!m_users.ContainsKey(id))
+                    {
+                        Destroy(m_playerTextsObjects[id].gameObject);
+                        toRemove.Add(id);
+                    }
+                }
+
+                foreach(int id in toRemove)
+                {
+                    m_playerTextsObjects.Remove(id);
+                }
             }
 
             if (m_loadingScreen.isActiveAndEnabled)
@@ -73,12 +88,29 @@ namespace ubv.ui.client
         private void UpdatePlayers(List<CharacterData> characters)
         {
             m_characters = characters;
+            List<int> playerIntIDs = new List<int>();
             foreach(CharacterData character in m_characters)
             {
-                if (!m_users.ContainsKey(character.PlayerID.GetHashCode()))
+                int playerIntID = character.PlayerID.GetHashCode();
+                playerIntIDs.Add(playerIntID);
+                if (!m_users.ContainsKey(playerIntID))
                 {
                     m_userService.SendUserInfoRequest(character.PlayerID, OnGetUserInfo);
                 }
+            }
+
+            List<int> toRemove = new List<int>();
+            foreach (int id in m_users.Keys)
+            {
+                if (!playerIntIDs.Contains(id))
+                {
+                    toRemove.Add(id);
+                }
+            }
+
+            foreach (int id in toRemove)
+            {
+                m_users.Remove(id);
             }
         }
 

@@ -157,7 +157,7 @@ namespace ubv.client.logic
             }
 
             m_loadingLobby = false;
-
+            m_TCPClient.Unsubscribe(this);
             SetLobbyStateActive();
         }
 
