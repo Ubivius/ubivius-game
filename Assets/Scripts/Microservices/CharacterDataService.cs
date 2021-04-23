@@ -162,7 +162,6 @@ namespace ubv.microservices
                 }
                 
                 m_onGetCharactersRequests.Dequeue().Callback.Invoke(characters);
-                m_readyForNextCharactersRequest = true;
             }
             else
             {
@@ -170,6 +169,7 @@ namespace ubv.microservices
                 Debug.Log("Character data request was not successful");
 #endif // DEBUG_LOG
             }
+            m_readyForNextCharactersRequest = true;
         }
 
         private void OnCharacterDataResponse(HttpResponseMessage message)
@@ -183,7 +183,6 @@ namespace ubv.microservices
 
                 Debug.Log("Calling callback on " + m_onGetSingleRequests.Peek().CharacterID);
                 m_onGetSingleRequests.Dequeue().Callback.Invoke(character);
-                m_readyForNextSingleRequest = true;
             }
             else
             {
@@ -191,6 +190,7 @@ namespace ubv.microservices
                 Debug.Log("Character data request was not successful");
 #endif // DEBUG_LOG
             }
+            m_readyForNextSingleRequest = true;
         }
     }
 }

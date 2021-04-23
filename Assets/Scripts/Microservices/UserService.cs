@@ -112,7 +112,6 @@ namespace ubv.microservices
                 JSONUserInfoResponse userInfoResponse = JsonUtility.FromJson<JSONUserInfoResponse>(JSON);
                 UserInfo userInfo = new UserInfo(userInfoResponse.id, userInfoResponse.username, userInfoResponse.email, userInfoResponse.dateofbirth); 
                 m_userRequests.Dequeue().Callback.Invoke(userInfo);
-                m_readyForNextRequest = true;
             }
             else
             {
@@ -120,6 +119,7 @@ namespace ubv.microservices
                 Debug.Log("User request was not successful");
 #endif // DEBUG_LOG
             }
+            m_readyForNextRequest = true;
         }
     }
 }

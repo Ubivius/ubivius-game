@@ -104,7 +104,6 @@ namespace ubv.microservices
                 m_HTTPClient.SetAuthenticationToken(token);
 
                 m_onLoginCallbacks.Dequeue().Callback.Invoke(authResponse.id);
-                m_readyForNextCall = true;
             }
             else
             {
@@ -112,6 +111,7 @@ namespace ubv.microservices
                 Debug.Log("Authentication login request was not successful : " + message.ReasonPhrase );
 #endif // DEBUG_LOG
             }
+            m_readyForNextCall = true;
         }
     }
 }
