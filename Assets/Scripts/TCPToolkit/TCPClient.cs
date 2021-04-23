@@ -18,6 +18,8 @@ namespace ubv.tcp.client
         public bool AutoReconnect;
 
         protected readonly object m_lock = new object();
+        protected readonly object m_netIOlock = new object();
+        protected readonly object m_endPointTimeLock = new object();
 
         private string m_serverAddress;
         private int m_serverPort;
@@ -38,17 +40,10 @@ namespace ubv.tcp.client
         private volatile bool m_activeEndpoint;
         private volatile bool m_currentlyDoingNetIO;
         [SerializeField] int m_connectionTimeoutInMS = 5000;
-        [SerializeField] private float m_connectionKeepAliveIntervalMS = 250;
         
         [SerializeField] private float m_reconnectTryIntervalMS = 2000;
         private float m_reconnectTryTimer;
-
-        private float m_endpointLastTimeSeen;
-        private byte[] m_keepAlivePacketBytes;
-
-        private float m_connectionCheckTimer;
-        private float m_connectionKeepAliveTimer;
-
+        
         private int? m_playerID;
 
         private ManualResetEvent m_requestToSendEvent;
@@ -62,13 +57,8 @@ namespace ubv.tcp.client
             m_exitSignal = false;
             m_dataToSend = new Queue<byte[]>();
             m_activeEndpoint = false;
-            m_endpointLastTimeSeen = 0;
 
             m_iteratingTroughReceivers = false;
-            m_keepAlivePacketBytes = new byte[0];
-
-            m_connectionCheckTimer = 0;
-            m_connectionKeepAliveTimer = 0;
             
             m_requestToSendEvent = new ManualResetEvent(false);
         }
@@ -115,7 +105,6 @@ namespace ubv.tcp.client
                     HandleConnection(stream);
                     stream.Close();
                 }
-                m_activeEndpoint = false;
 
                 m_iteratingTroughReceivers = true;
                 foreach (ITCPClientReceiver receiver in m_receivers)
@@ -166,11 +155,7 @@ namespace ubv.tcp.client
                     totalPacketBytes = 0;
                     readyToReadPacket = false;
                 }
-
-                lock (m_lock)
-                {
-                    m_currentlyDoingNetIO = true;
-                }
+                
                 // read from stream until we read a full packet
                 try
                 {
@@ -179,26 +164,13 @@ namespace ubv.tcp.client
                 catch (IOException ex)
                 {
                     Debug.Log(ex.Message);
-                    lock (m_lock)
-                    {
-                        m_currentlyDoingNetIO = false;
-                    }
+                    m_activeEndpoint = false;
                     return;
                 }
-
-                lock (m_lock)
-                {
-                    m_currentlyDoingNetIO = false;
-                }
-
+                
                 if (bytesRead > 0)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
-                    lock (m_lock)
-                    {
-                        m_endpointLastTimeSeen = 0;
-                    }
-
                     while (packet != null && totalPacketBytes < bytesRead)
                     {
                         readyToReadPacket = true;
@@ -279,31 +251,6 @@ namespace ubv.tcp.client
             }
         }
 
-        private void ConnectionCheck()
-        {
-            if (m_activeEndpoint && !m_currentlyDoingNetIO)
-            {
-                m_endpointLastTimeSeen += Time.deltaTime;
-                m_connectionCheckTimer += Time.deltaTime;
-
-                if (m_connectionCheckTimer > m_connectionTimeoutInMS / 1000f)
-                {
-                    m_connectionCheckTimer = 0;
-                    m_activeEndpoint = CheckConnection();
-                }
-            }
-        }
-
-        private void ConnectionKeepAlive()
-        {
-            m_connectionKeepAliveTimer += Time.deltaTime;
-            if (m_connectionKeepAliveTimer > m_connectionKeepAliveIntervalMS / 1000f && m_activeEndpoint)
-            {
-                m_connectionKeepAliveTimer = 0;
-                Send(m_keepAlivePacketBytes);
-            }
-        }
-
         private void UpdateSubscriptions()
         {
             lock (m_lock)
@@ -333,8 +280,6 @@ namespace ubv.tcp.client
 
         private void Update()
         {
-            ConnectionCheck();
-            ConnectionKeepAlive();
             ReconnectCheck();
             UpdateSubscriptions();
         }
@@ -366,16 +311,14 @@ namespace ubv.tcp.client
                         byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend.Dequeue(), m_playerID.Value).RawBytes;
                         try
                         {
-                            m_currentlyDoingNetIO = true;
                             stream.Write(bytesToWrite, 0, bytesToWrite.Length);
                         }
                         catch (IOException ex)
                         {
                             Debug.Log(ex.Message);
-                            m_currentlyDoingNetIO = false;
+                            m_activeEndpoint = false;
                             return;
                         }
-                        m_currentlyDoingNetIO = false;
                     }
                 }
             }
@@ -436,10 +379,6 @@ namespace ubv.tcp.client
             thread.Start();
         }
         
-        private bool CheckConnection()
-        {
-            return (m_endpointLastTimeSeen * 1000 < m_connectionTimeoutInMS);
-        }
 
         public bool IsConnected()
         {
