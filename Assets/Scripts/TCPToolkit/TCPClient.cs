@@ -285,6 +285,7 @@ namespace ubv.tcp.client
         {
             ReconnectCheck();
             UpdateSubscriptions();
+            ConnectionKeepAlive();
         }
 
         private void ConnectionKeepAlive()
