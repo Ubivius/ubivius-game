@@ -1220,7 +1220,7 @@ PrefabInstance:
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_characterDataEndpoint
-      value: http://character.dev.ubivius.tk/
+      value: http://character.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -1260,7 +1260,7 @@ PrefabInstance:
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_userEndpoint
-      value: http://user.dev.ubivius.tk/
+      value: http://user.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
