@@ -182,6 +182,7 @@ namespace ubv.server.logic
         public void OnDisconnect(int playerID)
         {
             RemovePlayerFromLobby(playerID);
+            BroadcastPlayerList();
         }
 
         private void RemovePlayerFromLobby(int playerID)
