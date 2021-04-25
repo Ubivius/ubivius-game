@@ -138,6 +138,9 @@ namespace ubv.tcp.server
                 lock (m_lock)
                 {
                     m_connectionKeepAliveTimer = 0;
+#if DEBUG_LOG
+                    Debug.Log("Sending keep alive ping from server.");
+#endif // DEBUG_LOG
                     foreach (int id in m_clientEndpoints.Keys)
                     {
                         Send(m_keepAlivePacketBytes, id);

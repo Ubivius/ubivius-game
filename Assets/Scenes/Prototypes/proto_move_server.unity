@@ -950,7 +950,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_port: 9151
   m_maxConcurrentListeners: 6
-  m_connectionTimeoutInMS: 10000
+  m_connectionTimeoutInMS: 30000
+  m_coonnectionKeepAliveTimerIntervalMS: 1000
 --- !u!1001 &1802319657
 PrefabInstance:
   m_ObjectHideFlags: 0
