@@ -9,6 +9,8 @@ namespace ubv.microservices
 {
     public class UserService : MonoBehaviour
     {
+        protected readonly object m_requestLock = new object();
+
         [SerializeField] private bool m_mock;
         [SerializeField] private string m_forceUserID;
         [SerializeField] private string m_forceUserName;
@@ -58,13 +60,19 @@ namespace ubv.microservices
 
         private void Update()
         {
-            if (m_readyForNextRequest)
+            if (Time.frameCount % 13 == 0)
             {
-                if (m_userRequests.Count > 0)
+                lock (m_requestLock)
                 {
-                    UserInfoRequest request = m_userRequests.Peek();
-                    Debug.Log("Requesting user info from " + request.ID + " from Update Loop");
-                    SendUserInfoRequest(request.ID);
+                    if (m_readyForNextRequest)
+                    {
+                        if (m_userRequests.Count > 0)
+                        {
+                            UserInfoRequest request = m_userRequests.Peek();
+                            Debug.Log("Requesting user info from " + request.ID + " from Update Loop");
+                            SendUserInfoRequest(request.ID);
+                        }
+                    }
                 }
             }
         }
@@ -85,16 +93,19 @@ namespace ubv.microservices
             Debug.Log("Requesting user info from " + id);
 #endif // DEBUG_LOG
 
-            m_userRequests.Enqueue(new UserInfoRequest() { ID = id, Callback = onGetInfo });
-
-            Debug.Log("User requests count : " + m_userRequests.Count);
-            
-            if (!m_readyForNextRequest)
+            lock (m_requestLock)
             {
-                return;
-            }
+                m_userRequests.Enqueue(new UserInfoRequest() { ID = id, Callback = onGetInfo });
 
-            SendUserInfoRequest(id);
+                Debug.Log("User requests count : " + m_userRequests.Count);
+
+                if (!m_readyForNextRequest)
+                {
+                    return;
+                }
+
+                SendUserInfoRequest(id);
+            }
         }
 
         private void SendUserInfoRequest(string id)
