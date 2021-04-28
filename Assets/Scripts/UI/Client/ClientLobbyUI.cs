@@ -55,6 +55,7 @@ namespace ubv.ui.client
                     {
                         if (!m_playerTextsObjects.ContainsKey(playerIntID))
                         {
+                            Debug.Log("Adding character/user id to text list " + character.Name + ", " + character.PlayerID);
                             TextMeshProUGUI playerItem = GameObject.Instantiate(m_defaultPlayerNameItem, m_playerListParent);
                             m_playerTextsObjects[playerIntID] = playerItem;
                         }
@@ -110,12 +111,14 @@ namespace ubv.ui.client
 
             foreach (int id in toRemove)
             {
+                Debug.Log("Removing user id " + id);
                 m_users.Remove(id);
             }
         }
 
         private void OnGetUserInfo(UserService.UserInfo info)
         {
+            Debug.Log("Got user info in UI from " + info.UserName);
             m_users[info.ID.GetHashCode()] = info;
         }
     }
