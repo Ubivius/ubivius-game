@@ -9,6 +9,9 @@ namespace ubv.ui.client
 {
     public class ClientLobbyUI : MonoBehaviour
     {
+        protected readonly object m_UILock = new object();
+        protected readonly object m_userLock = new object();
+
         [SerializeField] private Transform m_playerListParent;
         [SerializeField] private ubv.client.logic.ClientSyncLobby m_lobby;
         [SerializeField] private TextMeshProUGUI m_defaultPlayerNameItem;
@@ -69,6 +72,7 @@ namespace ubv.ui.client
                 {
                     if (!m_users.ContainsKey(id))
                     {
+                        Debug.Log("Removing user from text gameobjects" + id);
                         Destroy(m_playerTextsObjects[id].gameObject);
                         toRemove.Add(id);
                     }
@@ -88,38 +92,44 @@ namespace ubv.ui.client
         
         private void UpdatePlayers(List<CharacterData> characters)
         {
-            m_characters = characters;
-            List<int> playerIntIDs = new List<int>();
-            foreach(CharacterData character in m_characters)
+            lock (m_UILock)
             {
-                int playerIntID = character.PlayerID.GetHashCode();
-                playerIntIDs.Add(playerIntID);
-                if (!m_users.ContainsKey(playerIntID))
+                m_characters = characters;
+                List<int> playerIntIDs = new List<int>();
+                foreach (CharacterData character in m_characters)
                 {
-                    m_userService.SendUserInfoRequest(character.PlayerID, OnGetUserInfo);
+                    int playerIntID = character.PlayerID.GetHashCode();
+                    playerIntIDs.Add(playerIntID);
+                    if (!m_users.ContainsKey(playerIntID))
+                    {
+                        m_userService.SendUserInfoRequest(character.PlayerID, OnGetUserInfo);
+                    }
                 }
-            }
 
-            List<int> toRemove = new List<int>();
-            foreach (int id in m_users.Keys)
-            {
-                if (!playerIntIDs.Contains(id))
+                List<int> toRemove = new List<int>();
+                foreach (int id in m_users.Keys)
                 {
-                    toRemove.Add(id);
+                    if (!playerIntIDs.Contains(id))
+                    {
+                        toRemove.Add(id);
+                    }
                 }
-            }
 
-            foreach (int id in toRemove)
-            {
-                Debug.Log("Removing user id " + id);
-                m_users.Remove(id);
+                foreach (int id in toRemove)
+                {
+                    Debug.Log("Removing user id " + id);
+                    m_users.Remove(id);
+                }
             }
         }
 
         private void OnGetUserInfo(UserService.UserInfo info)
         {
-            Debug.Log("Got user info in UI from " + info.UserName);
-            m_users[info.ID.GetHashCode()] = info;
+            lock (m_userLock)
+            {
+                Debug.Log("Got user info in UI from " + info.UserName);
+                m_users[info.ID.GetHashCode()] = info;
+            }
         }
     }
 }
