@@ -1,6 +1,5 @@
 # ubivius-game
 
-_lAST UPDATED ON APRIL 25, 2021_\\
 
 **Which Unity version should I use ?**\
 Unity 2019.4.25f1
