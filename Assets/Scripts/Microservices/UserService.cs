@@ -115,6 +115,7 @@ namespace ubv.microservices
                 JSONUserInfoResponse userInfoResponse = JsonUtility.FromJson<JSONUserInfoResponse>(JSON);
                 UserInfo userInfo = new UserInfo(userInfoResponse.id, userInfoResponse.username, userInfoResponse.email, userInfoResponse.dateofbirth);
                 Debug.Log("Received user info "  + userInfo­.ID + " (on OnUserResponse in service)");
+                Debug.Log("User request count in response : " + m_userRequests.Count);
                 Debug.Log("Calling callback on " + m_userRequests.Peek().ID);
                 m_userRequests.Dequeue().Callback.Invoke(userInfo);
             }
