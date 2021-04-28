@@ -63,7 +63,7 @@ namespace ubv.microservices
                 if (m_userRequests.Count > 0)
                 {
                     UserInfoRequest request = m_userRequests.Peek();
-                    Debug.Log("Requesting user info from " + request.ID + " (in update loop from user service)");
+                    Debug.Log("Requesting user info from " + request.ID + " from Update Loop");
                     SendUserInfoRequest(request.ID);
                 }
             }
@@ -86,6 +86,8 @@ namespace ubv.microservices
 #endif // DEBUG_LOG
 
             m_userRequests.Enqueue(new UserInfoRequest() { ID = id, Callback = onGetInfo });
+
+            Debug.Log("User requests count : " + m_userRequests.Count);
             
             if (!m_readyForNextRequest)
             {
@@ -112,7 +114,8 @@ namespace ubv.microservices
                 string JSON = message.Content.ReadAsStringAsync().Result;
                 JSONUserInfoResponse userInfoResponse = JsonUtility.FromJson<JSONUserInfoResponse>(JSON);
                 UserInfo userInfo = new UserInfo(userInfoResponse.id, userInfoResponse.username, userInfoResponse.email, userInfoResponse.dateofbirth);
-                Debug.Log("Received user info "  + userInfo­.UserName + " (on OnUserResponse in service)");
+                Debug.Log("Received user info "  + userInfo­.ID + " (on OnUserResponse in service)");
+                Debug.Log("Calling callback on " + m_userRequests.Peek().ID);
                 m_userRequests.Dequeue().Callback.Invoke(userInfo);
             }
             else
