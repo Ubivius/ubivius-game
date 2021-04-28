@@ -94,12 +94,12 @@ namespace ubv.microservices
                 return;
             }
 
-            m_readyForNextRequest = false;
             SendUserInfoRequest(id);
         }
 
         private void SendUserInfoRequest(string id)
         {
+            m_readyForNextRequest = false;
             m_HTTPClient.SetEndpoint(m_userEndpoint);
             m_HTTPClient.Get("users/" + id, OnUserResponse);
         }
