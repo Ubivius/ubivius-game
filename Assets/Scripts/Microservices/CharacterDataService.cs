@@ -9,6 +9,9 @@ namespace ubv.microservices
 {
     public class CharacterDataService : MonoBehaviour
     {
+        protected readonly object m_singleRequestLock = new object();
+        protected readonly object m_multipleRequestLock = new object();
+
         [SerializeField] private string m_mockCharacterID;
         [SerializeField] private string m_mockCharacterName;
         [SerializeField] private string m_mockCharacterPlayerID;
@@ -68,22 +71,34 @@ namespace ubv.microservices
 
         private void Update()
         {
-            if (m_readyForNextSingleRequest)
+            if (Time.frameCount % 17 == 0)
             {
-                if (m_onGetSingleRequests.Count > 0)
+                lock (m_singleRequestLock)
                 {
-                    SingleRequest request = m_onGetSingleRequests.Peek();
-                    Debug.Log("Fetching character " + request.CharacterID + " from Update Loop");
-                    GetCharacter(request.CharacterID);
+                    if (m_readyForNextSingleRequest)
+                    {
+                        if (m_onGetSingleRequests.Count > 0)
+                        {
+                            SingleRequest request = m_onGetSingleRequests.Peek();
+                            Debug.Log("Fetching character " + request.CharacterID + " from Update Loop");
+                            GetCharacter(request.CharacterID);
+                        }
+                    }
                 }
             }
 
-            if (m_readyForNextCharactersRequest)
+            if (Time.frameCount % 11 == 0)
             {
-                if (m_onGetCharactersRequests.Count > 0)
+                lock (m_multipleRequestLock)
                 {
-                    CharactersRequest request = m_onGetCharactersRequests.Peek();
-                    GetCharacters(request.PlayerID);
+                    if (m_readyForNextCharactersRequest)
+                    {
+                        if (m_onGetCharactersRequests.Count > 0)
+                        {
+                            CharactersRequest request = m_onGetCharactersRequests.Peek();
+                            GetCharacters(request.PlayerID);
+                        }
+                    }
                 }
             }
         }
@@ -101,13 +116,17 @@ namespace ubv.microservices
             }
 
             Debug.Log("Fetching character " + characterID + " from character data");
-            m_onGetSingleRequests.Enqueue(new SingleRequest() { CharacterID = characterID, Callback = onGetCharacter });
-            if (!m_readyForNextSingleRequest)
+
+            lock (m_singleRequestLock)
             {
-                return;
+                m_onGetSingleRequests.Enqueue(new SingleRequest() { CharacterID = characterID, Callback = onGetCharacter });
+                if (!m_readyForNextSingleRequest)
+                {
+                    return;
+                }
+
+                GetCharacter(characterID);
             }
-            
-            GetCharacter(characterID);
         }
 
         private void GetCharacter(string characterID)
@@ -139,14 +158,17 @@ namespace ubv.microservices
                 onGetCharacters(characters);
                 return;
             }
-            
-            m_onGetCharactersRequests.Enqueue(new CharactersRequest() { PlayerID = playerID, Callback = onGetCharacters });
-            if (!m_readyForNextCharactersRequest)
-            {
-                return;
-            }
 
-            GetCharacters(playerID);
+            lock (m_multipleRequestLock)
+            {
+                m_onGetCharactersRequests.Enqueue(new CharactersRequest() { PlayerID = playerID, Callback = onGetCharacters });
+                if (!m_readyForNextCharactersRequest)
+                {
+                    return;
+                }
+
+                GetCharacters(playerID);
+            }
         }
         
         private void OnCharactersDataResponse(HttpResponseMessage message)
