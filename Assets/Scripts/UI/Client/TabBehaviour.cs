@@ -14,7 +14,7 @@ namespace ubv.ui.client
             system = EventSystem.current;
         }
 
-        private void Update()
+        protected virtual void Update()
         {
             if (system.currentSelectedGameObject == null || !Input.GetKeyDown(KeyCode.Tab))
                 return;
