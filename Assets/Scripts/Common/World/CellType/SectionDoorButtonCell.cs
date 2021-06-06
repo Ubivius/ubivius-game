@@ -11,9 +11,11 @@ namespace ubv.common.world.cellType
     {
         private List<DoorCell> m_linkedDoor = new List<DoorCell>();
         private IntList m_linkedDoorCellID;
+        private Section m_section;
 
-        public SectionDoorButtonCell()
+        public SectionDoorButtonCell(Section section)
         {
+            m_section = section;
         }
 
         public void SetLinkedDoor(List<DoorCell> linkedDoor)

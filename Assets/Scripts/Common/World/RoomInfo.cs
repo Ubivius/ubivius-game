@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ubv.common.world.cellType;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -8,16 +9,23 @@ namespace ubv.common.world
     public class RoomInfo : MonoBehaviour
     {
         [SerializeField] private string m_name;
+
         [SerializeField] private Tilemap m_floor;
         [SerializeField] private Tilemap m_wall;
         [SerializeField] private Tilemap m_door;
         [SerializeField] private Tilemap m_interactable;
         [SerializeField] private Tilemap m_finalDoor;
-        [SerializeField] private Tilemap m_sectionDoorButton;
+
+        [SerializeField] private Tilemap m_sectionDoorButton_NorthEast;
+        [SerializeField] private Tilemap m_sectionDoorButton_SouthEast;
+        [SerializeField] private Tilemap m_sectionDoorButton_SouthWest;
+        [SerializeField] private Tilemap m_sectionDoorButton_NorthWest;
+
         [SerializeField] private Tilemap m_sectionButton_NorthEast;
         [SerializeField] private Tilemap m_sectionButton_SouthEast;
         [SerializeField] private Tilemap m_sectionButton_SouthWest;
         [SerializeField] private Tilemap m_sectionButton_NorthWest;
+
         [SerializeField] private Tilemap m_finalButton;
         [SerializeField] private Tilemap m_playerSpawnZone;
 
@@ -50,7 +58,10 @@ namespace ubv.common.world
 
             FinalDoorManagement();
             FinalButtonManagement();
-            SectionDoorButtonManagement();
+            SectionDoorButtonManagement(m_sectionDoorButton_NorthEast, Section.NorthEast);
+            SectionDoorButtonManagement(m_sectionDoorButton_SouthEast, Section.SouthEast);
+            SectionDoorButtonManagement(m_sectionDoorButton_SouthWest, Section.SouthWest);
+            SectionDoorButtonManagement(m_sectionDoorButton_NorthWest, Section.NorthWest);
             SectionButton_NorthEast_Management();
             SectionButton_SouthEast_Management();
             SectionButton_SouthWest_Management();
@@ -171,22 +182,22 @@ namespace ubv.common.world
             }
         }
 
-        private void SectionDoorButtonManagement()
+        private void SectionDoorButtonManagement(Tilemap tilemap, Section section)
         {
-            if (m_sectionDoorButton)
+            if (tilemap)
             {
-                m_sectionDoorButton.CompressBounds();
-                Vector3Int originOffset = m_sectionDoorButton.origin - m_roomOrigin;
+                tilemap.CompressBounds();
+                Vector3Int originOffset = tilemap.origin - m_roomOrigin;
                 Vector3Int iterateur = new Vector3Int();
-                for (iterateur.x = originOffset.x; iterateur.x < m_sectionDoorButton.cellBounds.size.x + originOffset.x; iterateur.x++)
+                for (iterateur.x = originOffset.x; iterateur.x < tilemap.cellBounds.size.x + originOffset.x; iterateur.x++)
                 {
-                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionDoorButton.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    for (iterateur.y = originOffset.y; iterateur.y < tilemap.cellBounds.size.y + originOffset.y; iterateur.y++)
                     {
-                        if (m_sectionDoorButton.HasTile(iterateur))
+                        if (tilemap.HasTile(iterateur))
                         {
                             if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
                             {
-                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionDoorButtonCell();
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionDoorButtonCell(section);
                             }
                         }
                     }

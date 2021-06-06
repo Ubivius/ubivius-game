@@ -7,6 +7,14 @@ using ubv.common.serialization;
 
 namespace ubv.common.world.cellType
 {
+    public enum Section
+    {
+        NorthEast,
+        SouthEast,
+        SouthWest,
+        NorthWest
+    }
+
     public class CellInfo : serialization.Serializable
     {
         public enum CellType
@@ -20,7 +28,7 @@ namespace ubv.common.world.cellType
             CELL_SECTIONDOORBUTTON,
             CELL_FINALBUTTON,
             CELL_NONE
-        }
+        }       
 
         private serialization.types.Byte m_cellType;
         private serialization.types.ByteArray m_logicCellBytes;

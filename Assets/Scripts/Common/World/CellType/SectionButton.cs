@@ -7,13 +7,6 @@ using ubv.common.serialization;
 
 namespace ubv.common.world.cellType
 {
-    public enum Section
-    {
-        NorthEast,
-        SouthEast,
-        SouthWest,
-        NorthWest
-    }
     class SectionButton : LogicCell
     {
         private Section m_section;
