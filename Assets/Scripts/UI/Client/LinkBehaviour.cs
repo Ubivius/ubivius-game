@@ -1,34 +1,23 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 
 namespace ubv.ui.client
 {
-    public class LinkBehaviour : MonoBehaviour
+    [RequireComponent(typeof(Button))]
+    public class LinkBehaviour : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
-        [SerializeField] private Button m_link;
-
-        // Use this for initialization
-        void Start()
+        public void OnPointerEnter(PointerEventData eventData)
         {
-
+            this.GetComponentInChildren<TMP_Text>().color = Color.black;
         }
 
-        // Update is called once per frame
-        void Update()
-        {
 
-        }
-
-        public void OnMouseOver()
+        public void OnPointerExit(PointerEventData eventData)
         {
-            m_link.GetComponentInChildren<TMP_Text>().color = Color.black;
-        }
-
-        public void OnMouseExit()
-        {
-            m_link.GetComponentInChildren<TMP_Text>().color = new Color(56f / 255f, 56f / 255f, 56f / 255f);
+            this.GetComponentInChildren<TMP_Text>().color = new Color(56f / 255f, 56f / 255f, 56f / 255f);
         }
     }
 }
