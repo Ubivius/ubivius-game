@@ -16,7 +16,7 @@ namespace ubv.ui.client
 
         protected virtual void Update()
         {
-            if (system.currentSelectedGameObject == null || !Input.GetKeyDown(KeyCode.Tab))
+            if (system?.currentSelectedGameObject == null || !Input.GetKeyDown(KeyCode.Tab))
                 return;
 
             Selectable current = system.currentSelectedGameObject.GetComponent<Selectable>();
