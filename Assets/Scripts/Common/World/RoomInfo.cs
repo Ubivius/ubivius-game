@@ -205,6 +205,7 @@ namespace ubv.common.world
             }
         }
 
+        // Paramètrer sivoupla
         private void SectionButton_NorthEast_Management()
         {
             if (m_sectionButton_NorthEast)

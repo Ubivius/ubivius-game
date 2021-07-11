@@ -13,6 +13,7 @@ namespace ubv.server.logic
     class GameMaster : ServerGameplayStateUpdater
     {
         [SerializeField] private ubv.common.world.WorldGenerator m_world;
+        [SerializeField] private PlayerMovementUpdater m_playerMovementUpdater;
 
         public override void Setup()
         {
@@ -24,6 +25,7 @@ namespace ubv.server.logic
 
         public override void InitPlayer(PlayerState player)
         {
+            m_playerMovementUpdater.SetPlayerPosition(player, GetPlayerSpawnPos());
         }
 
         public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
