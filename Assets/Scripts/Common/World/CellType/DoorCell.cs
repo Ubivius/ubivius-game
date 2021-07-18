@@ -33,7 +33,14 @@ namespace ubv.common.world.cellType
 
             InitSerializableMembers(m_IsClosed, m_doorType);
 
-            IsWalkable = true;
+            if (doorType == DoorType.Standard)
+            {
+                IsWalkable = true;
+            }
+            else
+            {
+                IsWalkable = false;
+            }            
             DoorType = doorType;
         }
 

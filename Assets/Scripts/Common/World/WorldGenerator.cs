@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ubv.common.world.cellType;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Tilemaps;
@@ -161,6 +162,24 @@ namespace ubv.common.world
             Vector2Int pos = m_playerSpawnPos[select];
             m_playerSpawnPos.RemoveAt(select);
             return pos;
+        }
+
+        public List<T> FetchAll<T>() where T : LogicCell
+        {
+            List<T> list = new List<T>();
+            LogicGrid grid = GetMasterLogicGrid();
+            for (int x = 0; x < grid.Width; x++)
+            {
+                for (int y = 0; y < grid.Height; y++)
+                {
+                    if (grid.Grid[x, y] is T)
+                    {
+                        list.Add(grid.Grid[x, y] as T);
+                    }
+                }
+            }
+
+            return list;
         }
 
         public cellType.CellInfo[,] GetCellInfoArray()

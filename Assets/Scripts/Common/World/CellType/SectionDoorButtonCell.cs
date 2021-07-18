@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ubv.common.serialization;
+using UnityEngine.Events;
 
 namespace ubv.common.world.cellType
 {
@@ -12,6 +13,8 @@ namespace ubv.common.world.cellType
         private List<DoorCell> m_linkedDoor = new List<DoorCell>();
         private IntList m_linkedDoorCellID;
         private Section m_section;
+
+        public UnityAction<SectionDoorButtonCell> ButtonPress;
 
         public SectionDoorButtonCell(Section section)
         {
@@ -29,6 +32,11 @@ namespace ubv.common.world.cellType
             m_linkedDoorCellID = new IntList(idList);
         }
 
+        public void OnPress()
+        {
+            ButtonPress(this);
+        }
+
         protected override ID.BYTE_TYPE SerializationID()
         {
             return ID.BYTE_TYPE.LOGIC_CELL_SECTIONDOORBUTTON;
@@ -38,5 +46,7 @@ namespace ubv.common.world.cellType
         {
             return CellInfo.CellType.CELL_SECTIONDOORBUTTON;
         }
+
+        public Section Section { get => m_section; }
     }
 }
