@@ -72,7 +72,7 @@ namespace ubv.server.logic
             }
             if (m_sectionState.UnlockSectionAvailable(cell.Section))
             {
-                // TODO: ouvrir les portes
+                // TODO: ouvrir porte final
             }
         }
 

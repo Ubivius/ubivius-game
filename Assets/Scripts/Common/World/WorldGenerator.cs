@@ -182,6 +182,27 @@ namespace ubv.common.world
             return list;
         }
 
+        public List<DoorCell> FetchDoor(DoorType type)
+        {
+            List<DoorCell> list = new List<DoorCell>();
+            LogicGrid grid = GetMasterLogicGrid();
+            for (int x = 0; x < grid.Width; x++)
+            {
+                for (int y = 0; y < grid.Height; y++)
+                {
+                    if (grid.Grid[x, y] is DoorCell)
+                    {
+                        DoorCell tmp = grid.Grid[x, y] as DoorCell;
+                        if (tmp.DoorType == type)
+                        {
+                            list.Add(tmp);
+                        }                        
+                    }
+                }
+            }
+            return null;
+        }
+
         public cellType.CellInfo[,] GetCellInfoArray()
         {
             return m_masterLogicGrid.GetCellInfo();

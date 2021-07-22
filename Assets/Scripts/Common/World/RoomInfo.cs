@@ -62,10 +62,10 @@ namespace ubv.common.world
             SectionDoorButtonManagement(m_sectionDoorButton_SouthEast, Section.SouthEast);
             SectionDoorButtonManagement(m_sectionDoorButton_SouthWest, Section.SouthWest);
             SectionDoorButtonManagement(m_sectionDoorButton_NorthWest, Section.NorthWest);
-            SectionButton_NorthEast_Management();
-            SectionButton_SouthEast_Management();
-            SectionButton_SouthWest_Management();
-            SectionButton_NorthWest_Management();
+            SectionButtonManagement(m_sectionButton_NorthEast, Section.NorthEast);
+            SectionButtonManagement(m_sectionButton_SouthEast, Section.SouthEast);
+            SectionButtonManagement(m_sectionButton_SouthEast, Section.SouthEast);
+            SectionButtonManagement(m_sectionButton_NorthWest, Section.NorthWest);
         }
         private void RoomManagement()
         {
@@ -206,91 +206,22 @@ namespace ubv.common.world
         }
 
         // Paramètrer sivoupla
-        private void SectionButton_NorthEast_Management()
+        private void SectionButtonManagement(Tilemap tilemap, Section section)
         {
-            if (m_sectionButton_NorthEast)
+            if (tilemap)
             {
-                m_sectionButton_NorthEast.CompressBounds();
-                Vector3Int originOffset = m_sectionButton_NorthEast.origin - m_roomOrigin;
+                tilemap.CompressBounds();
+                Vector3Int originOffset = tilemap.origin - m_roomOrigin;
                 Vector3Int iterateur = new Vector3Int();
-                for (iterateur.x = originOffset.x; iterateur.x < m_sectionButton_NorthEast.cellBounds.size.x + originOffset.x; iterateur.x++)
+                for (iterateur.x = originOffset.x; iterateur.x < tilemap.cellBounds.size.x + originOffset.x; iterateur.x++)
                 {
-                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionButton_NorthEast.cellBounds.size.y + originOffset.y; iterateur.y++)
+                    for (iterateur.y = originOffset.y; iterateur.y < tilemap.cellBounds.size.y + originOffset.y; iterateur.y++)
                     {
-                        if (m_sectionButton_NorthEast.HasTile(iterateur))
+                        if (tilemap.HasTile(iterateur))
                         {
                             if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
                             {
-                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(cellType.Section.NorthEast);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void SectionButton_SouthEast_Management()
-        {
-            if (m_sectionButton_SouthEast)
-            {
-                m_sectionButton_SouthEast.CompressBounds();
-                Vector3Int originOffset = m_sectionButton_SouthEast.origin - m_roomOrigin;
-                Vector3Int iterateur = new Vector3Int();
-                for (iterateur.x = originOffset.x; iterateur.x < m_sectionButton_SouthEast.cellBounds.size.x + originOffset.x; iterateur.x++)
-                {
-                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionButton_SouthEast.cellBounds.size.y + originOffset.y; iterateur.y++)
-                    {
-                        if (m_sectionButton_SouthEast.HasTile(iterateur))
-                        {
-                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
-                            {
-                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(cellType.Section.SouthEast);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void SectionButton_SouthWest_Management()
-        {
-            if (m_sectionButton_SouthWest)
-            {
-                m_sectionButton_SouthWest.CompressBounds();
-                Vector3Int originOffset = m_sectionButton_SouthWest.origin - m_roomOrigin;
-                Vector3Int iterateur = new Vector3Int();
-                for (iterateur.x = originOffset.x; iterateur.x < m_sectionButton_SouthWest.cellBounds.size.x + originOffset.x; iterateur.x++)
-                {
-                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionButton_SouthWest.cellBounds.size.y + originOffset.y; iterateur.y++)
-                    {
-                        if (m_sectionButton_SouthWest.HasTile(iterateur))
-                        {
-                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
-                            {
-                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(cellType.Section.SouthWest);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void SectionButton_NorthWest_Management()
-        {
-            if (m_sectionButton_NorthWest)
-            {
-                m_sectionButton_NorthWest.CompressBounds();
-                Vector3Int originOffset = m_sectionButton_NorthWest.origin - m_roomOrigin;
-                Vector3Int iterateur = new Vector3Int();
-                for (iterateur.x = originOffset.x; iterateur.x < m_sectionButton_NorthWest.cellBounds.size.x + originOffset.x; iterateur.x++)
-                {
-                    for (iterateur.y = originOffset.y; iterateur.y < m_sectionButton_NorthWest.cellBounds.size.y + originOffset.y; iterateur.y++)
-                    {
-                        if (m_sectionButton_NorthWest.HasTile(iterateur))
-                        {
-                            if (LogicGrid.Grid[iterateur.x, iterateur.y] == null)
-                            {
-                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(cellType.Section.NorthWest);
+                                LogicGrid.Grid[iterateur.x, iterateur.y] = new cellType.SectionButton(section);
                             }
                         }
                     }
