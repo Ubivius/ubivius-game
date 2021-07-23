@@ -23,7 +23,7 @@ namespace Assets.Scripts.EnemySystem
         // Use this for initialization
         void Start()
         {
-            m_enemyBehaviorUpdater.OnGenerateEnemy.AddListener(OnPathFindingManagerGenerated);
+            //m_enemyBehaviorUpdater.OnGenerateEnemy.AddListener(OnPathFindingManagerGenerated);
             m_pathfindingGridManager.OnPathFindingManagerGenerated += OnPathFindingManagerGenerated;
         }
 

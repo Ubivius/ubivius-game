@@ -11,6 +11,7 @@ namespace ubv.common.serialization
             INPUT_MESSAGE = 0x01,
             CLIENT_STATE = 0x02,
             PLAYER_STATE, // 0x03...
+            ENEMY_STATE_DATA,
             IDENTIFICATION_MESSAGE,
             SERVER_INIT_MESSAGE,
             LOGIC_CELL,
@@ -34,6 +35,7 @@ namespace ubv.common.serialization
             STRING,
             LIST_PLAYERSTATE,
             HASHMAP_INT_PLAYERSTATE,
+            HASHMAP_INT_ENEMYSTATEDATA,
             LIST_INPUTFRAME,
             LOGIC_CELL_INFO,
             ARRAY2D_CELLINFO,

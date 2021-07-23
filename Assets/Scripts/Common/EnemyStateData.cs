@@ -23,16 +23,18 @@ namespace ubv
                 public serialization.types.Float Rotation;
                 //public ubv.server.logic.ai.EnemyState EnemyState;
 
-                private serialization.types.Byte m_enemyState;
+                public EnemyStateInfo EnemyStateInfo; 
+
+                /*private serialization.types.Byte m_enemyState;
                 private serialization.types.Int32 m_enemyStateID;
-                private serialization.types.ByteArray m_enemyStateBytes;
-                public enum EnemyStateType
+                private serialization.types.ByteArray m_enemyStateBytes;*/
+                /*public enum EnemyStateType
                 {
                     ROAMING,
                     SEARCHING,
                     CHASING,
                     FIGHTING
-                }
+                }*/
 
                 // TODO : not send this via network because not likely to be changed
                 public serialization.types.Int32 GUID;
@@ -42,6 +44,7 @@ namespace ubv
                     Position = new serialization.types.Vector2(Vector2.zero);
                     Rotation = new serialization.types.Float(0);
                     GUID = new serialization.types.Int32(0);
+                    EnemyStateInfo = new EnemyStateInfo();
 
                     InitSerializableMembers(Position, Rotation, GUID);
                 }
@@ -64,7 +67,7 @@ namespace ubv
                     InitSerializableMembers(Position, Rotation, GUID);
                 }
 
-                public EnemyState EnemyStateFromBytes()
+                /*public EnemyState EnemyStateFromBytes()
                 {
                     EnemyState enemyState = null;
                     switch ((EnemyStateType)m_enemyState.Value)
@@ -86,11 +89,11 @@ namespace ubv
                     }
 
                     return enemyState;
-                }
+                }*/
 
                 protected override ID.BYTE_TYPE SerializationID()
                 {
-                    return ID.BYTE_TYPE.PLAYER_STATE;
+                    return ID.BYTE_TYPE.ENEMY_STATE_DATA;
                 }
 
             }
