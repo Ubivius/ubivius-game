@@ -197,10 +197,10 @@ namespace ubv.client.logic
                     // PATCH FOR JITTER (too many phy simulate calls)
                     // TODO: investigate (si le temps le permet)
                     // ClientCorrection()
-                    if(m_localTick > m_remoteTick + (uint)m_simulationBuffer)
+                    /*if(m_localTick > m_remoteTick + (uint)m_simulationBuffer)
                     {
                         m_localTick = m_remoteTick ;
-                    }
+                    }*/
                 }
             }
         }
@@ -225,7 +225,7 @@ namespace ubv.client.logic
             m_lastInput = null;
             
             List<common.data.InputFrame> frames = new List<common.data.InputFrame>();
-            for (uint tick = (uint)Mathf.Max((int)m_remoteTick, (int)m_localTick - (m_simulationBuffer * 2)); tick <= m_localTick; tick++)
+            for (uint tick = m_remoteTick; tick <= m_localTick; tick++)
             {
                 frames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
             }
