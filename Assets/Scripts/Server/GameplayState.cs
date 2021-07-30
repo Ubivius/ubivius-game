@@ -158,9 +158,6 @@ namespace ubv.server.logic
 
                     foreach (int id in m_clientStates.Keys)
                     {
-                        if (!m_connectedClients[id])
-                            continue;
-
                         ClientState client = m_clientStates[id];
                         foreach (ServerGameplayStateUpdater updater in m_updaters)
                         {
