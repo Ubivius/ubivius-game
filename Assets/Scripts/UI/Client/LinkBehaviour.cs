@@ -7,30 +7,25 @@ using TMPro;
 namespace ubv.ui.client
 {
     [RequireComponent(typeof(Button))]
-    public class LinkBehaviour : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
+    public class LinkBehaviour : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
+        TMP_Text m_selectable;
+        [SerializeField] private Color normalColor;
+        [SerializeField] private Color hoverColor;
+
+        private void Awake()
+        {
+            m_selectable = this.GetComponentInChildren<TMP_Text>();
+        }
+
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (!EventSystem.current.alreadySelecting)
-            {
-                EventSystem.current.SetSelectedGameObject(this.gameObject);
-            }
+            m_selectable.color = hoverColor;
         }
-
-        public void OnSelect(BaseEventData eventData)
-        {
-            this.GetComponentInChildren<TMP_Text>().color = Color.black;
-        }
-
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            this.GetComponentInChildren<TMP_Text>().color = new Color(56f / 255f, 56f / 255f, 56f / 255f);
-        }
-
-        public void OnDeselect(BaseEventData eventData)
-        {
-            this.GetComponentInChildren<TMP_Text>().color = new Color(56f / 255f, 56f / 255f, 56f / 255f);
+            m_selectable.color = normalColor;
         }
     }
 }
