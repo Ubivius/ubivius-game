@@ -9,28 +9,33 @@ namespace ubv.ui.client
     [RequireComponent(typeof(Button))]
     public class LinkBehaviour : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
     {
+        TMP_Text m_text;
+        [SerializeField] private Color normalColor;
+        [SerializeField] private Color hoverColor;
+
+        private void Awake()
+        {
+            m_text = this.GetComponentInChildren<TMP_Text>();
+        }
+
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (!EventSystem.current.alreadySelecting)
-            {
-                EventSystem.current.SetSelectedGameObject(this.gameObject);
-            }
+            m_text.color = hoverColor;
         }
 
         public void OnSelect(BaseEventData eventData)
         {
-            this.GetComponentInChildren<TMP_Text>().color = Color.black;
+            m_text.color = hoverColor;
         }
-
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            this.GetComponentInChildren<TMP_Text>().color = new Color(56f / 255f, 56f / 255f, 56f / 255f);
+            m_text.color = normalColor;
         }
 
         public void OnDeselect(BaseEventData eventData)
         {
-            this.GetComponentInChildren<TMP_Text>().color = new Color(56f / 255f, 56f / 255f, 56f / 255f);
+            m_text.color = normalColor;
         }
     }
 }
