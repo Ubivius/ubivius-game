@@ -9,6 +9,17 @@ namespace ubv.ui.client
     [RequireComponent(typeof(Selectable))]
     public class HighlightBehavior : MonoBehaviour, IPointerEnterHandler, IDeselectHandler, ISelectHandler
     {
+        private TMP_Text m_text;
+        private Selectable m_selectable;
+        [SerializeField] Color normalColor;
+        [SerializeField] Color hoverColor;
+
+        private void Awake()
+        {
+            m_text = this.GetComponentInChildren<TMP_Text>();
+            m_selectable = this.GetComponent<Selectable>();
+        }
+
         public void OnPointerEnter(PointerEventData eventData)
         {
             if (!EventSystem.current.alreadySelecting)
@@ -20,14 +31,14 @@ namespace ubv.ui.client
 
         public void OnSelect(BaseEventData eventData)
         {
-            this.GetComponentInChildren<TMP_Text>().color = Color.white;
+            m_text.color = hoverColor;
         }
 
 
         public void OnDeselect(BaseEventData eventData)
         {
-            this.GetComponent<Selectable>().OnPointerExit(null);
-            this.GetComponentInChildren<TMP_Text>().color = new Color(100f / 255f, 100f / 255f, 100f / 255f);
+            m_selectable.OnPointerExit(null);
+            m_text.color = normalColor;
         }
     }
 }

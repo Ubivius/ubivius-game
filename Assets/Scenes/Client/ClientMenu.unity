@@ -398,6 +398,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70ef54e997ceca7428626bf51ed23a49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  normalColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &686921230
 GameObject:
   m_ObjectHideFlags: 0
@@ -810,6 +812,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70ef54e997ceca7428626bf51ed23a49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  normalColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &1572325837
 GameObject:
   m_ObjectHideFlags: 0
@@ -1356,6 +1360,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70ef54e997ceca7428626bf51ed23a49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  normalColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &1919781056
 GameObject:
   m_ObjectHideFlags: 0
@@ -1633,6 +1639,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70ef54e997ceca7428626bf51ed23a49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  normalColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &1963884958
 GameObject:
   m_ObjectHideFlags: 0
