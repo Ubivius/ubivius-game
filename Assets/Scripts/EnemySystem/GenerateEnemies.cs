@@ -44,7 +44,7 @@ namespace Assets.Scripts.EnemySystem
                 if (m_pathfindingGridManager.GetNodeIfWalkable(m_xPos, m_yPos) != null )
                 {
                     //Penser pour une future intégration dans clientstate pour identification des enemies
-                    m_enemyID[i] = System.Guid.NewGuid().GetHashCode();
+                    //m_enemyID[i] = System.Guid.NewGuid().GetHashCode();
                     GameObject enemy = Instantiate(m_enemy, new Vector3(m_xPos, m_yPos, 0), Quaternion.identity);
                     Rigidbody2D body = enemy.GetComponent<Rigidbody2D>(); ;
                     body.name = "Server enemy " + m_enemyID[i].ToString();
