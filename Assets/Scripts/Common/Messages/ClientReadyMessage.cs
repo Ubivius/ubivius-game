@@ -6,18 +6,9 @@ namespace ubv.common.data
 { 
     public class ClientReadyMessage : Serializable
     {
-        public serialization.types.Int32 PlayerID;
-                
         public ClientReadyMessage()
         {
-            PlayerID = new serialization.types.Int32(0);
-            InitSerializableMembers(PlayerID);
-        }
-
-        public ClientReadyMessage(int playerID)
-        {
-            PlayerID = new serialization.types.Int32(playerID);
-            InitSerializableMembers(PlayerID);
+            InitSerializableMembers();
         }
 
         protected override ID.BYTE_TYPE SerializationID()

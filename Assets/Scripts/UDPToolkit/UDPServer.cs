@@ -24,7 +24,6 @@ namespace ubv
             public class UDPServer : MonoBehaviour
             {
                 [SerializeField] int m_port = 9050;
-                [SerializeField] float m_connectionTimeout = 10f;
 
                 private Dictionary<int, IPEndPoint> m_playerEndpoints;
                 private Dictionary<int, UdpClient> m_clients;
@@ -84,10 +83,10 @@ namespace ubv
                 
                 private void AddNewClient(int playerID, IPEndPoint ep)
                 {
-                    m_clients.Add(playerID, new UdpClient());
-                    m_clients[playerID].Connect(ep);
-                    m_clientConnections.Add(playerID, new UDPToolkit.ConnectionData());
                     m_playerEndpoints.Add(playerID, ep);
+                    m_clients.Add(playerID, new UdpClient());
+                    m_clientConnections.Add(playerID, new UDPToolkit.ConnectionData());
+                    m_clients[playerID].Connect(ep);
                     m_endpointsSet.Add(ep);
                 }
 
@@ -141,7 +140,7 @@ namespace ubv
                                 m_clients[playerID].Connect(clientEndPoint);
                             }
 
-                            if (m_clientConnections[playerID].Receive(packet, (UDPToolkit.Packet p) => { }))
+                            if (m_clientConnections[playerID].Receive(packet))
                             {
                                 OnReceive(packet, playerID);
                             }

@@ -242,6 +242,50 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &380608785
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 380608786}
+  - component: {fileID: 380608787}
+  m_Layer: 0
+  m_Name: GameMaster
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &380608786
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380608785}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1440873415}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &380608787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380608785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df3363ff45431ed4e98f454f273e5dc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_world: {fileID: 1802319659}
 --- !u!1 &404534639
 GameObject:
   m_ObjectHideFlags: 0
@@ -521,6 +565,7 @@ MonoBehaviour:
   m_physicsSceneName: proto_move_server
   m_updaters:
   - {fileID: 1470650681}
+  - {fileID: 380608787}
 --- !u!4 &1089558532
 Transform:
   m_ObjectHideFlags: 0
@@ -766,6 +811,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1470650680}
+  - {fileID: 380608786}
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -813,6 +859,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
+  m_gameMaster: {fileID: 380608787}
 --- !u!1 &1538287029
 GameObject:
   m_ObjectHideFlags: 0
@@ -842,8 +889,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85d3ee263d884c041b9e9a1900ffd499, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_port: 9050
-  m_connectionTimeout: 10
+  m_port: 9150
   AcceptNewClients: 0
 --- !u!4 &1538287031
 Transform:
@@ -902,11 +948,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af26ef9541c9b914ea73464a0913b1e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_port: 9051
-  m_connectionTimeoutInMS: 10000
+  m_port: 9151
   m_maxConcurrentListeners: 6
-  m_connectionCheckRate: 61
-  m_connectionKeepAliveRate: 31
+  m_connectionTimeoutInMS: 5000
+  m_coonnectionKeepAliveTimerIntervalMS: 250
 --- !u!1001 &1802319657
 PrefabInstance:
   m_ObjectHideFlags: 0

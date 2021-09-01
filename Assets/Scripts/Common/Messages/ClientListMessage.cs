@@ -2,30 +2,42 @@
 using System.Collections;
 using ubv.common.serialization;
 using System.Collections.Generic;
+using ubv.common.serialization.types;
 
 namespace ubv.common.data
 {
-    public class ClientListMessage : serialization.Serializable
+    public class CharacterListMessage : serialization.Serializable
     {
-        public PlayerStateList Players { get; protected set; }
-
-        public ClientListMessage()
+        public class StringHashMap : HashMap<String>
         {
-            Players = new PlayerStateList(null);
+            public StringHashMap(Dictionary<int, String> players) : base(players)
+            { }
 
-            InitSerializableMembers(Players);
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.HASHMAP_INT_STRING;
+            }
+        }
+        
+        public StringHashMap PlayerCharacters { get; protected set; }
+
+        public CharacterListMessage()
+        {
+            PlayerCharacters = new StringHashMap(null);
+
+            InitSerializableMembers(PlayerCharacters);
         }
 
-        public ClientListMessage(List<PlayerState> players) : base()
+        public CharacterListMessage(Dictionary<int, String> players) : base()
         {
-            Players = new PlayerStateList(players);
+            PlayerCharacters = new StringHashMap(players);
 
-            InitSerializableMembers(Players);
+            InitSerializableMembers(PlayerCharacters);
         }
                 
         protected override ID.BYTE_TYPE SerializationID()
         {
-            return ID.BYTE_TYPE.CLIENT_LIST_MESSAGE;
+            return ID.BYTE_TYPE.CHARACTER_LIST_MESSAGE;
         }
     }
 }

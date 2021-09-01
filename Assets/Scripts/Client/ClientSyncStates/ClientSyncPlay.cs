@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 using ubv.common.data;
 using ubv.tcp;
 using ubv.common;
+using UnityEngine.Events;
 
 namespace ubv.client.logic
 {
@@ -16,7 +17,8 @@ namespace ubv.client.logic
     public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
     {
         [SerializeField] private string m_physicsScene;
-        private int m_playerID;
+
+        public ClientGameInfo GameInfo { get; private set; }
 
         private int m_simulationBuffer;
         private uint m_remoteTick;
@@ -33,11 +35,13 @@ namespace ubv.client.logic
 
         [SerializeField] private List<ClientStateUpdater> m_updaters;
 
-        private bool m_initialized;
+        public bool Initialized { get; private set; }
         private bool ConnectedToServer { get { return m_TCPClient.IsConnected(); } }
 
         [SerializeField] private float m_reconnectTryDelayMS = 2000;
         private float m_reconnectTryTimer;
+
+        public UnityAction OnInitializationDone;
 
 #if NETWORK_SIMULATE
         [SerializeField] private float m_packetLossChance = 0.15f;
@@ -48,7 +52,7 @@ namespace ubv.client.logic
             ClientSyncState.m_playState = this;
         }
 
-        public void Init(int playerID, int simulationBuffer, List<PlayerState> playerStates)
+        public void Init(int simulationBuffer, List<int> playerIDs, ClientGameInfo gameInfo)
         {
             m_localTick = 0;
             m_reconnectTryTimer = 0;
@@ -58,22 +62,30 @@ namespace ubv.client.logic
             m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
             m_lastServerState = null;
             
-            m_initialized = false;
-
-            m_playerID = playerID;
+            Initialized = false;
+            
             m_simulationBuffer = simulationBuffer;
+
+            GameInfo = gameInfo;
+
+            List<PlayerState> playerStates = new List<PlayerState>();
+            foreach (int id in playerIDs)
+            {
+                playerStates.Add(new PlayerState(id));
+            }
 
             foreach (ClientStateUpdater updater in m_updaters)
             {
-                updater.Init(playerStates, m_playerID);
+                updater.Init(playerStates, PlayerID.Value);
             }
+
             m_UDPClient.Subscribe(this);
             m_TCPClient.Subscribe(this);
 
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
                 m_clientStateBuffer[i] = new ClientState();
-                m_clientStateBuffer[i].PlayerGUID = m_playerID;
+                m_clientStateBuffer[i].PlayerGUID = PlayerID.Value;
 
                 foreach (PlayerState playerState in playerStates)
                 {
@@ -84,12 +96,13 @@ namespace ubv.client.logic
 
                 m_inputBuffer[i] = new InputFrame();
             }
-            m_initialized = true;
+            Initialized = true;
+            OnInitializationDone?.Invoke();
         }
 
         protected override void StateFixedUpdate()
         {
-            if (!m_initialized && !ConnectedToServer)
+            if (!Initialized && !ConnectedToServer)
                 return;
 
             uint bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
@@ -110,7 +123,7 @@ namespace ubv.client.logic
 
         protected override void StateUpdate()
         {
-            if (!m_initialized)
+            if (!Initialized)
                 return;
 
             if (ConnectedToServer)
@@ -135,7 +148,7 @@ namespace ubv.client.logic
 
         public void RegisterUpdater(ClientStateUpdater updater)
         {
-            if (!m_initialized)
+            if (!Initialized)
                 return;
 
             m_updaters.Add(updater);
@@ -143,7 +156,7 @@ namespace ubv.client.logic
 
         private void StoreCurrentStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
         {
-            if (!m_initialized && !ConnectedToServer)
+            if (!Initialized && !ConnectedToServer)
                 return;
 
             for (int i = 0; i < m_updaters.Count; i++)
@@ -156,7 +169,7 @@ namespace ubv.client.logic
                 
         private List<ClientStateUpdater> UpdatersNeedingCorrection(ClientState localState, ClientState remoteState)
         {
-            if (!m_initialized && !ConnectedToServer)
+            if (!Initialized && !ConnectedToServer)
                 return null;
 
             List<ClientStateUpdater> needCorrection = new List<ClientStateUpdater>();
@@ -174,7 +187,7 @@ namespace ubv.client.logic
 
         public void ReceivePacket(UDPToolkit.Packet packet)
         {
-            if (!m_initialized && !ConnectedToServer)
+            if (!Initialized && !ConnectedToServer)
                 return;
 
             // TODO remove tick from ClientSTate and add it to custom server state packet?
@@ -184,7 +197,7 @@ namespace ubv.client.logic
                 ClientState state = common.serialization.IConvertible.CreateFromBytes<ClientState>(packet.Data.ArraySegment());
                 if (state != null)
                 {
-                    state.PlayerGUID = m_playerID;
+                    state.PlayerGUID = PlayerID.Value;
                     m_lastServerState = state;
 #if DEBUG_LOG
                     Debug.Log("Received server state tick " + state.Tick.Value);
@@ -212,7 +225,7 @@ namespace ubv.client.logic
 
         private void UpdateInput(uint bufferIndex)
         {
-            if (!m_initialized && !ConnectedToServer)
+            if (!Initialized && !ConnectedToServer)
                 return;
 
             if (m_lastInput != null)
@@ -237,14 +250,14 @@ namespace ubv.client.logic
 
             InputMessage inputMessage = new InputMessage();
 
-            inputMessage.PlayerID.Value = m_playerID;
+            inputMessage.PlayerID.Value = PlayerID.Value;
             inputMessage.StartTick.Value = m_remoteTick;
             inputMessage.InputFrames.Value = frames;
 
 #if NETWORK_SIMULATE
             if (Random.Range(0f, 1f) > m_packetLossChance)
             {
-                m_UDPClient.Send(inputMessage.GetBytes(), m_playerID);
+                m_UDPClient.Send(inputMessage.GetBytes(), PlayerID.Value);
             }
             else
             {
@@ -258,7 +271,7 @@ namespace ubv.client.logic
 
         private void UpdateClientState(uint bufferIndex)
         {
-            if (!m_initialized && !ConnectedToServer)
+            if (!Initialized && !ConnectedToServer)
                 return;
             // set current client state to last one then updating it
             StoreCurrentStateAndStep(
@@ -269,7 +282,7 @@ namespace ubv.client.logic
 
         private void ClientCorrection(uint remoteIndex)
         {
-            if (!m_initialized)
+            if (!Initialized)
                 return;
             
             // receive a state from server
@@ -317,7 +330,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Successful connection to server.");
 #endif // DEBUG_LOG
-            m_TCPClient.Send(new IdentificationMessage(m_playerID).GetBytes());
+            m_TCPClient.Send(new IdentificationMessage().GetBytes());
         }
 
         public void ReceivePacket(TCPToolkit.Packet packet)

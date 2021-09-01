@@ -11,11 +11,14 @@ namespace ubv.common.gameplay
         [SerializeField] private float m_defaultWalkingVelocity;
         [SerializeField] private float m_defaultRunningMultiplier;
 
+        private HealthSystem m_healthSystem;
+
         private PlayerStats m_defaultStats;
 
         private void Awake()
         {
             m_defaultStats = new PlayerStats(m_defaultMaxHealth, m_defaultWalkingVelocity, m_defaultRunningMultiplier);
+            m_healthSystem = new HealthSystem((int)m_defaultMaxHealth);
         }
 
         public void EquipSuit(PlayerSuit suit)
