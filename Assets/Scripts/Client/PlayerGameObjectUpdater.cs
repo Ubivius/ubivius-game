@@ -11,6 +11,7 @@ namespace ubv.client.logic
     /// </summary>
     public class PlayerGameObjectUpdater :  ClientStateUpdater
     {
+        [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
 
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
@@ -57,9 +58,10 @@ namespace ubv.client.logic
             // mettre un bool pour IsAlreadyCorrecting ?
             foreach(PlayerState player in remoteState.Players().Values)
             {
-                err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > 0.01f;
+                err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance;
                 if (err)
                 {
+                    Debug.Log("Needing correction");
                     return true;
                 }
             }
