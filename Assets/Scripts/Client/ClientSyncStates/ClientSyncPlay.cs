@@ -291,6 +291,8 @@ namespace ubv.client.logic
                             updaters[i].UpdateFromState(m_lastServerState);
                         }
 
+                        Debug.Log("Remote ticks : " + m_remoteTick + ". Local ticks : " + m_localTick + ". Diff = " + (m_localTick - m_remoteTick));
+
                         while (rewindTicks < m_localTick)
                         {
                             uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
