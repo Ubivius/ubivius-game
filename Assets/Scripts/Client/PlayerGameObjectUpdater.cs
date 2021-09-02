@@ -26,7 +26,7 @@ namespace ubv.client.logic
         public override void Init(List<PlayerState> playerStates, int localID)
         {
             Bodies = new Dictionary<int, Rigidbody2D>();
-            m_goalStates = new Dictionary<int, PlayerState>();
+            //m_goalStates = new Dictionary<int, PlayerState>();
             PlayerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             int id = 0;
             foreach(PlayerState state in playerStates)
@@ -43,7 +43,7 @@ namespace ubv.client.logic
                     Bodies[id].bodyType = RigidbodyType2D.Kinematic;
                 }
                 
-                m_goalStates[id] = state;
+                //m_goalStates[id] = state;
             }
 
             m_playerGUID = localID;
