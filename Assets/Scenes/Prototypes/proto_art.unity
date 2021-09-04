@@ -145,6 +145,21 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6058910025482233848, guid: 35c0ebfcbaae8fa47b1736ae426c518b,
         type: 3}
+      propertyPath: m_LocalScale.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6058910025482233848, guid: 35c0ebfcbaae8fa47b1736ae426c518b,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6058910025482233848, guid: 35c0ebfcbaae8fa47b1736ae426c518b,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6058910025482233848, guid: 35c0ebfcbaae8fa47b1736ae426c518b,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -267,7 +282,7 @@ SpriteRenderer:
   m_Size: {x: 1.28, y: 1.28}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &99216264
@@ -301,8 +316,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fa40ce8df21afb4d8496d80cecfe14f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_player: {fileID: 0}
   m_playerGameObjectUpdater: {fileID: 0}
+  m_player: {fileID: 0}
   m_standAlone: 0
 --- !u!1 &450568993
 GameObject:
@@ -416,8 +431,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fa40ce8df21afb4d8496d80cecfe14f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_player: {fileID: 99216262}
   m_playerGameObjectUpdater: {fileID: 0}
+  m_player: {fileID: 99216262}
   m_standAlone: 1
 --- !u!4 &1139548082
 Transform:
