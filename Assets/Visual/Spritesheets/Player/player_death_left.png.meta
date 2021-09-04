@@ -1,13 +1,25 @@
 fileFormatVersion: 2
-guid: 37680d863559d9c478a19f2866b4e749
+guid: 4915f8ad05aed9248b134f35e6f6e797
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -277153921769468689
-    second: PlayerIdleRight_0
+      213: 1577474529323032901
+    second: player_death_left_0
   - first:
-      213: -5695481570160788154
-    second: PlayerIdleRight_1
+      213: 7494204895897645153
+    second: player_death_left_1
+  - first:
+      213: 3288559811870275056
+    second: player_death_left_2
+  - first:
+      213: -7609426912337277781
+    second: player_death_left_3
+  - first:
+      213: 3545770472272460556
+    second: player_death_left_4
+  - first:
+      213: -2223122906613598452
+    second: player_death_left_5
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -117,13 +129,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayerIdleRight_0
+      name: player_death_left_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 128
-        height: 128
+        x: 80
+        y: 130
+        width: 32
+        height: 26
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -131,20 +143,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fec03d00af9572cf0800000000000000
-      internalID: -277153921769468689
+      spriteID: 541a6820ab054e510800000000000000
+      internalID: 1577474529323032901
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerIdleRight_1
+      name: player_death_left_1
       rect:
         serializedVersion: 2
-        x: 128
-        y: 0
-        width: 128
-        height: 128
+        x: 80
+        y: 104
+        width: 32
+        height: 26
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -152,8 +164,92 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 64d38c910b595f0b0800000000000000
-      internalID: -5695481570160788154
+      spriteID: 160f8f595a3c00860800000000000000
+      internalID: 7494204895897645153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: player_death_left_2
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 78
+        width: 32
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0f53721b9bf43ad20800000000000000
+      internalID: 3288559811870275056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: player_death_left_3
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 52
+        width: 32
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bacc6d92a82e56690800000000000000
+      internalID: -7609426912337277781
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: player_death_left_4
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 26
+        width: 32
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c0b7ede457b153130800000000000000
+      internalID: 3545770472272460556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: player_death_left_5
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 0
+        width: 32
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c07334bbe71e521e0800000000000000
+      internalID: -2223122906613598452
       vertices: []
       indices: 
       edges: []

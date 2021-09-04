@@ -1,31 +1,22 @@
 fileFormatVersion: 2
-guid: f645032978b4c424cb4d3bbfd59a6226
+guid: 86b23d3844b2f4f4aba2f6f596877fda
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4904191765191694996
-    second: PlayerRunLeft_0
+      213: 788610999772492415
+    second: player_wake_left_0
   - first:
-      213: -3829895082146124152
-    second: PlayerRunLeft_1
+      213: -2065174382528370341
+    second: player_wake_left_1
   - first:
-      213: 476471727717078549
-    second: PlayerRunLeft_0
+      213: 4335730299726368501
+    second: player_wake_left_2
   - first:
-      213: -4444371008815698182
-    second: PlayerRunLeft_3
+      213: 525079332486034603
+    second: player_wake_left_3
   - first:
-      213: 536773786322154507
-    second: PlayerRunLeft_4
-  - first:
-      213: -2304907710903586528
-    second: PlayerRunLeft_3
-  - first:
-      213: 2711554997406127640
-    second: PlayerRunLeft_6
-  - first:
-      213: 5281983020009989605
-    second: PlayerRunLeft_6
+      213: 5081175394104434931
+    second: player_wake_left_4
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -135,169 +126,106 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayerRunLeft_2
+      name: player_wake_left_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 256
-        width: 128
-        height: 128
+        x: 76
+        y: 103
+        width: 32
+        height: 26
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 49a95aa4d603f0440800000000000000
-      internalID: 4904191765191694996
+      spriteID: f72b76ba685b1fa00800000000000000
+      internalID: 788610999772492415
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerRunLeft_1
+      name: player_wake_left_1
       rect:
         serializedVersion: 2
-        x: 128
-        y: 256
-        width: 128
-        height: 128
+        x: 76
+        y: 77
+        width: 32
+        height: 26
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 88e2aa5e6ba79dac0800000000000000
-      internalID: -3829895082146124152
+      spriteID: b59e82247d60753e0800000000000000
+      internalID: -2065174382528370341
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerRunLeft_0
+      name: player_wake_left_2
       rect:
         serializedVersion: 2
-        x: 256
-        y: 256
-        width: 128
-        height: 128
+        x: 76
+        y: 51
+        width: 32
+        height: 26
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 516d71c0384cc9600800000000000000
-      internalID: 476471727717078549
+      spriteID: 5fe86156cbb9b2c30800000000000000
+      internalID: 4335730299726368501
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerRunLeft_5
+      name: player_wake_left_3
       rect:
         serializedVersion: 2
-        x: 0
-        y: 128
-        width: 128
-        height: 128
+        x: 76
+        y: 25
+        width: 32
+        height: 26
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: afeee716d1c6252c0800000000000000
-      internalID: -4444371008815698182
+      spriteID: ba4bab3fed4794700800000000000000
+      internalID: 525079332486034603
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerRunLeft_4
+      name: player_wake_left_4
       rect:
         serializedVersion: 2
-        x: 128
-        y: 128
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b04397a2ae0037700800000000000000
-      internalID: 536773786322154507
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerRunLeft_3
-      rect:
-        serializedVersion: 2
-        x: 256
-        y: 128
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 021788b16a25300e0800000000000000
-      internalID: -2304907710903586528
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerRunLeft_7
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 1
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 816d35957e061a520800000000000000
-      internalID: 2711554997406127640
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerRunLeft_6
-      rect:
-        serializedVersion: 2
-        x: 256
+        x: 76
         y: 0
-        width: 128
-        height: 128
+        width: 32
+        height: 25
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5e52751529f5d4940800000000000000
-      internalID: 5281983020009989605
+      spriteID: 3f0ec078916f38640800000000000000
+      internalID: 5081175394104434931
       vertices: []
       indices: 
       edges: []

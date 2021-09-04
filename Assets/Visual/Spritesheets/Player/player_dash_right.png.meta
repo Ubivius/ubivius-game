@@ -1,31 +1,28 @@
 fileFormatVersion: 2
-guid: 3bfaa47d8e64d784382d1140606d17b7
+guid: bbc41d85bb32a904285c856e41254bba
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4652079683673222327
-    second: PlayerRunRight_0
+      213: -1768592330400461901
+    second: player_dash_right_0
   - first:
-      213: -3715366130059067641
-    second: PlayerRunRight_1
+      213: -350301785380013227
+    second: player_dash_right_1
   - first:
-      213: -2567541378711342305
-    second: PlayerRunRight_2
+      213: -5630700408751817347
+    second: player_dash_right_2
   - first:
-      213: -360701067647349929
-    second: PlayerRunRight_3
+      213: -3021421588914328452
+    second: player_dash_right_3
   - first:
-      213: 2257091972386708399
-    second: PlayerRunRight_4
+      213: 86900460410263634
+    second: player_dash_right_4
   - first:
-      213: 2973370685308825902
-    second: PlayerRunRight_5
+      213: -6560374617480993632
+    second: player_dash_right_5
   - first:
-      213: -6904808220812363722
-    second: PlayerRunRight_6
-  - first:
-      213: 1326996798530721342
-    second: PlayerRunRight_7
+      213: -4063765256051087235
+    second: player_dash_right_6
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -135,169 +132,148 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayerRunRight_0
+      name: player_dash_right_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 256
-        width: 128
-        height: 128
+        y: 156
+        width: 117
+        height: 26
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7bc672413d18f8040800000000000000
-      internalID: 4652079683673222327
+      spriteID: 3bb000a55a2b477e0800000000000000
+      internalID: -1768592330400461901
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerRunRight_1
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 256
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 70fbf47803e507cc0800000000000000
-      internalID: -3715366130059067641
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerRunRight_2
-      rect:
-        serializedVersion: 2
-        x: 256
-        y: 256
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: f133bcf28b24e5cd0800000000000000
-      internalID: -2567541378711342305
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerRunRight_3
+      name: player_dash_right_1
       rect:
         serializedVersion: 2
         x: 0
-        y: 128
-        width: 128
-        height: 128
+        y: 130
+        width: 117
+        height: 26
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 75b86c04a488efaf0800000000000000
-      internalID: -360701067647349929
+      spriteID: 55b3d36d16a732bf0800000000000000
+      internalID: -350301785380013227
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerRunRight_4
+      name: player_dash_right_2
       rect:
         serializedVersion: 2
-        x: 128
-        y: 128
-        width: 128
-        height: 128
+        x: 0
+        y: 104
+        width: 117
+        height: 26
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fabde77b03dc25f10800000000000000
-      internalID: 2257091972386708399
+      spriteID: d7d73bb9fcbbbd1b0800000000000000
+      internalID: -5630700408751817347
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerRunRight_5
+      name: player_dash_right_3
       rect:
         serializedVersion: 2
-        x: 256
-        y: 128
-        width: 128
-        height: 128
+        x: 0
+        y: 78
+        width: 117
+        height: 26
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e21746b72e8834920800000000000000
-      internalID: 2973370685308825902
+      spriteID: c7ca014b211c116d0800000000000000
+      internalID: -3021421588914328452
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayerRunRight_6
+      name: player_dash_right_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 52
+        width: 117
+        height: 26
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2585291228bb43100800000000000000
+      internalID: 86900460410263634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: player_dash_right_5
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 26
+        width: 117
+        height: 26
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0a46e833b0ed4f4a0800000000000000
+      internalID: -6560374617480993632
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: player_dash_right_6
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 128
-        height: 128
+        width: 117
+        height: 26
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6383844a1813d20a0800000000000000
-      internalID: -6904808220812363722
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: PlayerRunRight_7
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 0
-        width: 128
-        height: 128
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e36118abe807a6210800000000000000
-      internalID: 1326996798530721342
+      spriteID: d782086c70b9a97c0800000000000000
+      internalID: -4063765256051087235
       vertices: []
       indices: 
       edges: []
