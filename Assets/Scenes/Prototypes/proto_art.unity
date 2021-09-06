@@ -523,6 +523,7 @@ MonoBehaviour:
   m_body: {fileID: 99216261}
   m_player: {fileID: 99216260}
   m_scene: proto_art
+  m_playerAnimator: {fileID: 1139548081}
 --- !u!4 &1622971120
 Transform:
   m_ObjectHideFlags: 0
