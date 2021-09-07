@@ -21,8 +21,7 @@ namespace ubv.client.logic
         [SerializeField] private string m_clientPlayScene;
 
         private Flag m_serverSignal;
-
-        private int? m_simulationBuffer;
+        
         private Dictionary<int, CharacterData> m_clientCharacters;
 
         private ServerInitMessage m_awaitedInitMessage;
@@ -112,7 +111,6 @@ namespace ubv.client.logic
         {
             if(m_awaitedInitMessage != null)
             {
-                m_simulationBuffer = m_awaitedInitMessage.SimulationBuffer.Value;
                 m_playerIDs = new List<int>();
 
                 foreach(int id in m_awaitedInitMessage.PlayerCharacters.Value.Keys)
@@ -121,7 +119,7 @@ namespace ubv.client.logic
                 }
 
 #if DEBUG_LOG
-                Debug.Log("Client received confirmation that server is about to start game with " + m_playerIDs.Count + " players and " + m_simulationBuffer + " simulation buffer ticks");
+                Debug.Log("Client received confirmation that server is about to start game with " + m_playerIDs.Count + " players");
 #endif // DEBUG_LOG
 
 #if DEBUG_LOG
@@ -142,7 +140,7 @@ namespace ubv.client.logic
         {
             m_TCPClient.Unsubscribe(this);
             OnGameStart?.Invoke();
-            ClientSyncState.m_playState.Init(m_simulationBuffer.Value, m_playerIDs, new ClientGameInfo(m_clientCharacters.Values));
+            ClientSyncState.m_playState.Init(m_playerIDs, new ClientGameInfo(m_clientCharacters.Values));
             m_currentState = ClientSyncState.m_playState;
         }
 

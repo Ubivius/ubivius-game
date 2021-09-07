@@ -19,9 +19,8 @@ namespace ubv.client.logic
         [SerializeField] private string m_physicsScene;
 
         public ClientGameInfo GameInfo { get; private set; }
-
-        private int m_simulationBuffer;
-        private uint m_remoteTick;
+        
+        private uint m_lastReceivedRemoteTick;
         private uint m_localTick;
 
         private const ushort CLIENT_STATE_BUFFER_SIZE = 64;
@@ -29,7 +28,7 @@ namespace ubv.client.logic
         private ClientState[] m_clientStateBuffer;
         private InputFrame[] m_inputBuffer;
         private InputFrame m_lastInput;
-        private ClientState m_lastServerState;
+        private ClientState m_lastReceivedServerState;
 
         private PhysicsScene2D m_clientPhysics;
 
@@ -49,19 +48,18 @@ namespace ubv.client.logic
             ClientSyncState.m_playState = this;
         }
 
-        public void Init(int simulationBuffer, List<int> playerIDs, ClientGameInfo gameInfo)
+        public void Init(List<int> playerIDs, ClientGameInfo gameInfo)
         {
             m_localTick = 0;
             m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
 
             m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
-            m_lastServerState = null;
+            m_lastReceivedServerState = null;
+            m_lastReceivedRemoteTick = 0;
             
             Initialized = false;
             
-            m_simulationBuffer = simulationBuffer;
-
             GameInfo = gameInfo;
 
             List<PlayerState> playerStates = new List<PlayerState>();
@@ -106,10 +104,10 @@ namespace ubv.client.logic
             UpdateInput(bufferIndex);
 
             UpdateClientState(bufferIndex);
+            
+            ClientCorrection(m_lastReceivedRemoteTick % CLIENT_STATE_BUFFER_SIZE);
 
             ++m_localTick;
-
-            ClientCorrection(m_remoteTick % CLIENT_STATE_BUFFER_SIZE);
 
             for (int i = 0; i < m_updaters.Count; i++)
             {
@@ -136,14 +134,15 @@ namespace ubv.client.logic
             m_updaters.Add(updater);
         }
 
-        private void StoreCurrentStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
+        private void UpdateStateFromWorldAndStep(ref ClientState state, InputFrame input, float deltaTime)
         {
             if (!ShouldUpdate())
                 return;
 
             for (int i = 0; i < m_updaters.Count; i++)
             {
-                m_updaters[i].SetStateAndStep(ref state, input, deltaTime);
+                m_updaters[i].UpdateStateFromWorld(ref state);
+                m_updaters[i].Step(input, deltaTime);
             }
                     
             m_clientPhysics.Simulate(deltaTime);
@@ -169,10 +168,10 @@ namespace ubv.client.logic
 
         public void ReceivePacket(UDPToolkit.Packet packet)
         {
-            if (!ShouldUpdate())
+            if (!ShouldUpdate() )
                 return;
 
-            // TODO remove tick from ClientSTate and add it to custom server state packet?
+            // TODO remove tick from ClientState and add it to custom server state packet?
             // client doesnt need its own client state ticks
             lock (m_lock)
             {
@@ -180,26 +179,18 @@ namespace ubv.client.logic
                 if (state != null)
                 {
                     state.PlayerGUID = PlayerID.Value;
-                    m_lastServerState = state;
+                    m_lastReceivedServerState = state;
 #if DEBUG_LOG
-                    Debug.Log("Received server state tick " + state.Tick.Value);
+                    Debug.Log("Received server state tick " + state.Tick.Value + ", local tick is " + m_localTick);
 #endif //DEBUG_LOG
-                    m_remoteTick = state.Tick.Value;
+                    m_lastReceivedRemoteTick = state.Tick.Value;
 
-                    if(m_localTick < m_remoteTick)
+                    /*if(m_localTick < m_lastReceivedRemoteTick) // Happens at the start of the game
                     {
 #if DEBUG_LOG
-                        Debug.Log("Client has fallen behind by " + (m_remoteTick - m_localTick) + ". Fast-forwarding.");
+                        Debug.Log("Client has fallen behind by " + (m_lastReceivedRemoteTick - m_localTick) + ". Fast-forwarding.");
 #endif //DEBUG_LOG
-                        m_localTick = m_remoteTick + (uint)m_simulationBuffer;
-                    }
-
-                    // PATCH FOR JITTER (too many phy simulate calls)
-                    // TODO: investigate (si le temps le permet)
-                    // ClientCorrection()
-                    /*if(m_localTick > m_remoteTick + (uint)m_simulationBuffer)
-                    {
-                        m_localTick = m_remoteTick ;
+                        m_localTick = m_lastReceivedRemoteTick;
                     }*/
                 }
             }
@@ -224,8 +215,8 @@ namespace ubv.client.logic
 
             m_lastInput = null;
             
-            List<common.data.InputFrame> frames = new List<common.data.InputFrame>();
-            for (uint tick = m_remoteTick; tick <= m_localTick; tick++)
+            List<InputFrame> frames = new List<InputFrame>();
+            for (uint tick = m_lastReceivedRemoteTick; tick <= m_localTick; tick++)
             {
                 frames.Add(m_inputBuffer[tick % CLIENT_STATE_BUFFER_SIZE]);
             }
@@ -233,7 +224,7 @@ namespace ubv.client.logic
             InputMessage inputMessage = new InputMessage();
 
             inputMessage.PlayerID.Value = PlayerID.Value;
-            inputMessage.StartTick.Value = m_remoteTick;
+            inputMessage.StartTick.Value = m_lastReceivedRemoteTick;
             inputMessage.InputFrames.Value = frames;
 
 #if NETWORK_SIMULATE
@@ -246,7 +237,7 @@ namespace ubv.client.logic
                 Debug.Log("SIMULATING PACKET LOSS");
             }
 #else
-            m_udpClient.Send(inputMessage.ToBytes());
+            m_udpClient.Send(inputMessage.ToBytes(), PlayerID.Value);
 #endif //NETWORK_SIMULATE       
                     
         }
@@ -261,7 +252,7 @@ namespace ubv.client.logic
             if (!ShouldUpdate())
                 return;
             // set current client state to last one then updating it
-            StoreCurrentStateAndStep(
+            UpdateStateFromWorldAndStep(
                 ref m_clientStateBuffer[bufferIndex],
                 m_inputBuffer[bufferIndex],
                 Time.fixedDeltaTime);
@@ -278,38 +269,36 @@ namespace ubv.client.logic
             // replay up to local tick by stepping every tick
             lock (m_lock)
             {
-                if (m_lastServerState != null)
+                if (m_lastReceivedServerState != null)
                 {
-                    List<ClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastServerState);
+                    List<ClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastReceivedServerState);
                     if (updaters.Count > 0)
                     {
-                        uint rewindTicks = m_remoteTick;
+                        uint rewindTicks = m_lastReceivedRemoteTick;
                                 
                         // reset world state to last server-sent state
                         for (int i = 0; i < updaters.Count; i++)
                         {
-                            updaters[i].UpdateFromState(m_lastServerState);
+                            updaters[i].UpdateWorldFromState(m_lastReceivedServerState);
                         }
 
-                        Debug.Log("Remote ticks : " + m_remoteTick + ". Local ticks : " + m_localTick + ". Diff = " + (m_localTick - m_remoteTick));
+                        Debug.Log("Remote ticks : " + m_lastReceivedRemoteTick + ". Local ticks : " + m_localTick + ". Diff = " + ((int)m_localTick - (int)m_lastReceivedRemoteTick));
 
-                        while (rewindTicks < m_localTick)
+                        while (rewindTicks <= m_localTick)
                         {
                             uint rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
 
                             for (int i = 0; i < updaters.Count; i++)
                             {
-                                updaters[i].SetStateAndStep(
-                                ref m_clientStateBuffer[rewindIndex],
-                                m_inputBuffer[rewindIndex],
-                                Time.fixedDeltaTime);
+                                updaters[i].UpdateStateFromWorld(ref m_clientStateBuffer[rewindIndex]);
+                                updaters[i].Step(m_inputBuffer[rewindIndex], Time.fixedDeltaTime);
                             }
 
                             m_clientPhysics.Simulate(Time.fixedDeltaTime);
                         }
                     }
                             
-                    m_lastServerState = null;
+                    m_lastReceivedServerState = null;
                 }
             }
         }

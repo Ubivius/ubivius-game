@@ -18,7 +18,6 @@ namespace ubv.server.logic
     /// </summary>
     public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver, udp.server.IUDPServerReceiver
     {
-        [SerializeField] private int m_simulationBuffer;
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
 
         private Dictionary<int, common.serialization.types.String> m_clientCharacters; 
@@ -81,7 +80,7 @@ namespace ubv.server.logic
 
                     common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
                     
-                    ServerInitMessage message = new ServerInitMessage(m_simulationBuffer, m_clientCharacters, cellInfoArray);
+                    ServerInitMessage message = new ServerInitMessage(m_clientCharacters, cellInfoArray);
 
                     foreach (int id in m_clientCharacters.Keys)
                     {
@@ -110,7 +109,7 @@ namespace ubv.server.logic
 
                 m_TCPServer.Unsubscribe(this);
 
-                m_gameplayState.Init(m_clientCharacters, m_simulationBuffer);
+                m_gameplayState.Init(m_clientCharacters);
                 m_currentState = m_gameplayState;
             }
         }
