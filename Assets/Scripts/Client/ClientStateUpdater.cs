@@ -16,18 +16,24 @@ namespace ubv.client.logic
         public abstract void Init(List<PlayerState> playerStates, int localID);
 
         /// <summary>
-        /// Stores the client state in local storage and updates it.
+        /// Stores the world client state in local storage.
         /// </summary>
         /// <param name="state">State to store and update</param>
+        /// <param name="deltaTime"></param>
+        public abstract void UpdateStateFromWorld(ref ClientState state);
+
+        /// <summary>
+        /// Updates the local state.
+        /// </summary>
         /// <param name="input">Input used to step state simulation</param>
         /// <param name="deltaTime"></param>
-        public abstract void SetStateAndStep(ref ClientState state, common.data.InputFrame input, float deltaTime);
+        public abstract void Step(common.data.InputFrame input, float deltaTime);
 
         /// <summary>
         /// Sets the current local client state to state
         /// </summary>
         /// <param name="state">State to update to</param>
-        public abstract void UpdateFromState(ClientState state);
+        public abstract void UpdateWorldFromState(ClientState state);
 
         /// <summary>
         /// Checks if current local state needs to be corrected according to

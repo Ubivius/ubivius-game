@@ -56,6 +56,7 @@ namespace ubv.client.logic
         {
             bool err = false;
             // mettre un bool pour IsAlreadyCorrecting ?
+            // check correction on goalStates au lieu du current position TODO
             foreach(PlayerState player in remoteState.Players().Values)
             {
                 err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance;
@@ -68,18 +69,21 @@ namespace ubv.client.logic
             return err;
         }
 
-        public override void SetStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
+        public override void UpdateStateFromWorld(ref ClientState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {
                 player.Position.Value = Bodies[player.GUID.Value].position;
                 player.Rotation.Value = Bodies[player.GUID.Value].rotation;
-            }
-            
-            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[state.PlayerGUID].GetStats(), input, deltaTime);
+            }    
         }
 
-        public override void UpdateFromState(ClientState state)
+        public override void Step(InputFrame input, float deltaTime)
+        {
+            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
+        }
+
+        public override void UpdateWorldFromState(ClientState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {

@@ -561,7 +561,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 802da27c55ee1034dba8bca9ead5ea62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_snapshotTicks: 4
+  m_snapshotTicks: 8
   m_physicsSceneName: proto_move_server
   m_updaters:
   - {fileID: 1470650681}
@@ -733,7 +733,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ce2bf89a8d2deb43ae7c402749225b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_simulationBuffer: 5
   m_worldGenerator: {fileID: 1802319659}
   m_serverInitializers:
   - {fileID: 1802319659}

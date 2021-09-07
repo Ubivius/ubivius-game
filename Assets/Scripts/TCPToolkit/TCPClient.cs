@@ -294,9 +294,7 @@ namespace ubv.tcp.client
             if (m_connectionKeepAliveTimer > m_connectionKeepAliveIntervalMS / 1000f && m_activeEndpoint)
             {
                 m_connectionKeepAliveTimer = 0;
-#if DEBUG_LOG
-                Debug.Log("Sending keep alive ping from client.");
-#endif // DEBUG_LOG
+
                 Send(m_keepAlivePacketBytes);
             }
         }
