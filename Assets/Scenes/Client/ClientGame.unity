@@ -374,6 +374,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
+  m_playerAnimator: {fileID: 658324443}
 --- !u!1 &583337820
 GameObject:
   m_ObjectHideFlags: 0
@@ -610,8 +611,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fa40ce8df21afb4d8496d80cecfe14f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_player: {fileID: 0}
   m_playerGameObjectUpdater: {fileID: 554541790}
+  m_player: {fileID: 0}
   m_standAlone: 0
 --- !u!4 &658324444
 Transform:

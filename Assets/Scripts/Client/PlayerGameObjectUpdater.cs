@@ -3,6 +3,7 @@ using System.Collections;
 using ubv.common.data;
 using System.Collections.Generic;
 using ubv.common;
+using UnityEngine.Events;
 
 namespace ubv.client.logic
 {
@@ -12,6 +13,7 @@ namespace ubv.client.logic
     public class PlayerGameObjectUpdater :  ClientStateUpdater
     {
         [SerializeField] private PlayerSettings m_playerSettings;
+        [SerializeField] private PlayerAnimator m_playerAnimator;
 
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, common.gameplay.PlayerController> PlayerControllers { get; private set; }
@@ -20,7 +22,11 @@ namespace ubv.client.logic
         private int m_playerGUID;
 
         private Dictionary<int, PlayerState> m_goalStates;
-        
+
+        private bool m_isSprinting;
+
+        private UnityAction<bool> m_sprintAction;
+
         public override void Init(List<PlayerState> playerStates, int localID)
         {
             Bodies = new Dictionary<int, Rigidbody2D>();
@@ -46,6 +52,9 @@ namespace ubv.client.logic
 
             m_playerGUID = localID;
             m_localPlayerBody = Bodies[localID];
+
+
+            m_sprintAction += m_playerAnimator.SetSprinting;
         }
 
         public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
@@ -69,7 +78,13 @@ namespace ubv.client.logic
                 player.Position.Value = Bodies[player.GUID.Value].position;
                 player.Rotation.Value = Bodies[player.GUID.Value].rotation;
             }
-            
+
+            if (input.Sprinting.Value != m_isSprinting)
+            {
+                m_isSprinting = input.Sprinting.Value;
+                m_sprintAction.Invoke(m_isSprinting);
+            }
+
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[state.PlayerGUID].GetStats(), input, deltaTime);
         }
 
