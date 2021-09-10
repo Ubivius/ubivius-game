@@ -257,6 +257,34 @@ namespace ubv.common.serialization
             }
         }
 
+        public class Int64 : Serialized<long>
+        {
+            public Int64() : base() { }
+
+            public Int64(long value) : base(value) { }
+
+            protected override byte[] GetSourceBytes()
+            {
+                return System.BitConverter.GetBytes(m_value);
+            }
+
+            protected override int GetSourceByteCount()
+            {
+                return sizeof(long);
+            }
+
+            protected override bool CreateFromSourceBytes(ArraySegment<byte> bytes)
+            {
+                m_value = System.BitConverter.ToInt64(bytes.Array, bytes.Offset);
+                return true;
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.INT64;
+            }
+        }
+
         public class Float : Serialized<float>
         {
             public Float(float value) : base(value)

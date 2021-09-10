@@ -4,6 +4,7 @@ using ubv.common;
 using ubv.common.data;
 using ubv.common.serialization;
 using ubv.tcp;
+using ubv.utils;
 using UnityEngine;
 
 namespace ubv.server.logic
@@ -16,7 +17,7 @@ namespace ubv.server.logic
     {
         private HashSet<int> m_clients;
         private Dictionary<int, ClientState> m_clientStates;
-        private Dictionary<int, int> m_clientTick;
+        private int m_masterTick;
         private Dictionary<int, bool> m_connectedClients;
                 
         private Dictionary<int, Dictionary<int, InputFrame>> m_clientInputBuffers;
@@ -40,7 +41,7 @@ namespace ubv.server.logic
         public void Init(Dictionary<int, common.serialization.types.String> clients)
         {
             m_tickAccumulator = 0;
-            m_clientTick = new Dictionary<int, int>();
+            m_masterTick = 0;
             m_clientStates = new Dictionary<int, ClientState>();
             m_clients = new HashSet<int>(clients.Keys);
 
@@ -59,7 +60,6 @@ namespace ubv.server.logic
                 player.GUID.Value = id;
                 m_clientStates[id] = new ClientState(id);
                 m_clientStates[id].AddPlayer(player);
-                m_clientTick[id] = 0;
                 m_connectedClients.Add(id, true);
             }
 
@@ -106,73 +106,63 @@ namespace ubv.server.logic
         {
             lock (m_lock)
             {
-                if (++m_tickAccumulator > m_snapshotTicks)
+                // update state based on received input
+                foreach (int id in m_clientStates.Keys)
                 {
-                    for(int t = 0; t < m_tickAccumulator; t++)
+                    if (!m_connectedClients[id])
+                        continue;
+
+                    if (!m_clientInputBuffers[id].ContainsKey(m_masterTick))
                     {
-                        // update state based on received input
-                        foreach (int id in m_clientStates.Keys)
-                        {
-                            if (!m_connectedClients[id])
-                                continue;
-
-                            int missingTicks = (int)m_snapshotTicks - m_clientInputBuffers[id].Count;
-                            if(missingTicks < 0)
-                            {
-                                missingTicks = 0;
-                            }
-                            
-                            int tick = m_clientTick[id] + t - missingTicks;
-
-                            // if input buffer has a frame corresponding to this tick
-                            InputFrame frame = m_zeroFrame; // create a default frame to not move player;
-                            if (!m_clientInputBuffers[id].ContainsKey(tick)) // soit on l'a miss soit on a pas assez d'inputs
-                            {
-#if DEBUG_LOG
-                                Debug.Log("Missed a player input from " + id + " for tick " + tick);
-#endif //DEBUG_LOG
-                            }
-                            else
-                            {
-                                frame = m_clientInputBuffers[id][tick];
-                                m_clientInputBuffers[id].Remove(tick);
-                            }
-                            
-
-                            ClientState client = m_clientStates[id];
-                            if (tick > 0)
-                            {
-                                client.Tick.Value = (uint)tick;
-                            }
-                            // must be called in main unity thread
-                            foreach (ServerGameplayStateUpdater updater in m_updaters)
-                            {
-                                updater.FixedUpdateFromClient(client, frame, Time.fixedDeltaTime);
-                            }
-                        }
-
-                        m_serverPhysics.Simulate(Time.fixedDeltaTime);
-                        
-                        // update client states based on simulation
-                        foreach (int id in m_clientStates.Keys)
-                        {
-                            ClientState client = m_clientStates[id];
-                            foreach (ServerGameplayStateUpdater updater in m_updaters)
-                            {
-                                updater.UpdateClient(client);
-                            }
-                        }
+                        Debug.Log("SERVER Missed input " + m_masterTick + " from client " + id);
                     }
+
+                    // zero OR duplicate last frame ?
+                    // duplicate implies future correction of inputs
+                    InputFrame frame = m_clientInputBuffers[id].ContainsKey(m_masterTick) ?
+                        m_clientInputBuffers[id][m_masterTick] : 
+                        m_zeroFrame;
                     
+                    // must be called in main unity thread
+                    foreach (ServerGameplayStateUpdater updater in m_updaters)
+                    {
+                        updater.FixedUpdateFromClient(m_clientStates[id], frame, Time.fixedDeltaTime);
+                    }
+
+                    // remove used entries in dict if we use a dict later
+                    if(m_clientInputBuffers[id].ContainsKey(m_masterTick))
+                       m_clientInputBuffers[id].Remove(m_masterTick);
+                }
+
+                m_serverPhysics.Simulate(Time.fixedDeltaTime);
+
+                // update client states based on simulation
+                foreach (int id in m_clientStates.Keys)
+                {
+                    ClientState client = m_clientStates[id];
+                    foreach (ServerGameplayStateUpdater updater in m_updaters)
+                    {
+                        updater.UpdateClient(client);
+                    }
+                }
+                
+                if (++m_tickAccumulator >= m_snapshotTicks)
+                {
                     foreach (int id in m_connectedClients.Keys)
                     {
                         if (m_connectedClients[id])
                         {
-                            m_UDPServer.Send(m_clientStates[id].GetBytes(), id);
+                            // OPTIMIZATION : Cache le message et l'info au lieu d'en recréer des new à chaque send
+                            NetInfo info = new NetInfo(System.DateTime.UtcNow.Ticks, m_masterTick);
+                            ClientStateMessage msg = new ClientStateMessage(m_clientStates[id], info);
+                            //Debug.Log("SERVER Sending validated tick " + m_masterTick + " to client " + id);
+                            m_UDPServer.Send(msg.GetBytes(), id);
                         }
                     }
                     m_tickAccumulator = 0;
                 }
+
+                m_masterTick++;
             }
         }
 
@@ -193,20 +183,27 @@ namespace ubv.server.logic
                 {
                     ClientState clientState = m_clientStates[playerID];
                     List<InputFrame> inputFrames = inputs.InputFrames.Value;
-                    
-#if DEBUG_LOG
-                    Debug.Log("Received ticks " + inputs.StartTick.Value + " to " + (inputs.StartTick.Value + inputFrames.Count) + " from " + clientState.PlayerGUID);
-#endif //DEBUG_LOG
-                    m_clientTick[playerID] = (int)inputs.StartTick.Value;// + (uint)inputFrames.Count;
                     int frameIndex = 0;
+                    
                     for (int i = 0; i < inputFrames.Count; i++)
                     {
-                        frameIndex = (int)inputs.StartTick.Value + i;
-                        // fill in the blanks (the missed or new input frames)
-                        if (!m_clientInputBuffers[playerID].ContainsKey(frameIndex))
+                        frameIndex = (int)inputFrames[i].Info.Tick.Value;
+                        //Debug.Log("SERVER received " + frameIndex + " tick at master tick " + m_masterTick);
+                        if (frameIndex >= m_masterTick)
                         {
+                            //Debug.Log("SERVER Enqueued input tick " + frameIndex + " from client");
                             m_clientInputBuffers[playerID][frameIndex] = inputFrames[i];
                         }
+
+                        /*if(frameIndex < m_masterTick)
+                        {
+                            Debug.Log("SERVER Client sent already processed input for tick " + frameIndex + " vs master tick " + m_masterTick);
+                        }
+
+                        if(frameIndex > m_masterTick + ServerNetworkingManager.SERVER_TICK_BUFFER_SIZE)
+                        {
+                            Debug.Log("SERVER Client is too far ahead of server at tick " + frameIndex + " vs master tick " + m_masterTick);
+                        }*/
                     }
                 }
             }
