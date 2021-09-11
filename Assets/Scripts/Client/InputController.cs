@@ -40,6 +40,8 @@ namespace ubv
 
                 m_controls.Gameplay.Sprint.performed += context => SetSprinting(true);
                 m_controls.Gameplay.Sprint.canceled += context => SetSprinting(false);
+
+                m_controls.Gameplay.Interact.performed += context => Interact();
             }
 
             // Start is called before the first frame update
@@ -62,6 +64,11 @@ namespace ubv
                 Debug.Log("Trying to apply this isSprinting -> " + isSprinting.ToString());
 #endif //DEBUG_LOG
                 m_IsSprinting = isSprinting;
+            }
+
+            private void Interact()
+            {
+                // TODO : verifier que la hitbox du personnage touche la hitbox du bouton
             }
 
             // Update is called once per frame
