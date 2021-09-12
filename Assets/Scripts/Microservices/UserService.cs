@@ -9,6 +9,8 @@ namespace ubv.microservices
 {
     public class UserService : MonoBehaviour
     {
+        protected readonly object m_requestLock = new object();
+
         [SerializeField] private bool m_mock;
         [SerializeField] private string m_forceUserID;
         [SerializeField] private string m_forceUserName;
@@ -58,12 +60,19 @@ namespace ubv.microservices
 
         private void Update()
         {
-            if (m_readyForNextRequest)
+            if (Time.frameCount % 13 == 0)
             {
-                if (m_userRequests.Count > 0)
+                lock (m_requestLock)
                 {
-                    UserInfoRequest request = m_userRequests.Peek();
-                    SendUserInfoRequest(request.ID);
+                    if (m_readyForNextRequest)
+                    {
+                        if (m_userRequests.Count > 0)
+                        {
+                            UserInfoRequest request = m_userRequests.Peek();
+                            Debug.Log("Requesting user info from " + request.ID + " from Update Loop");
+                            SendUserInfoRequest(request.ID);
+                        }
+                    }
                 }
             }
         }
@@ -84,19 +93,24 @@ namespace ubv.microservices
             Debug.Log("Requesting user info from " + id);
 #endif // DEBUG_LOG
 
-            m_userRequests.Enqueue(new UserInfoRequest() { ID = id, Callback = onGetInfo });
-            
-            if (!m_readyForNextRequest)
+            lock (m_requestLock)
             {
-                return;
-            }
+                m_userRequests.Enqueue(new UserInfoRequest() { ID = id, Callback = onGetInfo });
 
-            m_readyForNextRequest = false;
-            SendUserInfoRequest(id);
+                Debug.Log("User requests count : " + m_userRequests.Count);
+
+                if (!m_readyForNextRequest)
+                {
+                    return;
+                }
+
+                SendUserInfoRequest(id);
+            }
         }
 
         private void SendUserInfoRequest(string id)
         {
+            m_readyForNextRequest = false;
             m_HTTPClient.SetEndpoint(m_userEndpoint);
             m_HTTPClient.Get("users/" + id, OnUserResponse);
         }
@@ -110,9 +124,11 @@ namespace ubv.microservices
 
                 string JSON = message.Content.ReadAsStringAsync().Result;
                 JSONUserInfoResponse userInfoResponse = JsonUtility.FromJson<JSONUserInfoResponse>(JSON);
-                UserInfo userInfo = new UserInfo(userInfoResponse.id, userInfoResponse.username, userInfoResponse.email, userInfoResponse.dateofbirth); 
+                UserInfo userInfo = new UserInfo(userInfoResponse.id, userInfoResponse.username, userInfoResponse.email, userInfoResponse.dateofbirth);
+                Debug.Log("Received user info "  + userInfo­.ID + " (on OnUserResponse in service)");
+                Debug.Log("User request count in response : " + m_userRequests.Count);
+                Debug.Log("Calling callback on " + m_userRequests.Peek().ID);
                 m_userRequests.Dequeue().Callback.Invoke(userInfo);
-                m_readyForNextRequest = true;
             }
             else
             {
@@ -120,6 +136,7 @@ namespace ubv.microservices
                 Debug.Log("User request was not successful");
 #endif // DEBUG_LOG
             }
+            m_readyForNextRequest = true;
         }
     }
 }

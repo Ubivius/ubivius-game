@@ -9,6 +9,8 @@ namespace ubv.microservices
 {
     public class AuthenticationService : MonoBehaviour
     {
+        protected readonly object m_requestLock = new object();
+
         public delegate void OnLogin(string playerIDString);
 
         private class LoginRequest
@@ -46,12 +48,18 @@ namespace ubv.microservices
 
         private void Update()
         {
-            if (m_readyForNextCall)
+            if (Time.frameCount % 19 == 0)
             {
-                if(m_onLoginCallbacks.Count > 0)
+                lock (m_requestLock)
                 {
-                    LoginRequest request = m_onLoginCallbacks.Peek();
-                    SendLoginRequest(request.User, request.Pass);
+                    if (m_readyForNextCall)
+                    {
+                        if (m_onLoginCallbacks.Count > 0)
+                        {
+                            LoginRequest request = m_onLoginCallbacks.Peek();
+                            SendLoginRequest(request.User, request.Pass);
+                        }
+                    }
                 }
             }
         }
@@ -68,19 +76,21 @@ namespace ubv.microservices
                 return;
             }
 
-            m_onLoginCallbacks.Enqueue(new LoginRequest() { User = user, Pass = pass, Callback = onLogin });
-            if (!m_readyForNextCall)
+            lock (m_requestLock)
             {
-                return;
+                m_onLoginCallbacks.Enqueue(new LoginRequest() { User = user, Pass = pass, Callback = onLogin });
+                if (!m_readyForNextCall)
+                {
+                    return;
+                }
+                
+                SendLoginRequest(user, pass);
             }
-
-            m_readyForNextCall = false;
-            
-            SendLoginRequest(user, pass);
         }
 
         private void SendLoginRequest(string user, string pass)
         {
+            m_readyForNextCall = false;
             string jsonString = JsonUtility.ToJson(new JSONAuthentificationCredentials
             {
                 username = user,
@@ -104,14 +114,14 @@ namespace ubv.microservices
                 m_HTTPClient.SetAuthenticationToken(token);
 
                 m_onLoginCallbacks.Dequeue().Callback.Invoke(authResponse.id);
-                m_readyForNextCall = true;
             }
             else
             {
 #if DEBUG_LOG
-                Debug.Log("Authentication login request was not successful");
+                Debug.Log("Authentication login request was not successful : " + message.ReasonPhrase );
 #endif // DEBUG_LOG
             }
+            m_readyForNextCall = true;
         }
     }
 }

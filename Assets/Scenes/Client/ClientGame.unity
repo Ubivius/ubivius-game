@@ -154,7 +154,6 @@ MonoBehaviour:
   m_physicsScene: ClientGame
   m_updaters:
   - {fileID: 554541790}
-  m_reconnectTryDelayMS: 2
   m_packetLossChance: 0.01
 --- !u!4 &134844666
 Transform:
@@ -1347,9 +1346,9 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8568193984628607416}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80bd15c789714c84dbcb072d413521bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_playerTransform: {fileID: 0}
+  m_playerUpdater: {fileID: 554541790}

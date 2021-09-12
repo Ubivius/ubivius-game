@@ -50,17 +50,11 @@ namespace ubv
 
             private void MoveCharacter(Vector2 movement)
             {
-#if DEBUG_LOG
-                Debug.Log("Trying to apply this move -> " + movement.ToString());
-#endif //DEBUG_LOG
                 m_move = movement;
             }
 
             private void SetSprinting(bool isSprinting)
             {
-#if DEBUG_LOG
-                Debug.Log("Trying to apply this isSprinting -> " + isSprinting.ToString());
-#endif //DEBUG_LOG
                 m_IsSprinting = isSprinting;
             }
 

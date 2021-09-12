@@ -24,32 +24,27 @@ namespace ubv.common
         }
 
         private PlayerHashMap m_playerStates;
-        public Uint32 Tick { get; protected set; }
 
         public int PlayerGUID;
 
         public ClientState() : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
-            Tick = new Uint32(0);
-            InitSerializableMembers(m_playerStates, Tick);
+            InitSerializableMembers(m_playerStates);
         }
 
         public ClientState(ref ClientState state) : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
-            Tick = new Uint32(state.Tick.Value);
-
             SetPlayers(state.m_playerStates.Value);
-            InitSerializableMembers(m_playerStates, Tick);
+            InitSerializableMembers(m_playerStates);
         }
 
         public ClientState(int id) : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
-            Tick = new Uint32(0);
             PlayerGUID = id;
-            InitSerializableMembers(m_playerStates, Tick);
+            InitSerializableMembers(m_playerStates);
         }
             
         protected override ID.BYTE_TYPE SerializationID()
