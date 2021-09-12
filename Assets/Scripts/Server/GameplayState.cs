@@ -146,6 +146,7 @@ namespace ubv.server.logic
                     }
                 }
                 
+                m_masterTick++;
                 if (++m_tickAccumulator >= m_snapshotTicks)
                 {
                     foreach (int id in m_connectedClients.Keys)
@@ -161,8 +162,6 @@ namespace ubv.server.logic
                     }
                     m_tickAccumulator = 0;
                 }
-
-                m_masterTick++;
             }
         }
 
