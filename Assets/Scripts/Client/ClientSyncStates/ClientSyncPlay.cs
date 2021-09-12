@@ -26,7 +26,7 @@ namespace ubv.client.logic
         private int m_localTick;
 
         private float m_fixedUpdateDeltaTime;
-        private float m_meanRTT;
+        private float m_meanHalfRTT;
 
         // TEMP : eventually move to intermediate "connecting to game" state
         private bool m_awaitingServerContact;
@@ -37,6 +37,8 @@ namespace ubv.client.logic
         private InputFrame[] m_inputBuffer;
         private InputFrame m_lastInput;
         private ClientState m_lastReceivedServerState;
+
+        private int m_clockOffset;
 
         private PhysicsScene2D m_clientPhysics;
 
@@ -60,8 +62,9 @@ namespace ubv.client.logic
         public void Init(List<int> playerIDs, ClientGameInfo gameInfo)
         {
             m_localTick = 0;
+            m_clockOffset = 0;
             m_awaitingServerContact = true;
-            m_meanRTT = m_defaultRTTEstimate;
+            m_meanHalfRTT = m_defaultRTTEstimate;
             m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
 
@@ -105,7 +108,7 @@ namespace ubv.client.logic
                 m_inputBuffer[i].SetToNeutral();
             }
 
-            UpdateClockOffset(LatencyFromRTT(m_meanRTT));
+            UpdateClockOffset(LatencyFromHalfRTT(m_meanHalfRTT));
 
             Initialized = true;
             OnInitializationDone?.Invoke();
@@ -190,34 +193,37 @@ namespace ubv.client.logic
 
         private int LatencyFromNewNetInfo(NetInfo info)
         {
-            long RTTInSystemTicks = DateTime.UtcNow.Ticks - info.TimeStamp.Value;
-            float RTT = (float)RTTInSystemTicks / TimeSpan.TicksPerMillisecond;
+            long HalfRTTInSystemTicks = DateTime.UtcNow.Ticks - info.TimeStamp.Value;
+            float HalfRTT = (float)HalfRTTInSystemTicks / TimeSpan.TicksPerSecond;
                     
             const float weight = 0.3f;
-            m_meanRTT = (m_meanRTT * weight) + (RTT * (1f - weight));
+            m_meanHalfRTT = (m_meanHalfRTT * weight) + (HalfRTT * (1f - weight));
             
-            return LatencyFromRTT(m_meanRTT);
+            return LatencyFromHalfRTT(m_meanHalfRTT);
         }
 
-        private int LatencyFromRTT(float RTT)
+        private int LatencyFromHalfRTT(float HalfRTT)
         {
-            return Mathf.RoundToInt(RTT * 0.5f / (m_fixedUpdateDeltaTime * 1000f));
+            return Mathf.RoundToInt(HalfRTT / m_fixedUpdateDeltaTime);
         }
 
         private void UpdateClockOffset(int latencyInTicks, int baseOffset = ubv.server.logic.ServerNetworkingManager.SERVER_TICK_BUFFER_SIZE)
         {
-            int clockOffset = latencyInTicks + baseOffset;
-            for (int i = m_localTick; i < m_lastReceivedRemoteTick + clockOffset; i++)
+            if (m_clockOffset != latencyInTicks + baseOffset)
             {
-                InputFrame frame = m_inputBuffer[i % CLIENT_STATE_BUFFER_SIZE];
-                frame.Info.Tick.Value = i;
-                frame.SetToNeutral();
-            }
-            m_localTick = m_lastReceivedRemoteTick + clockOffset;
+                m_clockOffset = latencyInTicks + baseOffset;
+                for (int i = m_localTick + 1; i < m_lastReceivedRemoteTick + m_clockOffset; i++)
+                {
+                    InputFrame frame = m_inputBuffer[i % CLIENT_STATE_BUFFER_SIZE];
+                    frame.Info.Tick.Value = i;
+                    frame.SetToNeutral();
+                }
+                m_localTick = m_lastReceivedRemoteTick + m_clockOffset;
 
 #if DEBUG_LOG
-            Debug.Log("CLIENT New clock offset : " + clockOffset + ". Local tick is now " + m_localTick);
+                Debug.Log("CLIENT New clock offset : " + m_clockOffset + ". Local tick is now " + m_localTick);
 #endif // DEBUG_LOG
+            }
         }
 
         public void ReceivePacket(UDPToolkit.Packet packet)
@@ -233,12 +239,12 @@ namespace ubv.client.logic
                 {
                     m_lastReceivedRemoteTick = stateMessage.Info.Tick.Value;
 
-                    if (m_awaitingServerContact)
+                    /*if (m_awaitingServerContact)
                     {
                         m_awaitingServerContact = false;
                         UpdateClockOffset(LatencyFromNewNetInfo(stateMessage.Info));
-                    }
-                    //UpdateClockOffset(LatencyFromNewNetInfo(stateMessage.Info));
+                    }*/
+                    UpdateClockOffset(LatencyFromNewNetInfo(stateMessage.Info));
 
                     ClientState state = stateMessage.State;
                     state.PlayerGUID = PlayerID.Value;
@@ -284,7 +290,7 @@ namespace ubv.client.logic
 #if NETWORK_SIMULATE
             if (UnityEngine.Random.Range(0f, 1f) > m_packetLossChance)
             {
-                //Debug.Log("CLIENT Sending ticks " + m_lastReceivedRemoteTick + " to " + m_localTick);
+                //Debug.Log("CLIENT Sending ticks " + (m_lastReceivedRemoteTick  + 1) + " to " + m_localTick);
                 m_UDPClient.Send(inputMessage.GetBytes(), PlayerID.Value);
             }
             else
@@ -292,7 +298,7 @@ namespace ubv.client.logic
                 Debug.Log("SIMULATING PACKET LOSS");
             }
 #else
-            m_udpClient.Send(inputMessage.ToBytes(), PlayerID.Value);
+            m_udpClient.Send(inputMessage.GetBytes(), PlayerID.Value);
 #endif //NETWORK_SIMULATE       
                     
         }
@@ -345,7 +351,7 @@ namespace ubv.client.logic
 
                         Debug.Log("CORRECTION : Remote ticks : " + m_lastReceivedRemoteTick + ". Local ticks : " + m_localTick + ". Diff = " + (m_localTick - m_lastReceivedRemoteTick));
 
-                        while (rewindTicks <= m_localTick)
+                        while (rewindTicks < m_localTick)
                         {
                             int rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
 

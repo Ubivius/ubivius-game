@@ -62,7 +62,7 @@ namespace ubv.client.logic
                 err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance;
                 if (err)
                 {
-                    Debug.Log("Needing correction");
+                    //Debug.Log("Needing correction");
                     return true;
                 }
             }
