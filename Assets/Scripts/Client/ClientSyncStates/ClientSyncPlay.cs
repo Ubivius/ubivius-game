@@ -25,6 +25,7 @@ namespace ubv.client.logic
         private int m_lastReceivedRemoteTick;
         private int m_localTick;
 
+        private float m_baseTickTime;
         private float m_fixedUpdateDeltaTime;
         private float m_meanHalfRTT;
 
@@ -38,7 +39,7 @@ namespace ubv.client.logic
         private InputFrame m_lastInput;
         private ClientState m_lastReceivedServerState;
 
-        private int m_clockOffset;
+        private int m_goalOffset;
 
         private PhysicsScene2D m_clientPhysics;
 
@@ -62,7 +63,7 @@ namespace ubv.client.logic
         public void Init(List<int> playerIDs, ClientGameInfo gameInfo)
         {
             m_localTick = 0;
-            m_clockOffset = 0;
+            m_goalOffset = 0;
             m_awaitingServerContact = true;
             m_meanHalfRTT = m_defaultRTTEstimate;
             m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
@@ -73,6 +74,7 @@ namespace ubv.client.logic
             m_lastReceivedRemoteTick = 0;
 
             m_fixedUpdateDeltaTime = Time.fixedDeltaTime;
+            m_baseTickTime = m_fixedUpdateDeltaTime;
             
             Initialized = false;
             
@@ -209,20 +211,57 @@ namespace ubv.client.logic
 
         private void UpdateClockOffset(int latencyInTicks, int baseOffset = ubv.server.logic.ServerNetworkingManager.SERVER_TICK_BUFFER_SIZE)
         {
-            if (m_clockOffset != latencyInTicks + baseOffset)
+            // mettre un PDI pour pas avoir un goal toujours changeant ?
+            // ou pas besoin pcq déja une moyenne mobile sur latencyInTicks ?
+            m_goalOffset = baseOffset + latencyInTicks;
+
+            int clockOffset = m_localTick - m_lastReceivedRemoteTick;
+
+            if(clockOffset < 0)
             {
-                m_clockOffset = latencyInTicks + baseOffset;
-                for (int i = m_localTick + 1; i < m_lastReceivedRemoteTick + m_clockOffset; i++)
+                for (int i = m_localTick; i < m_lastReceivedRemoteTick + m_goalOffset; i++)
                 {
                     InputFrame frame = m_inputBuffer[i % CLIENT_STATE_BUFFER_SIZE];
                     frame.Info.Tick.Value = i;
                     frame.SetToNeutral();
                 }
-                m_localTick = m_lastReceivedRemoteTick + m_clockOffset;
-
+                m_localTick = m_lastReceivedRemoteTick + m_goalOffset;
 #if DEBUG_LOG
-                Debug.Log("CLIENT New clock offset : " + m_clockOffset + ". Local tick is now " + m_localTick);
+                Debug.Log("CLIENT Client is late. New clock offset : " + m_goalOffset + ". Local tick is now " + m_localTick);
 #endif // DEBUG_LOG
+            }
+            else
+            {
+                if(m_goalOffset < clockOffset)
+                {
+#if DEBUG_LOG
+                    if (m_fixedUpdateDeltaTime < m_baseTickTime * 1.15f)
+                    {
+                        Debug.Log("CLIENT Client too far behind. Speeding up down in order to reach offset " + m_goalOffset);
+                    }
+#endif // DEBUG_LOG
+                    m_fixedUpdateDeltaTime = m_baseTickTime * 1.15f;
+                }
+                else if (m_goalOffset > clockOffset)
+                {
+#if DEBUG_LOG
+                    if (m_fixedUpdateDeltaTime > m_baseTickTime * 0.925f)
+                    {
+                        Debug.Log("CLIENT Client too far in future. Slowing down in order to reach offset " + m_goalOffset);
+                    }
+#endif // DEBUG_LOG
+                    m_fixedUpdateDeltaTime = m_baseTickTime * 0.925f;
+                }
+                else
+                {
+#if DEBUG_LOG
+                    if (m_fixedUpdateDeltaTime != m_baseTickTime)
+                    {
+                        Debug.Log("CLIENT Back in sync with server at offset " + clockOffset);
+                    }
+#endif // DEBUG_LOG
+                    m_fixedUpdateDeltaTime = m_baseTickTime;
+                }
             }
         }
 
