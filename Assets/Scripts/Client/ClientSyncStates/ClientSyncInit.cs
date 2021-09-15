@@ -101,7 +101,8 @@ namespace ubv.client.logic
                 if(m_requestResendTimer > m_reconnectTimerIntervalMS / 1000f)
                 {
 #if DEBUG_LOG
-                    Debug.Log("Trying to reconnect to server : " + m_cachedServerInfo.Value.server_ip.ToString() + " ...");
+                    Debug.Log("Trying to reconnect to server : " + m_cachedServerInfo.Value.server_tcp_ip.ToString() + " ...");
+                    Debug.Log("Trying to reconnect to server : " + m_cachedServerInfo.Value.server_udp_ip.ToString() + " ...");
 #endif // DEBUG_LOG
                     m_requestResendTimer = 0;
                     EstablishConnectionToServer(m_cachedServerInfo.Value);
@@ -167,7 +168,7 @@ namespace ubv.client.logic
                 Debug.Log("Trying to establish connection to game server...");
 #endif // DEBUG_LOG
 
-                m_TCPClient.Connect(serverInfo.server_ip, serverInfo.tcp_port);
+                m_TCPClient.Connect(serverInfo.server_tcp_ip, serverInfo.tcp_port);
             }
 #if DEBUG_LOG
             else
@@ -225,7 +226,7 @@ namespace ubv.client.logic
                 m_connected = true;
             }
 
-            m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_ip, m_cachedServerInfo.Value.udp_port);
+            m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_udp_ip, m_cachedServerInfo.Value.udp_port);
             m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
             m_TCPClient.Send(m_identificationMessageBytes); // sends a ping to the server
         }
