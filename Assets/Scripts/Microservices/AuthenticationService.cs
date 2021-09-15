@@ -19,9 +19,9 @@ namespace ubv.microservices
             public string Pass;
             public OnLogin Callback;
         }
-
-        [SerializeField] private string m_forceUserID;
+        
         [SerializeField] private bool m_mock;
+        [SerializeField] private utils.Mocker m_mockData;
         [SerializeField] private HTTPClient m_HTTPClient;
         [SerializeField] string m_authEndpoint;
         private bool m_readyForNextCall;
@@ -71,7 +71,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("Mocking auth. Auto logging in with random ID (or forced ID provided if any)");
 #endif // DEBUG_LOG
-                string id = m_forceUserID.Length > 0 ? m_forceUserID : System.Guid.NewGuid().ToString();
+                string id = m_mockData.UserID.Length > 0 ? m_mockData.UserID : System.Guid.NewGuid().ToString();
                 onLogin(id);
                 return;
             }

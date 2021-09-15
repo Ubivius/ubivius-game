@@ -28,9 +28,6 @@ namespace ubv.client.logic
         private float m_baseTickTime;
         private float m_fixedUpdateDeltaTime;
         private float m_meanHalfRTT;
-
-        // TEMP : eventually move to intermediate "connecting to game" state
-        private bool m_awaitingServerContact;
         
         private const ushort CLIENT_STATE_BUFFER_SIZE = 64;
 
@@ -40,6 +37,13 @@ namespace ubv.client.logic
         private ClientState m_lastReceivedServerState;
 
         private int m_goalOffset;
+        [SerializeField]
+        private float m_clockOffsetCorrectionIncrement = 0.05f;
+        [SerializeField]
+        private int m_offsetErrorTolerance = 1;
+        [SerializeField]
+        private int m_offsetErrorMaxDuration = 3;
+        private int m_offsetErrorDuration;
 
         private PhysicsScene2D m_clientPhysics;
 
@@ -64,7 +68,7 @@ namespace ubv.client.logic
         {
             m_localTick = 0;
             m_goalOffset = 0;
-            m_awaitingServerContact = true;
+            m_offsetErrorDuration = 0;
             m_meanHalfRTT = m_defaultRTTEstimate;
             m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
@@ -200,7 +204,7 @@ namespace ubv.client.logic
                     
             const float weight = 0.3f;
             m_meanHalfRTT = (m_meanHalfRTT * weight) + (HalfRTT * (1f - weight));
-            
+
             return LatencyFromHalfRTT(m_meanHalfRTT);
         }
 
@@ -211,8 +215,6 @@ namespace ubv.client.logic
 
         private void UpdateClockOffset(int latencyInTicks, int baseOffset = ubv.server.logic.ServerNetworkingManager.SERVER_TICK_BUFFER_SIZE)
         {
-            // mettre un PDI pour pas avoir un goal toujours changeant ?
-            // ou pas besoin pcq déja une moyenne mobile sur latencyInTicks ?
             m_goalOffset = baseOffset + latencyInTicks;
 
             int clockOffset = m_localTick - m_lastReceivedRemoteTick;
@@ -232,28 +234,39 @@ namespace ubv.client.logic
             }
             else
             {
-                if(m_goalOffset < clockOffset)
+                int offsetError = m_goalOffset - clockOffset;
+                
+                if(offsetError < -m_offsetErrorTolerance)
                 {
-#if DEBUG_LOG
-                    if (m_fixedUpdateDeltaTime < m_baseTickTime * 1.15f)
+                    m_offsetErrorDuration++;
+                    if (m_offsetErrorDuration > m_offsetErrorMaxDuration)
                     {
-                        Debug.Log("CLIENT Client too far behind. Speeding up down in order to reach offset " + m_goalOffset);
-                    }
+#if DEBUG_LOG
+                        if (m_fixedUpdateDeltaTime < m_baseTickTime * (1f + m_clockOffsetCorrectionIncrement))
+                        {
+                            Debug.Log("CLIENT Client too far behind. Speeding up down in order to reach offset " + m_goalOffset);
+                        }
 #endif // DEBUG_LOG
-                    m_fixedUpdateDeltaTime = m_baseTickTime * 1.15f;
+                        m_fixedUpdateDeltaTime = m_baseTickTime * (1f + m_clockOffsetCorrectionIncrement);
+                    }
                 }
-                else if (m_goalOffset > clockOffset)
+                else if (offsetError > m_offsetErrorTolerance)
                 {
-#if DEBUG_LOG
-                    if (m_fixedUpdateDeltaTime > m_baseTickTime * 0.925f)
+                    m_offsetErrorDuration++;
+                    if (m_offsetErrorDuration > m_offsetErrorMaxDuration)
                     {
-                        Debug.Log("CLIENT Client too far in future. Slowing down in order to reach offset " + m_goalOffset);
-                    }
+#if DEBUG_LOG
+                        if (m_fixedUpdateDeltaTime > m_baseTickTime * (1f - m_clockOffsetCorrectionIncrement))
+                        {
+                            Debug.Log("CLIENT Client too far in future. Slowing down in order to reach offset " + m_goalOffset);
+                        }
 #endif // DEBUG_LOG
-                    m_fixedUpdateDeltaTime = m_baseTickTime * 0.925f;
+                        m_fixedUpdateDeltaTime = m_baseTickTime * (1f - m_clockOffsetCorrectionIncrement);
+                    }
                 }
                 else
                 {
+                    m_offsetErrorDuration = 0;
 #if DEBUG_LOG
                     if (m_fixedUpdateDeltaTime != m_baseTickTime)
                     {
@@ -262,6 +275,8 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
                     m_fixedUpdateDeltaTime = m_baseTickTime;
                 }
+
+                Mathf.Clamp(m_fixedUpdateDeltaTime, m_baseTickTime * 0.5f, m_baseTickTime * 2f);
             }
         }
 
