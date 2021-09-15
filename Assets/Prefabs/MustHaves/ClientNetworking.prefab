@@ -188,9 +188,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb690e47281ac4347af0f980681b44d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_mock: 0
-  m_forceUserID: 
-  m_forceUserName: 
+  m_mock: 1
+  m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
   m_userEndpoint: http://localhost:9091
 --- !u!1 &4998171549256964432
@@ -236,8 +235,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51495b9d4b5acef459ae08d6054305ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_forceUserID: murphy-id-123
   m_mock: 1
+  m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
   m_authEndpoint: http://localhost:9092
 --- !u!1 &5254342688879064719
@@ -326,7 +325,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 113191b355f46834087c8c9bd9715d2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_mock: 0
+  m_mock: 1
+  m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
   m_characterDataEndpoint: http://localhost:9093
 --- !u!1 &8747356472878904221
@@ -421,5 +421,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37271d27156413948aba6f3d52b03edf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AutoReconnect: 0
   m_connectionTimeoutInMS: 500000
-  m_coonnectionKeepAliveTimerIntervalMS: 250
+  m_reconnectTryIntervalMS: 2000
+  m_connectionKeepAliveIntervalMS: 250
