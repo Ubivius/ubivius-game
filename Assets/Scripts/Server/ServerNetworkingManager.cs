@@ -6,7 +6,9 @@ namespace ubv.server.logic
     public class ServerNetworkingManager : MonoBehaviour
     {
         static public ServerNetworkingManager Instance { get; private set; } = null;
-        
+
+        public const int SERVER_TICK_BUFFER_SIZE = 3;
+
         public tcp.server.TCPServer TCPServer;
         public udp.server.UDPServer UDPServer;
 

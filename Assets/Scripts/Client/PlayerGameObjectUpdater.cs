@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using System.Collections;
-using ubv.common.data;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ubv.common;
+using ubv.common.data;
+using UnityEngine;
+using UnityEngine.Events;
 
 namespace ubv.client.logic
 {
@@ -11,6 +11,7 @@ namespace ubv.client.logic
     /// </summary>
     public class PlayerGameObjectUpdater :  ClientStateUpdater
     {
+        [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
 
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
@@ -19,12 +20,14 @@ namespace ubv.client.logic
 
         private int m_playerGUID;
 
-        private Dictionary<int, PlayerState> m_goalStates;
+        //private Dictionary<int, PlayerState> m_goalStates;
+
+        public UnityAction OnInitialized;
         
         public override void Init(List<PlayerState> playerStates, int localID)
         {
             Bodies = new Dictionary<int, Rigidbody2D>();
-            m_goalStates = new Dictionary<int, PlayerState>();
+            //m_goalStates = new Dictionary<int, PlayerState>();
             PlayerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             int id = 0;
             foreach(PlayerState state in playerStates)
@@ -41,43 +44,51 @@ namespace ubv.client.logic
                     Bodies[id].bodyType = RigidbodyType2D.Kinematic;
                 }
                 
-                m_goalStates[id] = state;
+                //m_goalStates[id] = state;
             }
 
             m_playerGUID = localID;
             m_localPlayerBody = Bodies[localID];
+            OnInitialized?.Invoke();
         }
 
         public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
         {
             bool err = false;
+            // mettre un bool pour IsAlreadyCorrecting ?
+            // check correction on goalStates au lieu du current position TODO
             foreach(PlayerState player in remoteState.Players().Values)
             {
-                err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > 0.01f;
+                err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance;
                 if (err)
                 {
+                    //Debug.Log("Needing correction");
                     return true;
                 }
             }
             return err;
         }
 
-        public override void SetStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
+        public override void UpdateStateFromWorld(ref ClientState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {
                 player.Position.Value = Bodies[player.GUID.Value].position;
                 player.Rotation.Value = Bodies[player.GUID.Value].rotation;
-            }
-            
-            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[state.PlayerGUID].GetStats(), input, deltaTime);
+            }    
         }
 
-        public override void UpdateFromState(ClientState state)
+        public override void Step(InputFrame input, float deltaTime)
+        {
+            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
+        }
+
+        public override void UpdateWorldFromState(ClientState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {
-                if (player.GUID.Value != m_playerGUID)
+                Bodies[player.GUID.Value].position = player.Position.Value;
+                /*if (player.GUID.Value != m_playerGUID)
                 {
                     m_goalStates[player.GUID.Value] = player;
                 }
@@ -85,13 +96,13 @@ namespace ubv.client.logic
                 {
                     Bodies[player.GUID.Value].position = player.Position.Value;
                     Bodies[player.GUID.Value].rotation = player.Rotation.Value;
-                }
+                }*/
             }
         }
 
         public override void FixedStateUpdate(float deltaTime)
         {
-            foreach (PlayerState player in m_goalStates.Values)
+            /*foreach (PlayerState player in m_goalStates.Values)
             {
                 if (player.GUID.Value != m_playerGUID)
                 {
@@ -103,7 +114,12 @@ namespace ubv.client.logic
 
                     Bodies[player.GUID.Value].rotation = player.Rotation.Value;
                 }
-            }
+            }*/
+        }
+
+        public Transform GetLocalPlayerTransform()
+        {
+            return m_localPlayerBody.transform;
         }
     }
 }

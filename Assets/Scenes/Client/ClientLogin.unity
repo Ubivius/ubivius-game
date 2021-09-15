@@ -366,7 +366,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 278.3, y: -0.8529663}
+  m_AnchoredPosition: {x: 278.3, y: -0.85302734}
   m_SizeDelta: {x: -556.63586, y: 1.7059326}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &167270354
@@ -2151,13 +2151,23 @@ PrefabInstance:
       objectReference: {fileID: 1425392626}
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
+      propertyPath: AutoReconnect
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
       propertyPath: m_serverAddress
       value: 192.168.0.141
       objectReference: {fileID: 0}
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_connectionTimeoutInMS
-      value: 5000
+      value: 30000
+      objectReference: {fileID: 0}
+    - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_connectionKeepAliveIntervalMS
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -2167,12 +2177,12 @@ PrefabInstance:
     - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_forceUserID
-      value: murphy-id-123
+      value: murphy-django-id
       objectReference: {fileID: 0}
     - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_authEndpoint
-      value: http://localhost:9092
+      value: http://auth.anon.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -2184,6 +2194,26 @@ PrefabInstance:
       propertyPath: m_authEndpoint
       value: http://localhost:9093
       objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mockCharacterID
+      value: murphy-django-id-char
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mockCharacterName
+      value: homer-simpson-mock
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_characterDataEndpoint
+      value: http://character.dev.ubivius.tk
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mockCharacterPlayerID
+      value: murphy-django-id
+      objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_mock
@@ -2192,7 +2222,7 @@ PrefabInstance:
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverAddress
-      value: 192.168.0.141
+      value: 10.238.178.208
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -2212,12 +2242,17 @@ PrefabInstance:
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_forceUserID
-      value: murphy-id-123
+      value: murphy-django-id
+      objectReference: {fileID: 0}
+    - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_userEndpoint
+      value: http://user.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_forceUserName
-      value: murphy
+      value: murphy-django
       objectReference: {fileID: 0}
     - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
