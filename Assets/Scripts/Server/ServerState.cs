@@ -20,6 +20,7 @@ namespace ubv.server.logic
 
         protected tcp.server.TCPServer m_TCPServer;
         protected udp.server.UDPServer m_UDPServer;
+        protected http.server.HTTPServer m_HTTPServer;
 
         protected readonly object m_lock = new object();
                 
@@ -32,6 +33,7 @@ namespace ubv.server.logic
         {
             m_TCPServer = ServerNetworkingManager.Instance.TCPServer;
             m_UDPServer = ServerNetworkingManager.Instance.UDPServer;
+            m_HTTPServer = ServerNetworkingManager.Instance.HTTPServer;
             StateStart();
         }
 

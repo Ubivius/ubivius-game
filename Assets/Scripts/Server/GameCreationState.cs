@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Net;
 using ubv.udp;
 using System.Collections.Generic;
 using ubv.tcp;
@@ -15,7 +14,7 @@ namespace ubv.server.logic
     /// In charge of regrouping player parties, and launching 
     /// the game with a fixed number of players
     /// </summary>
-    public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver, udp.server.IUDPServerReceiver
+    public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver, udp.server.IUDPServerReceiver, http.server.IHTTPServerReceiver
     {
         [SerializeField] private int m_simulationBuffer;
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
@@ -25,7 +24,7 @@ namespace ubv.server.logic
         private Dictionary<int, bool> m_readyClients;
 
         [SerializeField] private List<ServerInitializer> m_serverInitializers;
-        
+
         // Flags
         private bool m_readyToStartGame;
         private bool m_awaitingClientLoadWorld;
@@ -58,7 +57,7 @@ namespace ubv.server.logic
             m_TCPServer.Subscribe(this);
             m_UDPServer.Subscribe(this);
             m_UDPServer.AcceptNewClients = true;
-
+            m_HTTPServer.Subscribe(this);
         }
 
         private bool EveryoneIsReady()
