@@ -40,34 +40,35 @@ namespace ubv.http.server
                 HttpListenerContext context = m_healthListener.GetContext();
                 Thread send = new Thread(SendingThread);
                 send.Start(context);
-                HttpListenerRequest request = context.Request;
-                // Obtain a response object.
-                HttpListenerResponse response = context.Response;
-                // Construct a response.
-                string responseString = "<HTML><BODY>OK</BODY></HTML>";
-                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-                // Get a response stream and write the response to it.
-                response.ContentLength64 = buffer.Length;
-                System.IO.Stream output = response.OutputStream;
-                output.Write(buffer, 0, buffer.Length);
-                output.Close();
-                try
-                {
-                    Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
-                }
-                catch (AggregateException ex)
-                {
-#if DEBUG_LOG
-                    Debug.Log(ex.Message);
-#endif // DEBUG_LOG
-                }
+                send.Join();
             }
             
         }
 
-        private void SendingThread(HttpListenerContext ctxt)
+        private void SendingThread(object ctxt)
         {
-
+            HttpListenerContext context = (HttpListenerContext)ctxt;
+            HttpListenerRequest request = context.Request;
+            // Obtain a response object.
+            HttpListenerResponse response = context.Response;
+            // Construct a response.
+            string responseString = "<HTML><BODY>OK</BODY></HTML>";
+            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+            // Get a response stream and write the response to it.
+            response.ContentLength64 = buffer.Length;
+            System.IO.Stream output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+            output.Close();
+            try
+            {
+                Task.Delay(50, new CancellationToken(m_exitSignal)).Wait();
+            }
+            catch (AggregateException ex)
+            {
+#if DEBUG_LOG
+                Debug.Log(ex.Message);
+#endif // DEBUG_LOG
+            }
         }
 
             private void Update()
