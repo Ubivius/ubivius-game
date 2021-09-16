@@ -6,23 +6,20 @@ namespace ubv.common.data
 {
     public class NetInfo : Serializable
     {
-        public serialization.types.Int64 TimeStamp;
         public serialization.types.Int32 Tick;
 
         public NetInfo()
         {
-            TimeStamp = new serialization.types.Int64(0);
             Tick = new serialization.types.Int32(0);
 
-            InitSerializableMembers(TimeStamp, Tick);
+            InitSerializableMembers(Tick);
         }
 
-        public NetInfo(long time, int tick)
+        public NetInfo(int tick)
         {
-            TimeStamp = new serialization.types.Int64(time);
             Tick = new serialization.types.Int32(tick);
 
-            InitSerializableMembers(TimeStamp, Tick);
+            InitSerializableMembers(Tick);
         }
 
         protected override ID.BYTE_TYPE SerializationID()

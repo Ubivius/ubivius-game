@@ -152,6 +152,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_physicsScene: ClientGame
+  m_clockOffsetCorrectionIncrement: 0.05
+  m_offsetErrorTolerance: 1
+  m_offsetErrorMaxDuration: 10
+  m_defaultRTTEstimate: 0.08
   m_updaters:
   - {fileID: 554541790}
   m_packetLossChance: 0.01
@@ -372,6 +376,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66fb5cb2c76006842817f259375f9096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_correctionTolerance: 0.01
   m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
 --- !u!1 &583337820
 GameObject:

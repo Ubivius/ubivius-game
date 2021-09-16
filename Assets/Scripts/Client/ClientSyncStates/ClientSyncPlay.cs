@@ -27,7 +27,7 @@ namespace ubv.client.logic
 
         private float m_baseTickTime;
         private float m_fixedUpdateDeltaTime;
-        private float m_meanHalfRTT;
+        private float m_meanRTT;
         
         private const ushort CLIENT_STATE_BUFFER_SIZE = 64;
 
@@ -35,6 +35,8 @@ namespace ubv.client.logic
         private InputFrame[] m_inputBuffer;
         private InputFrame m_lastInput;
         private ClientState m_lastReceivedServerState;
+
+        private Dictionary<int, long> m_packetSendTimeStamps;
 
         private int m_goalOffset;
         [SerializeField]
@@ -69,7 +71,8 @@ namespace ubv.client.logic
             m_localTick = 0;
             m_goalOffset = 0;
             m_offsetErrorDuration = 0;
-            m_meanHalfRTT = m_defaultRTTEstimate;
+            m_packetSendTimeStamps = new Dictionary<int, long>();
+            m_meanRTT = m_defaultRTTEstimate;
             m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
 
@@ -114,7 +117,7 @@ namespace ubv.client.logic
                 m_inputBuffer[i].SetToNeutral();
             }
 
-            UpdateClockOffset(LatencyFromHalfRTT(m_meanHalfRTT));
+            UpdateClockOffset(LatencyFromRTT(m_meanRTT));
 
             Initialized = true;
             OnInitializationDone?.Invoke();
@@ -130,14 +133,22 @@ namespace ubv.client.logic
             if (!ShouldUpdate())
                 return;
 
+
+            UpdateClockOffset(LatencyFromRTT(m_meanRTT));
+
             int bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
 
             UpdateInput(bufferIndex);
 
+            if (Time.frameCount % 4 == 0)
+            {
+                ManageRTTCheck(m_localTick);
+            }
+
             UpdateClientState(bufferIndex);
 
             ClientCorrection(m_lastReceivedRemoteTick % CLIENT_STATE_BUFFER_SIZE);
-
+            
             ++m_localTick;
             
             for (int i = 0; i < m_updaters.Count; i++)
@@ -197,20 +208,21 @@ namespace ubv.client.logic
             return needCorrection;
         }
 
-        private int LatencyFromNewNetInfo(NetInfo info)
+        private int MeanLatencyFromRTTMessage(RTTMessage msg)
         {
-            long HalfRTTInSystemTicks = DateTime.UtcNow.Ticks - info.TimeStamp.Value;
-            float HalfRTT = (float)HalfRTTInSystemTicks / TimeSpan.TicksPerSecond;
+            long RTTInSystemTicks = DateTime.UtcNow.Ticks - m_packetSendTimeStamps[msg.Tick.Value];
+            m_packetSendTimeStamps.Remove(msg.Tick.Value);
+            float RTT = (float)RTTInSystemTicks / TimeSpan.TicksPerSecond;
                     
             const float weight = 0.3f;
-            m_meanHalfRTT = (m_meanHalfRTT * weight) + (HalfRTT * (1f - weight));
+            m_meanRTT = (m_meanRTT * weight) + (RTT * (1f - weight));
 
-            return LatencyFromHalfRTT(m_meanHalfRTT);
+            return LatencyFromRTT(m_meanRTT);
         }
 
-        private int LatencyFromHalfRTT(float HalfRTT)
+        private int LatencyFromRTT(float RTT)
         {
-            return Mathf.RoundToInt(HalfRTT / m_fixedUpdateDeltaTime);
+            return Mathf.RoundToInt(RTT / m_fixedUpdateDeltaTime);
         }
 
         private void UpdateClockOffset(int latencyInTicks, int baseOffset = ubv.server.logic.ServerNetworkingManager.SERVER_TICK_BUFFER_SIZE)
@@ -244,7 +256,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                         if (m_fixedUpdateDeltaTime < m_baseTickTime * (1f + m_clockOffsetCorrectionIncrement))
                         {
-                            Debug.Log("CLIENT Client too far behind. Speeding up down in order to reach offset " + m_goalOffset);
+                            Debug.Log("CLIENT Client too far behind. Speeding up in order to reach offset " + m_goalOffset);
                         }
 #endif // DEBUG_LOG
                         m_fixedUpdateDeltaTime = m_baseTickTime * (1f + m_clockOffsetCorrectionIncrement);
@@ -280,6 +292,12 @@ namespace ubv.client.logic
             }
         }
 
+        private void ManageRTTCheck(int tick)
+        {
+            m_packetSendTimeStamps[tick] = DateTime.UtcNow.Ticks;
+            m_UDPClient.Send(new RTTMessage(m_packetSendTimeStamps[tick], tick).GetBytes(), PlayerID.Value);
+        }
+
         public void ReceivePacket(UDPToolkit.Packet packet)
         {
             if (!ShouldUpdate() )
@@ -292,21 +310,22 @@ namespace ubv.client.logic
                 if (stateMessage != null)// && state.Tick.Value > m_lastReceivedRemoteTick)
                 {
                     m_lastReceivedRemoteTick = stateMessage.Info.Tick.Value;
-
-                    /*if (m_awaitingServerContact)
-                    {
-                        m_awaitingServerContact = false;
-                        UpdateClockOffset(LatencyFromNewNetInfo(stateMessage.Info));
-                    }*/
-                    UpdateClockOffset(LatencyFromNewNetInfo(stateMessage.Info));
-
+                    
                     ClientState state = stateMessage.State;
                     state.PlayerGUID = PlayerID.Value;
                     m_lastReceivedServerState = state;
-
+                    
 #if DEBUG_LOG
                     //Debug.Log("Received server state tick " + state.Tick.Value + ", local tick is " + m_localTick);
 #endif //DEBUG_LOG
+                }
+                else
+                {
+                    RTTMessage rttMsg = common.serialization.IConvertible.CreateFromBytes<RTTMessage>(packet.Data.ArraySegment());
+                    if(rttMsg != null)
+                    {
+                        UpdateClockOffset(MeanLatencyFromRTTMessage(rttMsg));
+                    }
                 }
             }
         }
