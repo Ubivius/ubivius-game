@@ -9,7 +9,6 @@ namespace ubv.server.logic
         
         public tcp.server.TCPServer TCPServer;
         public udp.server.UDPServer UDPServer;
-        public http.server.HTTPServer HTTPServer;
 
         private void Awake()
         {

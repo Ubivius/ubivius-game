@@ -12,7 +12,7 @@ namespace Tests
         [Test]
         public void GetTest()
         {
-            ubv.http.HTTPClient client = new GameObject().AddComponent<ubv.http.HTTPClient>();
+            ubv.http.client.HTTPClient client = new GameObject().AddComponent<ubv.http.client.HTTPClient>();
 
             CreateMockHTTPServer();
 
@@ -23,7 +23,7 @@ namespace Tests
         [Test]
         public void PostTest()
         {
-            ubv.http.HTTPClient client = new GameObject().AddComponent<ubv.http.HTTPClient>();
+            ubv.http.client.HTTPClient client = new GameObject().AddComponent<ubv.http.client.HTTPClient>();
 
             CreateMockHTTPServer();
             
@@ -33,7 +33,7 @@ namespace Tests
         [Test]
         public void PutTest()
         {
-            ubv.http.HTTPClient client = new GameObject().AddComponent<ubv.http.HTTPClient>();
+            ubv.http.client.HTTPClient client = new GameObject().AddComponent<ubv.http.client.HTTPClient>();
 
             CreateMockHTTPServer();
 
@@ -43,7 +43,7 @@ namespace Tests
         [Test]
         public void DeleteTest()
         {
-            ubv.http.HTTPClient client = new GameObject().AddComponent<ubv.http.HTTPClient>();
+            ubv.http.client.HTTPClient client = new GameObject().AddComponent<ubv.http.client.HTTPClient>();
 
             CreateMockHTTPServer();
 

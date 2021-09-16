@@ -12,14 +12,13 @@ namespace ubv.http.server
     public class HTTPServer : MonoBehaviour
     {
         protected bool m_exitSignal;
-        private List<IHTTPServerReceiver> m_receivers;
         //Health probe listener
         private HttpListener m_healthListener;
         private void Awake()
         {
             m_exitSignal = false;
             m_healthListener = new HttpListener();
-            string[] healthPaths = new string[2] { "http://+:9100/liveness", "http://+:9100/readiness" };
+            string[] healthPaths = new string[2] { "http://+:9100/liveness/", "http://+:9100/readiness/" };
             foreach (string s in healthPaths)
             {
                 m_healthListener.Prefixes.Add(s);
@@ -38,6 +37,7 @@ namespace ubv.http.server
             while (!m_exitSignal)
             {
                 HttpListenerContext context = m_healthListener.GetContext();
+                Debug.Log("Get Request recieved");
                 Thread send = new Thread(SendingThread);
                 send.Start(context);
                 send.Join();
@@ -71,24 +71,9 @@ namespace ubv.http.server
             }
         }
 
-            private void Update()
-        {
-        }
-
         private void OnDestroy()
         {
             m_exitSignal = true;
-        }
-
-        public void Subscribe(IHTTPServerReceiver receiver)
-        {
-            if (!m_receivers.Contains(receiver))
-                m_receivers.Add(receiver);
-        }
-
-        public void Unsubscribe(IHTTPServerReceiver receiver)
-        {
-            m_receivers.Remove(receiver);
         }
     }
 }

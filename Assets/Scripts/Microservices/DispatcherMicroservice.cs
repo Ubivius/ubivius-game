@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using ubv.http;
+using ubv.http.client;
 using System.Net.Http;
 using System.Net;
 using System.Collections.Generic;

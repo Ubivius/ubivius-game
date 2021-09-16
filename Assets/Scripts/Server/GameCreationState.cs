@@ -15,7 +15,7 @@ namespace ubv.server.logic
     /// In charge of regrouping player parties, and launching 
     /// the game with a fixed number of players
     /// </summary>
-    public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver, udp.server.IUDPServerReceiver, http.server.IHTTPServerReceiver
+    public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver, udp.server.IUDPServerReceiver
     {
         [SerializeField] private int m_simulationBuffer;
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
@@ -58,7 +58,6 @@ namespace ubv.server.logic
             m_TCPServer.Subscribe(this);
             m_UDPServer.Subscribe(this);
             m_UDPServer.AcceptNewClients = true;
-            m_HTTPServer.Subscribe(this);
         }
 
         private bool EveryoneIsReady()
