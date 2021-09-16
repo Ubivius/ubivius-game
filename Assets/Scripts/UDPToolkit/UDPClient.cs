@@ -62,10 +62,10 @@ namespace ubv
                 /// <param name="data"></param>
                 public void Send(byte[] data, int playerID)
                 {
-                    if (m_currentTime - m_lastPacketSentTime < 1.0f / m_maximumPacketsPerSecond)
+                    /*if (m_currentTime - m_lastPacketSentTime < 1.0f / m_maximumPacketsPerSecond)
                     {
                         return;
-                    }
+                    }*/
 
                     try
                     {

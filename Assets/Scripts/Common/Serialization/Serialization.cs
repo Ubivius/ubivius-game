@@ -46,7 +46,8 @@ namespace ubv.common.serialization
             HASHMAP_INT_STRING,
             NET_INFO,
             CLIENT_STATE_MESSAGE,
-            INT64
+            INT64,
+            RTT_MSG
         }
     }
 }
