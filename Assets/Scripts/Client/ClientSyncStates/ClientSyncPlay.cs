@@ -146,11 +146,10 @@ namespace ubv.client.logic
             }
 
             UpdateClientState(bufferIndex);
-
-            ClientCorrection(m_lastReceivedRemoteTick % CLIENT_STATE_BUFFER_SIZE);
             
             ++m_localTick;
-            
+            ClientCorrection(m_lastReceivedRemoteTick % CLIENT_STATE_BUFFER_SIZE);
+
             for (int i = 0; i < m_updaters.Count; i++)
             {
                 m_updaters[i].FixedStateUpdate(Time.deltaTime);
@@ -412,14 +411,15 @@ namespace ubv.client.logic
                     // sol 2: corriger direct sans simulate pour les updaters qui n'ont pas besoin de phy sim
                     // et quand on doit caller phy sim, on reset tous les physical updaters
                     List<ClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastReceivedServerState);
-                    if (updaters.Count > 0)
+                    if (updaters.Count > 0) 
                     {
                         int rewindTicks = m_lastReceivedRemoteTick;
                                 
                         // reset world state to last server-sent state
-                        for (int i = 0; i < updaters.Count; i++)
+                        // pour le moment, on prend l'option 1 et on reset all
+                        for (int i = 0; i < m_updaters.Count; i++)
                         {
-                            updaters[i].UpdateWorldFromState(m_lastReceivedServerState);
+                            m_updaters[i].UpdateWorldFromState(m_lastReceivedServerState);
                         }
 
                         Debug.Log("CORRECTION : Remote ticks : " + m_lastReceivedRemoteTick + ". Local ticks : " + m_localTick + ". Diff = " + (m_localTick - m_lastReceivedRemoteTick));
@@ -428,10 +428,10 @@ namespace ubv.client.logic
                         {
                             int rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
 
-                            for (int i = 0; i < updaters.Count; i++)
+                            for (int i = 0; i < m_updaters.Count; i++)
                             {
-                                updaters[i].UpdateStateFromWorld(ref m_clientStateBuffer[rewindIndex]);
-                                updaters[i].Step(m_inputBuffer[rewindIndex], Time.fixedDeltaTime);
+                                m_updaters[i].UpdateStateFromWorld(ref m_clientStateBuffer[rewindIndex]);
+                                m_updaters[i].Step(m_inputBuffer[rewindIndex], Time.fixedDeltaTime);
                             }
 
                             m_clientPhysics.Simulate(Time.fixedDeltaTime);
