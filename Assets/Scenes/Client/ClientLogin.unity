@@ -1855,6 +1855,26 @@ PrefabInstance:
       propertyPath: m_mockCharacterPlayerID
       value: murphy-django-id
       objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mockCharacterID
+      value: murphy-django-id-char
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mockCharacterName
+      value: homer-simpson-mock
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_characterDataEndpoint
+      value: http://character.dev.ubivius.tk
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mockCharacterPlayerID
+      value: murphy-django-id
+      objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_mock
