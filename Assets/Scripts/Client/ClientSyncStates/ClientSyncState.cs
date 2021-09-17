@@ -25,7 +25,7 @@ namespace ubv.client.logic
 
         static protected tcp.client.TCPClient m_TCPClient;
         static protected udp.client.UDPClient m_UDPClient;
-        static protected http.HTTPClient m_HTTPClient;
+        static protected http.client.HTTPClient m_HTTPClient;
         static protected DispatcherMicroservice m_dispatcherService;
         static protected AuthenticationService m_authenticationService;
         static protected CharacterDataService m_characterService;

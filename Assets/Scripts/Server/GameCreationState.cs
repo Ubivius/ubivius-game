@@ -25,7 +25,7 @@ namespace ubv.server.logic
         private Dictionary<int, bool> m_readyClients;
 
         [SerializeField] private List<ServerInitializer> m_serverInitializers;
-        
+
         // Flags
         private bool m_readyToStartGame;
         private bool m_awaitingClientLoadWorld;
@@ -58,7 +58,6 @@ namespace ubv.server.logic
             m_TCPServer.Subscribe(this);
             m_UDPServer.Subscribe(this);
             m_UDPServer.AcceptNewClients = true;
-
         }
 
         private bool EveryoneIsReady()
