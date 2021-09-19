@@ -11,6 +11,7 @@ namespace ubv.client.logic
     /// </summary>
     public class PlayerGameObjectUpdater :  ClientStateUpdater
     {
+        [SerializeField] private float m_lerpTime = 0.2f;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
 
@@ -20,12 +21,14 @@ namespace ubv.client.logic
 
         private int m_playerGUID;
 
+        private float m_timeSinceLastGoal;
         private Dictionary<int, PlayerState> m_goalStates;
 
         public UnityAction OnInitialized;
         
         public override void Init(List<PlayerState> playerStates, int localID)
         {
+            m_timeSinceLastGoal = 0;
             Bodies = new Dictionary<int, Rigidbody2D>();
             m_goalStates = new Dictionary<int, PlayerState>();
             PlayerControllers = new Dictionary<int, common.gameplay.PlayerController>();
@@ -59,7 +62,7 @@ namespace ubv.client.logic
             // check correction on goalStates au lieu du current position TODO
             foreach(PlayerState player in remoteState.Players().Values)
             {
-                err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance;
+                err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance;
                 if (err)
                 {
                     //Debug.Log("Needing correction");
@@ -88,11 +91,12 @@ namespace ubv.client.logic
 
         public override void Step(InputFrame input, float deltaTime)
         {
+            m_timeSinceLastGoal += deltaTime;
             foreach (PlayerState player in m_goalStates.Values)
             {
                 if (player.GUID.Value != m_playerGUID)
                 {
-                    LerpTowardGoalState(player);
+                    LerpTowardGoalState(player, m_timeSinceLastGoal);
                 }
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
@@ -100,6 +104,7 @@ namespace ubv.client.logic
 
         public override void UpdateWorldFromState(ClientState state)
         {
+            m_timeSinceLastGoal = 0;
             foreach (PlayerState player in state.Players().Values)
             {
                 //Bodies[player.GUID.Value].position = player.Position.Value;
@@ -124,15 +129,15 @@ namespace ubv.client.logic
             }*/
         }
 
-        private void LerpTowardGoalState(PlayerState player)
+        private void LerpTowardGoalState(PlayerState player, float time)
         {
-            Bodies[player.GUID.Value].position = Vector2.LerpUnclamped(Bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, 0.25f);
+            Bodies[player.GUID.Value].position = Vector2.Lerp(Bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, time / m_lerpTime);
             if ((Bodies[player.GUID.Value].position - m_goalStates[player.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
             {
                 Bodies[player.GUID.Value].position = m_goalStates[player.GUID.Value].Position.Value;
             }
 
-            Bodies[player.GUID.Value].rotation = Mathf.LerpUnclamped(Bodies[player.GUID.Value].rotation, m_goalStates[player.GUID.Value].Rotation.Value, 0.25f);
+            Bodies[player.GUID.Value].rotation = Mathf.Lerp(Bodies[player.GUID.Value].rotation, m_goalStates[player.GUID.Value].Rotation.Value, time / m_lerpTime);
             if (Bodies[player.GUID.Value].rotation - m_goalStates[player.GUID.Value].Rotation.Value < 0.01f)
             {
                 Bodies[player.GUID.Value].rotation = m_goalStates[player.GUID.Value].Rotation.Value;
