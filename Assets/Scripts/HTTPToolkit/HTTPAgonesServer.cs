@@ -16,7 +16,7 @@ namespace ubv.http.agonesServer
 
         async void Start()
         {
-            agones = GetComponent<AgonesSdk>();
+            agones = gameObject.GetComponent<AgonesSdk>();
             bool ok = await agones.Connect();
             if (ok)
             {
@@ -88,7 +88,7 @@ namespace ubv.http.agonesServer
         }
         void OnDestroy()
         {
-            Debug.Log("Server - Close");
+            Debug.Log("Agones Server - Close");
         }
     }
 }
