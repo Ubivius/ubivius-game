@@ -14,19 +14,19 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Client/ClientMenu.unity
     guid: e98e23718d41a6a4fade2cf1a17c7c1b
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Client/ClientLobby.unity
     guid: 10f132591ffbfb84bbee232a843710cd
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Prototypes/proto_move_client.unity
     guid: ce42f548dd5b2f147970832d5aeff2a5
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/ClientScene.unity
     guid: d4457cac4ca0fc04a95fe767583543a6
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Client/ClientGame.unity
     guid: 53137c5ad57a7064eb24c6fe7d2a90b0
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Client/ClientGameSearch.unity
     guid: 0c128e3d101cf8b4f86b104489afacdf
   m_configObjects:
