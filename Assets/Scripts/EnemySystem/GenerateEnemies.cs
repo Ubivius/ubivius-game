@@ -47,8 +47,8 @@ namespace Assets.Scripts.EnemySystem
                     //m_enemyID[i] = System.Guid.NewGuid().GetHashCode();
                     GameObject enemy = Instantiate(m_enemy, new Vector3(m_xPos, m_yPos, 0), Quaternion.identity);
                     Rigidbody2D body = enemy.GetComponent<Rigidbody2D>(); ;
-                    body.name = "Server enemy " + m_enemyID[i].ToString();
-                    m_bodies.Add(m_enemyID[i], body);
+                    //body.name = "Server enemy " + m_enemyID[i].ToString();
+                    //m_bodies.Add(m_enemyID[i], body);
 
                     EnemyPathFindingMovement enemyPathFindingMovement = enemy.GetComponent<EnemyPathFindingMovement>();
                     enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
