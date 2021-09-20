@@ -12,12 +12,12 @@ namespace ubv.http.agonesServer
     [RequireComponent(typeof(AgonesSdk))]
     public class HTTPAgonesServer : MonoBehaviour
     {
-        private AgonesSdk agones = null;
+        private AgonesSdk m_agones = null;
 
         async void Start()
         {
-            agones = gameObject.GetComponent<AgonesSdk>();
-            bool ok = await agones.Connect();
+            m_agones = gameObject.GetComponent<AgonesSdk>();
+            bool ok = await m_agones.Connect();
             if (ok)
             {
                 Debug.Log(("Agones Server - Connected"));
@@ -33,7 +33,7 @@ namespace ubv.http.agonesServer
 
         public async void ReadyGameServer()
         {
-            bool ok = await agones.Ready();
+            bool ok = await m_agones.Ready();
             if (ok)
             {
                 Debug.Log($"Agones Server - Ready");
@@ -47,8 +47,8 @@ namespace ubv.http.agonesServer
 
         public async Task<GameServer> GetBackingGameServer()
         {
-            var gameserver = await agones.GameServer();
-            if (gameserver.ObjectMeta != null)
+            var gameserver = await m_agones.GameServer();
+            if (gameserver != null && gameserver.ObjectMeta != null)
             {
                 Debug.Log(("Agones Server - Success to get backing game server"));
             }
@@ -62,7 +62,7 @@ namespace ubv.http.agonesServer
 
         public async void ReserveGameServer(TimeSpan duration)
         {
-            bool ok = await agones.Reserve(duration);
+            bool ok = await m_agones.Reserve(duration);
             if (ok)
             {
                 Debug.Log($"Agones Server - Game server reserved for " + duration);
@@ -75,7 +75,7 @@ namespace ubv.http.agonesServer
 
         public async void ShutdownGameServer()
         {
-            bool ok = await agones.Shutdown();
+            bool ok = await m_agones.Shutdown();
             if (ok)
             {
                 Debug.Log($"Agones Server - Game server shutting down");

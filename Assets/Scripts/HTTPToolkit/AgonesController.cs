@@ -10,14 +10,14 @@ namespace ubv.http.agonesServer
     public class AgonesController : MonoBehaviour
     {
         [SerializeField]
-        private GameObject server;
+        private GameObject m_server;
 
         void Start()
         {
-            server.SetActive(false);
+            m_server.SetActive(false);
 
 #if (UNITY_EDITOR || UNITY_SERVER)
-            server.SetActive(true);
+            m_server.SetActive(true);
 #endif
         }
     }
