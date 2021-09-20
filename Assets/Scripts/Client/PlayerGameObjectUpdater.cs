@@ -120,13 +120,7 @@ namespace ubv.client.logic
 
         public override void FixedStateUpdate(float deltaTime)
         {
-            /*foreach (PlayerState player in m_goalStates.Values)
-            {
-                if (player.GUID.Value != m_playerGUID)
-                {
-                    LerpTowardGoalState(player);
-                }
-            }*/
+
         }
 
         private void LerpTowardGoalState(PlayerState player, float time)

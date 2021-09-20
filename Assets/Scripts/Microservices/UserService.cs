@@ -9,6 +9,7 @@ namespace ubv.microservices
 {
     public class UserService : MonoBehaviour
     {
+        public const int REQUEST_CHECK_DELAY = 13;
         protected readonly object m_requestLock = new object();
 
         [SerializeField] private bool m_mock;
@@ -59,7 +60,7 @@ namespace ubv.microservices
 
         private void Update()
         {
-            if (Time.frameCount % 13 == 0)
+            if (Time.frameCount % REQUEST_CHECK_DELAY == 0)
             {
                 lock (m_requestLock)
                 {
