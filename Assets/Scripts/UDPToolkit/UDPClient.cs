@@ -22,8 +22,6 @@ namespace ubv
                 private float m_currentTime;
                 private float m_lastPacketSentTime;
                 
-                private bool m_connected;
-
                 private Dictionary<uint, float> m_sequencesSendTime;
                 private UDPToolkit.ConnectionData m_connectionData;
                 private UdpClient m_client;
@@ -35,7 +33,6 @@ namespace ubv
                 {
                     m_connectionData = new UDPToolkit.ConnectionData();
                     m_sequencesSendTime = new Dictionary<uint, float>();
-                    m_connected = false;
                     
                     m_lastPacketSentTime = 0;
 
@@ -65,10 +62,15 @@ namespace ubv
                 /// <param name="data"></param>
                 public void Send(byte[] data, int playerID)
                 {
-                    if (m_currentTime - m_lastPacketSentTime < 1.0f / m_maximumPacketsPerSecond)
+                    /*
+                     * We should eventually find a way to queue up packets or something like that.
+                     * Hard dropping packets is not the solution but we may need to find something
+                     * if we realize we are sending too many packets per second (causing a 
+                     * network flood).
+                     * if (m_currentTime - m_lastPacketSentTime < 1.0f / m_maximumPacketsPerSecond)
                     {
                         return;
-                    }
+                    }*/
 
                     try
                     {
@@ -112,7 +114,6 @@ namespace ubv
                         
                         if (m_connectionData.Receive(packet))
                         {
-                            m_connected = true;
                             Distribute(packet);
                         }
                     }

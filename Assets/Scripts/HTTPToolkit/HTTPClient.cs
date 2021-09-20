@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace ubv.http
+namespace ubv.http.client
 {
     /// <summary>
     /// HTTP client custom wrapper

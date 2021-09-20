@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using ubv.http;
+using ubv.http.client;
 using System.Net.Http;
 using System.Net;
 using System.Collections.Generic;
@@ -9,6 +9,9 @@ namespace ubv.microservices
 {
     public class CharacterDataService : MonoBehaviour
     {
+        protected readonly object m_singleRequestLock = new object();
+        protected readonly object m_multipleRequestLock = new object();
+        
         public delegate void OnGetCharacters(CharacterData[] characters);
         public delegate void OnGetSingle(CharacterData character);
 
@@ -25,6 +28,7 @@ namespace ubv.microservices
         }
 
         [SerializeField] private bool m_mock;
+        [SerializeField] private utils.Mocker m_mockData;
         [SerializeField] private HTTPClient m_HTTPClient;
         [SerializeField] string m_characterDataEndpoint;
 
@@ -65,21 +69,34 @@ namespace ubv.microservices
 
         private void Update()
         {
-            if (m_readyForNextSingleRequest)
+            if (Time.frameCount % 17 == 0)
             {
-                if (m_onGetSingleRequests.Count > 0)
+                lock (m_singleRequestLock)
                 {
-                    SingleRequest request = m_onGetSingleRequests.Peek();
-                    GetCharacter(request.CharacterID);
+                    if (m_readyForNextSingleRequest)
+                    {
+                        if (m_onGetSingleRequests.Count > 0)
+                        {
+                            SingleRequest request = m_onGetSingleRequests.Peek();
+                            Debug.Log("Fetching character " + request.CharacterID + " from Update Loop");
+                            GetCharacter(request.CharacterID);
+                        }
+                    }
                 }
             }
 
-            if (m_readyForNextCharactersRequest)
+            if (Time.frameCount % 11 == 0)
             {
-                if (m_onGetCharactersRequests.Count > 0)
+                lock (m_multipleRequestLock)
                 {
-                    CharactersRequest request = m_onGetCharactersRequests.Peek();
-                    GetCharacters(request.PlayerID);
+                    if (m_readyForNextCharactersRequest)
+                    {
+                        if (m_onGetCharactersRequests.Count > 0)
+                        {
+                            CharactersRequest request = m_onGetCharactersRequests.Peek();
+                            GetCharacters(request.PlayerID);
+                        }
+                    }
                 }
             }
         }
@@ -91,24 +108,30 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("Mocking char-data.");
 #endif // DEBUG_LOG
-                CharacterData character = new CharacterData("mock-murphy", "mock-murphy-id-1234", "murphy-id-123");
+                CharacterData character = new CharacterData(m_mockData.CharacterName, 
+                    m_mockData.CharacterID, 
+                    m_mockData.UserID);
                 onGetCharacter(character);
                 return;
             }
 
-            m_onGetSingleRequests.Enqueue(new SingleRequest() { CharacterID = characterID, Callback = onGetCharacter });
-            if (!m_readyForNextSingleRequest)
+            Debug.Log("Fetching character " + characterID + " from character data");
+
+            lock (m_singleRequestLock)
             {
-                return;
+                m_onGetSingleRequests.Enqueue(new SingleRequest() { CharacterID = characterID, Callback = onGetCharacter });
+                if (!m_readyForNextSingleRequest)
+                {
+                    return;
+                }
+
+                GetCharacter(characterID);
             }
-            
-            GetCharacter(characterID);
         }
 
         private void GetCharacter(string characterID)
         {
             m_readyForNextSingleRequest = false;
-            Debug.Log("Fetching character " + characterID + " from character data (call from service class)");
             m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
             m_HTTPClient.Get("characters/" + characterID, OnCharacterDataResponse);
         }
@@ -127,7 +150,9 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("Mocking char-data.");
 #endif // DEBUG_LOG
-                CharacterData character = new CharacterData("mock-murphy", "mock-murphy-id-1234", "murphy-id-123");
+                CharacterData character = new CharacterData(m_mockData.CharacterName,
+                    m_mockData.CharacterID,
+                    m_mockData.UserID);
                 CharacterData[] characters = new CharacterData[]
                 {
                     character
@@ -135,14 +160,17 @@ namespace ubv.microservices
                 onGetCharacters(characters);
                 return;
             }
-            
-            m_onGetCharactersRequests.Enqueue(new CharactersRequest() { PlayerID = playerID, Callback = onGetCharacters });
-            if (!m_readyForNextCharactersRequest)
-            {
-                return;
-            }
 
-            GetCharacters(playerID);
+            lock (m_multipleRequestLock)
+            {
+                m_onGetCharactersRequests.Enqueue(new CharactersRequest() { PlayerID = playerID, Callback = onGetCharacters });
+                if (!m_readyForNextCharactersRequest)
+                {
+                    return;
+                }
+
+                GetCharacters(playerID);
+            }
         }
         
         private void OnCharactersDataResponse(HttpResponseMessage message)
@@ -159,7 +187,6 @@ namespace ubv.microservices
                 }
                 
                 m_onGetCharactersRequests.Dequeue().Callback.Invoke(characters);
-                m_readyForNextCharactersRequest = true;
             }
             else
             {
@@ -167,6 +194,7 @@ namespace ubv.microservices
                 Debug.Log("Character data request was not successful");
 #endif // DEBUG_LOG
             }
+            m_readyForNextCharactersRequest = true;
         }
 
         private void OnCharacterDataResponse(HttpResponseMessage message)
@@ -180,7 +208,6 @@ namespace ubv.microservices
 
                 Debug.Log("Calling callback on " + m_onGetSingleRequests.Peek().CharacterID);
                 m_onGetSingleRequests.Dequeue().Callback.Invoke(character);
-                m_readyForNextSingleRequest = true;
             }
             else
             {
@@ -188,6 +215,7 @@ namespace ubv.microservices
                 Debug.Log("Character data request was not successful");
 #endif // DEBUG_LOG
             }
+            m_readyForNextSingleRequest = true;
         }
     }
 }

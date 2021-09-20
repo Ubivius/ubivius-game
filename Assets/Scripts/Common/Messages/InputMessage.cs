@@ -12,24 +12,24 @@ namespace ubv
             {
                 public serialization.types.Bool Sprinting;
                 public serialization.types.Vector2 Movement;
-                public serialization.types.Uint32 Tick;
+                public NetInfo Info;
 
                 public InputFrame()
                 {
                     Sprinting = new serialization.types.Bool(false);
                     Movement = new serialization.types.Vector2(Vector2.zero);
-                    Tick = new serialization.types.Uint32(0);
+                    Info = new NetInfo(0);
 
-                    InitSerializableMembers(Sprinting, Movement, Tick);
+                    InitSerializableMembers(Sprinting, Movement, Info);
                 }
 
-                public InputFrame(bool sprinting, Vector2 movement, uint tick)
+                public InputFrame(bool sprinting, Vector2 movement, long time, int tick)
                 {
                     Sprinting = new serialization.types.Bool(sprinting);
                     Movement = new serialization.types.Vector2(movement);
-                    Tick = new serialization.types.Uint32(tick);
+                    Info = new NetInfo(tick);
 
-                    InitSerializableMembers(Sprinting, Movement, Tick);
+                    InitSerializableMembers(Sprinting, Movement, Info);
                 }
                 
 
@@ -58,26 +58,22 @@ namespace ubv
                 }
 
                 public serialization.types.Int32 PlayerID;
-                public serialization.types.Uint32 StartTick;
                 public serialization.types.List<InputFrame> InputFrames;
 
                 public InputMessage()
                 {
-                    StartTick = new serialization.types.Uint32(0);
                     InputFrames = new InputFrameList(new List<InputFrame>());
                     PlayerID = new serialization.types.Int32(0);
 
-                    InitSerializableMembers(StartTick, InputFrames, PlayerID);
+                    InitSerializableMembers(InputFrames, PlayerID);
                 }
 
-                public InputMessage(uint startTick, List<InputFrame> frames, int id)
+                public InputMessage(int startTick, List<InputFrame> frames, int id)
                 {
-                    StartTick = new serialization.types.Uint32(startTick);
                     InputFrames = new InputFrameList(frames);
                     PlayerID = new serialization.types.Int32(id);
 
-                    InitSerializableMembers(StartTick, InputFrames, PlayerID);
-
+                    InitSerializableMembers(InputFrames, PlayerID);
                 }
 
                 protected override ID.BYTE_TYPE SerializationID()
