@@ -43,7 +43,11 @@ namespace ubv.common.serialization
             CLIENT_WORLD_LOADED_MESSAGE,
             SERVER_SUCCESSFUL_CONNECT_MESSAGE,
             LOBBY_ENTER_MESSAGE,
-            HASHMAP_INT_STRING
+            HASHMAP_INT_STRING,
+            NET_INFO,
+            CLIENT_STATE_MESSAGE,
+            INT64,
+            RTT_MSG
         }
     }
 }

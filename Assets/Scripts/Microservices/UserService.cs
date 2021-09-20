@@ -9,9 +9,11 @@ namespace ubv.microservices
 {
     public class UserService : MonoBehaviour
     {
+        public const int REQUEST_CHECK_DELAY = 13;
+        protected readonly object m_requestLock = new object();
+
         [SerializeField] private bool m_mock;
-        [SerializeField] private string m_forceUserID;
-        [SerializeField] private string m_forceUserName;
+        [SerializeField] private utils.Mocker m_mockData;
 
         [SerializeField] private HTTPClient m_HTTPClient;
         [SerializeField] string m_userEndpoint;
@@ -58,12 +60,19 @@ namespace ubv.microservices
 
         private void Update()
         {
-            if (m_readyForNextRequest)
+            if (Time.frameCount % REQUEST_CHECK_DELAY == 0)
             {
-                if (m_userRequests.Count > 0)
+                lock (m_requestLock)
                 {
-                    UserInfoRequest request = m_userRequests.Peek();
-                    SendUserInfoRequest(request.ID);
+                    if (m_readyForNextRequest)
+                    {
+                        if (m_userRequests.Count > 0)
+                        {
+                            UserInfoRequest request = m_userRequests.Peek();
+                            Debug.Log("Requesting user info from " + request.ID + " from Update Loop");
+                            SendUserInfoRequest(request.ID);
+                        }
+                    }
                 }
             }
         }
@@ -75,8 +84,8 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("Mocking user. Auto logging in with random ID (or forced ID provided if any)");
 #endif // DEBUG_LOG
-                string _id = m_forceUserID.Length > 0 ? m_forceUserID : System.Guid.NewGuid().ToString();
-                string _user = m_forceUserName.Length > 0 ? m_forceUserName : "murphy-auto-username";
+                string _id = m_mockData.UserID.Length > 0 ? m_mockData.UserID : System.Guid.NewGuid().ToString();
+                string _user = m_mockData.UserName.Length > 0 ? m_mockData.UserName : "murphy-auto-username";
                 onGetInfo(new UserInfo(_id, _user, "murphy@gmail.com", "00-00-0001"));
                 return;
             }
@@ -84,19 +93,24 @@ namespace ubv.microservices
             Debug.Log("Requesting user info from " + id);
 #endif // DEBUG_LOG
 
-            m_userRequests.Enqueue(new UserInfoRequest() { ID = id, Callback = onGetInfo });
-            
-            if (!m_readyForNextRequest)
+            lock (m_requestLock)
             {
-                return;
-            }
+                m_userRequests.Enqueue(new UserInfoRequest() { ID = id, Callback = onGetInfo });
 
-            m_readyForNextRequest = false;
-            SendUserInfoRequest(id);
+                Debug.Log("User requests count : " + m_userRequests.Count);
+
+                if (!m_readyForNextRequest)
+                {
+                    return;
+                }
+
+                SendUserInfoRequest(id);
+            }
         }
 
         private void SendUserInfoRequest(string id)
         {
+            m_readyForNextRequest = false;
             m_HTTPClient.SetEndpoint(m_userEndpoint);
             m_HTTPClient.Get("users/" + id, OnUserResponse);
         }
@@ -110,9 +124,11 @@ namespace ubv.microservices
 
                 string JSON = message.Content.ReadAsStringAsync().Result;
                 JSONUserInfoResponse userInfoResponse = JsonUtility.FromJson<JSONUserInfoResponse>(JSON);
-                UserInfo userInfo = new UserInfo(userInfoResponse.id, userInfoResponse.username, userInfoResponse.email, userInfoResponse.dateofbirth); 
+                UserInfo userInfo = new UserInfo(userInfoResponse.id, userInfoResponse.username, userInfoResponse.email, userInfoResponse.dateofbirth);
+                Debug.Log("Received user info "  + userInfo­.ID + " (on OnUserResponse in service)");
+                Debug.Log("User request count in response : " + m_userRequests.Count);
+                Debug.Log("Calling callback on " + m_userRequests.Peek().ID);
                 m_userRequests.Dequeue().Callback.Invoke(userInfo);
-                m_readyForNextRequest = true;
             }
             else
             {
@@ -120,6 +136,7 @@ namespace ubv.microservices
                 Debug.Log("User request was not successful");
 #endif // DEBUG_LOG
             }
+            m_readyForNextRequest = true;
         }
     }
 }

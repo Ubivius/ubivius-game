@@ -15,12 +15,14 @@ namespace ubv.tcp.client
     /// </summary>
     public class TCPClient : MonoBehaviour
     {
+        public bool AutoReconnect;
+
         protected readonly object m_lock = new object();
 
         private string m_serverAddress;
         private int m_serverPort;
 
-        protected bool m_exitSignal;
+        protected volatile bool m_exitSignal;
 
         private TcpClient m_client;
         private IPEndPoint m_server;
@@ -33,13 +35,14 @@ namespace ubv.tcp.client
         private const int DATA_BUFFER_SIZE = 1024*1024*4;
         private Queue<byte[]> m_dataToSend;
 
-        private bool m_activeEndpoint;
+        private volatile bool m_activeEndpoint;
         [SerializeField] int m_connectionTimeoutInMS = 5000;
-        [SerializeField] private float m_coonnectionKeepAliveTimerIntervalMS = 250;
-        private float m_endpointLastTimeSeen;
+        
+        [SerializeField] private float m_reconnectTryIntervalMS = 2000;
+        private float m_reconnectTryTimer;
+        
+        [SerializeField] private float m_connectionKeepAliveIntervalMS = 250;
         private byte[] m_keepAlivePacketBytes;
-
-        private float m_connectionCheckTimer;
         private float m_connectionKeepAliveTimer;
 
         private int? m_playerID;
@@ -54,15 +57,13 @@ namespace ubv.tcp.client
             m_exitSignal = false;
             m_dataToSend = new Queue<byte[]>();
             m_activeEndpoint = false;
-            m_endpointLastTimeSeen = 0;
 
             m_iteratingTroughReceivers = false;
-            m_keepAlivePacketBytes = new byte[0];
 
-            m_connectionCheckTimer = 0;
-            m_connectionKeepAliveTimer = 0;
-            
             m_requestToSendEvent = new ManualResetEvent(false);
+
+            m_keepAlivePacketBytes = new byte[0];
+            m_connectionKeepAliveTimer = 0;
         }
         
         public void SetPlayerID(int playerID)
@@ -94,7 +95,7 @@ namespace ubv.tcp.client
                 m_iteratingTroughReceivers = true;
                 foreach (ITCPClientReceiver receiver in m_receivers)
                 {
-                    receiver.OnSuccessfulConnect();
+                    receiver.OnSuccessfulTCPConnect();
                 }
                 m_iteratingTroughReceivers = false;
 #if DEBUG_LOG
@@ -107,7 +108,6 @@ namespace ubv.tcp.client
                     HandleConnection(stream);
                     stream.Close();
                 }
-                m_activeEndpoint = false;
 
                 m_iteratingTroughReceivers = true;
                 foreach (ITCPClientReceiver receiver in m_receivers)
@@ -167,17 +167,13 @@ namespace ubv.tcp.client
                 catch (IOException ex)
                 {
                     Debug.Log(ex.Message);
+                    m_activeEndpoint = false;
                     return;
                 }
-
+                
                 if (bytesRead > 0)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
-                    lock (m_lock)
-                    {
-                        m_endpointLastTimeSeen = 0;
-                    }
-
                     while (packet != null && totalPacketBytes < bytesRead)
                     {
                         readyToReadPacket = true;
@@ -242,31 +238,27 @@ namespace ubv.tcp.client
             }
         }
 
-        private void Update()
+        private void ReconnectCheck()
         {
-            if (m_activeEndpoint)
+            if (!m_activeEndpoint && AutoReconnect)
             {
-                m_endpointLastTimeSeen += Time.deltaTime;
-                m_connectionCheckTimer += Time.deltaTime;
-                m_connectionKeepAliveTimer += Time.deltaTime;
-
-                if (m_connectionCheckTimer > m_connectionTimeoutInMS / 1000f)
+                m_reconnectTryTimer += Time.deltaTime;
+                if (m_reconnectTryTimer * 1000 > m_reconnectTryIntervalMS)
                 {
-                    m_connectionCheckTimer = 0;
-                    m_activeEndpoint = CheckConnection();
-                }
-                
-                if (m_connectionKeepAliveTimer > m_coonnectionKeepAliveTimerIntervalMS / 1000f && m_activeEndpoint)
-                {
-                    m_connectionKeepAliveTimer = 0;
-                    Send(m_keepAlivePacketBytes);
+#if DEBUG_LOG
+                    Debug.Log("Trying to reconnect to server...");
+#endif //DEBUG_LOG
+                    Reconnect();
+                    m_reconnectTryTimer = 0;
                 }
             }
+        }
 
-
+        private void UpdateSubscriptions()
+        {
             lock (m_lock)
             {
-                if (!m_iteratingTroughReceivers)
+                if (!m_iteratingTroughReceivers && m_activeEndpoint)
                 {
                     if (m_receiversAwaitingSubscription.Count > 0)
                     {
@@ -288,7 +280,25 @@ namespace ubv.tcp.client
                 }
             }
         }
-        
+
+        private void Update()
+        {
+            ReconnectCheck();
+            UpdateSubscriptions();
+            ConnectionKeepAlive();
+        }
+
+        private void ConnectionKeepAlive()
+        {
+            m_connectionKeepAliveTimer += Time.deltaTime;
+            if (m_connectionKeepAliveTimer > m_connectionKeepAliveIntervalMS / 1000f && m_activeEndpoint)
+            {
+                m_connectionKeepAliveTimer = 0;
+
+                Send(m_keepAlivePacketBytes);
+            }
+        }
+
         private void SendingThread(object streamObj)
         {
             NetworkStream stream = (NetworkStream)streamObj;
@@ -321,6 +331,7 @@ namespace ubv.tcp.client
                         catch (IOException ex)
                         {
                             Debug.Log(ex.Message);
+                            m_activeEndpoint = false;
                             return;
                         }
                     }
@@ -383,10 +394,6 @@ namespace ubv.tcp.client
             thread.Start();
         }
         
-        private bool CheckConnection()
-        {
-            return (m_endpointLastTimeSeen * 1000 < m_connectionTimeoutInMS);
-        }
 
         public bool IsConnected()
         {
