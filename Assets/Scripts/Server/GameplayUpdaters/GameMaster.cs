@@ -30,7 +30,7 @@ namespace ubv.server.logic
         {
         }
 
-        public override void UpdateClient(ClientState client)
+        public override void UpdateClient(ref ClientState client)
         {
         }
 
