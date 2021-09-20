@@ -23,6 +23,7 @@ namespace ubv
 
             private Vector2 m_move = Vector2.zero;
             private bool m_IsSprinting = false;
+            private bool m_interact = false;
 
             private void Awake()
             {
@@ -62,7 +63,7 @@ namespace ubv
 
             private void Interact()
             {
-                // TODO : verifier que la hitbox du personnage touche la hitbox du bouton
+                m_interact = true;
             }
 
             // Update is called once per frame
@@ -70,6 +71,7 @@ namespace ubv
             {
                 m_currentInputFrame.Movement.Value = m_move;
                 m_currentInputFrame.Sprinting.Value = m_IsSprinting;
+                m_currentInputFrame.Interact.Value = m_interact;
             }
         
             static public common.data.InputFrame CurrentFrame()

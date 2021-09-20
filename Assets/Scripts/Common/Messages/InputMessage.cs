@@ -12,6 +12,7 @@ namespace ubv
             {
                 public serialization.types.Bool Sprinting;
                 public serialization.types.Vector2 Movement;
+                public serialization.types.Bool Interact;
                 public NetInfo Info;
 
                 public InputFrame()
