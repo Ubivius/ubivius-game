@@ -23,7 +23,7 @@ namespace ubv.client.logic
         public override void Init(List<PlayerState> playerStates, int localID)
         {
         }
-        
+
         public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
         {
             bool err = false;
@@ -38,30 +38,42 @@ namespace ubv.client.logic
             return err;
         }
 
-        public override void SetStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
+        public override void UpdateStateFromWorld(ref ClientState state)
         {
-            foreach (EnemyStateData enemy in state.Enemies().Values)
-            {
-                enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
-                enemy.Rotation.Value = m_bodies[enemy.GUID.Value].rotation;
-            }
         }
 
-        public override void UpdateFromState(ClientState state)
+        public override void Step(InputFrame input, float deltaTime)
         {
-            foreach (EnemyStateData enemy in state.Enemies().Values)
-            {
-                if (enemy.GUID.Value != m_enemyGUID)
-                {
-                    m_goalStates[enemy.GUID.Value] = enemy;
-                }
-                else
-                {
-                    m_bodies[enemy.GUID.Value].position = enemy.Position.Value;
-                    m_bodies[enemy.GUID.Value].rotation = enemy.Rotation.Value;
-                }
-            }
         }
+
+        public override void UpdateWorldFromState(ClientState state)
+        {
+        }
+
+        //public override void SetStateAndStep(ref ClientState state, InputFrame input, float deltaTime)
+        //{
+        //    foreach (EnemyStateData enemy in state.Enemies().Values)
+        //    {
+        //        enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
+        //        enemy.Rotation.Value = m_bodies[enemy.GUID.Value].rotation;
+        //    }
+        //}
+
+        //public override void UpdateFromState(ClientState state)
+        //{
+        //    foreach (EnemyStateData enemy in state.Enemies().Values)
+        //    {
+        //        if (enemy.GUID.Value != m_enemyGUID)
+        //        {
+        //            m_goalStates[enemy.GUID.Value] = enemy;
+        //        }
+        //        else
+        //        {
+        //            m_bodies[enemy.GUID.Value].position = enemy.Position.Value;
+        //            m_bodies[enemy.GUID.Value].rotation = enemy.Rotation.Value;
+        //        }
+        //    }
+        //}
 
         public override void FixedStateUpdate(float deltaTime)
         {

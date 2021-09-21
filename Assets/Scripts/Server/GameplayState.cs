@@ -142,7 +142,7 @@ namespace ubv.server.logic
                     ClientState client = m_clientStates[id];
                     foreach (ServerGameplayStateUpdater updater in m_updaters)
                     {
-                        updater.UpdateClient(client);
+                        updater.UpdateClient(ref client);
                     }
                 }
                 
