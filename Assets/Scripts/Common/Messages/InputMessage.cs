@@ -18,7 +18,7 @@ namespace ubv
                 {
                     Sprinting = new serialization.types.Bool(false);
                     Movement = new serialization.types.Vector2(Vector2.zero);
-                    Info = new NetInfo(0, 0);
+                    Info = new NetInfo(0);
 
                     InitSerializableMembers(Sprinting, Movement, Info);
                 }
@@ -27,7 +27,7 @@ namespace ubv
                 {
                     Sprinting = new serialization.types.Bool(sprinting);
                     Movement = new serialization.types.Vector2(movement);
-                    Info = new NetInfo(time, tick);
+                    Info = new NetInfo(tick);
 
                     InitSerializableMembers(Sprinting, Movement, Info);
                 }

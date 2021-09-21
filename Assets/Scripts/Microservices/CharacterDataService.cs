@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using ubv.http;
+using ubv.http.client;
 using System.Net.Http;
 using System.Net;
 using System.Collections.Generic;
@@ -11,10 +11,7 @@ namespace ubv.microservices
     {
         protected readonly object m_singleRequestLock = new object();
         protected readonly object m_multipleRequestLock = new object();
-
-        [SerializeField] private string m_mockCharacterID;
-        [SerializeField] private string m_mockCharacterName;
-        [SerializeField] private string m_mockCharacterPlayerID;
+        
         public delegate void OnGetCharacters(CharacterData[] characters);
         public delegate void OnGetSingle(CharacterData character);
 
@@ -31,6 +28,7 @@ namespace ubv.microservices
         }
 
         [SerializeField] private bool m_mock;
+        [SerializeField] private utils.Mocker m_mockData;
         [SerializeField] private HTTPClient m_HTTPClient;
         [SerializeField] string m_characterDataEndpoint;
 
@@ -110,7 +108,9 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("Mocking char-data.");
 #endif // DEBUG_LOG
-                CharacterData character = new CharacterData(m_mockCharacterName, m_mockCharacterID, m_mockCharacterPlayerID);
+                CharacterData character = new CharacterData(m_mockData.CharacterName, 
+                    m_mockData.CharacterID, 
+                    m_mockData.UserID);
                 onGetCharacter(character);
                 return;
             }
@@ -150,7 +150,9 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("Mocking char-data.");
 #endif // DEBUG_LOG
-                CharacterData character = new CharacterData(m_mockCharacterName, m_mockCharacterID, m_mockCharacterPlayerID);
+                CharacterData character = new CharacterData(m_mockData.CharacterName,
+                    m_mockData.CharacterID,
+                    m_mockData.UserID);
                 CharacterData[] characters = new CharacterData[]
                 {
                     character

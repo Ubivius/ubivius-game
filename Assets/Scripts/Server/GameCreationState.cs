@@ -26,7 +26,7 @@ namespace ubv.server.logic
         private HashSet<int> m_worldLoadedClients;
 
         [SerializeField] private List<ServerInitializer> m_serverInitializers;
-        
+
         // Flags
         private Flag m_readyToStartGame;
 
@@ -57,7 +57,6 @@ namespace ubv.server.logic
             m_TCPServer.Subscribe(this);
             m_UDPServer.Subscribe(this);
             m_UDPServer.AcceptNewClients = true;
-
         }
 
         private bool EveryoneIsReady()

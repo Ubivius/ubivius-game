@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using ubv.http;
+using ubv.http.client;
 using System.Net.Http;
 using System.Net;
 using System.Collections.Generic;
@@ -9,11 +9,11 @@ namespace ubv.microservices
 {
     public class UserService : MonoBehaviour
     {
+        public const int REQUEST_CHECK_DELAY = 13;
         protected readonly object m_requestLock = new object();
 
         [SerializeField] private bool m_mock;
-        [SerializeField] private string m_forceUserID;
-        [SerializeField] private string m_forceUserName;
+        [SerializeField] private utils.Mocker m_mockData;
 
         [SerializeField] private HTTPClient m_HTTPClient;
         [SerializeField] string m_userEndpoint;
@@ -60,7 +60,7 @@ namespace ubv.microservices
 
         private void Update()
         {
-            if (Time.frameCount % 13 == 0)
+            if (Time.frameCount % REQUEST_CHECK_DELAY == 0)
             {
                 lock (m_requestLock)
                 {
@@ -84,8 +84,8 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("Mocking user. Auto logging in with random ID (or forced ID provided if any)");
 #endif // DEBUG_LOG
-                string _id = m_forceUserID.Length > 0 ? m_forceUserID : System.Guid.NewGuid().ToString();
-                string _user = m_forceUserName.Length > 0 ? m_forceUserName : "murphy-auto-username";
+                string _id = m_mockData.UserID.Length > 0 ? m_mockData.UserID : System.Guid.NewGuid().ToString();
+                string _user = m_mockData.UserName.Length > 0 ? m_mockData.UserName : "murphy-auto-username";
                 onGetInfo(new UserInfo(_id, _user, "murphy@gmail.com", "00-00-0001"));
                 return;
             }

@@ -146,6 +146,7 @@ namespace ubv.server.logic
                     }
                 }
                 
+                m_masterTick++;
                 if (++m_tickAccumulator >= m_snapshotTicks)
                 {
                     foreach (int id in m_connectedClients.Keys)
@@ -153,7 +154,7 @@ namespace ubv.server.logic
                         if (m_connectedClients[id])
                         {
                             // OPTIMIZATION : Cache le message et l'info au lieu d'en recréer des new à chaque send
-                            NetInfo info = new NetInfo(System.DateTime.UtcNow.Ticks, m_masterTick);
+                            NetInfo info = new NetInfo(m_masterTick);
                             ClientStateMessage msg = new ClientStateMessage(m_clientStates[id], info);
                             //Debug.Log("SERVER Sending validated tick " + m_masterTick + " to client " + id);
                             m_UDPServer.Send(msg.GetBytes(), id);
@@ -161,8 +162,6 @@ namespace ubv.server.logic
                     }
                     m_tickAccumulator = 0;
                 }
-
-                m_masterTick++;
             }
         }
 
@@ -205,6 +204,15 @@ namespace ubv.server.logic
                             Debug.Log("SERVER Client is too far ahead of server at tick " + frameIndex + " vs master tick " + m_masterTick);
                         }*/
                     }
+                }
+            }
+            else
+            {
+                RTTMessage rttMsg = common.serialization.IConvertible.CreateFromBytes<RTTMessage>(packet.Data.ArraySegment());
+                if (rttMsg != null)
+                {
+                    // TODO cache bytes + add check "isRttMessage" that checks the object enum type value
+                    m_UDPServer.Send(rttMsg.GetBytes(), playerID);
                 }
             }
         }

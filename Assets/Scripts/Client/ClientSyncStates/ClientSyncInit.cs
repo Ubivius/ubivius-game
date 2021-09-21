@@ -129,7 +129,7 @@ namespace ubv.client.logic
                 Debug.Log("Trying to establish connection to game server...");
 #endif // DEBUG_LOG
 
-                m_TCPClient.Connect(serverInfo.server_ip, serverInfo.tcp_port);
+                m_TCPClient.Connect(serverInfo.server_tcp_ip, serverInfo.tcp_port);
             }
 #if DEBUG_LOG
             else
@@ -184,7 +184,7 @@ namespace ubv.client.logic
             
             m_UDPClient.Subscribe(this);
             m_readyToGoToLobby.Reset();
-            m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_ip, m_cachedServerInfo.Value.udp_port);
+            m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_udp_ip, m_cachedServerInfo.Value.udp_port);
             m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
         }
 

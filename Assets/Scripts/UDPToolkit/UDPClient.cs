@@ -62,10 +62,15 @@ namespace ubv
                 /// <param name="data"></param>
                 public void Send(byte[] data, int playerID)
                 {
-                    if (m_currentTime - m_lastPacketSentTime < 1.0f / m_maximumPacketsPerSecond)
+                    /*
+                     * We should eventually find a way to queue up packets or something like that.
+                     * Hard dropping packets is not the solution but we may need to find something
+                     * if we realize we are sending too many packets per second (causing a 
+                     * network flood).
+                     * if (m_currentTime - m_lastPacketSentTime < 1.0f / m_maximumPacketsPerSecond)
                     {
                         return;
-                    }
+                    }*/
 
                     try
                     {

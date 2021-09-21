@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using ubv.http;
+using ubv.http.client;
 using System.Net.Http;
 using System.Net;
 using System.Collections.Generic;
@@ -14,7 +14,8 @@ namespace ubv.microservices
 
         [Header("Mocked properties")]
         [SerializeField] private bool m_mock;
-        [SerializeField] string m_serverAddress;
+        [SerializeField] string m_serverTCPAddress;
+        [SerializeField] string m_serverUDPAddress;
         [SerializeField] int m_serverTCPPort;
         [SerializeField] int m_serverUDPPort;
 
@@ -31,6 +32,8 @@ namespace ubv.microservices
         public struct ServerInfo
         {
             public string server_ip;
+            public string server_tcp_ip;
+            public string server_udp_ip;
             public int tcp_port;
             public int udp_port;
         }
@@ -65,7 +68,8 @@ namespace ubv.microservices
             {
                 onServerInfo(new ServerInfo
                 {
-                    server_ip = m_serverAddress,
+                    server_tcp_ip = m_serverTCPAddress,
+                    server_udp_ip = m_serverUDPAddress,
                     tcp_port = m_serverTCPPort,
                     udp_port = m_serverUDPPort
                 });
