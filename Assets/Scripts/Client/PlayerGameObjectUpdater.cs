@@ -26,14 +26,14 @@ namespace ubv.client.logic
 
         public UnityAction OnInitialized;
         
-        public override void Init(List<PlayerState> playerStates, int localID)
+        public override void Init(ClientState clientState, int localID)
         {
             m_timeSinceLastGoal = 0;
             Bodies = new Dictionary<int, Rigidbody2D>();
             m_goalStates = new Dictionary<int, PlayerState>();
             PlayerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             int id = 0;
-            foreach(PlayerState state in playerStates)
+            foreach(PlayerState state in clientState.Players().Values)
             {
                 id = state.GUID.Value;
                 GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);

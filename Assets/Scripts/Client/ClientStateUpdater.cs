@@ -13,7 +13,7 @@ namespace ubv.client.logic
     /// </summary>
     public abstract class ClientStateUpdater : MonoBehaviour
     {
-        public abstract void Init(List<PlayerState> playerStates, int localID);
+        public abstract void Init(ClientState state, int localID);
 
         /// <summary>
         /// Stores the world client state in local storage.
