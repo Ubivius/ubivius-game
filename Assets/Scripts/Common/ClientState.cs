@@ -46,6 +46,17 @@ namespace ubv.common
             InitSerializableMembers(m_playerStates);
         }
 
+        public ClientState(System.Collections.Generic.List<common.data.PlayerState> playerStates) : base()
+        {
+            Dictionary<int, common.data.PlayerState> dictStates = new Dictionary<int, data.PlayerState>();
+            foreach(data.PlayerState state in playerStates)
+            {
+                dictStates.Add(state.GUID.Value, state);
+            }
+            m_playerStates = new PlayerHashMap(dictStates);
+            InitSerializableMembers(m_playerStates);
+        }
+
         public ClientState(ref ClientState state) : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());

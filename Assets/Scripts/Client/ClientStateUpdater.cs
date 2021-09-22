@@ -3,7 +3,6 @@ using UnityEditor;
 using ubv.common;
 using System.Collections.Generic;
 using ubv.common.data;
-using ubv.common.serialization;
 
 namespace ubv.client.logic
 {
@@ -14,7 +13,7 @@ namespace ubv.client.logic
     /// </summary>
     public abstract class ClientStateUpdater : MonoBehaviour
     {
-        public abstract void Init(List<Serializable> playerStates, int localID);
+        public abstract void Init(ClientState state, int localID);
 
         /// <summary>
         /// Stores the world client state in local storage.

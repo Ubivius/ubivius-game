@@ -93,29 +93,22 @@ namespace ubv.client.logic
                 playerStates.Add(new PlayerState(id));
             }
 
-            foreach (ClientStateUpdater updater in m_updaters)
-            {
-                updater.Init(playerStates, PlayerID.Value);
-            }
-
-            m_UDPClient.Subscribe(this);
-            m_TCPClient.Subscribe(this);
-
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
-                m_clientStateBuffer[i] = new ClientState();
+                m_clientStateBuffer[i] = new ClientState(playerStates);
                 m_clientStateBuffer[i].PlayerGUID = PlayerID.Value;
-
-                foreach (PlayerState playerState in playerStates)
-                {
-                    PlayerState player = new PlayerState(playerState);
-
-                    m_clientStateBuffer[i].AddPlayer(player);
-                }
 
                 m_inputBuffer[i] = new InputFrame();
                 m_inputBuffer[i].SetToNeutral();
             }
+
+            foreach (ClientStateUpdater updater in m_updaters)
+            {
+                updater.Init(m_clientStateBuffer[0], PlayerID.Value);
+            }
+
+            m_UDPClient.Subscribe(this);
+            m_TCPClient.Subscribe(this);
 
             UpdateClockOffset(LatencyFromRTT(m_meanRTT));
 
