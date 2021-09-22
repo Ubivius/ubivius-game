@@ -37,7 +37,6 @@ namespace ubv.http.server
             while (!m_exitSignal)
             {
                 HttpListenerContext context = m_healthListener.GetContext();
-                Debug.Log("Get Request recieved");
                 Thread send = new Thread(SendingThread);
                 send.Start(context);
                 send.Join();
