@@ -3,6 +3,7 @@ using ubv.common;
 using ubv.common.data;
 using UnityEngine;
 using UnityEngine.Events;
+using ubv.common.serialization;
 
 namespace ubv.client.logic
 {
@@ -26,7 +27,7 @@ namespace ubv.client.logic
 
         public UnityAction OnInitialized;
         
-        public override void Init(List<PlayerState> playerStates, int localID)
+        public override void Init(List<Serializable> playerStates, int localID)
         {
             m_timeSinceLastGoal = 0;
             Bodies = new Dictionary<int, Rigidbody2D>();
