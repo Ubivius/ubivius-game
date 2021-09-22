@@ -11,21 +11,24 @@ namespace ubv
             public class InputFrame : serialization.Serializable
             {
                 public serialization.types.Bool Sprinting;
+                public serialization.types.Bool Shooting;
                 public serialization.types.Vector2 Movement;
                 public NetInfo Info;
 
                 public InputFrame()
                 {
                     Sprinting = new serialization.types.Bool(false);
+                    Shooting = new serialization.types.Bool(false);
                     Movement = new serialization.types.Vector2(Vector2.zero);
                     Info = new NetInfo(0);
 
-                    InitSerializableMembers(Sprinting, Movement, Info);
+                    InitSerializableMembers(Sprinting, Shooting, Movement, Info);
                 }
 
-                public InputFrame(bool sprinting, Vector2 movement, long time, int tick)
+                public InputFrame(bool sprinting, bool shooting, Vector2 movement, long time, int tick)
                 {
                     Sprinting = new serialization.types.Bool(sprinting);
+                    Shooting = new serialization.types.Bool(shooting);
                     Movement = new serialization.types.Vector2(movement);
                     Info = new NetInfo(tick);
 
@@ -37,6 +40,7 @@ namespace ubv
                 {
                     Movement.Value = Vector2.zero;
                     Sprinting.Value = false;
+                    Shooting.Value = false;
                 }
                 
                 protected override ID.BYTE_TYPE SerializationID()

@@ -15,6 +15,7 @@ namespace ubv.client.logic
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerAnimator m_playerAnimator;
+        [SerializeField] private PlayerShootingSettings m_playerShootingSettings;
 
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, common.gameplay.PlayerController> PlayerControllers { get; private set; }
@@ -32,7 +33,6 @@ namespace ubv.client.logic
         UnityAction<bool> m_sprintAction;
         private Dictionary<int, UnityAction<bool>> m_sprintActions;
 
-        
         public override void Init(WorldState clientState, int localID)
         {
             m_sprintActions = new Dictionary<int, UnityAction<bool>>();
@@ -46,7 +46,7 @@ namespace ubv.client.logic
             foreach(PlayerState state in clientState.Players().Values)
             {
                 id = state.GUID.Value;
-                GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
+                PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
                 Bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
                 Bodies[id].name = "Client player " + id.ToString();
                 m_isSprinting[id] = false;
@@ -57,7 +57,7 @@ namespace ubv.client.logic
                 {
                     Bodies[id].bodyType = RigidbodyType2D.Kinematic;
                 }
-                
+
                 m_goalStates[id] = state;
                 m_sprintActions[id] = PlayerAnimators[id].SetSprinting;
 
@@ -66,7 +66,7 @@ namespace ubv.client.logic
             m_playerGUID = localID;
             m_localPlayerBody = Bodies[localID];
             OnInitialized?.Invoke();
-            
+
         }
 
         public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
@@ -92,7 +92,7 @@ namespace ubv.client.logic
             {
                 if (player.GUID.Value != m_playerGUID)
                 {
-                    player.Position.Value = m_goalStates[player.GUID.Value].Position.Value; 
+                    player.Position.Value = m_goalStates[player.GUID.Value].Position.Value;
                     player.Rotation.Value = m_goalStates[player.GUID.Value].Rotation.Value;
                     player.Velocity.Value = m_goalStates[player.GUID.Value].Velocity.Value;
                 }
@@ -120,6 +120,7 @@ namespace ubv.client.logic
                 m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
+            common.logic.PlayerShooting.Execute(m_playerSettings.PlayerPrefab.FirePoint, m_playerShootingSettings.BulletPrefab, m_playerShootingSettings.BulletForce);
         }
 
         public override void UpdateWorldFromState(WorldState state)

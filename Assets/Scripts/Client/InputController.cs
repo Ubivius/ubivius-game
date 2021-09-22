@@ -23,6 +23,7 @@ namespace ubv
 
             private Vector2 m_move = Vector2.zero;
             private bool m_IsSprinting = false;
+            private bool m_IsShooting = false;
 
             private void Awake()
             {
@@ -40,6 +41,9 @@ namespace ubv
 
                 m_controls.Gameplay.Sprint.performed += context => SetSprinting(true);
                 m_controls.Gameplay.Sprint.canceled += context => SetSprinting(false);
+
+                m_controls.Gameplay.Shoot.performed += context => SetShooting(true);
+                m_controls.Gameplay.Shoot.canceled += context => SetShooting(false);
             }
 
             // Start is called before the first frame update
@@ -58,11 +62,17 @@ namespace ubv
                 m_IsSprinting = isSprinting;
             }
 
+            private void SetShooting(bool isShooting)
+            {
+                m_IsShooting = isShooting;
+            }
+
             // Update is called once per frame
             void Update()
             {
                 m_currentInputFrame.Movement.Value = m_move;
                 m_currentInputFrame.Sprinting.Value = m_IsSprinting;
+                m_currentInputFrame.Shooting.Value = m_IsShooting;
             }
         
             static public common.data.InputFrame CurrentFrame()

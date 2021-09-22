@@ -9,8 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1455a957544426e4d9731d3022a6509d, type: 3}
-  m_Name: DefaultPlayer
+  m_Script: {fileID: 11500000, guid: 23e49d1e638c32445a6a19f2cecb66a8, type: 3}
+  m_Name: PlayerShootingSettings
   m_EditorClassIdentifier: 
-  PlayerPrefab: {fileID: -7877276248812338837, guid: f5db74dd4237e7b42b2ae1f11b3348a2,
+  BulletPrefab: {fileID: 7419865453471933861, guid: 30e0be4506d6747a4a0300c7cfd9e0ed,
     type: 3}
+  BulletForce: 20

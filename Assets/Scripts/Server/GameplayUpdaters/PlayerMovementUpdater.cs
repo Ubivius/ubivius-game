@@ -9,6 +9,7 @@ namespace ubv.server.logic
     public class PlayerMovementUpdater : ServerGameplayStateUpdater
     {
         [SerializeField] private PlayerSettings m_playerSettings;
+        [SerializeField] private PlayerShootingSettings m_playerShootingSettings;
         [SerializeField] private GameMaster m_gameMaster;
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, PlayerState> m_playerStates;
@@ -43,17 +44,22 @@ namespace ubv.server.logic
                 m_playerControllers.Add(id, playerCtrl);
                 m_playerStates.Add(id, playerState);
             }
+
+            foreach (PlayerState player in m_playerStates.Values)
+            {
+                state.AddPlayer(player);
+            }
         }
-        
+
         public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
         {
             foreach (int id in client.Players().Keys)
             {
                 Rigidbody2D body = m_bodies[id];
                 common.logic.PlayerMovement.Execute(ref body, m_playerControllers[id].GetStats(), frames[id], Time.fixedDeltaTime);
+                common.logic.PlayerShooting.Execute(m_playerSettings.PlayerPrefab.FirePoint, m_playerShootingSettings.BulletPrefab, m_playerShootingSettings.BulletForce);
                 m_isSprinting[id] = frames[id].Sprinting.Value;
             }
-            
         }
 
         public override void UpdateWorld(WorldState client)
@@ -67,7 +73,7 @@ namespace ubv.server.logic
                 player.Velocity.Value = body.velocity;
                 player.States.Set(0, m_isSprinting[id]);
             }
-           
+
         }
     }
 }

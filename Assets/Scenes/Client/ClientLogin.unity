@@ -1615,6 +1615,336 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 827592290}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &853064862 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 1130825507}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb690e47281ac4347af0f980681b44d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &1093084341
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1093084342}
+  - component: {fileID: 1093084343}
+  - component: {fileID: 1093084344}
+  m_Layer: 0
+  m_Name: SingleInstance
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1093084342
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1093084341}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 637.4582, y: 311.42993, z: -84.51459}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 1130825510}
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1093084343
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1093084341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65a997f22d4492d4ab9c22d921c5362c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1093084344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1093084341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a773cb84af3cba5428ca33820e20701e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1001 &1130825507
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 1093084342}
+    m_Modifications:
+    - target: {fileID: 1584834600499235231, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_TCPClient
+      value: 
+      objectReference: {fileID: 1130825509}
+    - target: {fileID: 1584834600499235231, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_UDPClient
+      value: 
+      objectReference: {fileID: 1130825508}
+    - target: {fileID: 1584834600499235231, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_worldGrid
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600499235231, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_physicsScene
+      value: ClientMenu
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834600992003659, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_Name
+      value: ClientNetworking
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834601242082864, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_Name
+      value: UDPClient
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834601242082865, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serverAddress
+      value: 192.168.0.141
+      objectReference: {fileID: 0}
+    - target: {fileID: 2629458355001083077, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: User
+      value: 
+      objectReference: {fileID: 853064862}
+    - target: {fileID: 2629458355001083077, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: CharacterData
+      value: 
+      objectReference: {fileID: 1425392626}
+    - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: AutoReconnect
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serverAddress
+      value: 192.168.0.141
+      objectReference: {fileID: 0}
+    - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_connectionTimeoutInMS
+      value: 30000
+      objectReference: {fileID: 0}
+    - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_connectionKeepAliveIntervalMS
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mock
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_forceUserID
+      value: murphy-django-id
+      objectReference: {fileID: 0}
+    - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_authEndpoint
+      value: http://auth.anon.dev.ubivius.tk
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mock
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_authEndpoint
+      value: http://localhost:9092
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mockCharacterID
+      value: murphy-django-id-char
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mockCharacterName
+      value: homer-simpson-mock
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_characterDataEndpoint
+      value: http://character.dev.ubivius.tk
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mockCharacterPlayerID
+      value: murphy-django-id
+      objectReference: {fileID: 0}
+    - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mock
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serverAddress
+      value: 127.0.0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serverTCPPort
+      value: 9151
+      objectReference: {fileID: 0}
+    - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serverUDPPort
+      value: 9150
+      objectReference: {fileID: 0}
+    - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serverTCPAddress
+      value: 127.0.0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serverUDPAddress
+      value: 127.0.0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mock
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_forceUserID
+      value: murphy-django-id
+      objectReference: {fileID: 0}
+    - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_userEndpoint
+      value: http://user.dev.ubivius.tk
+      objectReference: {fileID: 0}
+    - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_forceUserName
+      value: murphy-django
+      objectReference: {fileID: 0}
+    - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_Name
+      value: TCPClient
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 6337505888355199336, guid: c732e1b58c017874bbf5da45531902cf, type: 3}
+    - {fileID: 999820070897528844, guid: c732e1b58c017874bbf5da45531902cf, type: 3}
+  m_SourcePrefab: {fileID: 100100000, guid: c732e1b58c017874bbf5da45531902cf, type: 3}
+--- !u!114 &1130825508 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1584834601242082865, guid: c732e1b58c017874bbf5da45531902cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 1130825507}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56f55256fc4a6704eafd0dd78732d19e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1130825509 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 1130825507}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37271d27156413948aba6f3d52b03edf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1130825510 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1584834600992003656, guid: c732e1b58c017874bbf5da45531902cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 1130825507}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1177968216
 GameObject:
   m_ObjectHideFlags: 0
