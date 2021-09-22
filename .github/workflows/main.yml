@@ -75,6 +75,8 @@ jobs:
             ls -la
             cd Server
             ls -la
+            cd ../StandaloneLinux64
+            ls -la
         shell: bash
 
       # Docker publish server image
