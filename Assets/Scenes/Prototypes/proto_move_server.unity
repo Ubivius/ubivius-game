@@ -419,6 +419,50 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &476838077
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 476838078}
+  - component: {fileID: 476838079}
+  m_Layer: 0
+  m_Name: ButtonState
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &476838078
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 476838077}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1440873415}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &476838079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 476838077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6025c69c4e04277408c59c64ffaa0453, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_gameMaster: {fileID: 380608787}
 --- !u!1 &779656959
 GameObject:
   m_ObjectHideFlags: 0
@@ -902,6 +946,7 @@ Transform:
   m_Children:
   - {fileID: 1470650680}
   - {fileID: 380608786}
+  - {fileID: 476838078}
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -949,6 +994,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
+  m_gameMaster: {fileID: 380608787}
 --- !u!1 &1538287029
 GameObject:
   m_ObjectHideFlags: 0
@@ -1116,6 +1162,61 @@ PrefabInstance:
       propertyPath: m_wall
       value: 
       objectReference: {fileID: 1802319660}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_boundariesMap.y
+      value: 250
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_mandatoryRoomPoolTopLeft.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_mandatoryRoomPoolTopRight.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_mandatoryRoomPoolBottomLeft.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_mandatoryRoomPoolTopLeft.Array.data[0]
+      value: 
+      objectReference: {fileID: 7422958725780853505, guid: 0cc33c76a80148c449f822438cd4dd6d,
+        type: 3}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_mandatoryRoomPoolBottomRight.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_mandatoryRoomPoolSection0.Array.data[1]
+      value: 
+      objectReference: {fileID: 9081064586657247224, guid: acd3210bf2510684fbb99cdb86fe3415,
+        type: 3}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_mandatoryRoomPoolTopRight.Array.data[0]
+      value: 
+      objectReference: {fileID: 9181921868623991118, guid: 1310c35b9e930274aa2b793ce58362b9,
+        type: 3}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_mandatoryRoomPoolBottomLeft.Array.data[0]
+      value: 
+      objectReference: {fileID: 7745152006058419768, guid: b5cdcd7461320cd43ae2c05a2b34431e,
+        type: 3}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_mandatoryRoomPoolBottomRight.Array.data[0]
+      value: 
+      objectReference: {fileID: 649570053881723218, guid: 4970ff4bb9a97e747963bb09a4e5569e,
+        type: 3}
     - target: {fileID: 4247499401278839604, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}
       propertyPath: m_Name

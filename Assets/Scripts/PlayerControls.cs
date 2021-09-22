@@ -197,6 +197,27 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""isOR"": false
                 }
             ]
+        },
+        {
+            ""name"": ""All scheme"",
+            ""bindingGroup"": ""All scheme"",
+            ""devices"": [
+                {
+                    ""devicePath"": ""<Keyboard>"",
+                    ""isOptional"": false,
+                    ""isOR"": false
+                },
+                {
+                    ""devicePath"": ""<Mouse>"",
+                    ""isOptional"": false,
+                    ""isOR"": false
+                },
+                {
+                    ""devicePath"": ""<Gamepad>"",
+                    ""isOptional"": true,
+                    ""isOR"": false
+                }
+            ]
         }
     ]
 }");
@@ -315,6 +336,15 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         {
             if (m_AllControlSchemesSchemeIndex == -1) m_AllControlSchemesSchemeIndex = asset.FindControlSchemeIndex("All Control Schemes");
             return asset.controlSchemes[m_AllControlSchemesSchemeIndex];
+        }
+    }
+    private int m_AllschemeSchemeIndex = -1;
+    public InputControlScheme AllschemeScheme
+    {
+        get
+        {
+            if (m_AllschemeSchemeIndex == -1) m_AllschemeSchemeIndex = asset.FindControlSchemeIndex("All scheme");
+            return asset.controlSchemes[m_AllschemeSchemeIndex];
         }
     }
     public interface IGameplayActions

@@ -8,7 +8,7 @@ using ubv.common.serialization;
 using ubv.common;
 using UnityEngine;
 using ubv.common.world.cellType;
-
+using ubv.common.world;
 
 namespace ubv.server.logic
 {
@@ -22,12 +22,6 @@ namespace ubv.server.logic
         public override void Setup()
         {
             m_sectionState = new SectionState();
-            m_sectionDoorButtonCells = new List<SectionDoorButtonCell>();
-            m_sectionDoorButtonCells = m_world.FetchAll<SectionDoorButtonCell>();
-            foreach (SectionDoorButtonCell cell in m_sectionDoorButtonCells)
-            {
-                cell.ButtonPress += OnSectionDoorButtonPress;
-            }
         }
 
         public override void InitClient(ClientState state)
@@ -53,8 +47,9 @@ namespace ubv.server.logic
         }
 
         // Callback for section door opening
-        public void OnSectionDoorButtonPress(ubv.common.world.cellType.SectionDoorButtonCell cell)
+        public void InteractSectionDoorButton(ubv.common.world.cellType.SectionDoorButtonCell cell)
         {
+            Debug.Log("ButtonSectionDoor Pressed");
             switch (cell.Section)
             {
                 case Section.NorthEast:
@@ -77,8 +72,9 @@ namespace ubv.server.logic
         }
 
         // Callback for final door opening
-        public void OnSectionButtonPress(ubv.common.world.cellType.SectionButton cell)
+        public void InteractSectionButton(ubv.common.world.cellType.SectionButton cell)
         {
+            Debug.Log("SectionButton Pressed");
             switch (cell.Section)
             {
                 case Section.NorthEast:
@@ -100,6 +96,9 @@ namespace ubv.server.logic
             }
         }
 
-
+        public WorldGenerator GetWorldGenerator()
+        {
+            return m_world;
+        }
     }
 }

@@ -32,10 +32,6 @@ namespace ubv.common.world.cellType
             m_linkedDoorCellID = new IntList(idList);
         }
 
-        public void OnPress()
-        {
-            ButtonPress(this);
-        }
 
         protected override ID.BYTE_TYPE SerializationID()
         {

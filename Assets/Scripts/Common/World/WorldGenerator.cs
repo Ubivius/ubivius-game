@@ -182,6 +182,24 @@ namespace ubv.common.world
             return list;
         }
 
+        public Dictionary<T, Vector2Int> FetchAllWithPosition<T>() where T : LogicCell
+        {
+            Dictionary<T, Vector2Int> dictionary = new Dictionary<T, Vector2Int>();
+            LogicGrid grid = GetMasterLogicGrid();
+            for (int x = 0; x < grid.Width; x++)
+            {
+                for (int y = 0; y < grid.Height; y++)
+                {
+                    if (grid.Grid[x, y] is T)
+                    {
+                        dictionary.Add(grid.Grid[x, y] as T, new Vector2Int(x, y));
+                    }
+                }
+            }
+
+            return dictionary;
+        }
+
         public List<DoorCell> FetchDoor(DoorType type)
         {
             List<DoorCell> list = new List<DoorCell>();

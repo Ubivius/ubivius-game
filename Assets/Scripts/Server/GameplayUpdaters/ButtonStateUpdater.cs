@@ -3,59 +3,82 @@ using System.Collections;
 using ubv.common;
 using ubv.common.data;
 using System.Collections.Generic;
+using ubv.common.world.cellType;
 
 namespace ubv.server.logic
 {
-    public class ButtonSataUpdater : ServerGameplayStateUpdater
+    public class ButtonStateUpdater : ServerGameplayStateUpdater
     {
-        [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private GameMaster m_gameMaster;
-        private Dictionary<int, Rigidbody2D> m_bodies;
-        private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
+
+        private Dictionary<SectionDoorButtonCell, Vector2Int> m_sectionDoorButtonList;
+        private Dictionary<SectionButton, Vector2Int> m_buttonSectionList;
+
+        const float c_buttonDistance = 1f;
+
+        public void Awake()
+        {
+            m_gameMaster.GetWorldGenerator().OnWorldGenerated += OnWorldGenerated;
+
+        }
 
         public override void Setup()
         {
-            m_bodies = new Dictionary<int, Rigidbody2D>();
-            m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
+
         }
 
         public override void InitClient(ClientState state)
         {
-            int id = state.PlayerGUID;
-            GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
-            Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
-            common.gameplay.PlayerController playerCtrl = playerGameObject.GetComponent<common.gameplay.PlayerController>();
-            body.position = m_gameMaster.GetPlayerSpawnPos();
-            body.name = "Server player " + id.ToString();
-            m_bodies.Add(id, body);
-
-            m_playerControllers.Add(state.PlayerGUID, playerCtrl);
         }
 
         public override void InitPlayer(PlayerState player)
         {
-            player.Position.Value = m_bodies[player.GUID.Value].position;
         }
 
         public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
         {
-            Rigidbody2D body = m_bodies[client.PlayerGUID];
-            common.logic.PlayerMovement.Execute(ref body, m_playerControllers[client.PlayerGUID].GetStats(), frame, Time.fixedDeltaTime);
+            // Faire le check présence client
+            if (frame.Interact.Value)
+            {
+                Vector2 playerPosition = client.GetPlayer().Position.Value;
+
+                foreach (SectionDoorButtonCell button in m_sectionDoorButtonList.Keys)
+                {
+                    Vector2 buttonPos = m_sectionDoorButtonList[button];
+                    float diff = (playerPosition - buttonPos).sqrMagnitude;
+                    if (diff <= c_buttonDistance)
+                    {
+                        m_gameMaster.InteractSectionDoorButton(button);
+                        continue;
+                    }
+                }
+
+                foreach (SectionButton button in m_buttonSectionList.Keys)
+                {
+                    Vector2 buttonPos = m_buttonSectionList[button];
+                    float diff = (playerPosition - buttonPos).sqrMagnitude;
+                    if (diff <= c_buttonDistance)
+                    {
+                        m_gameMaster.InteractSectionButton(button);
+                        continue;
+                    }
+                }
+
+            }
+            
         }
 
         public override void UpdateClient(ClientState client)
         {
-            Rigidbody2D body = m_bodies[client.PlayerGUID];
-            PlayerState player = client.GetPlayer();
-            player.Position.Value = body.position;
-            player.Rotation.Value = body.rotation;
         }
 
-        public void SetPlayerPosition(PlayerState player, Vector2Int pos)
+        private void OnWorldGenerated()
         {
-            m_bodies[player.GUID.Value].position = pos;
-            player.Position.Value = m_bodies[player.GUID.Value].position;
+            m_sectionDoorButtonList =  m_gameMaster.GetWorldGenerator().FetchAllWithPosition<SectionDoorButtonCell>();
+
+            m_buttonSectionList = m_gameMaster.GetWorldGenerator().FetchAllWithPosition<SectionButton>();
         }
+
     }
 }
 
