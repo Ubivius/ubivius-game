@@ -42,6 +42,7 @@ namespace ubv.common
 
         public ClientState() : base()
         {
+            //Add EnemyHashMap for every initseriazablemember
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
             InitSerializableMembers(m_playerStates);
         }
@@ -102,7 +103,7 @@ namespace ubv.common
 
         public data.EnemyStateData GetEnemy()
         {
-            return m_enemyStateData.Value[EnemyGUID];
+            return m_enemyStateData.Value[EnemyGUID]; //liste 'ennemy a la placce
         }
 
         public void AddEnemy(data.EnemyStateData enemyStateData)

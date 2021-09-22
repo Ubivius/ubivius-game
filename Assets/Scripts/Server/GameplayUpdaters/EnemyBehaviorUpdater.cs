@@ -9,20 +9,18 @@ namespace ubv.server.logic
 {
     public class EnemyBehaviorUpdater : ServerGameplayStateUpdater
     {
-        public UnityEvent OnGenerateEnemy { get; private set; }
-        private Dictionary<int, Rigidbody2D> m_bodies;
+        [SerializeField] private EnemySettings m_enemySettings;
+        [SerializeField] private GameMaster m_gameMaster;
+        [SerializeField] private EnemyPathfindingManager m_pathfindingmanager;
 
 
         public override void Setup()
         {
-            m_bodies = new Dictionary<int, Rigidbody2D>();
-            OnGenerateEnemy = new UnityEvent();
+            //instantier un seul ennemy pur le moment
         }
 
         public override void InitClient(ClientState state)
         {
-            int id = state.PlayerGUID;
-            OnGenerateEnemy.Invoke();
 
         }
 
@@ -33,16 +31,10 @@ namespace ubv.server.logic
 
         public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
         {
-            Rigidbody2D body = m_bodies[client.PlayerGUID];
         }
 
         public override void UpdateClient(ref ClientState client)
-        {
-            Rigidbody2D body = m_bodies[client.PlayerGUID];
-            PlayerState player = client.GetPlayer();
-            player.Position.Value = body.position;
-            player.Rotation.Value = body.rotation;
-            //enemystate = state blasblabla
+        {//state change et deplacement
         }
     }
 }

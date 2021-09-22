@@ -4,7 +4,7 @@ using ubv.common.world;
 using ubv.server.logic;
 using UnityEngine;
 
-namespace Assets.Scripts.EnemySystem
+namespace ubv.logic
 {
     // MOCK CHANGE WILL BE MADE TO FIT THE PROPER REQUIREMENTS
     public class GenerateEnemies : MonoBehaviour
@@ -17,7 +17,7 @@ namespace Assets.Scripts.EnemySystem
 
         private int [] m_enemyID;
         private Dictionary<int, Rigidbody2D> m_bodies;
-        private EnemyBehaviorUpdater m_enemyBehaviorUpdater;
+        // private EnemyBehaviorUpdater m_enemyBehaviorUpdater;
         private PathNode[,] m_pathNodes;
 
         // Use this for initialization

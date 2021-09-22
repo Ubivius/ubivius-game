@@ -28,30 +28,32 @@ namespace ubv.client.logic
 
         public UnityAction OnInitialized;
 
-        public override void Init(List<Serializable> enemyStateData, int localID)
+        public override void Init(ClientState clientState, int localID)
         {
-            m_timeSinceLastGoal = 0;
-            Bodies = new Dictionary<int, Rigidbody2D>();
-            m_goalStates = new Dictionary<int, EnemyStateData>();
-            int id = 0;
-            foreach (EnemyStateData state in enemyStateData)
-            {
-                id = state.GUID.Value;
-                GameObject playerGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
-                Bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
-                Bodies[id].name = "Client enemy " + id.ToString();
+            //dans le need correction corriger le nombre d,ennemie par le serveur
+            //ils vont etre spawné la
+            //m_timeSinceLastGoal = 0;
+            //Bodies = new Dictionary<int, Rigidbody2D>();
+            //m_goalStates = new Dictionary<int, EnemyStateData>();
+            //int id = 0;
+            //foreach (EnemyStateData state in clientState.Enemies().Values)
+            //{
+            //    id = state.GUID.Value;
+            //    GameObject playerGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
+            //    Bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
+            //    Bodies[id].name = "Client enemy " + id.ToString();
 
-                if (id != localID)
-                {
-                    Bodies[id].bodyType = RigidbodyType2D.Kinematic;
-                }
+            //    if (id != localID)
+            //    {
+            //        Bodies[id].bodyType = RigidbodyType2D.Kinematic;
+            //    }
 
-                m_goalStates[id] = state;
-            }
+            //    m_goalStates[id] = state;
+            //}
 
-            m_enemyGUID = localID;
-            m_localEnemyBody = Bodies[localID];
-            OnInitialized?.Invoke();
+            //m_enemyGUID = localID;
+            //m_localEnemyBody = Bodies[localID];
+            //OnInitialized?.Invoke();
         }
 
         public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
@@ -90,16 +92,14 @@ namespace ubv.client.logic
 
         public override void Step(InputFrame input, float deltaTime)
         {
-            //FUTUR iMPLEMENTATION
-            //m_timeSinceLastGoal += deltaTime;
-            //foreach (EnemyStateData enemy in m_goalStates.Values)
-            //{
-            //    if (enemy.GUID.Value != m_enemyGUID)
-            //    {
-            //        LerpTowardGoalState(enemy, m_timeSinceLastGoal);
-            //    }
-            //}
-            //common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
+            m_timeSinceLastGoal += deltaTime;
+            foreach (EnemyStateData enemy in m_goalStates.Values)
+            {
+                if (enemy.GUID.Value != m_enemyGUID)
+                {
+                    LerpTowardGoalState(enemy, m_timeSinceLastGoal);
+                }
+            }
         }
 
         public override void UpdateWorldFromState(ClientState state)
@@ -121,19 +121,19 @@ namespace ubv.client.logic
         {
         }
 
-        //private void LerpTowardGoalState(PlayerState player, float time)
-        //{
-        //    Bodies[player.GUID.Value].position = Vector2.Lerp(Bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, time / m_lerpTime);
-        //    if ((Bodies[player.GUID.Value].position - m_goalStates[player.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
-        //    {
-        //        Bodies[player.GUID.Value].position = m_goalStates[player.GUID.Value].Position.Value;
-        //    }
+        private void LerpTowardGoalState(EnemyStateData enemy, float time)
+        {
+            Bodies[enemy.GUID.Value].position = Vector2.Lerp(Bodies[enemy.GUID.Value].position, m_goalStates[enemy.GUID.Value].Position.Value, time / m_lerpTime);
+            if ((Bodies[enemy.GUID.Value].position - m_goalStates[enemy.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
+            {
+                Bodies[enemy.GUID.Value].position = m_goalStates[enemy.GUID.Value].Position.Value;
+            }
 
-        //    Bodies[player.GUID.Value].rotation = Mathf.Lerp(Bodies[player.GUID.Value].rotation, m_goalStates[player.GUID.Value].Rotation.Value, time / m_lerpTime);
-        //    if (Bodies[player.GUID.Value].rotation - m_goalStates[player.GUID.Value].Rotation.Value < 0.01f)
-        //    {
-        //        Bodies[player.GUID.Value].rotation = m_goalStates[player.GUID.Value].Rotation.Value;
-        //    }
-        //}
+            Bodies[enemy.GUID.Value].rotation = Mathf.Lerp(Bodies[enemy.GUID.Value].rotation, m_goalStates[enemy.GUID.Value].Rotation.Value, time / m_lerpTime);
+            if (Bodies[enemy.GUID.Value].rotation - m_goalStates[enemy.GUID.Value].Rotation.Value < 0.01f)
+            {
+                Bodies[enemy.GUID.Value].rotation = m_goalStates[enemy.GUID.Value].Rotation.Value;
+            }
+        }
     }
 }
