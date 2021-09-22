@@ -28,9 +28,12 @@ namespace ubv.client.logic
         private Dictionary<int, PlayerState> m_goalStates;
 
         public UnityAction OnInitialized;
-        
-        private UnityAction<bool> m_sprintAction;
-        private bool m_isSprinting;
+
+        UnityAction<bool> m_sprintAction;
+        private List<UnityAction<bool>> m_sprintActions;
+
+        private bool[] m_isSprinting;
+
         public override void Init(List<PlayerState> playerStates, int localID)
         {
             m_timeSinceLastGoal = 0;
@@ -53,12 +56,16 @@ namespace ubv.client.logic
                 }
                 
                 m_goalStates[id] = state;
+                /*
+                m_sprintActions.Add(m_sprintAction);
+                m_sprintActions[id] += playerGameObject.GetComponent<PlayerAnimator>().SetSprinting;
+                */
             }
 
             m_playerGUID = localID;
             m_localPlayerBody = Bodies[localID];
             OnInitialized?.Invoke();
-            m_sprintAction += m_playerAnimator.SetSprinting;
+            
         }
 
         public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
@@ -120,6 +127,13 @@ namespace ubv.client.logic
                 {
                     Bodies[player.GUID.Value].position = player.Position.Value;
                     Bodies[player.GUID.Value].rotation = player.Rotation.Value;
+                    
+                    if (player.IsSprinting.Value != m_isSprinting[player.GUID.Value])
+                    {
+                        m_isSprinting[player.GUID.Value] = player.IsSprinting.Value;
+                        m_sprintActions[player.GUID.Value].Invoke(m_isSprinting[player.GUID.Value]);
+                    }
+                    
                 }
             }
         }

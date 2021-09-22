@@ -11,11 +11,14 @@ namespace ubv.client
 {
     public class StandalonePlayerMovement : MonoBehaviour
     {
-        [SerializeField] Rigidbody2D m_body;
-        [SerializeField] PlayerController m_player;
+        [SerializeField] private GameObject m_player;
+
+        private Rigidbody2D m_body;
+
+        [SerializeField] private PlayerController m_playerController;
 
         [SerializeField] private string m_scene = "proto_art";
-        [SerializeField] private PlayerAnimator m_playerAnimator;
+        private PlayerAnimator m_playerAnimator;
 
         private PhysicsScene2D m_physics;
 
@@ -24,8 +27,10 @@ namespace ubv.client
         private UnityAction<bool> m_sprintAction;
 
 
-        private void Awake()
-        {
+        private void Awake() {
+            m_body = m_player.GetComponent<Rigidbody2D>();
+            m_playerAnimator = m_player.GetComponent<PlayerAnimator>();
+
             m_physics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(m_scene).GetPhysicsScene2D();
             m_sprintAction += m_playerAnimator.SetSprinting;
         }
@@ -37,7 +42,7 @@ namespace ubv.client
                 m_sprintAction.Invoke(m_isSprinting);
             }
 
-            PlayerMovement.Execute(ref m_body, m_player.GetStats(), InputController.CurrentFrame(), Time.fixedDeltaTime);
+            PlayerMovement.Execute(ref m_body, m_playerController.GetStats(), InputController.CurrentFrame(), Time.fixedDeltaTime);
             m_physics.Simulate(Time.fixedDeltaTime);
         }
     }
