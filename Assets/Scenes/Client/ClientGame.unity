@@ -379,7 +379,7 @@ MonoBehaviour:
   m_lerpTime: 2
   m_correctionTolerance: 0.1
   m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
-  m_playerAnimator: {fileID: 658324443}
+  m_playerAnimator: {fileID: 0}
 --- !u!1 &583337820
 GameObject:
   m_ObjectHideFlags: 0
@@ -587,52 +587,6 @@ MonoBehaviour:
     type: 2}
   m_defaultPlayerSpawnTile: {fileID: 11400000, guid: d7869141ffc6bc243a3d1b336d7727c6,
     type: 2}
---- !u!1 &658324442
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 658324444}
-  - component: {fileID: 658324443}
-  m_Layer: 0
-  m_Name: PlayerAnimator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &658324443
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658324442}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fa40ce8df21afb4d8496d80cecfe14f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_playerGameObjectUpdater: {fileID: 554541790}
-  m_player: {fileID: 0}
-  m_standAlone: 0
---- !u!4 &658324444
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658324442}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.06800232, y: 0.0054357518, z: -117.60513}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 7
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &837603113
 GameObject:
   m_ObjectHideFlags: 0
