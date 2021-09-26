@@ -21,7 +21,7 @@ namespace ubv.client.logic
         public void SetSprinting(bool isSprinting) {
             m_isSprinting = isSprinting;
             m_animator.SetBool("IsSprinting", isSprinting);
-            Debug.Log("The player " + m_body.transform.parent.name + " sprinting is " + isSprinting + ".");
+            //Debug.Log("The player " + m_body.transform.parent.name + " sprinting is " + isSprinting + ".");
         }
 
         void Update() {

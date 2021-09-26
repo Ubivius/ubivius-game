@@ -134,11 +134,6 @@ namespace ubv.client.logic
                     Bodies[player.GUID.Value].position = player.Position.Value;
                     Bodies[player.GUID.Value].rotation = player.Rotation.Value;
                     Bodies[player.GUID.Value].velocity = player.Velocity.Value;
-
-                    if (player.States.IsTrue(0) != m_isSprinting[player.GUID.Value]) {
-                        m_isSprinting[player.GUID.Value] = player.States.IsTrue(0);
-                        m_sprintActions[player.GUID.Value].Invoke(m_isSprinting[player.GUID.Value]);
-                    }
                 }
             }
         }
@@ -150,6 +145,18 @@ namespace ubv.client.logic
 
         private void LerpTowardGoalState(PlayerState player, float time)
         {
+            if (player.States.IsTrue(0) != m_isSprinting[player.GUID.Value])
+            {
+                m_isSprinting[player.GUID.Value] = player.States.IsTrue(0);
+                m_sprintActions[player.GUID.Value].Invoke(m_isSprinting[player.GUID.Value]);
+            }
+
+            Bodies[player.GUID.Value].velocity = Vector2.Lerp(Bodies[player.GUID.Value].velocity, m_goalStates[player.GUID.Value].Velocity.Value, time / m_lerpTime);
+            if ((Bodies[player.GUID.Value].velocity - m_goalStates[player.GUID.Value].Velocity.Value).sqrMagnitude < 0.01f)
+            {
+                Bodies[player.GUID.Value].velocity = m_goalStates[player.GUID.Value].Velocity.Value;
+            }
+
             Bodies[player.GUID.Value].position = Vector2.Lerp(Bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, time / m_lerpTime);
             if ((Bodies[player.GUID.Value].position - m_goalStates[player.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
             {
