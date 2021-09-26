@@ -38,7 +38,7 @@ namespace ubv
                     GUID = new serialization.types.Int32(0);
                     States = new utils.Bitset();
 
-                    InitSerializableMembers(Position, Rotation, GUID, States);
+                    InitSerializableMembers(Position, Rotation, Velocity, GUID, States);
                 }
 
                 public PlayerState(int playerID) : base()
@@ -49,7 +49,7 @@ namespace ubv
                     GUID = new serialization.types.Int32(playerID);
                     States = new utils.Bitset();
 
-                    InitSerializableMembers(Position, Rotation, GUID, States);
+                    InitSerializableMembers(Position, Rotation, Velocity, GUID, States);
                 }
 
                 public PlayerState(PlayerState player) : base()
@@ -60,7 +60,7 @@ namespace ubv
                     GUID = new serialization.types.Int32(player.GUID.Value);
                     States = new utils.Bitset();
 
-                    InitSerializableMembers(Position, Rotation, GUID, States);
+                    InitSerializableMembers(Position, Rotation, Velocity, GUID, States);
                 }
                 
                 protected override ID.BYTE_TYPE SerializationID()
