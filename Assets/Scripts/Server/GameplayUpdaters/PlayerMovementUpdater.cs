@@ -53,6 +53,7 @@ namespace ubv.server.logic
             PlayerState player = client.GetPlayer();
             player.Position.Value = body.position;
             player.Rotation.Value = body.rotation;
+            player.Velocity.Value = body.velocity;
             player.States.Set(0, m_isSprinting[client.PlayerGUID]);
         }
     }

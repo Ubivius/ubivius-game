@@ -23,6 +23,7 @@ namespace ubv
             {
                 // send this over network
                 public utils.Bitset States;
+                public serialization.types.Vector2 Velocity;
                 public serialization.types.Vector2 Position;
                 public serialization.types.Float Rotation;
 
@@ -32,6 +33,7 @@ namespace ubv
                 public PlayerState() : base()
                 {
                     Position = new serialization.types.Vector2(Vector2.zero);
+                    Velocity = new serialization.types.Vector2(Vector2.zero);
                     Rotation = new serialization.types.Float(0);
                     GUID = new serialization.types.Int32(0);
                     States = new utils.Bitset();
@@ -42,6 +44,7 @@ namespace ubv
                 public PlayerState(int playerID) : base()
                 {
                     Position = new serialization.types.Vector2(Vector2.zero);
+                    Velocity = new serialization.types.Vector2(Vector2.zero);
                     Rotation = new serialization.types.Float(0);
                     GUID = new serialization.types.Int32(playerID);
                     States = new utils.Bitset();
@@ -52,6 +55,7 @@ namespace ubv
                 public PlayerState(PlayerState player) : base()
                 {
                     Position = new serialization.types.Vector2(Vector2.zero);
+                    Velocity = new serialization.types.Vector2(Vector2.zero);
                     Rotation = new serialization.types.Float(player.Rotation.Value);
                     GUID = new serialization.types.Int32(player.GUID.Value);
                     States = new utils.Bitset();

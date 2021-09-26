@@ -97,11 +97,13 @@ namespace ubv.client.logic
                 {
                     player.Position.Value = m_goalStates[player.GUID.Value].Position.Value; 
                     player.Rotation.Value = m_goalStates[player.GUID.Value].Rotation.Value;
+                    player.Velocity.Value = m_goalStates[player.GUID.Value].Velocity.Value;
                 }
                 else
                 {
                     player.Position.Value = Bodies[player.GUID.Value].position;
                     player.Rotation.Value = Bodies[player.GUID.Value].rotation;
+                    player.Velocity.Value = Bodies[player.GUID.Value].velocity;
                 }
             }
         }
@@ -131,6 +133,7 @@ namespace ubv.client.logic
                 {
                     Bodies[player.GUID.Value].position = player.Position.Value;
                     Bodies[player.GUID.Value].rotation = player.Rotation.Value;
+                    Bodies[player.GUID.Value].velocity = player.Velocity.Value;
 
                     if (player.States.IsTrue(0) != m_isSprinting[player.GUID.Value]) {
                         m_isSprinting[player.GUID.Value] = player.States.IsTrue(0);
