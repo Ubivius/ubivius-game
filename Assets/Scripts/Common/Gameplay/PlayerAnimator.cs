@@ -8,21 +8,23 @@ namespace ubv.client.logic
 {
     public class PlayerAnimator : MonoBehaviour
     {
-        private Rigidbody2D m_body;
+        [SerializeField] private Rigidbody2D m_body;
         private Animator m_animator;
 
         private Vector2 m_lastXVelocity;
 
         void Start() {
             m_animator = GetComponent<Animator>();
-            m_body = GetComponent<Rigidbody2D>();
+            //m_body = GetComponent<Rigidbody2D>();
         }
 
         public void SetSprinting(bool isSprinting) {
             m_animator.SetBool("IsSprinting", isSprinting);
+            Debug.Log("The player " + m_body.transform.parent.name + " sprinting is " + isSprinting + ".");
         }
 
         void Update() {
+            Debug.Log("The player " + m_body.transform.name + " values are " + m_body.velocity.magnitude + ", " + m_body.velocity.x + ", " + m_body.velocity.y);
             m_animator.SetFloat("Speed", m_body.velocity.magnitude);
             m_animator.SetFloat("Horizontal", m_body.velocity.x);
             m_animator.SetFloat("Vertical", m_body.velocity.y);
