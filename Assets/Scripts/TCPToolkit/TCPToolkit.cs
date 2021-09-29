@@ -63,9 +63,15 @@ namespace ubv
                     }
 
                     int byteCount = packet.DataSize + TCP_HEADER_SIZE;
+                    
+                    if (bytes.Length < byteCount)
+                    {
+                        Debug.Log("Packet not ready to be built yet: " + bytes.Length + " vs " + byteCount);
+                        return null;
+                    }
 
                     packet = new Packet(bytes.SubArray(0, byteCount));
-
+                    
                     return packet;
                 }
             }
