@@ -142,7 +142,6 @@ namespace ubv.tcp.client
             
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
             byte[] packetBytes = new byte[0];
-            int bufferOffset = 0;
             int totalPacketBytes = 0;
             int totalBytesReadBeforePacket = 0;
 
@@ -150,7 +149,7 @@ namespace ubv.tcp.client
 
             stream.ReadTimeout = m_connectionTimeoutInMS;
 
-            while (!m_exitSignal && m_activeEndpoint && bufferOffset >= 0)
+            while (!m_exitSignal && m_activeEndpoint && totalBytesReadBeforePacket >= 0)
             {
                 if (readyToReadPacket)
                 {
@@ -162,7 +161,7 @@ namespace ubv.tcp.client
                 // read from stream until we read a full packet
                 try
                 {
-                    totalBytesReadBeforePacket += stream.Read(bytes, (totalBytesReadBeforePacket + bufferOffset) % DATA_BUFFER_SIZE, MAX_BYTES_READ); ;
+                    totalBytesReadBeforePacket += stream.Read(bytes, (totalBytesReadBeforePacket) % DATA_BUFFER_SIZE, MAX_BYTES_READ); ;
                 }
                 catch (IOException ex)
                 {
@@ -201,14 +200,6 @@ namespace ubv.tcp.client
                             packet = null;
                         }
                     }
-                    /*
-                    // on a un restant de bytes
-                    // we shift
-                    bufferOffset = totalBytesReadBeforePacket - totalPacketBytes;
-                    for (int i = 0; i < bufferOffset; i++)
-                    {
-                        bytes[i] = bytes[i + totalPacketBytes];
-                    }*/
                 }
 
                 try
@@ -223,7 +214,7 @@ namespace ubv.tcp.client
                 }
             }
 #if DEBUG_LOG
-            Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal + ", Buffer offset :" + bufferOffset);
+            Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal);
 #endif // DEBUG_LOG
         }
 

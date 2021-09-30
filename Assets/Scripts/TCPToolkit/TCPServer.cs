@@ -27,7 +27,8 @@ namespace ubv.tcp.server
         protected volatile bool m_exitSignal;
 
         private const int DATA_BUFFER_SIZE = 1024*1024*4;
-                
+        private const int MAX_BYTES_READ = 32768;
+
         protected List<Task> m_tcpClientTasks;
 
         private Dictionary<int, IPEndPoint> m_clientEndpoints;
@@ -239,21 +240,18 @@ namespace ubv.tcp.server
             if (!stream.CanRead)
                 return;
             
-            int bytesRead = 0;
-
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
-            int lastPacketEnd = 0;
-            int bufferOffset = 0;
             int totalPacketBytes = 0;
+            int totalBytesReadBeforePacket = 0;
 
             bool readyToReadPacket = true;
             stream.ReadTimeout = m_connectionTimeoutInMS;
 
-            while (!m_exitSignal && m_activeEndpoints[source] && bufferOffset >= 0)
+            while (!m_exitSignal && m_activeEndpoints[source] && totalBytesReadBeforePacket >= 0)
             {
                 if (readyToReadPacket)
                 {
-                    bytesRead = 0;
+                    totalBytesReadBeforePacket = 0;
                     totalPacketBytes = 0;
                     readyToReadPacket = false;
                 }
@@ -261,7 +259,7 @@ namespace ubv.tcp.server
                 // read from stream until we read a full packet
                 try
                 {
-                    bytesRead += stream.Read(bytes, bufferOffset % DATA_BUFFER_SIZE, DATA_BUFFER_SIZE - bufferOffset);
+                    totalBytesReadBeforePacket += stream.Read(bytes, totalBytesReadBeforePacket % DATA_BUFFER_SIZE, MAX_BYTES_READ);
                 }
                 catch (IOException ex)
                 {
@@ -273,10 +271,10 @@ namespace ubv.tcp.server
                     return;
                 }
                 
-                if (bytesRead > 0)
+                if (totalBytesReadBeforePacket > 0)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
-                    while (packet != null && totalPacketBytes < bytesRead)
+                    while (packet != null)
                     {
                         int playerID = packet.PlayerID;
 
@@ -292,9 +290,8 @@ namespace ubv.tcp.server
                         }
 
                         readyToReadPacket = true;
-                        lastPacketEnd = packet.RawBytes.Length;
-                        totalPacketBytes += lastPacketEnd;
-                        
+                        totalPacketBytes += packet.RawBytes.Length;
+
                         // broadcast reception to listeners
                         if (packet.Data.Length > 0) // if it's not a keep-alive packet
                         {
@@ -306,15 +303,14 @@ namespace ubv.tcp.server
                                 }
                             }
                         }
-                        packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes.ArrayFrom(totalPacketBytes));
-                    }
-
-                    // on a un restant de bytes
-                    // we shift
-                    bufferOffset = bytesRead - totalPacketBytes;
-                    for (int i = 0; i < bufferOffset; i++)
-                    {
-                        bytes[i] = bytes[i + totalPacketBytes];
+                        if (totalBytesReadBeforePacket > totalPacketBytes)
+                        {
+                            packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes.ArrayFrom(totalPacketBytes));
+                        }
+                        else
+                        {
+                            packet = null;
+                        }
                     }
                 }
 
