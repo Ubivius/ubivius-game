@@ -25,7 +25,7 @@ namespace ubv.client.logic
         }
 
         void Update() {
-            Debug.Log("The player " + m_body.transform.name + " values are " + m_body.velocity.magnitude + ", " + m_body.velocity.x + ", " + m_body.velocity.y + "... Sprinting is: " + m_isSprinting);
+            //Debug.Log("The player " + m_body.transform.name + " values are " + m_body.velocity.magnitude + ", " + m_body.velocity.x + ", " + m_body.velocity.y + "... Sprinting is: " + m_isSprinting);
             m_animator.SetFloat("Speed", m_body.velocity.magnitude);
             m_animator.SetFloat("Horizontal", m_body.velocity.x);
             m_animator.SetFloat("Vertical", m_body.velocity.y);
