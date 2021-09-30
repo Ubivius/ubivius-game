@@ -33,18 +33,28 @@ namespace ubv.server.logic
         }
 
         // TODO
-        public bool UnlockSectionAvailable(Section section)
+        public bool UnlockSectionAvailable(DoorType type)
         {
-            switch(section)
+            switch (type)
             {
-                case Section.NorthEast:
-                    return true;
-                case Section.SouthEast:
-                    return true;
-                case Section.SouthWest:
-                    return true;
-                case Section.NorthWest:
-                    return true;
+                case DoorType.Section_North:
+                    return _NorthEastDoorButton && _NorthWestDoorButton ? true : false;
+                case DoorType.Section_East:
+                    return _NorthEastDoorButton && _SouthEastDoorButton ? true : false;
+                case DoorType.Section_South:
+                    return _SouthEastDoorButton && _SouthWestDoorButton ? true : false;
+                case DoorType.Section_West:
+                    return _NorthEastDoorButton && _NorthWestDoorButton ? true : false;
+
+                case DoorType.Section0_NorthEast:
+                    return _NorthEastDoorButton;
+                case DoorType.Section0_SouthEast:
+                    return _SouthEastDoorButton;
+                case DoorType.Section0_SouthWest:
+                    return _SouthWestDoorButton;
+                case DoorType.Section0_NorthWest:
+                    return _NorthWestDoorButton;
+
                 default:
                     return false;
             }

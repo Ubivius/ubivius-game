@@ -221,6 +221,27 @@ namespace ubv.common.world
             return null;
         }
 
+        public Dictionary<DoorCell, Vector2Int> FetchDoorWithPosition(DoorType type)
+        {
+            Dictionary<DoorCell, Vector2Int> dictionary = new Dictionary<DoorCell, Vector2Int>();
+            LogicGrid grid = GetMasterLogicGrid();
+            for (int x = 0; x < grid.Width; x++)
+            {
+                for (int y = 0; y < grid.Height; y++)
+                {
+                    if (grid.Grid[x, y] is DoorCell)
+                    {
+                        DoorCell tmp = grid.Grid[x, y] as DoorCell;
+                        if (tmp.DoorType == type)
+                        {
+                            dictionary.Add(tmp, new Vector2Int(x, y));
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
         public cellType.CellInfo[,] GetCellInfoArray()
         {
             return m_masterLogicGrid.GetCellInfo();
@@ -234,6 +255,11 @@ namespace ubv.common.world
         public override void Init()
         {
             GenerateWorld();
+        }
+
+        public Tilemap GetDoorTilemap()
+        {
+            return m_door;
         }
     }
 }
