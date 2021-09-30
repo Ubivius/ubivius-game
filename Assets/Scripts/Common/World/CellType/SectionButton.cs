@@ -9,13 +9,20 @@ namespace ubv.common.world.cellType
 {
     class SectionButton : LogicCell
     {
-        private Section m_section;
+        private serialization.types.Int32 m_section;
 
-        public Section Section { get => m_section; private set => m_section = value; }
+        public Section Section { get => (Section)m_section.Value; private set => m_section.Value = (int)value; }
 
         public SectionButton(Section section)
         {
-            Section = section;
+            m_section = new serialization.types.Int32((int)section);
+            InitSerializableMembers(m_section);
+        }
+
+        public SectionButton(): base()
+        {
+            m_section = new serialization.types.Int32((int)Section.None);
+            InitSerializableMembers(m_section);
         }
 
         protected override ID.BYTE_TYPE SerializationID()

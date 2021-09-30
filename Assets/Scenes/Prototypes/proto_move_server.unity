@@ -701,6 +701,7 @@ MonoBehaviour:
   m_updaters:
   - {fileID: 1470650681}
   - {fileID: 380608787}
+  - {fileID: 476838079}
 --- !u!4 &1089558532
 Transform:
   m_ObjectHideFlags: 0
@@ -1174,6 +1175,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}
+      propertyPath: m_mandatoryRoomPoolSection0.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
       propertyPath: m_mandatoryRoomPoolTopRight.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -1195,9 +1201,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}
-      propertyPath: m_mandatoryRoomPoolSection0.Array.data[1]
+      propertyPath: m_mandatoryRoomPoolSection0.Array.data[0]
       value: 
       objectReference: {fileID: 9081064586657247224, guid: acd3210bf2510684fbb99cdb86fe3415,
+        type: 3}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
+      propertyPath: m_mandatoryRoomPoolSection0.Array.data[1]
+      value: 
+      objectReference: {fileID: 5161993595501163376, guid: 3928f1980e463394ea90c9a134d63319,
         type: 3}
     - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}

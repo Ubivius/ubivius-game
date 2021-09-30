@@ -7639,7 +7639,7 @@ MonoBehaviour:
   m_finalDoor: {fileID: 2714856369489422487}
   m_sectionDoorButton_NorthEast: {fileID: 4989568382447103885}
   m_sectionDoorButton_SouthEast: {fileID: 6572615258471844310}
-  m_sectionDoorButton_SouthWest: {fileID: 6572615258471844310}
+  m_sectionDoorButton_SouthWest: {fileID: 2923189009877409924}
   m_sectionDoorButton_NorthWest: {fileID: 8276153643747631954}
   m_sectionButton_NorthEast: {fileID: 0}
   m_sectionButton_SouthEast: {fileID: 0}

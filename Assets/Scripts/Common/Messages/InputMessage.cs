@@ -40,6 +40,7 @@ namespace ubv
                 {
                     Movement.Value = Vector2.zero;
                     Sprinting.Value = false;
+                    Interact.Value = false;
                 }
                 
                 protected override ID.BYTE_TYPE SerializationID()

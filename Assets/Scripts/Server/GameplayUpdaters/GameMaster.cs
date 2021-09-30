@@ -49,7 +49,7 @@ namespace ubv.server.logic
         // Callback for section door opening
         public void InteractSectionDoorButton(ubv.common.world.cellType.SectionDoorButtonCell cell)
         {
-            Debug.Log("ButtonSectionDoor Pressed");
+            //Debug.Log("ButtonSectionDoor Pressed");
             switch (cell.Section)
             {
                 case Section.NorthEast:
@@ -74,7 +74,7 @@ namespace ubv.server.logic
         // Callback for final door opening
         public void InteractSectionButton(ubv.common.world.cellType.SectionButton cell)
         {
-            Debug.Log("SectionButton Pressed");
+            //Debug.Log("SectionButton Pressed");
             switch (cell.Section)
             {
                 case Section.NorthEast:

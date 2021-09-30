@@ -42,7 +42,8 @@ namespace ubv
                 m_controls.Gameplay.Sprint.performed += context => SetSprinting(true);
                 m_controls.Gameplay.Sprint.canceled += context => SetSprinting(false);
 
-                m_controls.Gameplay.Interact.performed += context => Interact();
+                m_controls.Gameplay.Interact.performed += context => Interact(true);
+                m_controls.Gameplay.Interact.canceled += context => Interact(false);
             }
 
             // Start is called before the first frame update
@@ -61,9 +62,9 @@ namespace ubv
                 m_IsSprinting = isSprinting;
             }
 
-            private void Interact()
+            private void Interact(bool interact)
             {
-                m_interact = true;
+                m_interact = interact;
             }
 
             // Update is called once per frame

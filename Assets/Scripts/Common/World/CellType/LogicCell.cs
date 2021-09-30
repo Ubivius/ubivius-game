@@ -12,7 +12,8 @@ namespace ubv.common.world.cellType
         NorthEast,
         SouthEast,
         SouthWest,
-        NorthWest
+        NorthWest,
+        None
     }
 
     public class CellInfo : serialization.Serializable
@@ -81,6 +82,15 @@ namespace ubv.common.world.cellType
                     break;
                 case CellType.CELL_PLAYERSPAWN:
                     cell = CreateFromBytes<PlayerSpawnCell>(m_logicCellBytes.Value.ArraySegment());
+                    break;
+                case CellType.CELL_SECTIONBUTTON:
+                    cell = CreateFromBytes<SectionButton>(m_logicCellBytes.Value.ArraySegment());
+                    break;
+                case CellType.CELL_SECTIONDOORBUTTON:
+                    cell = CreateFromBytes<SectionDoorButtonCell>(m_logicCellBytes.Value.ArraySegment());
+                    break;
+                case CellType.CELL_FINALBUTTON:
+                    cell = CreateFromBytes<FinalButtonCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_NONE:
                     break;

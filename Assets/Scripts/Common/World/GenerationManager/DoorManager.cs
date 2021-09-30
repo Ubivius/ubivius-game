@@ -116,6 +116,7 @@ namespace ubv.common.world.generationManager
             return 0;
         }
 
+
         private void AddDoorNorth(Vector2Int doorPosition)
         {
             m_masterLogicGrid.Grid[doorPosition.x - 1, doorPosition.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
@@ -526,9 +527,9 @@ namespace ubv.common.world.generationManager
                     m_masterLogicGrid.Grid[x - 1, y] = new world.cellType.DoorCell(type);
                     m_masterLogicGrid.Grid[x,     y] = new world.cellType.DoorCell(type);
                     m_masterLogicGrid.Grid[x + 1, y] = new world.cellType.DoorCell(type);
-                    m_floor.SetTile(new Vector3Int(x - 1, y, 0), null); // Remove tile
-                    m_floor.SetTile(new Vector3Int(x,     y, 0), null); // Remove tile
-                    m_floor.SetTile(new Vector3Int(x + 1, y, 0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x - 1, y, 0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x,     y, 0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x + 1, y, 0), null); // Remove tile
                     m_door.SetTile(new Vector3Int(x - 1, y, 0), m_tileDoor);
                     m_door.SetTile(new Vector3Int(x,     y, 0), m_tileDoor);
                     m_door.SetTile(new Vector3Int(x + 1, y, 0), m_tileDoor);
@@ -548,9 +549,9 @@ namespace ubv.common.world.generationManager
                     m_masterLogicGrid.Grid[x, y - 1] = new world.cellType.DoorCell(type);
                     m_masterLogicGrid.Grid[x, y    ] = new world.cellType.DoorCell(type);
                     m_masterLogicGrid.Grid[x, y + 1] = new world.cellType.DoorCell(type);
-                    m_floor.SetTile(new Vector3Int(x, y - 1, 0), null); // Remove tile
-                    m_floor.SetTile(new Vector3Int(x, y,     0), null); // Remove tile
-                    m_floor.SetTile(new Vector3Int(x, y + 1, 0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x, y - 1, 0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x, y,     0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x, y + 1, 0), null); // Remove tile
                     m_door.SetTile(new Vector3Int(x, y - 1, 0), m_tileDoor);
                     m_door.SetTile(new Vector3Int(x, y,     0), m_tileDoor);
                     m_door.SetTile(new Vector3Int(x, y + 1, 0), m_tileDoor);

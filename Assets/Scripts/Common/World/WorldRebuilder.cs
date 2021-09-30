@@ -83,6 +83,16 @@ namespace ubv.client.world
                         doorButtonCells.Add(m_defaultInteractableTile);
                         doorButtonPos.Add(pos);
                     }
+                    else if (cell is SectionButton)
+                    {
+                        doorButtonCells.Add(m_defaultInteractableTile);
+                        doorButtonPos.Add(pos);
+                    }
+                    else if (cell is SectionDoorButtonCell)
+                    {
+                        doorButtonCells.Add(m_defaultInteractableTile);
+                        doorButtonPos.Add(pos);
+                    }
                     else if (cell is PlayerSpawnCell)
                     {
                         playerSpawnCells.Add(m_defaultPlayerSpawnTile);

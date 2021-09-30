@@ -12,13 +12,21 @@ namespace ubv.common.world.cellType
     {
         private List<DoorCell> m_linkedDoor = new List<DoorCell>();
         private IntList m_linkedDoorCellID;
-        private Section m_section;
+        private serialization.types.Int32 m_section;
 
         public UnityAction<SectionDoorButtonCell> ButtonPress;
 
+
+        public SectionDoorButtonCell(): base()
+        {
+            m_section = new serialization.types.Int32((int)Section.None);
+            InitSerializableMembers(m_section);
+        }
+
         public SectionDoorButtonCell(Section section)
         {
-            m_section = section;
+            m_section = new serialization.types.Int32((int)section);
+            InitSerializableMembers(m_section);
         }
 
         public void SetLinkedDoor(List<DoorCell> linkedDoor)
@@ -43,6 +51,6 @@ namespace ubv.common.world.cellType
             return CellInfo.CellType.CELL_SECTIONDOORBUTTON;
         }
 
-        public Section Section { get => m_section; }
+        public Section Section { get => (Section)m_section.Value; }
     }
 }

@@ -43,7 +43,7 @@ namespace ubv.common.world
         [SerializeField] private Tilemap m_door;
         [SerializeField] private TileBase m_tileFloor;
         [SerializeField] private TileBase m_tileWall;
-        [SerializeField] private TileBase m_tiledoor;
+        [SerializeField] private TileBase m_tileDoor;
         [SerializeField] private int m_wallThickness;
 
         private Grid m_grid;
@@ -112,7 +112,7 @@ namespace ubv.common.world
             m_corridorsManager = new generationManager.CorridorsManager(m_worldGeneratorToCorridorsManager);
             m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
 
-            m_worldGeneratorToDoorManager = new dataStruct.WorldGeneratorToDoorManager(m_masterLogicGrid, m_floor, m_door, m_tileFloor, m_tiledoor, m_roomInMap);
+            m_worldGeneratorToDoorManager = new dataStruct.WorldGeneratorToDoorManager(m_masterLogicGrid, m_floor, m_door, m_tileFloor, m_tileDoor, m_roomInMap);
             m_doorManager = new generationManager.DoorManager(m_worldGeneratorToDoorManager);
             m_masterLogicGrid = m_doorManager.GenerateDoorGrid();
 
