@@ -33,7 +33,9 @@ namespace ubv.tcp.client
         private bool m_iteratingTroughReceivers;
 
 
+        // Un gros buffer c'est le fun, on est pas très limités en taille
         private const int DATA_BUFFER_SIZE = 1024 * 1024 * 4;
+        // pour workaround le unix shit
         private const int MAX_BYTES_READ = 32768;
         private Queue<byte[]> m_dataToSend;
 
