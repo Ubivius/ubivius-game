@@ -13,11 +13,23 @@ namespace ubv
             /// </summary>
             public class PlayerShooting : MonoBehaviour
             {
-                static public void Execute(Transform firePoint, GameObject bulletPrefab, float bulletForce)
+                static float m_lastShot = 0;
+
+                static public void Execute(Transform firePoint, PlayerShootingSettings playerShootingSettings, common.data.InputFrame input, float deltaTime)
                 {
-                    GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
-                    Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-                    rb.AddForce(firePoint.right * bulletForce, ForceMode2D.Impulse);
+                    if (input.Shooting.Value && m_lastShot > playerShootingSettings.BulletDelay)
+                    {
+                        GameObject bullet = Instantiate(playerShootingSettings.BulletPrefab, firePoint);
+                        bullet.transform.localPosition = Vector3.zero;
+                        Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+                        rb.AddForce(firePoint.right * playerShootingSettings.BulletForce, ForceMode2D.Impulse);
+
+                        m_lastShot = 0;
+                    }
+                    else
+                    {
+                        m_lastShot += deltaTime;
+                    }
                 }
             }
         }

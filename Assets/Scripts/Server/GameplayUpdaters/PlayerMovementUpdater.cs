@@ -57,7 +57,7 @@ namespace ubv.server.logic
             {
                 Rigidbody2D body = m_bodies[id];
                 common.logic.PlayerMovement.Execute(ref body, m_playerControllers[id].GetStats(), frames[id], Time.fixedDeltaTime);
-                common.logic.PlayerShooting.Execute(m_playerSettings.PlayerPrefab.FirePoint, m_playerShootingSettings.BulletPrefab, m_playerShootingSettings.BulletForce);
+                common.logic.PlayerShooting.Execute(m_playerSettings.PlayerPrefab.FirePoint, m_playerShootingSettings, frame, deltaTime);
                 m_isSprinting[id] = frames[id].Sprinting.Value;
             }
         }

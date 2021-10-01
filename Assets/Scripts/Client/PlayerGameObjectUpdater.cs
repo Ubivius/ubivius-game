@@ -21,6 +21,7 @@ namespace ubv.client.logic
         public Dictionary<int, common.gameplay.PlayerController> PlayerControllers { get; private set; }
         public Dictionary<int, PlayerAnimator> PlayerAnimators { get; private set; }
         private Rigidbody2D m_localPlayerBody;
+        private Transform m_localFirePoint;
 
         private Dictionary<int, bool> m_isSprinting;
 
@@ -60,13 +61,12 @@ namespace ubv.client.logic
 
                 m_goalStates[id] = state;
                 m_sprintActions[id] = PlayerAnimators[id].SetSprinting;
-
             }
 
             m_playerGUID = localID;
             m_localPlayerBody = Bodies[localID];
+            m_localFirePoint = playerGameObject.FirePoint;
             OnInitialized?.Invoke();
-
         }
 
         public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
@@ -120,7 +120,7 @@ namespace ubv.client.logic
                 m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
-            common.logic.PlayerShooting.Execute(m_playerSettings.PlayerPrefab.FirePoint, m_playerShootingSettings.BulletPrefab, m_playerShootingSettings.BulletForce);
+            common.logic.PlayerShooting.Execute(m_localFirePoint, m_playerShootingSettings, input, deltaTime);
         }
 
         public override void UpdateWorldFromState(WorldState state)

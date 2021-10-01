@@ -8,5 +8,6 @@ namespace ubv.common
     {
         public GameObject BulletPrefab;
         public float BulletForce;
+        public float BulletDelay;
     }
 }

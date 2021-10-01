@@ -12,10 +12,10 @@ GameObject:
   - component: {fileID: 3337481947086407751}
   - component: {fileID: 8478907800775636381}
   - component: {fileID: 1874539913477277801}
-  - component: {fileID: 3463440408840531697}
+  - component: {fileID: -4515161736970369497}
   m_Layer: 0
   m_Name: Bullet
-  m_TagString: Untagged
+  m_TagString: Bullets
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -28,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7419865453471933861}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.05, y: -0.52, z: -10}
+  m_LocalPosition: {x: 1.05, y: -0.52, z: 0}
   m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
   m_Children: []
   m_Father: {fileID: 0}
@@ -71,7 +71,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -400651315
-  m_SortingLayer: -2
+  m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   m_Color: {r: 0.94117653, g: 0.8588236, b: 0.6509804, a: 1}
@@ -131,7 +131,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.01, y: 0.01}
   m_EdgeRadius: 0.07
---- !u!114 &3463440408840531697
+--- !u!114 &-4515161736970369497
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -140,12 +140,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 7419865453471933861}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b54e00f58f0cb400a8479893dffe6a33, type: 3}
+  m_Script: {fileID: 11500000, guid: b8f53a466663d6843b8ffe1966dc8002, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rb: {fileID: 8478907800775636381}
-  hitEffect: {fileID: 874815824922754516, guid: ce01624eeff654369b842376dc514eba,
-    type: 3}
-  wallImpactSound: {fileID: 8300000, guid: cb43e0a7299e146c3ba8339220cbf902, type: 3}
-  obstacleImpactSound: {fileID: 8300000, guid: ccb980fa9a34d4e02976fc5b5cbb554f, type: 3}
-  ennemyImpactSound: {fileID: 8300000, guid: c75daf76a93234355b8244bc454ca037, type: 3}
