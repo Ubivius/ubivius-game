@@ -1,5 +1,5 @@
-# BUILD_TYPE can have these values: local, test or prod
-# if BUILD_TYPE is empty, set to local
+# BUILD_TYPE can have these values: test or prod
+# if BUILD_TYPE is empty, set to prod (more secure released image by default)
 ARG BUILD_TYPE=prod
 
 FROM ubuntu as build
