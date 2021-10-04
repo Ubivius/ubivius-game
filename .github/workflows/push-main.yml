@@ -1,8 +1,6 @@
-name: CI for Pull-Request and Merge on master/main
+name: CI for Pull-Request on master/main
 
 on:
-  pull_request:
-    branches: [ master, main ]
   push:
     branches: [ master, main ]
 
@@ -81,6 +79,7 @@ jobs:
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ env.DOCKERHUB_PWD }}
           dockerfile: Dockerfile
+          buildargs: BUILD_TYPE=prod
           tags: "${{ env.REPO_VERSION }}"
 
       # Also publish build output as zip archive
