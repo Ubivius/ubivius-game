@@ -5,7 +5,7 @@
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
-[Bb]uild/
+#[Bb]uild/
 [Bb]uilds/
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
@@ -71,3 +71,9 @@ crashlytics-build.properties
 [Aa]ssets/[Ss]treamingAssets/aa/*
 Library/
 Logs/
+ClassDiagram1.cd
+
+ClassDiagram1.png
+
+# For ReadTheDocs build results
+*/_build

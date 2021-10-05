@@ -1,5 +1,5 @@
 
-=== Sat Jul 11 20:13:44 2020
+=== Sat Jun 27 13:36:25 2020
 
 Packages were changed.
 Update Mode: mergeDefaultDependencies
@@ -7,7 +7,7 @@ Update Mode: mergeDefaultDependencies
 The following packages were added:
   com.unity.collab-proxy@1.2.16
   com.unity.ide.rider@1.1.4
-  com.unity.ide.vscode@1.2.0
+  com.unity.ide.vscode@1.2.1
   com.unity.modules.ai@1.0.0
   com.unity.modules.androidjni@1.0.0
   com.unity.modules.animation@1.0.0
@@ -48,7 +48,7 @@ The following packages were updated:
   com.unity.2d.psdimporter from version 2.1.0 to 2.1.4
   com.unity.2d.spriteshape from version 3.0.8 to 3.0.11
 
-=== Tue Oct  5 13:54:48 2021
+=== Sat Apr 17 11:29:01 2021
 
 Packages were changed.
 Update Mode: updateDependencies
@@ -58,8 +58,16 @@ The following packages were updated:
   com.unity.2d.pixel-perfect from version 2.0.4 to 2.1.0
   com.unity.2d.psdimporter from version 2.1.4 to 2.1.6
   com.unity.2d.spriteshape from version 3.0.11 to 3.0.15
-  com.unity.ide.rider from version 1.1.4 to 1.2.1
-  com.unity.ide.vscode from version 1.2.0 to 1.2.3
+  com.unity.ide.vscode from version 1.2.1 to 1.2.3
+  com.unity.inputsystem from version 1.0.0 to 1.0.2
   com.unity.test-framework from version 1.1.14 to 1.1.24
   com.unity.textmeshpro from version 2.0.1 to 2.1.4
   com.unity.timeline from version 1.2.14 to 1.2.18
+
+=== Fri Apr 23 14:09:25 2021
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were updated:
+  com.unity.ide.rider from version 1.1.4 to 1.2.1
