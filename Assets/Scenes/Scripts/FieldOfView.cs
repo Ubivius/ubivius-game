@@ -5,41 +5,41 @@ using UnityEngine;
 public class FieldOfView : MonoBehaviour
 {
     //TODO ajouter un layerMask pour ne pas que les ennemies bloquent le champ de vision 
-    private Mesh mesh;
-    private Vector3 origin;
-    private float startingAngle;
-    private float fov;
-    private float viewDistance;
+    private Mesh m_mesh;
+    private Vector3 m_origin;
+    private float m_startingAngle;
+    private float m_fov;
+    private float m_viewDistance;
     private void Start()
     {
-        mesh = new Mesh();
-        GetComponent<MeshFilter>().mesh = mesh;
-        origin = Vector3.zero;
-        fov = 90f; //FOV angle
-        viewDistance = 10f;//FOV lenght
+        m_mesh = new Mesh();
+        GetComponent<MeshFilter>().mesh = m_mesh;
+        m_origin = Vector3.zero;
+        m_fov = 90f; //FOV angle
+        m_viewDistance = 10f;//FOV lenght
     }
 
     private void LateUpdate()
     {
         int rayCount = 1000; //more rays = cpu expensive 
-        float angle = startingAngle;
-        float angleInscrease = fov / rayCount;
+        float angle = m_startingAngle;
+        float angleInscrease = m_fov / rayCount;
 
         Vector3[] vertices = new Vector3[rayCount +1 + 1];
         Vector2[] uv = new Vector2[vertices.Length];
         int[] triangles = new int[rayCount * 3];
 
-        vertices[0] = origin;
+        vertices[0] = m_origin;
 
         int vertexIndex = 1;
         int triangleIndex = 0;
         for (int i = 0; i <= rayCount; i++) {
             Vector3 vertex;
-            RaycastHit2D raycastHit2D = Physics2D.Raycast(origin, GetVectorFromAngle(angle), viewDistance);
+            RaycastHit2D raycastHit2D = Physics2D.Raycast(m_origin, GetVectorFromAngle(angle), m_viewDistance);
             if (raycastHit2D.collider == null)
             {
                 //not hit
-                vertex = origin + GetVectorFromAngle(angle) * viewDistance;
+                vertex = m_origin + GetVectorFromAngle(angle) * m_viewDistance;
             }
             else {
                 //hit object
@@ -58,10 +58,10 @@ public class FieldOfView : MonoBehaviour
             angle -= angleInscrease;
         }
 
-        mesh.vertices = vertices;
-        mesh.uv = uv;
-        mesh.triangles = triangles;
-        mesh.bounds = new Bounds(origin, Vector3.one * 1000f); //modify according to the map area
+        m_mesh.vertices = vertices;
+        m_mesh.uv = uv;
+        m_mesh.triangles = triangles;
+        m_mesh.bounds = new Bounds(m_origin, Vector3.one * 1000f); //modify according to the map area
     }
 
     public static Vector3 GetVectorFromAngle(float angle) {
@@ -78,18 +78,18 @@ public class FieldOfView : MonoBehaviour
     }
 
     public void SetOrigin(Vector3 origin) {
-        this.origin = origin;
+        this.m_origin = origin;
     }
 
     public void SetAimDirection(Vector3 aimDirection) {
-        startingAngle = GetAngleFromVectorFloat(aimDirection) + fov / 2f;
+        m_startingAngle = GetAngleFromVectorFloat(aimDirection) + m_fov / 2f;
     }
 
     public void SetFov(float fov) {
-        this.fov = fov;
+        this.m_fov = fov;
     }
 
     public void SetViewDistance(float viewDistance) {
-        this.viewDistance = viewDistance;
+        this.m_viewDistance = viewDistance;
     }
 }
