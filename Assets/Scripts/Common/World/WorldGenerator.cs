@@ -218,7 +218,7 @@ namespace ubv.common.world
                     }
                 }
             }
-            return null;
+            return list;
         }
 
         public Dictionary<DoorCell, Vector2Int> FetchDoorWithPosition(DoorType type)
@@ -239,7 +239,7 @@ namespace ubv.common.world
                     }
                 }
             }
-            return null;
+            return dictionary;
         }
 
         public cellType.CellInfo[,] GetCellInfoArray()
