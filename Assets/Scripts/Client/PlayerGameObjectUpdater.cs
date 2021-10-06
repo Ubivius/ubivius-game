@@ -16,6 +16,7 @@ namespace ubv.client.logic
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerAnimator m_playerAnimator;
         [SerializeField] private PlayerShootingSettings m_playerShootingSettings;
+        [SerializeField] private Camera cam;
 
         private Dictionary<int, PlayerPrefab> Players { get; set; }
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
@@ -123,7 +124,7 @@ namespace ubv.client.logic
                 m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
-            common.logic.PlayerShooting.Execute(Players[m_playerGUID], m_playerShootingSettings, input, deltaTime);
+            common.logic.PlayerShooting.Execute(Players[m_playerGUID], m_playerShootingSettings, cam, input, deltaTime);
         }
 
         public override void UpdateWorldFromState(WorldState state)

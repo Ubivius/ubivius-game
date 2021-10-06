@@ -388,6 +388,7 @@ MonoBehaviour:
   m_playerAnimator: {fileID: 0}
   m_playerShootingSettings: {fileID: 11400000, guid: e9e0b7007b894254586ea1109e168b46,
     type: 2}
+  cam: {fileID: 8568193984628607418}
 --- !u!1 &583337820
 GameObject:
   m_ObjectHideFlags: 0

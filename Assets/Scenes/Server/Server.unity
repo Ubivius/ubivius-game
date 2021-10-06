@@ -195,6 +195,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 10e14b9cfc08f364eb4ade651bee9ae5, type: 3}
+--- !u!20 &85409925 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
+    type: 3}
+  m_PrefabInstance: {fileID: 85409924}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &160762943
 GameObject:
   m_ObjectHideFlags: 0
@@ -998,6 +1004,7 @@ MonoBehaviour:
   m_playerShootingSettings: {fileID: 11400000, guid: e9e0b7007b894254586ea1109e168b46,
     type: 2}
   m_gameMaster: {fileID: 380608787}
+  cam: {fileID: 85409925}
 --- !u!1 &1538287029
 GameObject:
   m_ObjectHideFlags: 0

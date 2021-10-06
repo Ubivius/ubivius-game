@@ -11,6 +11,7 @@ namespace ubv.server.logic
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerShootingSettings m_playerShootingSettings;
         [SerializeField] private GameMaster m_gameMaster;
+        [SerializeField] private Camera cam;
         private Dictionary<int, PlayerPrefab> m_playersGameObjects;
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, PlayerState> m_playerStates;
@@ -60,7 +61,7 @@ namespace ubv.server.logic
             {
                 Rigidbody2D body = m_bodies[id];
                 common.logic.PlayerMovement.Execute(ref body, m_playerControllers[id].GetStats(), frames[id], Time.fixedDeltaTime);
-                common.logic.PlayerShooting.Execute(m_playersGameObjects[client.PlayerGUID], m_playerShootingSettings, frame, deltaTime);
+                common.logic.PlayerShooting.Execute(m_playersGameObjects[client.PlayerGUID], m_playerShootingSettings, cam, frame, deltaTime);
                 m_isSprinting[id] = frames[id].Sprinting.Value;
             }
         }
