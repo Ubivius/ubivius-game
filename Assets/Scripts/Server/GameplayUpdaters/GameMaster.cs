@@ -18,7 +18,7 @@ namespace ubv.server.logic
         {
         }
 
-        public override void InitClient(ClientState state)
+        public override void InitClient(WorldState state)
         {
         }
 
@@ -30,11 +30,11 @@ namespace ubv.server.logic
         {
         }
 
-        public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
+        public override void FixedUpdateFromClient(WorldState client, InputFrame frame, float deltaTime)
         {
         }
 
-        public override void UpdateClient(ref ClientState client)
+        public override void UpdateClient(ref WorldState client)
         {
         }
 

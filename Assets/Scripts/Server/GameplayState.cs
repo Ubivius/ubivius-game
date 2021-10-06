@@ -16,7 +16,7 @@ namespace ubv.server.logic
     public class GameplayState : ServerState, udp.server.IUDPServerReceiver, tcp.server.ITCPServerReceiver
     {
         private HashSet<int> m_clients;
-        private Dictionary<int, ClientState> m_clientStates;
+        private WorldState m_currentWorldState;
         private int m_masterTick;
         private Dictionary<int, bool> m_connectedClients;
                 
@@ -38,12 +38,11 @@ namespace ubv.server.logic
             ServerState.m_gameplayState = this;
         }
 
-        public void Init(Dictionary<int, common.serialization.types.String> clients)
+        public void Init(List<int> clients)
         {
             m_tickAccumulator = 0;
             m_masterTick = 0;
-            m_clientStates = new Dictionary<int, ClientState>();
-            m_clients = new HashSet<int>(clients.Keys);
+            m_clients = new HashSet<int>(clients);
 
             m_connectedClients = new Dictionary<int, bool>();
 
@@ -52,58 +51,34 @@ namespace ubv.server.logic
             m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(m_physicsSceneName).GetPhysicsScene2D();
             
             m_clientInputBuffers = new Dictionary<int, Dictionary<int, InputFrame>>();
-                   
+
+            m_currentWorldState = new WorldState();
+
             // add each player to client states
             foreach (int id in m_clients)
             {
-                PlayerState player = new PlayerState();
-                player.GUID.Value = id;
-                m_clientStates[id] = new ClientState(id);
-                m_clientStates[id].AddPlayer(player);
+                m_connectedClients.Add(id, true);
+                m_clientInputBuffers[id] = new Dictionary<int, InputFrame>();
+            }
+
+            // add each enemy to client states
+            foreach (int id in m_clients)
+            {
+                EnemyStateData enemy = new EnemyStateData();
+                enemy.GUID.Value = id;
+                //m_clientStates[id] = new ClientState(id);
+                //m_clientStates[id].AddEnemy(enemy);
                 m_connectedClients.Add(id, true);
             }
 
-            // add each player to each other client state
-            foreach (ClientState baseState in m_clientStates.Values)
-            {
-                m_clientInputBuffers[baseState.PlayerGUID] = new Dictionary<int, InputFrame>();
-                foreach (ClientState otherState in m_clientStates.Values)
-                {
-                    PlayerState currentPlayer = otherState.GetPlayer();
-                    if (baseState.PlayerGUID != otherState.PlayerGUID)
-                    {
-                        baseState.AddPlayer(currentPlayer);
-                    }
-                }
-            }
-            
             foreach (ServerGameplayStateUpdater updater in m_updaters)
             {
                 updater.Setup();
             }
 
-            foreach (ClientState state in m_clientStates.Values)
+            foreach(ServerGameplayStateUpdater updater in m_updaters)
             {
-                foreach(ServerGameplayStateUpdater updater in m_updaters)
-                {
-                    updater.InitClient(state);
-                }
-            }
-
-            foreach (ClientState state in m_clientStates.Values)
-            {
-                foreach (ServerGameplayStateUpdater updater in m_updaters)
-                {
-                    updater.InitPlayer(state.GetPlayer());
-                }
-            }
-
-            foreach (ClientState state in m_clientStates.Values)
-            {
-                foreach (ServerGameplayStateUpdater updater in m_updaters)
-                {
-                    updater.InitEnemy(state.GetEnemy());
-                }
+                updater.InitClients(m_currentWorldState);
             }
 
             m_UDPServer.Subscribe(this);
@@ -115,7 +90,7 @@ namespace ubv.server.logic
             lock (m_lock)
             {
                 // update state based on received input
-                foreach (int id in m_clientStates.Keys)
+                foreach (int id in m_clients)
                 {
                     if (!m_connectedClients[id])
                         continue;
@@ -134,7 +109,7 @@ namespace ubv.server.logic
                     // must be called in main unity thread
                     foreach (ServerGameplayStateUpdater updater in m_updaters)
                     {
-                        updater.FixedUpdateFromClient(m_clientStates[id], frame, Time.fixedDeltaTime);
+                        updater.FixedUpdateFromClient(m_currentWorldState, frame, Time.fixedDeltaTime);
                     }
 
                     // remove used entries in dict if we use a dict later
@@ -145,13 +120,10 @@ namespace ubv.server.logic
                 m_serverPhysics.Simulate(Time.fixedDeltaTime);
 
                 // update client states based on simulation
-                foreach (int id in m_clientStates.Keys)
+                
+                foreach (ServerGameplayStateUpdater updater in m_updaters)
                 {
-                    ClientState client = m_clientStates[id];
-                    foreach (ServerGameplayStateUpdater updater in m_updaters)
-                    {
-                        updater.UpdateClient(ref client);
-                    }
+                    updater.UpdateClient(ref m_currentWorldState);
                 }
                 
                 m_masterTick++;
@@ -163,7 +135,7 @@ namespace ubv.server.logic
                         {
                             // OPTIMIZATION : Cache le message et l'info au lieu d'en recréer des new à chaque send
                             NetInfo info = new NetInfo(m_masterTick);
-                            ClientStateMessage msg = new ClientStateMessage(m_clientStates[id], info);
+                            ClientStateMessage msg = new ClientStateMessage(m_currentWorldState, info);
                             //Debug.Log("SERVER Sending validated tick " + m_masterTick + " to client " + id);
                             m_UDPServer.Send(msg.GetBytes(), id);
                         }
@@ -188,7 +160,6 @@ namespace ubv.server.logic
             {
                 lock (m_lock)
                 {
-                    ClientState clientState = m_clientStates[playerID];
                     List<InputFrame> inputFrames = inputs.InputFrames.Value;
                     int frameIndex = 0;
                     

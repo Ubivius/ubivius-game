@@ -13,14 +13,14 @@ namespace ubv.client.logic
     /// </summary>
     public abstract class ClientStateUpdater : MonoBehaviour
     {
-        public abstract void Init(ClientState state, int localID);
+        public abstract void Init(WorldState state, int localID);
 
         /// <summary>
         /// Stores the world client state in local storage.
         /// </summary>
         /// <param name="state">State to store and update</param>
         /// <param name="deltaTime"></param>
-        public abstract void UpdateStateFromWorld(ref ClientState state);
+        public abstract void UpdateStateFromWorld(ref WorldState state);
 
         /// <summary>
         /// Updates the local state.
@@ -33,7 +33,7 @@ namespace ubv.client.logic
         /// Sets the current local client state to state
         /// </summary>
         /// <param name="state">State to update to</param>
-        public abstract void UpdateWorldFromState(ClientState state);
+        public abstract void UpdateWorldFromState(WorldState state);
 
         /// <summary>
         /// Checks if current local state needs to be corrected according to
@@ -41,7 +41,7 @@ namespace ubv.client.logic
         /// </summary>
         /// <param name="remoteState">The state as computed by the server</param>
         /// <returns>If the client states needs correction</returns>
-        public abstract bool NeedsCorrection(ClientState localState, ClientState remoteState);
+        public abstract bool NeedsCorrection(WorldState localState, WorldState remoteState);
 
         public abstract void FixedStateUpdate(float deltaTime);
     }

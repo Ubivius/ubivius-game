@@ -24,12 +24,12 @@ namespace ubv.server.logic
             m_states = new Dictionary<int, EnemyStateMachine>();
         }
 
-        public override void InitClient(ClientState state)
+        public override void InitClient(WorldState state)
         {
-            m_pathfindingGridManager.OnPathFindingManagerGenerated += OnPathFindingManagerGenerated(state);
+            m_pathfindingGridManager.OnPathFindingManagerGenerated += () => { OnPathFindingManagerGenerated(state); };
         }
 
-        private void OnPathFindingManagerGenerated(ClientState state)
+        private void OnPathFindingManagerGenerated(WorldState state)
         {
             int id = state.EnemyGUID;
             GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
@@ -44,21 +44,18 @@ namespace ubv.server.logic
             m_bodies.Add(id, body);
         }
 
-        public override void InitPlayer(PlayerState player)
-        {
-        }
 
         public override void InitEnemy(EnemyStateData enemy)
         {
             enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
         }
 
-        public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
+        public override void FixedUpdateFromClient(WorldState client, InputFrame frame, float deltaTime)
         {
             Rigidbody2D body = m_bodies[client.PlayerGUID];
         }
 
-        public override void UpdateClient(ref ClientState client)
+        public override void UpdateClient(ref WorldState client)
         {//state change et deplacement
 
             Rigidbody2D body = m_bodies[client.EnemyGUID];
