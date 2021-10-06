@@ -32,7 +32,11 @@ namespace ubv.tcp.client
         private List<ITCPClientReceiver> m_receiversAwaitingUnsubscription;
         private bool m_iteratingTroughReceivers;
 
-        private const int DATA_BUFFER_SIZE = 1024*1024*4;
+
+        // Un gros buffer c'est le fun, on est pas très limités en taille
+        private const int DATA_BUFFER_SIZE = 1024 * 1024 * 4;
+        // pour workaround le unix shit
+        private const int MAX_BYTES_READ = 32768;
         private Queue<byte[]> m_dataToSend;
 
         private volatile bool m_activeEndpoint;
@@ -137,24 +141,21 @@ namespace ubv.tcp.client
 
             if (!stream.CanRead)
                 return;
-
-            int bytesRead = 0;
-
+            
             byte[] bytes = new byte[DATA_BUFFER_SIZE];
-            int lastPacketEnd = 0;
             byte[] packetBytes = new byte[0];
-            int bufferOffset = 0;
             int totalPacketBytes = 0;
+            int totalBytesReadBeforePacket = 0;
 
             bool readyToReadPacket = true;
 
             stream.ReadTimeout = m_connectionTimeoutInMS;
 
-            while (!m_exitSignal && m_activeEndpoint && bufferOffset >= 0)
+            while (!m_exitSignal && m_activeEndpoint && totalBytesReadBeforePacket >= 0)
             {
                 if (readyToReadPacket)
                 {
-                    bytesRead = 0;
+                    totalBytesReadBeforePacket = 0;
                     totalPacketBytes = 0;
                     readyToReadPacket = false;
                 }
@@ -162,7 +163,7 @@ namespace ubv.tcp.client
                 // read from stream until we read a full packet
                 try
                 {
-                    bytesRead += stream.Read(bytes, bufferOffset % DATA_BUFFER_SIZE, DATA_BUFFER_SIZE - bufferOffset);
+                    totalBytesReadBeforePacket += stream.Read(bytes, (totalBytesReadBeforePacket) % DATA_BUFFER_SIZE, MAX_BYTES_READ); ;
                 }
                 catch (IOException ex)
                 {
@@ -171,14 +172,13 @@ namespace ubv.tcp.client
                     return;
                 }
                 
-                if (bytesRead > 0)
+                if (totalBytesReadBeforePacket > 0)
                 {
-                    TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
-                    while (packet != null && totalPacketBytes < bytesRead)
+                    TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes.SubArray(0, totalBytesReadBeforePacket));
+                    while (packet != null)
                     {
                         readyToReadPacket = true;
-                        lastPacketEnd = packet.RawBytes.Length;
-                        totalPacketBytes += lastPacketEnd;
+                        totalPacketBytes += packet.RawBytes.Length;
                         // broadcast reception to listeners
                         if (packet.Data.Length > 0) // if it's not a keep-alive packet
                         {
@@ -192,15 +192,15 @@ namespace ubv.tcp.client
                                 m_iteratingTroughReceivers = false;
                             }
                         }
-                        packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes.ArrayFrom(totalPacketBytes));
-                    }
 
-                    // on a un restant de bytes
-                    // we shift
-                    bufferOffset = bytesRead - totalPacketBytes;
-                    for (int i = 0; i < bufferOffset; i++)
-                    {
-                        bytes[i] = bytes[i + totalPacketBytes];
+                        if (totalBytesReadBeforePacket > totalPacketBytes)
+                        {
+                            packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes.SubArray(totalPacketBytes, totalBytesReadBeforePacket - totalPacketBytes));
+                        }
+                        else
+                        {
+                            packet = null;
+                        }
                     }
                 }
 
@@ -216,7 +216,7 @@ namespace ubv.tcp.client
                 }
             }
 #if DEBUG_LOG
-            Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal + ", Buffer offset :" + bufferOffset);
+            Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal);
 #endif // DEBUG_LOG
         }
 
