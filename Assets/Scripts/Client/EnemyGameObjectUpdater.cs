@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using ubv.common;
 using UnityEngine.Events;
 using ubv.common.serialization;
+using ubv.server.logic.ai;
 
 namespace ubv.client.logic
 {
@@ -18,6 +19,7 @@ namespace ubv.client.logic
         [SerializeField] private EnemySettings m_enemySettings;
 
         private Dictionary<int, Rigidbody2D> m_bodies;
+        private Dictionary<int, EnemyState> m_states;
         private Rigidbody2D m_localEnemyBody;
 
         private int m_enemyGUID;
@@ -59,10 +61,23 @@ namespace ubv.client.logic
         public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
         {
             bool err = false;
+            Bodies = new Dictionary<int, Rigidbody2D>();
+            m_goalStates = new Dictionary<int, EnemyStateData>();
+            int id = 0;
             // mettre un bool pour IsAlreadyCorrecting ?
             // check correction on goalStates au lieu du current position TODO
             foreach (EnemyStateData enemyStateData in remoteState.Enemies().Values)
             {
+                id = enemyStateData.GUID.Value;
+                GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
+                Bodies[id] = enemyGameObject.GetComponent<Rigidbody2D>();
+                Bodies[id].name = "Client enemy " + id.ToString();
+
+                m_goalStates[id] = enemyStateData;
+                m_enemyGUID = id;
+
+                OnInitialized?.Invoke();
+
                 err = (enemyStateData.Position.Value - localState.Enemies()[enemyStateData.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance;
                 if (err)
                 {

@@ -97,7 +97,15 @@ namespace ubv.server.logic
                     updater.InitPlayer(state.GetPlayer());
                 }
             }
-            
+
+            foreach (ClientState state in m_clientStates.Values)
+            {
+                foreach (ServerGameplayStateUpdater updater in m_updaters)
+                {
+                    updater.InitEnemy(state.GetEnemy());
+                }
+            }
+
             m_UDPServer.Subscribe(this);
             m_TCPServer.Subscribe(this);
         }

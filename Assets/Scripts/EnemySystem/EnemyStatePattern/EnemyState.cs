@@ -62,8 +62,6 @@ namespace ubv.server.logic.ai
 
     abstract public class EnemyState: common.serialization.Serializable
     {
-        private EnemyStateData m_eneyStateData;
-
         // Use this for initialization
         public virtual EnemyState Init()
         {

@@ -26,6 +26,10 @@ namespace ubv.server.logic
         {
         }
 
+        public override void InitEnemy(EnemyStateData enemy)
+        {
+        }
+
         public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
         {
         }

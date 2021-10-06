@@ -23,7 +23,8 @@ namespace ubv
                 public serialization.types.Float Rotation;
                 //public ubv.server.logic.ai.EnemyState EnemyState;
 
-                public EnemyStateInfo EnemyStateInfo; 
+                public EnemyStateInfo EnemyStateInfo;
+                public EnemyState EnemyState;
 
                 /*private serialization.types.Byte m_enemyState;
                 private serialization.types.Int32 m_enemyStateID;

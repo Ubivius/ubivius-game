@@ -38,6 +38,10 @@ namespace ubv.server.logic
             player.Position.Value = m_bodies[player.GUID.Value].position;
         }
 
+        public override void InitEnemy(EnemyStateData enemy)
+        {
+        }
+
         public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
         {
             Rigidbody2D body = m_bodies[client.PlayerGUID];
