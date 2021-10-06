@@ -17,6 +17,7 @@ namespace ubv.client.logic
         [SerializeField] private PlayerAnimator m_playerAnimator;
         [SerializeField] private PlayerShootingSettings m_playerShootingSettings;
 
+        private Dictionary<int, PlayerPrefab> Players { get; set; }
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, common.gameplay.PlayerController> PlayerControllers { get; private set; }
         public Dictionary<int, PlayerAnimator> PlayerAnimators { get; private set; }
@@ -38,6 +39,7 @@ namespace ubv.client.logic
         {
             m_sprintActions = new Dictionary<int, UnityAction<bool>>();
             m_timeSinceLastGoal = 0;
+            Players = new Dictionary<int, PlayerPrefab>();
             Bodies = new Dictionary<int, Rigidbody2D>();
             m_isSprinting = new Dictionary<int, bool>();
             m_goalStates = new Dictionary<int, PlayerState>();
@@ -48,6 +50,7 @@ namespace ubv.client.logic
             {
                 id = state.GUID.Value;
                 PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
+                Players[id] = playerGameObject;
                 Bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
                 Bodies[id].name = "Client player " + id.ToString();
                 m_isSprinting[id] = false;
@@ -120,7 +123,7 @@ namespace ubv.client.logic
                 m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
-            common.logic.PlayerShooting.Execute(m_localFirePoint, m_playerShootingSettings, input, deltaTime);
+            common.logic.PlayerShooting.Execute(Players[m_playerGUID], m_playerShootingSettings, input, deltaTime);
         }
 
         public override void UpdateWorldFromState(WorldState state)
