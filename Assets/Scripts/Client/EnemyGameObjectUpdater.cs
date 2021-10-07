@@ -30,6 +30,20 @@ namespace ubv.client.logic
 
         public override void Init(WorldState clientState, int localID)
         {
+
+            //for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
+            //{
+            //    List<PlayerState> playerStates = new List<PlayerState>();
+            //    foreach (int id in playerIDs)
+            //    {
+            //        playerStates.Add(new PlayerState(id));
+            //    }
+            //    m_clientStateBuffer[i] = new WorldState(playerStates);
+
+            //    m_inputBuffer[i] = new InputFrame();
+            //    m_inputBuffer[i].SetToNeutral();
+            //}
+
             //dans le need correction corriger le nombre d,ennemie par le serveur
             //ils vont etre spawné la
             //m_timeSinceLastGoal = 0;
