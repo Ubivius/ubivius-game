@@ -11,45 +11,60 @@ namespace ubv.server.logic
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private GameMaster m_gameMaster;
         private Dictionary<int, Rigidbody2D> m_bodies;
+        private Dictionary<int, PlayerState> m_playerStates;
         private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
 
         public override void Setup()
         {
             m_bodies = new Dictionary<int, Rigidbody2D>();
             m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
+            m_playerStates = new Dictionary<int, PlayerState>();
         }
 
-        public override void InitClient(ClientState state)
+        public override void InitWorld(WorldState state)
         {
-            int id = state.PlayerGUID;
-            GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
-            Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
-            common.gameplay.PlayerController playerCtrl = playerGameObject.GetComponent<common.gameplay.PlayerController>();
-            //body.position = m_bodies.Count * Vector2.left * 3;
-            body.position = m_gameMaster.GetPlayerSpawnPos();
-            body.name = "Server player " + id.ToString();
-            m_bodies.Add(id, body);
+            foreach(int id in state.Players().Keys)
+            {
+                GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
+                Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
+                common.gameplay.PlayerController playerCtrl = playerGameObject.GetComponent<common.gameplay.PlayerController>();
 
-            m_playerControllers.Add(state.PlayerGUID, playerCtrl);
+                body.position = m_gameMaster.GetPlayerSpawnPos();
+                body.name = "Server player " + id.ToString();
+                m_bodies.Add(id, body);
+
+                PlayerState playerState = new PlayerState(id);
+
+                playerState.Position.Value = m_bodies[id].position;
+
+                m_playerControllers.Add(id, playerCtrl);
+                m_playerStates.Add(id, playerState);
+            }
+            
+            foreach (PlayerState player in m_playerStates.Values)
+            {
+                state.AddPlayer(player);
+            }
+        }
+        
+        public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
+        {
+            foreach (int id in client.Players().Keys)
+            {
+                Rigidbody2D body = m_bodies[id];
+                common.logic.PlayerMovement.Execute(ref body, m_playerControllers[id].GetStats(), frames[id], Time.fixedDeltaTime);
+            }
         }
 
-        public override void InitPlayer(PlayerState player)
+        public override void UpdateWorld(WorldState client)
         {
-            player.Position.Value = m_bodies[player.GUID.Value].position;
-        }
-
-        public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
-        {
-            Rigidbody2D body = m_bodies[client.PlayerGUID];
-            common.logic.PlayerMovement.Execute(ref body, m_playerControllers[client.PlayerGUID].GetStats(), frame, Time.fixedDeltaTime);
-        }
-
-        public override void UpdateClient(ClientState client)
-        {
-            Rigidbody2D body = m_bodies[client.PlayerGUID];
-            PlayerState player = client.GetPlayer();
-            player.Position.Value = body.position;
-            player.Rotation.Value = body.rotation;
+            foreach (int id in client.Players().Keys)
+            {
+                Rigidbody2D body = m_bodies[id];
+                PlayerState player = m_playerStates[id];
+                player.Position.Value = body.position;
+                player.Rotation.Value = body.rotation;
+            }
         }
     }
 }
