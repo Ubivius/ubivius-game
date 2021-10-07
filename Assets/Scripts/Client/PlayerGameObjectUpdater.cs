@@ -38,6 +38,8 @@ namespace ubv.client.logic
 
         public override void Init(WorldState clientState, int localID)
         {
+            PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
+
             m_sprintActions = new Dictionary<int, UnityAction<bool>>();
             m_timeSinceLastGoal = 0;
             Players = new Dictionary<int, PlayerPrefab>();
@@ -47,10 +49,10 @@ namespace ubv.client.logic
             PlayerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             PlayerAnimators = new Dictionary<int, PlayerAnimator>();
             int id = 0;
+            
             foreach(PlayerState state in clientState.Players().Values)
             {
                 id = state.GUID.Value;
-                PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
                 Players[id] = playerGameObject;
                 Bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
                 Bodies[id].name = "Client player " + id.ToString();

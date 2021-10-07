@@ -29,10 +29,11 @@ namespace ubv.server.logic
 
         public override void InitWorld(WorldState state)
         {
+            PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
+
             foreach(int id in state.Players().Keys)
             {
-                GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
-                m_playersGameObjects.Add(state.PlayerGUID, playerGameObject);
+                m_playersGameObjects.Add(id, playerGameObject);
                 Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
                 common.gameplay.PlayerController playerCtrl = playerGameObject.GetComponent<common.gameplay.PlayerController>();
 
@@ -61,7 +62,7 @@ namespace ubv.server.logic
             {
                 Rigidbody2D body = m_bodies[id];
                 common.logic.PlayerMovement.Execute(ref body, m_playerControllers[id].GetStats(), frames[id], Time.fixedDeltaTime);
-                common.logic.PlayerShooting.Execute(m_playersGameObjects[client.PlayerGUID], m_playerShootingSettings, cam, frame, deltaTime);
+                common.logic.PlayerShooting.Execute(m_playersGameObjects[id], m_playerShootingSettings, cam, frames[id], deltaTime);
                 m_isSprinting[id] = frames[id].Sprinting.Value;
             }
         }

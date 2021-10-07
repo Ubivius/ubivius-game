@@ -19,13 +19,18 @@ namespace ubv
                 {
                     if (input.Shooting.Value && m_lastShot > playerShootingSettings.BulletDelay)
                     {
-                        GameObject bullet = Instantiate(playerShootingSettings.BulletPrefab, player.FirePoint);
-                        bullet.transform.localPosition = Vector3.zero;
+                        GameObject bullet = Instantiate(playerShootingSettings.BulletPrefab);
+                        bullet.transform.position = player.FirePoint.transform.position;
                         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
 
-                        Vector2 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
-                        Vector3 aimDirection = mousePos - rb.position;
-                        rb.AddForce(aimDirection * playerShootingSettings.BulletForce, ForceMode2D.Impulse);
+                        Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
+                        Vector3 aimDir = mousePos - player.transform.position;
+                        aimDir.z = 0;
+                        Vector3 aimDirNorm = aimDir.normalized;
+
+                        Debug.Log("Aim: " + aimDir + ", AimNorm: " + aimDirNorm);
+
+                        rb.AddForce(aimDirNorm * playerShootingSettings.BulletForce, ForceMode2D.Impulse);
 
                         m_lastShot = 0;
                     }
