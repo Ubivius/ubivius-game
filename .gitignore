@@ -77,3 +77,9 @@ ClassDiagram1.png
 
 # For ReadTheDocs build results
 */_build
+
+# Google packages and stuff
+Package/Google.Api.CommonProtos.2.0.0/*
+Package/Google.Protobuf.3.11.4/*
+Package/Grpc.Core.2.28.1/*
+Package/Grpc.Core.Api.2.28.1/*
