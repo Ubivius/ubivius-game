@@ -7,7 +7,8 @@ using System.Collections.Generic;
 
 namespace ubv.microservices
 {
-    public class CharacterDataService : Microservice<GetCharacterRequest, PostMicroserviceRequest>
+    public class CharacterDataService : Microservice<GetCharacterRequest, 
+        PostMicroserviceRequest, PutMicroserviceRequest, DeleteMicroserviceRequest>
     {
         public class CharacterData
         {

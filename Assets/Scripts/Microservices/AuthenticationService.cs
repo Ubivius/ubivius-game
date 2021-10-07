@@ -7,7 +7,8 @@ using System.Collections.Generic;
 
 namespace ubv.microservices
 {
-    public class AuthenticationService : Microservice<GetMicroserviceRequest, PostAuthenticationRequest>
+    public class AuthenticationService : Microservice<GetMicroserviceRequest, 
+        PostAuthenticationRequest, PutMicroserviceRequest, DeleteMicroserviceRequest>
     {
         private struct JSONAuthenticationResponse
         {
