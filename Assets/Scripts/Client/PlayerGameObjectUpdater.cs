@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using ubv.common;
 using ubv.common.data;
-using System.Collections.Generic;
-using ubv.common;
 using UnityEngine;
 using UnityEngine.Events;
 

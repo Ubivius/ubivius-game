@@ -7,36 +7,8 @@ using System.Collections.Generic;
 
 namespace ubv.microservices
 {
-    public class CharacterDataService : MonoBehaviour
+    public class CharacterDataService : Microservice<GetCharacterRequest, PostMicroserviceRequest>
     {
-        protected readonly object m_singleRequestLock = new object();
-        protected readonly object m_multipleRequestLock = new object();
-        
-        public delegate void OnGetCharacters(CharacterData[] characters);
-        public delegate void OnGetSingle(CharacterData character);
-
-        private class SingleRequest
-        {
-            public string CharacterID;
-            public OnGetSingle Callback;
-        }
-
-        private class CharactersRequest
-        {
-            public string PlayerID;
-            public OnGetCharacters Callback;
-        }
-
-        [SerializeField] private bool m_mock;
-        [SerializeField] private utils.Mocker m_mockData;
-        [SerializeField] private HTTPClient m_HTTPClient;
-        [SerializeField] string m_characterDataEndpoint;
-
-        private bool m_readyForNextSingleRequest;
-        private bool m_readyForNextCharactersRequest;
-        private Queue<CharactersRequest> m_onGetCharactersRequests;
-        private Queue<SingleRequest> m_onGetSingleRequests;
-
         public class CharacterData
         {
             public string PlayerID { get; private set; }
@@ -50,7 +22,6 @@ namespace ubv.microservices
                 PlayerID = playerID;
             }
         }
-        
         [System.Serializable]
         private struct JSONCharacterData
         {
@@ -58,164 +29,34 @@ namespace ubv.microservices
             public string user_id;
             public string name;
         }
-
-        private void Awake()
-        {
-            m_readyForNextCharactersRequest = true;
-            m_readyForNextSingleRequest = true;
-            m_onGetSingleRequests = new Queue<SingleRequest>();
-            m_onGetCharactersRequests = new Queue<CharactersRequest>();
-        }
-
-        private void Update()
-        {
-            if (Time.frameCount % 17 == 0)
-            {
-                lock (m_singleRequestLock)
-                {
-                    if (m_readyForNextSingleRequest)
-                    {
-                        if (m_onGetSingleRequests.Count > 0)
-                        {
-                            SingleRequest request = m_onGetSingleRequests.Peek();
-                            Debug.Log("Fetching character " + request.CharacterID + " from Update Loop");
-                            GetCharacter(request.CharacterID);
-                        }
-                    }
-                }
-            }
-
-            if (Time.frameCount % 11 == 0)
-            {
-                lock (m_multipleRequestLock)
-                {
-                    if (m_readyForNextCharactersRequest)
-                    {
-                        if (m_onGetCharactersRequests.Count > 0)
-                        {
-                            CharactersRequest request = m_onGetCharactersRequests.Peek();
-                            GetCharacters(request.PlayerID);
-                        }
-                    }
-                }
-            }
-        }
-
-        public void GetCharacter(string characterID, OnGetSingle onGetCharacter)
-        {
-            if (m_mock)
-            {
-#if DEBUG_LOG
-                Debug.Log("Mocking char-data.");
-#endif // DEBUG_LOG
-                CharacterData character = new CharacterData(m_mockData.CharacterName, 
-                    m_mockData.CharacterID, 
-                    m_mockData.UserID);
-                onGetCharacter(character);
-                return;
-            }
-
-            Debug.Log("Fetching character " + characterID + " from character data");
-
-            lock (m_singleRequestLock)
-            {
-                m_onGetSingleRequests.Enqueue(new SingleRequest() { CharacterID = characterID, Callback = onGetCharacter });
-                if (!m_readyForNextSingleRequest)
-                {
-                    return;
-                }
-
-                GetCharacter(characterID);
-            }
-        }
-
-        private void GetCharacter(string characterID)
-        {
-            m_readyForNextSingleRequest = false;
-            m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
-            m_HTTPClient.Get("characters/" + characterID, OnCharacterDataResponse);
-        }
-
-        private void GetCharacters(string userID)
-        {
-            m_readyForNextCharactersRequest = false;
-            m_HTTPClient.SetEndpoint(m_characterDataEndpoint);
-            m_HTTPClient.Get("characters/user/" + userID, OnCharactersDataResponse);
-        }
-
-        public void GetCharacters(string playerID, OnGetCharacters onGetCharacters)
-        {
-            if (m_mock)
-            {
-#if DEBUG_LOG
-                Debug.Log("Mocking char-data.");
-#endif // DEBUG_LOG
-                CharacterData character = new CharacterData(m_mockData.CharacterName,
-                    m_mockData.CharacterID,
-                    m_mockData.UserID);
-                CharacterData[] characters = new CharacterData[]
-                {
-                    character
-                };
-                onGetCharacters(characters);
-                return;
-            }
-
-            lock (m_multipleRequestLock)
-            {
-                m_onGetCharactersRequests.Enqueue(new CharactersRequest() { PlayerID = playerID, Callback = onGetCharacters });
-                if (!m_readyForNextCharactersRequest)
-                {
-                    return;
-                }
-
-                GetCharacters(playerID);
-            }
-        }
         
-        private void OnCharactersDataResponse(HttpResponseMessage message)
+        protected override void OnGetResponse(string JSON, GetCharacterRequest originalRequest)
         {
-            if (message.StatusCode == HttpStatusCode.OK)
-            {
-                string JSON = JsonHelper.FixJsonArrayFromServer(message.Content.ReadAsStringAsync().Result);
-                JSONCharacterData[] authResponse = JsonHelper.FromJson<JSONCharacterData>(JSON);
+            string JSONFixed = JsonHelper.FixJsonArrayFromServer(JSON);
+            JSONCharacterData[] authResponse = JsonHelper.FromJson<JSONCharacterData>(JSONFixed);
 
-                CharacterData[] characters = new CharacterData[authResponse.Length];
-                for (int i = 0; i < authResponse.Length; i++)
-                {
-                    characters[i] = new CharacterData(authResponse[i].name, authResponse[i].id, authResponse[i].user_id);
-                }
-                
-                m_onGetCharactersRequests.Dequeue().Callback.Invoke(characters);
-            }
-            else
+            CharacterData[] characters = new CharacterData[authResponse.Length];
+            for (int i = 0; i < authResponse.Length; i++)
             {
-#if DEBUG_LOG
-                Debug.Log("Character data request was not successful");
-#endif // DEBUG_LOG
+                characters[i] = new CharacterData(authResponse[i].name, authResponse[i].id, authResponse[i].user_id);
             }
-            m_readyForNextCharactersRequest = true;
+
+            originalRequest.Callback.Invoke(characters);
         }
 
-        private void OnCharacterDataResponse(HttpResponseMessage message)
+        protected override void MockGet(GetCharacterRequest request)
         {
-            if (message.StatusCode == HttpStatusCode.OK)
-            {
-                string JSON = message.Content.ReadAsStringAsync().Result;
-                JSONCharacterData authResponse = JsonUtility.FromJson<JSONCharacterData>(JSON);
-
-                CharacterData character = new CharacterData(authResponse.name, authResponse.id, authResponse.user_id);
-
-                Debug.Log("Calling callback on " + m_onGetSingleRequests.Peek().CharacterID);
-                m_onGetSingleRequests.Dequeue().Callback.Invoke(character);
-            }
-            else
-            {
 #if DEBUG_LOG
-                Debug.Log("Character data request was not successful");
+            Debug.Log("Mocking char-data.");
 #endif // DEBUG_LOG
-            }
-            m_readyForNextSingleRequest = true;
+            CharacterData character = new CharacterData(m_mockData.CharacterName,
+                m_mockData.CharacterID,
+                m_mockData.UserID);
+            CharacterData[] characters = new CharacterData[]
+            {
+                    character
+            };
+            request.Callback.Invoke(characters);
         }
     }
 }

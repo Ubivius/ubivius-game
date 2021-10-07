@@ -1826,6 +1826,11 @@ PrefabInstance:
       propertyPath: m_authEndpoint
       value: http://auth.anon.dev.ubivius.tk
       objectReference: {fileID: 0}
+    - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serviceEndpoint
+      value: http://auth.anon.dev.ubivius.tk
+      objectReference: {fileID: 0}
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_mock
@@ -1840,6 +1845,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_mockCharacterID
       value: murphy-django-id-char
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serviceEndpoint
+      value: http://character.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -1905,6 +1915,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_forceUserName
       value: murphy-django
+      objectReference: {fileID: 0}
+    - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serviceEndpoint
+      value: http://user.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}

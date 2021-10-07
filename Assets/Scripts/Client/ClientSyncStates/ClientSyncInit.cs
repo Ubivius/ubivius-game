@@ -11,6 +11,7 @@ using static ubv.microservices.DispatcherMicroservice;
 using static ubv.microservices.CharacterDataService;
 using UnityEngine.Events;
 using ubv.utils;
+using ubv.microservices;
 
 namespace ubv.client.logic
 {
@@ -59,7 +60,7 @@ namespace ubv.client.logic
             // try to fetch characters from microservice
             if (m_activeCharacter == null)
             { 
-                m_characterService.GetCharacters(UserInfo.ID, OnCharactersFetchedFromService);
+                m_characterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedFromService));
             }
         }
 
