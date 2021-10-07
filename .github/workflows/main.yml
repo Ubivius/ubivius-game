@@ -35,7 +35,7 @@ jobs:
       
       # Build
       - name: Server build 
-        uses: webbertakken/unity-builder@v2
+        uses: game-ci/unity-builder@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -47,7 +47,7 @@ jobs:
       
       # Test edit and play mode
       - name: Run tests
-        uses: webbertakken/unity-test-runner@v2
+        uses: game-ci/unity-test-runner@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -112,7 +112,7 @@ jobs:
 
       # Build
       - name: Client build
-        uses: webbertakken/unity-builder@v2
+        uses: game-ci/unity-builder@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -124,7 +124,7 @@ jobs:
 
       # Test edit and play mode
       - name: Run tests
-        uses: webbertakken/unity-test-runner@v2
+        uses: game-ci/unity-test-runner@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
