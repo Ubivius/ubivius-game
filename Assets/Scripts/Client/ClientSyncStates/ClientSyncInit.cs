@@ -11,6 +11,7 @@ using static ubv.microservices.DispatcherMicroservice;
 using static ubv.microservices.CharacterDataService;
 using UnityEngine.Events;
 using ubv.utils;
+using ubv.microservices;
 
 namespace ubv.client.logic
 {
@@ -29,7 +30,8 @@ namespace ubv.client.logic
         private bool m_loadingLobby;
 
         static private CharacterData m_activeCharacter = null;
-        
+        private CharacterData[] m_characters = null;
+
         protected override void StateAwake()
         {
             m_readyToGoToLobby = new Flag();
@@ -57,7 +59,7 @@ namespace ubv.client.logic
         private void Start()
         {
             // try to fetch characters from microservice
-            if (m_activeCharacter == null)
+            if (m_characters == null)
             { 
                 m_characterService.GetCharacters(UserInfo.ID, OnCharactersFetchedFromService);
             }
@@ -67,6 +69,8 @@ namespace ubv.client.logic
         {
             // for now, assume only one character 
             // take the only character available and treat it as active
+            m_characters = characters;
+            Debug.Log("Number of characters: " + characters.Length);
             m_activeCharacter = characters[0];
 #if DEBUG_LOG
             Debug.Log("Fetched character " + m_activeCharacter.Name + " from microservice.");
@@ -74,9 +78,19 @@ namespace ubv.client.logic
             
         }
 
+        public CharacterData[] GetCharacters()
+        {
+            return m_characters;
+        }
+
         public CharacterData GetActiveCharacter()
         {
             return m_activeCharacter;
+        }
+
+        public void SetActiveCharacter(CharacterData character)
+        {
+            m_activeCharacter = character;
         }
 
         protected override void StateUpdate()

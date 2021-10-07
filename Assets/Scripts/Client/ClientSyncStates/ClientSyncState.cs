@@ -77,5 +77,10 @@ namespace ubv.client.logic
         protected virtual void StateFixedUpdate() { }
 
         protected readonly object m_lock = new object();
+
+        public UserService.UserInfo GetActiveUser()
+        {
+            return UserInfo;
+        }
     }
 }
