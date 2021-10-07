@@ -3,11 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using static ubv.microservices.CharacterDataService;
+using UnityEngine.SceneManagement;
 
 namespace ubv.ui.client
 {
     public class ClientGameSearchUI : TabBehaviour
     {
+        [SerializeField] private string m_mainMenuScene;
+
         [SerializeField] private ubv.client.logic.ClientSyncInit m_initState;
         [SerializeField] private TextMeshProUGUI m_characterName;
 
@@ -58,6 +61,11 @@ namespace ubv.ui.client
                 selectedCharacterIndex = m_characters.Length - 1;
             }
             setActiveCharacter();
+        }
+
+        public void Back()
+        {
+            AsyncOperation loadMainMenu = SceneManager.LoadSceneAsync(m_mainMenuScene);
         }
 
         private void setActiveCharacter()

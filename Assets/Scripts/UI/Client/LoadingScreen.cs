@@ -24,9 +24,7 @@ namespace ubv.ui.client
         private void SetLoadPercentage(float percentage)
         {
             m_percentageText.text = (100 * percentage).ToString("00.00") + "%";
-
-            float percentageColorRation = 255 * percentage;
-            m_background.color = new Color(percentageColorRation, percentageColorRation, percentageColorRation);
+            m_background.color = new Color(percentage, percentage, percentage, 1);
 
             float newWidth = m_backgroundLoadingBar.rectTransform.rect.width * percentage;
             m_progressLoadingBar.rectTransform.sizeDelta = new Vector2(newWidth , m_progressLoadingBar.rectTransform.sizeDelta.y);

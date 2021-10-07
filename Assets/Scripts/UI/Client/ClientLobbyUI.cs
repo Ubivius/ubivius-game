@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using static ubv.microservices.CharacterDataService;
 using ubv.microservices;
+using UnityEngine.SceneManagement;
 
 namespace ubv.ui.client
 {
@@ -14,6 +15,8 @@ namespace ubv.ui.client
         protected readonly object m_userLock = new object();
 
         [SerializeField] private ubv.client.logic.ClientSyncLobby m_lobby;
+
+        [SerializeField] private string m_gameSearchScene;
 
         [SerializeField] private PlayerInLobby m_mainPlayer;
         [SerializeField] private PlayerInLobby m_playerOne;
@@ -160,6 +163,11 @@ namespace ubv.ui.client
                 Debug.Log("Got user info in UI from " + info.UserName);
                 m_users[info.ID.GetHashCode()] = info;
             }
+        }
+
+        public void Back()
+        {
+            AsyncOperation loadGameSearch = SceneManager.LoadSceneAsync(m_gameSearchScene);
         }
 
         public void ToggleReady()
