@@ -10,10 +10,8 @@ namespace ubv.server.logic
     {
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private GameMaster m_gameMaster;
-
-        private Dictionary<int, PlayerState> m_playerStates;
-
         private Dictionary<int, Rigidbody2D> m_bodies;
+        private Dictionary<int, PlayerState> m_playerStates;
         private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
 
         public override void Setup()
@@ -23,37 +21,42 @@ namespace ubv.server.logic
             m_playerStates = new Dictionary<int, PlayerState>();
         }
 
-        public override void InitClients(WorldState world)
+        public override void InitWorld(WorldState state)
         {
-            foreach (int id in world.Players().Keys)
+            foreach(int id in state.Players().Keys)
             {
                 GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
                 Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
                 common.gameplay.PlayerController playerCtrl = playerGameObject.GetComponent<common.gameplay.PlayerController>();
-                //body.position = m_bodies.Count * Vector2.left * 3;
+
                 body.position = m_gameMaster.GetPlayerSpawnPos();
                 body.name = "Server player " + id.ToString();
                 m_bodies.Add(id, body);
 
-                PlayerState player = new PlayerState(id);
-                player.Position.Value = m_bodies[player.GUID.Value].position;
-                m_playerStates.Add(id, player);
+                PlayerState playerState = new PlayerState(id);
+
+                playerState.Position.Value = m_bodies[id].position;
+
                 m_playerControllers.Add(id, playerCtrl);
-                world.AddPlayer(player);
+                m_playerStates.Add(id, playerState);
+            }
+            
+            foreach (PlayerState player in m_playerStates.Values)
+            {
+                state.AddPlayer(player);
             }
         }
-
-
-        public override void FixedUpdateFromClient(WorldState client, InputFrame frame, float deltaTime)
+        
+        public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
         {
-            foreach(int id in client.Players().Keys) 
+            foreach (int id in client.Players().Keys)
             {
                 Rigidbody2D body = m_bodies[id];
-                common.logic.PlayerMovement.Execute(ref body, m_playerControllers[id].GetStats(), frame, Time.fixedDeltaTime);
+                common.logic.PlayerMovement.Execute(ref body, m_playerControllers[id].GetStats(), frames[id], Time.fixedDeltaTime);
             }
         }
 
-        public override void UpdateClient(ref WorldState client)
+        public override void UpdateWorld(WorldState client)
         {
             foreach (int id in client.Players().Keys)
             {

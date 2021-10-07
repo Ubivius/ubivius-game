@@ -96,7 +96,6 @@ namespace ubv.client.logic
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
                 m_clientStateBuffer[i] = new WorldState(playerStates);
-                m_clientStateBuffer[i].PlayerGUID = PlayerID.Value;
 
                 m_inputBuffer[i] = new InputFrame();
                 m_inputBuffer[i].SetToNeutral();
@@ -304,11 +303,10 @@ namespace ubv.client.logic
                     m_lastReceivedRemoteTick = stateMessage.Info.Tick.Value;
                     
                     WorldState state = stateMessage.State;
-                    state.PlayerGUID = PlayerID.Value;
                     m_lastReceivedServerState = state;
                     
 #if DEBUG_LOG
-                    //Debug.Log("Received server state tick " + state.Tick.Value + ", local tick is " + m_localTick);
+                    Debug.Log("Received server state tick " + m_lastReceivedRemoteTick + ", local tick is " + m_localTick);
 #endif //DEBUG_LOG
                 }
                 else

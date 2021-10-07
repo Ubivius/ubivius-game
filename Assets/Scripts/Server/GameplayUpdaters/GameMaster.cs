@@ -18,15 +18,15 @@ namespace ubv.server.logic
         {
         }
 
-        public override void InitClients(WorldState state)
+        public override void InitWorld(WorldState state)
+        {
+        }
+        
+        public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
         {
         }
 
-        public override void FixedUpdateFromClient(WorldState client, InputFrame frame, float deltaTime)
-        {
-        }
-
-        public override void UpdateClient(ref WorldState client)
+        public override void UpdateWorld(WorldState client)
         {
         }
 

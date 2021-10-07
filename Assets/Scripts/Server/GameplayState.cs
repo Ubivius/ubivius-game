@@ -21,6 +21,7 @@ namespace ubv.server.logic
         private Dictionary<int, bool> m_connectedClients;
                 
         private Dictionary<int, Dictionary<int, InputFrame>> m_clientInputBuffers;
+        private Dictionary<int, InputFrame> m_currentInputFrames;
         
         [SerializeField] private uint m_snapshotTicks;
         [SerializeField] private string m_physicsSceneName;
@@ -38,11 +39,14 @@ namespace ubv.server.logic
             ServerState.m_gameplayState = this;
         }
 
-        public void Init(List<int> clients)
+        public void Init(ICollection<int> clients)
         {
             m_tickAccumulator = 0;
             m_masterTick = 0;
+            m_currentWorldState = new WorldState();
             m_clients = new HashSet<int>(clients);
+
+            m_currentInputFrames = new Dictionary<int, InputFrame>();
 
             m_connectedClients = new Dictionary<int, bool>();
 
@@ -51,36 +55,27 @@ namespace ubv.server.logic
             m_serverPhysics = UnityEngine.SceneManagement.SceneManager.GetSceneByName(m_physicsSceneName).GetPhysicsScene2D();
             
             m_clientInputBuffers = new Dictionary<int, Dictionary<int, InputFrame>>();
-
-            m_currentWorldState = new WorldState();
-
+                   
             // add each player to client states
             foreach (int id in m_clients)
             {
-                m_connectedClients.Add(id, true);
+                PlayerState player = new PlayerState();
+                player.GUID.Value = id;
+                m_currentWorldState.AddPlayer(player);
                 m_clientInputBuffers[id] = new Dictionary<int, InputFrame>();
-            }
-
-            // add each enemy to client states
-            foreach (int id in m_clients)
-            {
-                EnemyStateData enemy = new EnemyStateData();
-                enemy.GUID.Value = id;
-                //m_clientStates[id] = new ClientState(id);
-                //m_clientStates[id].AddEnemy(enemy);
                 m_connectedClients.Add(id, true);
             }
-
+            
             foreach (ServerGameplayStateUpdater updater in m_updaters)
             {
                 updater.Setup();
             }
-
+            
             foreach(ServerGameplayStateUpdater updater in m_updaters)
             {
-                updater.InitClients(m_currentWorldState);
+                updater.InitWorld(m_currentWorldState);
             }
-
+            
             m_UDPServer.Subscribe(this);
             m_TCPServer.Subscribe(this);
         }
@@ -105,25 +100,25 @@ namespace ubv.server.logic
                     InputFrame frame = m_clientInputBuffers[id].ContainsKey(m_masterTick) ?
                         m_clientInputBuffers[id][m_masterTick] : 
                         m_zeroFrame;
-                    
-                    // must be called in main unity thread
-                    foreach (ServerGameplayStateUpdater updater in m_updaters)
-                    {
-                        updater.FixedUpdateFromClient(m_currentWorldState, frame, Time.fixedDeltaTime);
-                    }
+
+                    m_currentInputFrames[id] = frame;
 
                     // remove used entries in dict if we use a dict later
                     if(m_clientInputBuffers[id].ContainsKey(m_masterTick))
                        m_clientInputBuffers[id].Remove(m_masterTick);
                 }
 
-                m_serverPhysics.Simulate(Time.fixedDeltaTime);
+                // must be called in main unity thread
+                foreach (ServerGameplayStateUpdater updater in m_updaters)
+                {
+                    updater.FixedUpdateFromClient(m_currentWorldState, m_currentInputFrames, Time.fixedDeltaTime);
+                }
 
-                // update client states based on simulation
+                m_serverPhysics.Simulate(Time.fixedDeltaTime);
                 
                 foreach (ServerGameplayStateUpdater updater in m_updaters)
                 {
-                    updater.UpdateClient(ref m_currentWorldState);
+                    updater.UpdateWorld(m_currentWorldState);
                 }
                 
                 m_masterTick++;

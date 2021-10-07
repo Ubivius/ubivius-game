@@ -109,7 +109,7 @@ namespace ubv.server.logic
 
                 m_TCPServer.Unsubscribe(this);
 
-                m_gameplayState.Init(new List<int>(m_clientCharacters.Keys));
+                m_gameplayState.Init(m_clientCharacters.Keys);
                 m_currentState = m_gameplayState;
             }
         }

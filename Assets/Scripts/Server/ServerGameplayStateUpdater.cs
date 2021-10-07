@@ -8,9 +8,9 @@ public abstract class ServerGameplayStateUpdater : MonoBehaviour
 {
     public abstract void Setup();
 
-    public abstract void InitClients(WorldState world);
+    public abstract void InitWorld(WorldState world);
+    
+    public abstract void FixedUpdateFromClient(WorldState world, Dictionary<int, InputFrame> inputs, float deltaTime);
 
-    public abstract void FixedUpdateFromClient(WorldState client, InputFrame input, float deltaTime);
-
-    public abstract void UpdateClient(ref WorldState client);
+    public abstract void UpdateWorld(WorldState client);
 }
