@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using ubv.common;
 using ubv.common.data;
+using System.Collections.Generic;
+using ubv.common;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,10 +16,14 @@ namespace ubv.client.logic
         [SerializeField] private float m_lerpTime = 0.2f;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
+        [SerializeField] private PlayerAnimator m_playerAnimator;
 
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, common.gameplay.PlayerController> PlayerControllers { get; private set; }
+        public Dictionary<int, PlayerAnimator> PlayerAnimators { get; private set; }
         private Rigidbody2D m_localPlayerBody;
+
+        private Dictionary<int, bool> m_isSprinting;
 
         private int m_playerGUID;
 
@@ -25,13 +31,20 @@ namespace ubv.client.logic
         private Dictionary<int, PlayerState> m_goalStates;
 
         public UnityAction OnInitialized;
+        UnityAction<bool> m_sprintAction;
+        private Dictionary<int, UnityAction<bool>> m_sprintActions;
+
         
-        public override void Init(ClientState clientState, int localID)
+
+        public override void Init(ClientState clientState, int localID) 
         {
+            m_sprintActions = new Dictionary<int, UnityAction<bool>>();
             m_timeSinceLastGoal = 0;
             Bodies = new Dictionary<int, Rigidbody2D>();
+            m_isSprinting = new Dictionary<int, bool>();
             m_goalStates = new Dictionary<int, PlayerState>();
             PlayerControllers = new Dictionary<int, common.gameplay.PlayerController>();
+            PlayerAnimators = new Dictionary<int, PlayerAnimator>();
             int id = 0;
             foreach(PlayerState state in clientState.Players().Values)
             {
@@ -39,8 +52,9 @@ namespace ubv.client.logic
                 GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
                 Bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
                 Bodies[id].name = "Client player " + id.ToString();
-
+                m_isSprinting[id] = false;
                 PlayerControllers[id] = playerGameObject.GetComponent<common.gameplay.PlayerController>();
+                PlayerAnimators[id] = playerGameObject.GetComponent<PlayerAnimator>();
 
                 if (id != localID)
                 {
@@ -48,11 +62,14 @@ namespace ubv.client.logic
                 }
                 
                 m_goalStates[id] = state;
+                m_sprintActions[id] = PlayerAnimators[id].SetSprinting;
+
             }
 
             m_playerGUID = localID;
             m_localPlayerBody = Bodies[localID];
             OnInitialized?.Invoke();
+            
         }
 
         public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
@@ -80,11 +97,13 @@ namespace ubv.client.logic
                 {
                     player.Position.Value = m_goalStates[player.GUID.Value].Position.Value; 
                     player.Rotation.Value = m_goalStates[player.GUID.Value].Rotation.Value;
+                    player.Velocity.Value = m_goalStates[player.GUID.Value].Velocity.Value;
                 }
                 else
                 {
                     player.Position.Value = Bodies[player.GUID.Value].position;
                     player.Rotation.Value = Bodies[player.GUID.Value].rotation;
+                    player.Velocity.Value = Bodies[player.GUID.Value].velocity;
                 }
             }
         }
@@ -114,6 +133,13 @@ namespace ubv.client.logic
                 {
                     Bodies[player.GUID.Value].position = player.Position.Value;
                     Bodies[player.GUID.Value].rotation = player.Rotation.Value;
+                    Bodies[player.GUID.Value].velocity = player.Velocity.Value;
+                }
+
+                if (player.States.IsTrue(0) != m_isSprinting[player.GUID.Value])
+                {
+                    m_isSprinting[player.GUID.Value] = player.States.IsTrue(0);
+                    m_sprintActions[player.GUID.Value].Invoke(m_isSprinting[player.GUID.Value]);
                 }
             }
         }
@@ -125,6 +151,18 @@ namespace ubv.client.logic
 
         private void LerpTowardGoalState(PlayerState player, float time)
         {
+            if (player.States.IsTrue(0) != m_isSprinting[player.GUID.Value])
+            {
+                m_isSprinting[player.GUID.Value] = player.States.IsTrue(0);
+                m_sprintActions[player.GUID.Value].Invoke(m_isSprinting[player.GUID.Value]);
+            }
+
+            Bodies[player.GUID.Value].velocity = Vector2.Lerp(Bodies[player.GUID.Value].velocity, m_goalStates[player.GUID.Value].Velocity.Value, time / m_lerpTime);
+            if ((Bodies[player.GUID.Value].velocity - m_goalStates[player.GUID.Value].Velocity.Value).sqrMagnitude < 0.01f)
+            {
+                Bodies[player.GUID.Value].velocity = m_goalStates[player.GUID.Value].Velocity.Value;
+            }
+
             Bodies[player.GUID.Value].position = Vector2.Lerp(Bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, time / m_lerpTime);
             if ((Bodies[player.GUID.Value].position - m_goalStates[player.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
             {

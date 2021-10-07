@@ -12,11 +12,13 @@ namespace ubv.server.logic
         [SerializeField] private GameMaster m_gameMaster;
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
+        private Dictionary<int, bool> m_isSprinting;
 
         public override void Setup()
         {
             m_bodies = new Dictionary<int, Rigidbody2D>();
             m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
+            m_isSprinting = new Dictionary<int, bool>();
         }
 
         public override void InitClient(ClientState state)
@@ -29,7 +31,7 @@ namespace ubv.server.logic
             body.position = m_gameMaster.GetPlayerSpawnPos();
             body.name = "Server player " + id.ToString();
             m_bodies.Add(id, body);
-
+            m_isSprinting.Add(id, false);
             m_playerControllers.Add(state.PlayerGUID, playerCtrl);
         }
 
@@ -39,9 +41,10 @@ namespace ubv.server.logic
         }
 
         public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
-        {
+        { 
             Rigidbody2D body = m_bodies[client.PlayerGUID];
             common.logic.PlayerMovement.Execute(ref body, m_playerControllers[client.PlayerGUID].GetStats(), frame, Time.fixedDeltaTime);
+            m_isSprinting[client.PlayerGUID] = frame.Sprinting.Value;
         }
 
         public override void UpdateClient(ClientState client)
@@ -50,6 +53,8 @@ namespace ubv.server.logic
             PlayerState player = client.GetPlayer();
             player.Position.Value = body.position;
             player.Rotation.Value = body.rotation;
+            player.Velocity.Value = body.velocity;
+            player.States.Set(0, m_isSprinting[client.PlayerGUID]);
         }
     }
 }
