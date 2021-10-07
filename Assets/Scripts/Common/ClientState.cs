@@ -10,7 +10,7 @@ namespace ubv.common
     /// Class reprensenting local client state, which will be simulated locally and synced with an authoritative server.
     /// Add here everything that needs to be shared with the server (and the other players).
     /// </summary>
-    public class ClientState : Serializable
+    public class WorldState : Serializable
     {
         public class PlayerHashMap : HashMap<common.data.PlayerState>
         {
@@ -24,16 +24,14 @@ namespace ubv.common
         }
 
         private PlayerHashMap m_playerStates;
-
-        public int PlayerGUID;
-
-        public ClientState() : base()
+        
+        public WorldState() : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
             InitSerializableMembers(m_playerStates);
         }
 
-        public ClientState(System.Collections.Generic.List<common.data.PlayerState> playerStates) : base()
+        public WorldState(System.Collections.Generic.List<common.data.PlayerState> playerStates) : base()
         {
             Dictionary<int, common.data.PlayerState> dictStates = new Dictionary<int, data.PlayerState>();
             foreach(data.PlayerState state in playerStates)
@@ -44,28 +42,16 @@ namespace ubv.common
             InitSerializableMembers(m_playerStates);
         }
 
-        public ClientState(ref ClientState state) : base()
+        public WorldState(ref WorldState state) : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
             SetPlayers(state.m_playerStates.Value);
-            InitSerializableMembers(m_playerStates);
-        }
-
-        public ClientState(int id) : base()
-        {
-            m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
-            PlayerGUID = id;
             InitSerializableMembers(m_playerStates);
         }
             
         protected override ID.BYTE_TYPE SerializationID()
         {
             return ID.BYTE_TYPE.CLIENT_STATE;
-        }
-            
-        public data.PlayerState GetPlayer()
-        {
-            return m_playerStates.Value[PlayerGUID];
         }
 
         public void AddPlayer(data.PlayerState playerState)
