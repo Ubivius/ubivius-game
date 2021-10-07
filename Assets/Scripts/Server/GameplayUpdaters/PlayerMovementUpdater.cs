@@ -12,11 +12,15 @@ namespace ubv.server.logic
         [SerializeField] private PlayerShootingSettings m_playerShootingSettings;
         [SerializeField] private GameMaster m_gameMaster;
         [SerializeField] private Camera cam;
+
         private Dictionary<int, PlayerPrefab> m_playersGameObjects;
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, PlayerState> m_playerStates;
         private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
         private Dictionary<int, bool> m_isSprinting;
+
+        private Dictionary<int, bool> m_isShooting;
+        private Dictionary<int, Vector2> m_shootingDirection;
 
         public override void Setup()
         {
@@ -25,13 +29,16 @@ namespace ubv.server.logic
             m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             m_playerStates = new Dictionary<int, PlayerState>();
             m_isSprinting = new Dictionary<int, bool>();
+
+            m_isShooting = new Dictionary<int, bool>();
+            m_shootingDirection = new Dictionary<int, Vector2>();
         }
 
         public override void InitWorld(WorldState state)
         {
             PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
 
-            foreach(int id in state.Players().Keys)
+            foreach (int id in state.Players().Keys)
             {
                 m_playersGameObjects.Add(id, playerGameObject);
                 Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
@@ -41,6 +48,11 @@ namespace ubv.server.logic
                 body.name = "Server player " + id.ToString();
                 m_bodies.Add(id, body);
                 m_isSprinting.Add(id, false);
+
+                PlayerState playerState = state.Players()[id];
+				
+                m_isShooting[id] = false;
+                m_shootingDirection[id] = new Vector2(0, 0);
 
                 PlayerState playerState = state.Players()[id];
 
@@ -60,9 +72,12 @@ namespace ubv.server.logic
         {
             foreach (int id in client.Players().Keys)
             {
+                m_isShooting[id] = frames[id].Shooting.Value;
+                m_shootingDirection[id] = frames[id].ShootingDirection.Value;
+
                 Rigidbody2D body = m_bodies[id];
                 common.logic.PlayerMovement.Execute(ref body, m_playerControllers[id].GetStats(), frames[id], Time.fixedDeltaTime);
-                common.logic.PlayerShooting.Execute(m_playersGameObjects[id], m_playerShootingSettings, cam, frames[id], deltaTime);
+                common.logic.PlayerShooting.Execute(m_playersGameObjects[id], m_playerShootingSettings, frames[id], deltaTime);
                 m_isSprinting[id] = frames[id].Sprinting.Value;
             }
         }

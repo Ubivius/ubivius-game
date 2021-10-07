@@ -9,21 +9,18 @@ namespace ubv.client.logic
     /// <summary>
     /// Instantiate players and moves them according to their player states
     /// </summary>
-    public class PlayerGameObjectUpdater :  ClientStateUpdater
+    public class PlayerGameObjectUpdater : ClientStateUpdater
     {
         [SerializeField] private float m_lerpTime = 0.2f;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerAnimator m_playerAnimator;
-        [SerializeField] private PlayerShootingSettings m_playerShootingSettings;
-        [SerializeField] private Camera cam;
 
-        private Dictionary<int, PlayerPrefab> Players { get; set; }
+        public Dictionary<int, PlayerPrefab> Players { get; private set; }
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, common.gameplay.PlayerController> PlayerControllers { get; private set; }
         public Dictionary<int, PlayerAnimator> PlayerAnimators { get; private set; }
         private Rigidbody2D m_localPlayerBody;
-        private Transform m_localFirePoint;
 
         private Dictionary<int, bool> m_isSprinting;
 
@@ -38,13 +35,12 @@ namespace ubv.client.logic
 
         public override void Init(WorldState clientState, int localID)
         {
-            PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
-
             m_sprintActions = new Dictionary<int, UnityAction<bool>>();
             m_timeSinceLastGoal = 0;
             Players = new Dictionary<int, PlayerPrefab>();
             Bodies = new Dictionary<int, Rigidbody2D>();
             m_isSprinting = new Dictionary<int, bool>();
+
             m_goalStates = new Dictionary<int, PlayerState>();
             PlayerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             PlayerAnimators = new Dictionary<int, PlayerAnimator>();
@@ -53,10 +49,12 @@ namespace ubv.client.logic
             foreach(PlayerState state in clientState.Players().Values)
             {
                 id = state.GUID.Value;
+                PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
                 Players[id] = playerGameObject;
                 Bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
                 Bodies[id].name = "Client player " + id.ToString();
                 m_isSprinting[id] = false;
+
                 PlayerControllers[id] = playerGameObject.GetComponent<common.gameplay.PlayerController>();
                 PlayerAnimators[id] = playerGameObject.GetComponent<PlayerAnimator>();
 
@@ -71,7 +69,6 @@ namespace ubv.client.logic
 
             m_playerGUID = localID;
             m_localPlayerBody = Bodies[localID];
-            m_localFirePoint = playerGameObject.FirePoint;
             OnInitialized?.Invoke();
         }
 
@@ -116,17 +113,19 @@ namespace ubv.client.logic
         {
             m_timeSinceLastGoal += deltaTime;
             m_isSprinting[m_playerGUID] = input.Sprinting.Value;
+
             foreach (PlayerState player in m_goalStates.Values)
             {
-                if (player.GUID.Value != m_playerGUID)
+                int id = player.GUID.Value;
+
+                if (id != m_playerGUID)
                 {
                     LerpTowardGoalState(player, m_timeSinceLastGoal);
-                    m_sprintActions[player.GUID.Value].Invoke(player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING));
+                    m_sprintActions[id].Invoke(player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING));
                 }
                 m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
-            common.logic.PlayerShooting.Execute(Players[m_playerGUID], m_playerShootingSettings, cam, input, deltaTime);
         }
 
         public override void UpdateWorldFromState(WorldState state)

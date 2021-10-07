@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ubv.client.logic;
 
 namespace ubv
 {
@@ -15,7 +16,11 @@ namespace ubv
             // http://sbcgames.io/share-your-common-code-between-multiple-unity-projects/
             // check http://devleader.ca/2015/02/08/multiple-c-projects-unity-3d-solution/ ?
             // TODO: make data and  behaviour available to server (to make it symetrical)
-            
+
+            [SerializeField] private PlayerGameObjectUpdater m_playerUpdater;
+            [SerializeField] private Camera cam;
+
+            private Transform m_playerTransform;
             private PlayerControls m_controls;
 
             static private InputController m_instance;
@@ -30,6 +35,8 @@ namespace ubv
 #if DEBUG
                 Debug.Assert(m_instance == null, "The InputController may only exist once.");
 #endif 
+                m_playerUpdater.OnInitialized += () => { m_playerTransform = m_playerUpdater.GetLocalPlayerTransform(); };
+
                 m_instance = this;
 
                 m_currentInputFrame = new common.data.InputFrame();
@@ -72,7 +79,15 @@ namespace ubv
             {
                 m_currentInputFrame.Movement.Value = m_move;
                 m_currentInputFrame.Sprinting.Value = m_IsSprinting;
+
                 m_currentInputFrame.Shooting.Value = m_IsShooting;
+                Vector2 aimDir = new Vector2(0, 0);
+                if (m_playerTransform != null)
+                {
+                    Vector2 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
+                    aimDir = mousePos - (Vector2)m_playerTransform.position;
+                }
+                m_currentInputFrame.ShootingDirection.Value = aimDir.normalized;
             }
         
             static public common.data.InputFrame CurrentFrame()

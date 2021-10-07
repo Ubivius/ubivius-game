@@ -12,6 +12,7 @@ namespace ubv
             {
                 public serialization.types.Bool Sprinting;
                 public serialization.types.Bool Shooting;
+                public serialization.types.Vector2 ShootingDirection;
                 public serialization.types.Vector2 Movement;
                 public NetInfo Info;
 

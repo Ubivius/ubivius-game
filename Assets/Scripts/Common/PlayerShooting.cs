@@ -13,9 +13,19 @@ namespace ubv
             /// </summary>
             public class PlayerShooting : MonoBehaviour
             {
+                static PlayerShooting m_instance = null;
+                
+                private void Awake()
+                {
+                    if (m_instance == null)
+                    {
+                        m_instance = this;
+                    }
+
+                }
                 static float m_lastShot = 0;
 
-                static public void Execute(PlayerPrefab player, PlayerShootingSettings playerShootingSettings, Camera cam, common.data.InputFrame input, float deltaTime)
+                static public void Execute(PlayerPrefab player, PlayerShootingSettings playerShootingSettings, common.data.InputFrame input, float deltaTime)
                 {
                     if (input.Shooting.Value && m_lastShot > playerShootingSettings.BulletDelay)
                     {
@@ -23,14 +33,8 @@ namespace ubv
                         bullet.transform.position = player.FirePoint.transform.position;
                         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
 
-                        Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
-                        Vector3 aimDir = mousePos - player.transform.position;
-                        aimDir.z = 0;
-                        Vector3 aimDirNorm = aimDir.normalized;
-
-                        Debug.Log("Aim: " + aimDir + ", AimNorm: " + aimDirNorm);
-
-                        rb.AddForce(aimDirNorm * playerShootingSettings.BulletForce, ForceMode2D.Impulse);
+                        Vector3 aimDirection = new Vector3(input.ShootingDirection.Value.x, input.ShootingDirection.Value.y, 0.0f);
+                        rb.AddForce(aimDirection * playerShootingSettings.BulletForce, ForceMode2D.Impulse);
 
                         m_lastShot = 0;
                     }
