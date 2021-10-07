@@ -31,10 +31,10 @@ namespace ubv.client.logic
         
         private const ushort CLIENT_STATE_BUFFER_SIZE = 64;
 
-        private ClientState[] m_clientStateBuffer;
+        private WorldState[] m_clientStateBuffer;
         private InputFrame[] m_inputBuffer;
         private InputFrame m_lastInput;
-        private ClientState m_lastReceivedServerState;
+        private WorldState m_lastReceivedServerState;
 
         private Dictionary<int, long> m_packetSendTimeStamps;
 
@@ -73,7 +73,7 @@ namespace ubv.client.logic
             m_offsetErrorDuration = 0;
             m_packetSendTimeStamps = new Dictionary<int, long>();
             m_meanRTT = m_defaultRTTEstimate;
-            m_clientStateBuffer = new ClientState[CLIENT_STATE_BUFFER_SIZE];
+            m_clientStateBuffer = new WorldState[CLIENT_STATE_BUFFER_SIZE];
             m_inputBuffer = new InputFrame[CLIENT_STATE_BUFFER_SIZE];
 
             m_clientPhysics = SceneManager.GetSceneByName(m_physicsScene).GetPhysicsScene2D();
@@ -86,17 +86,15 @@ namespace ubv.client.logic
             Initialized = false;
             
             GameInfo = gameInfo;
-
-            List<PlayerState> playerStates = new List<PlayerState>();
-            foreach (int id in playerIDs)
-            {
-                playerStates.Add(new PlayerState(id));
-            }
-
+            
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
-                m_clientStateBuffer[i] = new ClientState(playerStates);
-                m_clientStateBuffer[i].PlayerGUID = PlayerID.Value;
+                List<PlayerState> playerStates = new List<PlayerState>();
+                foreach (int id in playerIDs)
+                {
+                    playerStates.Add(new PlayerState(id));
+                }
+                m_clientStateBuffer[i] = new WorldState(playerStates);
 
                 m_inputBuffer[i] = new InputFrame();
                 m_inputBuffer[i].SetToNeutral();
@@ -168,7 +166,7 @@ namespace ubv.client.logic
             m_updaters.Add(updater);
         }
 
-        private void UpdateStateFromWorldAndStep(ref ClientState state, InputFrame input, float deltaTime)
+        private void UpdateStateFromWorldAndStep(ref WorldState state, InputFrame input, float deltaTime)
         {
             if (!ShouldUpdate())
                 return;
@@ -182,7 +180,7 @@ namespace ubv.client.logic
             m_clientPhysics.Simulate(deltaTime);
         }
                 
-        private List<ClientStateUpdater> UpdatersNeedingCorrection(ClientState localState, ClientState remoteState)
+        private List<ClientStateUpdater> UpdatersNeedingCorrection(WorldState localState, WorldState remoteState)
         {
             if (!ShouldUpdate())
                 return null;
@@ -303,12 +301,11 @@ namespace ubv.client.logic
                 {
                     m_lastReceivedRemoteTick = stateMessage.Info.Tick.Value;
                     
-                    ClientState state = stateMessage.State;
-                    state.PlayerGUID = PlayerID.Value;
+                    WorldState state = stateMessage.State;
                     m_lastReceivedServerState = state;
                     
 #if DEBUG_LOG
-                    //Debug.Log("Received server state tick " + state.Tick.Value + ", local tick is " + m_localTick);
+                    //Debug.Log("Received server state tick " + m_lastReceivedRemoteTick + ", local tick is " + m_localTick);
 #endif //DEBUG_LOG
                 }
                 else

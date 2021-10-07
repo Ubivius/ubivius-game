@@ -39,20 +39,15 @@ namespace ubv.server.logic
             m_sectionState = new SectionState();           
         }
 
-        public override void InitClient(ClientState state)
+        public override void InitWorld(WorldState state)
+        {
+        }
+        
+        public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
         {
         }
 
-        public override void InitPlayer(PlayerState player)
-        {
-            m_playerMovementUpdater.SetPlayerPosition(player, GetPlayerSpawnPos());
-        }
-
-        public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
-        {
-        }
-
-        public override void UpdateClient(ClientState client)
+        public override void UpdateWorld(WorldState client)
         {
         }
 

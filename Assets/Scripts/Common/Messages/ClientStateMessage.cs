@@ -6,17 +6,17 @@ namespace ubv.common.data
 {
     public class ClientStateMessage : Serializable
     {
-        public ClientState State;
+        public WorldState State;
         public NetInfo Info;
 
         public ClientStateMessage()
         {
-            State = new ClientState();
+            State = new WorldState();
             Info = new NetInfo();
             InitSerializableMembers(State, Info);
         }
 
-        public ClientStateMessage(ClientState state, NetInfo info)
+        public ClientStateMessage(WorldState state, NetInfo info)
         {
             State = state;
             Info = info;
