@@ -1864,7 +1864,7 @@ PrefabInstance:
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverAddress
-      value: 192.168.0.141
+      value: 127.0.0.1
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
