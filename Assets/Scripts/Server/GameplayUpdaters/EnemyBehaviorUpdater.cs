@@ -14,6 +14,8 @@ namespace ubv.server.logic
         [SerializeField] private GameMaster m_gameMaster;
         [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
 
+        private Dictionary<int, EnemyStateData> m_enemyStatesData;
+
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, EnemyStateMachine> m_states;
 
@@ -24,7 +26,7 @@ namespace ubv.server.logic
             m_states = new Dictionary<int, EnemyStateMachine>();
         }
 
-        public override void InitClient(WorldState state)
+        public override void InitClients(WorldState state)
         {
             m_pathfindingGridManager.OnPathFindingManagerGenerated += () => { OnPathFindingManagerGenerated(state); };
         }
@@ -44,27 +46,21 @@ namespace ubv.server.logic
             m_bodies.Add(id, body);
         }
 
-
-        public override void InitEnemy(EnemyStateData enemy)
-        {
-            enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
-        }
-
         public override void FixedUpdateFromClient(WorldState client, InputFrame frame, float deltaTime)
         {
-            Rigidbody2D body = m_bodies[client.PlayerGUID];
         }
 
         public override void UpdateClient(ref WorldState client)
-        {//state change et deplacement
-
-            Rigidbody2D body = m_bodies[client.EnemyGUID];
-            EnemyStateMachine enemyStateMachine = m_states[client.EnemyGUID];
-            EnemyStateData enemy = client.GetEnemy();
-            enemy.Position.Value = body.position;
-            enemy.Rotation.Value = body.rotation;
-            //Aide Murphy serializxation
-            enemy.EnemyState = enemyStateMachine.CurrentEnemyState;
+        {
+            foreach (int id in client.Enemies().Keys)
+            {
+                Rigidbody2D body = m_bodies[id];
+                EnemyStateData enemy = m_enemyStatesData[id];
+                EnemyStateMachine enemyStateMachine = m_states[client.EnemyGUID];
+                enemy.Position.Value = body.position;
+                enemy.Rotation.Value = body.rotation;
+                enemy.EnemyState = enemyStateMachine.CurrentEnemyState;
+            }
         }
     }
 }

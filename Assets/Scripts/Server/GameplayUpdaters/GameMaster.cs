@@ -18,15 +18,7 @@ namespace ubv.server.logic
         {
         }
 
-        public override void InitClient(WorldState state)
-        {
-        }
-
-        public override void InitPlayer(PlayerState player)
-        {
-        }
-
-        public override void InitEnemy(EnemyStateData enemy)
+        public override void InitClients(WorldState state)
         {
         }
 
