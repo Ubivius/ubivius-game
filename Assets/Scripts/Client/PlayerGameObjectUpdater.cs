@@ -35,8 +35,7 @@ namespace ubv.client.logic
         private Dictionary<int, UnityAction<bool>> m_sprintActions;
 
         
-
-        public override void Init(ClientState clientState, int localID) 
+        public override void Init(WorldState clientState, int localID)
         {
             m_sprintActions = new Dictionary<int, UnityAction<bool>>();
             m_timeSinceLastGoal = 0;
@@ -72,7 +71,7 @@ namespace ubv.client.logic
             
         }
 
-        public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
+        public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
         {
             bool err = false;
             // mettre un bool pour IsAlreadyCorrecting ?
@@ -89,7 +88,7 @@ namespace ubv.client.logic
             return err;
         }
 
-        public override void UpdateStateFromWorld(ref ClientState state)
+        public override void UpdateStateFromWorld(ref WorldState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {
@@ -121,7 +120,7 @@ namespace ubv.client.logic
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
         }
 
-        public override void UpdateWorldFromState(ClientState state)
+        public override void UpdateWorldFromState(WorldState state)
         {
             m_timeSinceLastGoal = 0;
             foreach (PlayerState player in state.Players().Values)
