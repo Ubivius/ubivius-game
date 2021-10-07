@@ -23,12 +23,28 @@ namespace ubv.common
             }
         }
 
+        public class OpeningDoorList : serialization.types.List<serialization.types.Vector2Int>
+        {
+            public OpeningDoorList(System.Collections.Generic.List<serialization.types.Vector2Int> doorList) : base(doorList)
+            {
+
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.LIST_VECTOR2INT;
+            }
+        }
+
         private PlayerHashMap m_playerStates;
-        
+
+        private OpeningDoorList m_openingDoorList;
+
         public WorldState() : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
-            InitSerializableMembers(m_playerStates);
+            m_openingDoorList = new OpeningDoorList(new System.Collections.Generic.List<serialization.types.Vector2Int>());
+            InitSerializableMembers(m_playerStates, m_openingDoorList);
         }
 
         public WorldState(System.Collections.Generic.List<common.data.PlayerState> playerStates) : base()
@@ -39,13 +55,16 @@ namespace ubv.common
                 dictStates.Add(state.GUID.Value, state);
             }
             m_playerStates = new PlayerHashMap(dictStates);
-            InitSerializableMembers(m_playerStates);
+            m_openingDoorList = new OpeningDoorList(new System.Collections.Generic.List<serialization.types.Vector2Int>());
+            InitSerializableMembers(m_playerStates, m_openingDoorList);
         }
 
         public WorldState(ref WorldState state) : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
             SetPlayers(state.m_playerStates.Value);
+            m_openingDoorList = new OpeningDoorList(new System.Collections.Generic.List<serialization.types.Vector2Int>());
+            SetOpeningDoor(state.m_openingDoorList.Value);
             InitSerializableMembers(m_playerStates);
         }
             
@@ -71,6 +90,20 @@ namespace ubv.common
         public Dictionary<int, common.data.PlayerState> Players()
         {
             return m_playerStates.Value;
+        }
+
+        public OpeningDoorList OpeningDoors()
+        {
+            return m_openingDoorList;
+        }
+
+        public void SetOpeningDoor(System.Collections.Generic.List<serialization.types.Vector2Int> doors)
+        {
+            m_openingDoorList.Value.Clear();
+            foreach (serialization.types.Vector2Int door in doors)
+            {
+                m_openingDoorList.Value.Add(door);
+            }
         }
     }
 }

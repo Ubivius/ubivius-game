@@ -27,48 +27,48 @@ namespace ubv.server.logic
 
         }
 
-        public override void InitClient(ClientState state)
+        public override void InitWorld(WorldState state)
         {
         }
 
-        public override void InitPlayer(PlayerState player)
-        {
-        }
 
-        public override void FixedUpdateFromClient(ClientState client, InputFrame frame, float deltaTime)
+        public override void FixedUpdateFromClient(WorldState state, Dictionary<int, InputFrame> frame, float deltaTime)
         {
-            // Faire le check présence client
-            if (frame.Interact.Value)
+            foreach (int id in state.Players().Keys)
             {
-                Vector2 playerPosition = client.GetPlayer().Position.Value;
-
-                foreach (SectionDoorButtonCell button in m_sectionDoorButtonList.Keys)
+                // Faire le check présence client
+                if (frame[id].Interact.Value)
                 {
-                    Vector2 buttonPos = m_sectionDoorButtonList[button];
-                    float diff = (playerPosition - buttonPos).sqrMagnitude;
-                    if (diff <= c_buttonDistance)
-                    {
-                        m_gameMaster.InteractSectionDoorButton(button);
-                        continue;
-                    }
-                }
+                    Vector2 playerPosition = state.Players()[id].Position.Value;
 
-                foreach (SectionButton button in m_buttonSectionList.Keys)
-                {
-                    Vector2 buttonPos = m_buttonSectionList[button];
-                    float diff = (playerPosition - buttonPos).sqrMagnitude;
-                    if (diff <= c_buttonDistance)
+                    foreach (SectionDoorButtonCell button in m_sectionDoorButtonList.Keys)
                     {
-                        m_gameMaster.InteractSectionButton(button);
-                        continue;
+                        Vector2 buttonPos = m_sectionDoorButtonList[button];
+                        float diff = (playerPosition - buttonPos).sqrMagnitude;
+                        if (diff <= c_buttonDistance)
+                        {
+                            m_gameMaster.InteractSectionDoorButton(button);
+                            continue;
+                        }
                     }
-                }
 
+                    foreach (SectionButton button in m_buttonSectionList.Keys)
+                    {
+                        Vector2 buttonPos = m_buttonSectionList[button];
+                        float diff = (playerPosition - buttonPos).sqrMagnitude;
+                        if (diff <= c_buttonDistance)
+                        {
+                            m_gameMaster.InteractSectionButton(button);
+                            continue;
+                        }
+                    }
+
+                }
             }
             
         }
 
-        public override void UpdateClient(ClientState client)
+        public override void UpdateWorld(WorldState client)
         {
         }
 

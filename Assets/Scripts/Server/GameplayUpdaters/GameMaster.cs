@@ -29,9 +29,12 @@ namespace ubv.server.logic
         private Dictionary<DoorCell, Vector2Int> m_doorSection0SouthWest;
         private Dictionary<DoorCell, Vector2Int> m_doorSection0NorthWest;
 
+        private List<common.serialization.types.Vector2Int> m_openingDoorList;
+
         private void Awake()
         {
             m_world.OnWorldGenerated += OnWorldGenerated;
+            m_openingDoorList = new List<common.serialization.types.Vector2Int>();
         }
 
         public override void Setup()
@@ -43,11 +46,12 @@ namespace ubv.server.logic
         {
         }
         
-        public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
+        public override void FixedUpdateFromClient(WorldState state, Dictionary<int, InputFrame> frames, float deltaTime)
         {
+            state.SetOpeningDoor(m_openingDoorList);
         }
 
-        public override void UpdateWorld(WorldState client)
+        public override void UpdateWorld(WorldState state)
         {
         }
 
@@ -154,6 +158,7 @@ namespace ubv.server.logic
                 Vector2Int pos = dic[door];
                 door.OpenDoor();
                 m_world.GetDoorTilemap().SetTile(new Vector3Int(pos.x, pos.y, 0), null);
+                m_openingDoorList.Add(new common.serialization.types.Vector2Int(new Vector2Int(pos.x, pos.y)));
             }
         }
 

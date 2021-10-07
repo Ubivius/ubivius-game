@@ -53,7 +53,8 @@ namespace ubv.common.serialization
             CLIENT_STATE_MESSAGE,
             INT64,
             RTT_MSG,
-            BITSET
+            BITSET,
+            LIST_VECTOR2INT
         }
     }
 }
