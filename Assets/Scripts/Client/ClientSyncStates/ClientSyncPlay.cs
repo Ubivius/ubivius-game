@@ -86,15 +86,14 @@ namespace ubv.client.logic
             Initialized = false;
             
             GameInfo = gameInfo;
-
-            List<PlayerState> playerStates = new List<PlayerState>();
-            foreach (int id in playerIDs)
-            {
-                playerStates.Add(new PlayerState(id));
-            }
-
+            
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
+                List<PlayerState> playerStates = new List<PlayerState>();
+                foreach (int id in playerIDs)
+                {
+                    playerStates.Add(new PlayerState(id));
+                }
                 m_clientStateBuffer[i] = new WorldState(playerStates);
 
                 m_inputBuffer[i] = new InputFrame();
@@ -306,7 +305,7 @@ namespace ubv.client.logic
                     m_lastReceivedServerState = state;
                     
 #if DEBUG_LOG
-                    Debug.Log("Received server state tick " + m_lastReceivedRemoteTick + ", local tick is " + m_localTick);
+                    //Debug.Log("Received server state tick " + m_lastReceivedRemoteTick + ", local tick is " + m_localTick);
 #endif //DEBUG_LOG
                 }
                 else
