@@ -11,9 +11,15 @@ namespace ubv.microservices
     {
         public delegate void OnGetInfo(UserInfo info);
         
-        private class UserInfoRequest : Microservice.MicroserviceRequest
+        public class UserInfoRequest : Microservice.MicroserviceRequest
         {
             public string ID;
+
+            public UserInfoRequest(string ID, OnGetInfo callback)
+            {
+                this.ID = ID;
+                Callback = new UserInfoCallback() { OnGetInfo = callback };
+            }
 
             public override string GetURL()
             {
@@ -21,7 +27,7 @@ namespace ubv.microservices
             }
         }
 
-        private class UserInfoCallback : MicroserviceCallback
+        public class UserInfoCallback : MicroserviceCallback
         {
             public OnGetInfo OnGetInfo;
         }
@@ -59,7 +65,12 @@ namespace ubv.microservices
 
         protected override void Mock(MicroserviceCallback callback)
         {
-            throw new System.NotImplementedException();
+#if DEBUG_LOG
+            Debug.Log("Mocking user. Auto logging in with random ID (or forced ID provided if any)");
+#endif // DEBUG_LOG
+            string _id = m_mockData.UserID.Length > 0 ? m_mockData.UserID : System.Guid.NewGuid().ToString();
+            string _user = m_mockData.UserName.Length > 0 ? m_mockData.UserName : "murphy-auto-username";
+            (callback as UserInfoCallback)?.OnGetInfo.Invoke(new UserInfo(_id, _user, "murphy@gmail.com", "00-00-0001"));
         }
     }
 }

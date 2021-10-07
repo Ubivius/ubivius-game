@@ -57,7 +57,7 @@ namespace ubv.client.logic
             if (playerIDString != null)
             {
                 PlayerID = playerIDString.GetHashCode();
-                m_userService.SendUserInfoRequest(playerIDString, OnGetUserInfo);
+                m_userService.Request(new microservices.UserService.UserInfoRequest(playerIDString, OnGetUserInfo));
             }
             else
             {

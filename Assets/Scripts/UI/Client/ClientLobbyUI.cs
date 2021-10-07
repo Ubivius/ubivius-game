@@ -102,7 +102,7 @@ namespace ubv.ui.client
                     playerIntIDs.Add(playerIntID);
                     if (!m_users.ContainsKey(playerIntID))
                     {
-                        m_userService.SendUserInfoRequest(character.PlayerID, OnGetUserInfo);
+                        m_userService.Request(new UserService.UserInfoRequest(character.PlayerID, OnGetUserInfo));
                     }
                 }
 
