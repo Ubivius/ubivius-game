@@ -3,28 +3,43 @@ using UnityEditor;
 
 namespace ubv.microservices
 {
-    public class FriendsInfo
+    public class RelationInfo
     {
-        public readonly string UserID;
-        // todo : add data
+        public enum RelationshipType
+        {
+            None = 0,
+            Friend,
+            Blocked,
+            PendingIncoming,
+            PendingOutgoing
+        }
+
+        public readonly string FriendUserID;
+        public readonly RelationshipType RelationType;
+
+        public RelationInfo(string id, RelationshipType relationship)
+        {
+            FriendUserID = id; ;
+            RelationType = relationship;
+        }
     }
 
-    public delegate void OnGetFriendsRequest(FriendsInfo friendsInfo);
+    public delegate void OnGetFriendsRequest(RelationInfo[] friendsInfo);
     abstract public class GetFriendRequest : GetMicroserviceRequest
     {
         public readonly string UserID;
-        public readonly FriendsInfo Callback;
+        public readonly OnGetFriendsRequest Callback;
 
-        public GetFriendRequest(string user, FriendsInfo callback)
+        public GetFriendRequest(string user, OnGetFriendsRequest callback)
         {
             UserID = user;
             Callback = callback;
         }
     }
 
-    public class GetFriendsFromUserRequest : GetFriendRequest
+    public class GetRelationsFromUserRequest : GetFriendRequest
     {
-        public GetFriendsFromUserRequest(string user, FriendsInfo callback) : base(user, callback)
+        public GetRelationsFromUserRequest(string user, OnGetFriendsRequest callback) : base(user, callback)
         { }
 
         public override string URL()
@@ -35,7 +50,7 @@ namespace ubv.microservices
 
     public class GetInvitesForUserRequest : GetFriendRequest
     {
-        public GetInvitesForUserRequest(string user, FriendsInfo callback) : base(user, callback)
+        public GetInvitesForUserRequest(string user, OnGetFriendsRequest callback) : base(user, callback)
         { }
 
         public override string URL()
