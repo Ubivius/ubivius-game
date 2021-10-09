@@ -104,22 +104,18 @@ namespace ubv.client.logic
                     player.Rotation.Value = Bodies[player.GUID.Value].rotation;
                     player.Velocity.Value = Bodies[player.GUID.Value].velocity;
                 }
-                player.States.Set((int)PlayerStateEnum.IS_SPRINTING, m_isSprinting[player.GUID.Value]);
             }
         }
 
         public override void Step(InputFrame input, float deltaTime)
         {
             m_timeSinceLastGoal += deltaTime;
-            m_isSprinting[m_playerGUID] = input.Sprinting.Value;
             foreach (PlayerState player in m_goalStates.Values)
             {
                 if (player.GUID.Value != m_playerGUID)
                 {
                     LerpTowardGoalState(player, m_timeSinceLastGoal);
-                    m_sprintActions[player.GUID.Value].Invoke(player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING));
                 }
-                m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
         }
@@ -139,7 +135,11 @@ namespace ubv.client.logic
                     Bodies[player.GUID.Value].velocity = player.Velocity.Value;
                 }
 
-                m_isSprinting[player.GUID.Value] = player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING);
+                if (player.States.IsTrue(0) != m_isSprinting[player.GUID.Value])
+                {
+                    m_isSprinting[player.GUID.Value] = player.States.IsTrue(0);
+                    m_sprintActions[player.GUID.Value].Invoke(m_isSprinting[player.GUID.Value]);
+                }
             }
         }
 
@@ -150,6 +150,12 @@ namespace ubv.client.logic
 
         private void LerpTowardGoalState(PlayerState player, float time)
         {
+            if (player.States.IsTrue(0) != m_isSprinting[player.GUID.Value])
+            {
+                m_isSprinting[player.GUID.Value] = player.States.IsTrue(0);
+                m_sprintActions[player.GUID.Value].Invoke(m_isSprinting[player.GUID.Value]);
+            }
+
             Bodies[player.GUID.Value].velocity = Vector2.Lerp(Bodies[player.GUID.Value].velocity, m_goalStates[player.GUID.Value].Velocity.Value, time / m_lerpTime);
             if ((Bodies[player.GUID.Value].velocity - m_goalStates[player.GUID.Value].Velocity.Value).sqrMagnitude < 0.01f)
             {

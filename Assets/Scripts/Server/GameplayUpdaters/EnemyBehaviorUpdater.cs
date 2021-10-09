@@ -11,19 +11,18 @@ namespace ubv.server.logic
     public class EnemyBehaviorUpdater : ServerGameplayStateUpdater
     {
         [SerializeField] private EnemySettings m_enemySettings;
-        [SerializeField] private GameMaster m_gameMaster;
         [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
 
         private Dictionary<int, EnemyStateData> m_enemyStatesData;
 
         private Dictionary<int, Rigidbody2D> m_bodies;
-        private Dictionary<int, EnemyStateMachine> m_states;
+        private Dictionary<int, EnemyState> m_states;
 
         public override void Setup()
         {
             //instantier un seul ennemy pur le moment
             m_bodies = new Dictionary<int, Rigidbody2D>();
-            m_states = new Dictionary<int, EnemyStateMachine>();
+            m_states = new Dictionary<int, EnemyState>();
         }
 
         public override void InitWorld(WorldState state)
@@ -44,7 +43,7 @@ namespace ubv.server.logic
                 body.position = enemyPathFindingMovement.GetPosition();
                 body.name = "Server enemy " + id.ToString() + enemyStateMachine.CurrentEnemyState;
 
-                m_states.Add(id, enemyStateMachine);
+                m_states.Add(id, enemyStateMachine.CurrentEnemyState);
                 m_bodies.Add(id, body);
 
                 EnemyStateData enemyStateData = new EnemyStateData(id);
@@ -70,10 +69,9 @@ namespace ubv.server.logic
             {
                 Rigidbody2D body = m_bodies[id];
                 EnemyStateData enemy = m_enemyStatesData[id];
-                EnemyStateMachine enemyStateMachine = m_states[id];
                 enemy.Position.Value = body.position;
                 enemy.Rotation.Value = body.rotation;
-                enemy.EnemyState = enemyStateMachine.CurrentEnemyState;
+                enemy.EnemyState = m_states[id];
             }
         }
     }

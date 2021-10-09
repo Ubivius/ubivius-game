@@ -90,11 +90,14 @@ namespace ubv.client.logic
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
+                List<EnemyStateData> enemySatesDatas = new List<EnemyStateData>();
                 foreach (int id in playerIDs)
                 {
                     playerStates.Add(new PlayerState(id));
+                    enemySatesDatas.Add(new EnemyStateData(id));
                 }
                 m_clientStateBuffer[i] = new WorldState(playerStates);
+                m_clientStateBuffer[i] = new WorldState(enemySatesDatas);
 
                 m_inputBuffer[i] = new InputFrame();
                 m_inputBuffer[i].SetToNeutral();

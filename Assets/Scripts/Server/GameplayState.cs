@@ -56,12 +56,14 @@ namespace ubv.server.logic
             
             m_clientInputBuffers = new Dictionary<int, Dictionary<int, InputFrame>>();
                    
-            // add each player to client states
+            // add each player and enemies to client states
             foreach (int id in m_clients)
             {
                 PlayerState player = new PlayerState();
+                EnemyStateData enemy = new EnemyStateData();
                 player.GUID.Value = id;
                 m_currentWorldState.AddPlayer(player);
+                m_currentWorldState.AddEnemy(enemy);
                 m_clientInputBuffers[id] = new Dictionary<int, InputFrame>();
                 m_connectedClients.Add(id, true);
             }
