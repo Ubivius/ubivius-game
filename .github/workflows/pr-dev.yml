@@ -5,6 +5,7 @@ on:
     branches: [ dev ]
 
 env:
+  BUILD_TYPE: test  # Can be test or prod
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
   DOCKERHUB_PWD: ${{ secrets.DOCKERHUB_PWD }}
@@ -66,21 +67,25 @@ jobs:
         run: |
             IN=$(echo ${GITHUB_REPOSITORY})
             NAME=${IN#"Ubivius/"}
+            VERSION=${{ env.REPO_VERSION }}
             echo "::set-output name=REPO_NAME::$(echo $NAME)"
             echo "::set-output name=BRANCH::$(echo $GITHUB_REF)"
+            echo "::set-output name=REPO_VERSION::$(echo $VERSION)"
         shell: bash
 
       # Docker publish server image
       - name: Build and Push Artefact to Registry
         if: success()
         uses: elgohr/Publish-Docker-Github-Action@master
+        env:
+          BUILD_TYPE: ${{ env.BUILD_TYPE }}
         with:
           name: ubiviushub/${{ steps.fetch-vars.outputs.REPO_NAME }}
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ env.DOCKERHUB_PWD }}
+          buildargs: BUILD_TYPE
           dockerfile: Dockerfile
-          buildargs: BUILD_TYPE=test
-          tags: "${{ env.REPO_VERSION }}"
+          tags: "${{ steps.fetch-docker-vars.outputs.REPO_VERSION }}"
 
       # Also publish build output as zip archive
       - uses: actions/upload-artifact@v2
