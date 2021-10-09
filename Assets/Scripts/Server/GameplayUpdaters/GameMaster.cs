@@ -155,9 +155,10 @@ namespace ubv.server.logic
         {
             foreach (DoorCell door in dic.Keys)
             {
-                Vector2Int pos = dic[door];
+                Vector3Int pos = new Vector3Int(dic[door].x, dic[door].y, 0);
                 door.OpenDoor();
-                m_world.GetDoorTilemap().SetTile(new Vector3Int(pos.x, pos.y, 0), null);
+                m_world.GetDoorTilemap().SetTile(pos, null);
+                m_world.GetDoorTilemap().RefreshTile(pos);
                 m_openingDoorList.Add(new common.serialization.types.Vector2Int(new Vector2Int(pos.x, pos.y)));
             }
         }

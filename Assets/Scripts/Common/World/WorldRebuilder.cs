@@ -77,6 +77,8 @@ namespace ubv.client.world
                     {
                         doorCells.Add(m_defaultDoorTile);
                         doorPos.Add(pos);
+                        floorCells.Add(m_defaultFloorTile);
+                        floorPos.Add(pos);
                     }
                     else if (cell is DoorButtonCell)
                     {
