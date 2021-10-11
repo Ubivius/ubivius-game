@@ -32,8 +32,8 @@ Transform:
   - {fileID: 1584834601926501234}
   - {fileID: 5980181654224121731}
   - {fileID: 1124455532151190757}
-  - {fileID: 2971893872073089457}
   - {fileID: 7676663511256152388}
+  - {fileID: 2971893872073089457}
   - {fileID: 1424532028110512240}
   - {fileID: 9190401287086597186}
   - {fileID: 8156371440444099849}
@@ -192,7 +192,7 @@ MonoBehaviour:
   m_mock: 1
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
-  m_userEndpoint: http://localhost:9091
+  m_serviceEndpoint: 
 --- !u!1 &4998171549256964432
 GameObject:
   m_ObjectHideFlags: 0
@@ -222,7 +222,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1584834600992003656}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5996061036848143753
 MonoBehaviour:
@@ -239,7 +239,7 @@ MonoBehaviour:
   m_mock: 1
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
-  m_authEndpoint: http://localhost:9092
+  m_serviceEndpoint: 
 --- !u!1 &5254342688879064719
 GameObject:
   m_ObjectHideFlags: 0
@@ -329,7 +329,7 @@ MonoBehaviour:
   m_mock: 1
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
-  m_characterDataEndpoint: http://localhost:9093
+  m_serviceEndpoint: 
 --- !u!1 &5991273713136953469
 GameObject:
   m_ObjectHideFlags: 0
@@ -389,7 +389,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1584834600992003656}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7434323783986351494
 MonoBehaviour:

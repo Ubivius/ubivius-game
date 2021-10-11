@@ -15,8 +15,8 @@ namespace ubv.microservices
 
         protected override void OnGetResponse(string JSON, GetFriendRequest originalRequest)
         {
-            string JSONFixed = JsonHelper.FixJsonArrayFromServer(JSON);
-            JSONFriendInfo[] authResponse = JsonHelper.FromJson<JSONFriendInfo>(JSONFixed);
+            //string JSONFixed = JsonHelper.FixJsonArrayFromServer(JSON);
+            JSONFriendInfo[] authResponse = JsonHelper.FromJson<JSONFriendInfo>(JSON);
 
             RelationInfo[] friends = new RelationInfo[authResponse.Length];
             for (int i = 0; i < authResponse.Length; i++)
@@ -72,16 +72,21 @@ namespace ubv.microservices
             return invites;
         }
 
+        [SerializeField]
+        private AuthenticationService m_users;
         public void Start()
         {
-            string murphyID = "%";
-            // friends list test
-            this.Request(new GetRelationsFromUserRequest(murphyID, (RelationInfo[] infos) =>
-            {
-                Debug.Log(murphyID + "'s friends:");
-                LogFriends(infos);
-            }
-            ));
+            m_users.Request(new PostAuthenticationRequest("murphy", "password", (string id) => {
+
+            Debug.Log("Login in with murphy :" + id);
+                // friends list test
+                this.Request(new GetRelationsFromUserRequest(id, (RelationInfo[] infos) =>
+                {
+                    Debug.Log(id + "'s friends:");
+                    LogFriends(infos);
+                }
+                ));
+            }));
         }
 
         public void LogFriends(RelationInfo[] infos)
