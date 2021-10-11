@@ -3025,7 +3025,8 @@ MonoBehaviour:
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1557068054}
   m_serviceEndpoint: http://friendslist.dev.ubivius.tk/
-  m_users: {fileID: 1130825511}
+  m_auth: {fileID: 1130825511}
+  m_users: {fileID: 853064862}
 --- !u!1 &1942111338
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,13 +14,17 @@ namespace ubv.microservices
             PendingOutgoing
         }
 
+        public readonly string RelationID;
         public readonly string FriendUserID;
         public readonly RelationshipType RelationType;
+        public readonly string ConversationID;
 
-        public RelationInfo(string id, RelationshipType relationship)
+        public RelationInfo(string relationID, string friendID, RelationshipType relationship, string conversationID)
         {
-            FriendUserID = id; ;
+            RelationID = relationID;
+            FriendUserID = friendID; ;
             RelationType = relationship;
+            ConversationID = conversationID;
         }
     }
 
