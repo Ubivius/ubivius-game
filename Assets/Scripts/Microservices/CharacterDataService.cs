@@ -33,16 +33,26 @@ namespace ubv.microservices
         
         protected override void OnGetResponse(string JSON, GetCharacterRequest originalRequest)
         {
-            string JSONFixed = JsonHelper.FixJsonArrayFromServer(JSON);
-            JSONCharacterData[] authResponse = JsonHelper.FromJson<JSONCharacterData>(JSONFixed);
-
-            CharacterData[] characters = new CharacterData[authResponse.Length];
-            for (int i = 0; i < authResponse.Length; i++)
+            if (originalRequest is GetCharactersFromUserRequest)
             {
-                characters[i] = new CharacterData(authResponse[i].name, authResponse[i].id, authResponse[i].user_id);
-            }
+                string JSONFixed = JsonHelper.FixJsonArrayFromServer(JSON);
+                JSONCharacterData[] jsonDataArray = JsonHelper.FromJson<JSONCharacterData>(JSONFixed);
 
-            originalRequest.Callback.Invoke(characters);
+                CharacterData[] characters = new CharacterData[jsonDataArray.Length];
+                for (int i = 0; i < jsonDataArray.Length; i++)
+                {
+                    characters[i] = new CharacterData(jsonDataArray[i].name, jsonDataArray[i].id, jsonDataArray[i].user_id);
+                }
+
+                originalRequest.Callback.Invoke(characters);
+            }
+            else if (originalRequest is GetSingleCharacterRequest)
+            {
+                JSONCharacterData jsonData = JsonUtility.FromJson<JSONCharacterData>(JSON);
+                CharacterData[] characters = new CharacterData[1];
+                characters[0] = new CharacterData(jsonData.name, jsonData.id, jsonData.user_id);
+                originalRequest.Callback.Invoke(characters);
+            }
         }
 
         protected override void MockGet(GetCharacterRequest request)
