@@ -45,25 +45,25 @@ namespace ubv.microservices
                     {
                         if (m_getRequests.Count > 0)
                         {
-                            MicroserviceRequest request = m_getRequests.Peek();
+                            MicroserviceRequest request = m_getRequests.Dequeue();
                             Request(request);
                         }
 
                         if (m_postRequests.Count > 0)
                         {
-                            MicroserviceRequest request = m_postRequests.Peek();
+                            MicroserviceRequest request = m_postRequests.Dequeue();
                             Request(request);
                         }
 
                         if (m_putRequests.Count > 0)
                         {
-                            MicroserviceRequest request = m_putRequests.Peek();
+                            MicroserviceRequest request = m_putRequests.Dequeue();
                             Request(request);
                         }
 
                         if (m_deleteRequests.Count > 0)
                         {
-                            MicroserviceRequest request = m_deleteRequests.Peek();
+                            MicroserviceRequest request = m_deleteRequests.Dequeue();
                             Request(request);
                         }
                     }
@@ -124,6 +124,14 @@ namespace ubv.microservices
                 {
                     m_postRequests.Enqueue(request as PostReq);
                 }
+                else if (request is PutReq)
+                {
+                    m_putRequests.Enqueue(request as PutReq);
+                }
+                else if (request is DelReq)
+                {
+                    m_deleteRequests.Enqueue(request as DelReq);
+                }
 
                 if (!m_readyForNextRequest)
                 {
@@ -137,6 +145,14 @@ namespace ubv.microservices
                 else if (request is PostReq)
                 {
                     PostRequest(request as PostReq);
+                }
+                else if (request is PutReq)
+                {
+                    PutRequest(request as PutReq);
+                }
+                else if (request is DelReq)
+                {
+                    DeleteRequest(request as DelReq);
                 }
             }
         }
@@ -153,66 +169,78 @@ namespace ubv.microservices
 
         private void OnGetResponse(HttpResponseMessage message)
         {
-            if (message.StatusCode == HttpStatusCode.OK)
+            lock (m_requestLock)
             {
-                string JSON = message.Content.ReadAsStringAsync().Result;
-                OnGetResponse(JSON, m_getRequests.Dequeue());
-            }
-            else
-            {
+                if (message.StatusCode == HttpStatusCode.OK)
+                {
+                    string JSON = message.Content.ReadAsStringAsync().Result;
+                    OnGetResponse(JSON, m_getRequests.Dequeue());
+                }
+                else
+                {
 #if DEBUG_LOG
-                Debug.Log("GET Request was not successful");
+                    Debug.Log("GET Request was not successful");
 #endif // DEBUG_LOG
+                }
+                m_readyForNextRequest = true;
             }
-            m_readyForNextRequest = true;
         }
 
         private void OnPostResponse(HttpResponseMessage message)
         {
-            if (message.StatusCode == HttpStatusCode.OK)
+            lock (m_requestLock)
             {
-                string JSON = message.Content.ReadAsStringAsync().Result;
-                OnPostResponse(JSON, m_postRequests.Dequeue());
-            }
-            else
-            {
+                if (message.StatusCode == HttpStatusCode.OK)
+                {
+                    string JSON = message.Content.ReadAsStringAsync().Result;
+                    OnPostResponse(JSON, m_postRequests.Dequeue());
+                }
+                else
+                {
 #if DEBUG_LOG
-                Debug.Log("POST Request was not successful");
+                    Debug.Log("POST Request was not successful");
 #endif // DEBUG_LOG
+                }
+                m_readyForNextRequest = true;
             }
-            m_readyForNextRequest = true;
         }
 
         private void OnPutResponse(HttpResponseMessage message)
         {
-            if (message.StatusCode == HttpStatusCode.OK)
+            lock (m_requestLock)
             {
-                string JSON = message.Content.ReadAsStringAsync().Result;
-                OnPutResponse(JSON, m_putRequests.Dequeue());
-            }
-            else
-            {
+                if (message.StatusCode == HttpStatusCode.OK)
+                {
+                    string JSON = message.Content.ReadAsStringAsync().Result;
+                    OnPutResponse(JSON, m_putRequests.Dequeue());
+                }
+                else
+                {
 #if DEBUG_LOG
-                Debug.Log("PUT Request was not successful");
+                    Debug.Log("PUT Request was not successful");
 #endif // DEBUG_LOG
+                }
+                m_readyForNextRequest = true;
             }
-            m_readyForNextRequest = true;
         }
 
         private void OnDeleteResponse(HttpResponseMessage message)
         {
-            if (message.StatusCode == HttpStatusCode.OK)
+            lock (m_requestLock)
             {
-                string JSON = message.Content.ReadAsStringAsync().Result;
-                OnDeleteResponse(JSON, m_deleteRequests.Dequeue());
-            }
-            else
-            {
+                if (message.StatusCode == HttpStatusCode.OK)
+                {
+                    string JSON = message.Content.ReadAsStringAsync().Result;
+                    OnDeleteResponse(JSON, m_deleteRequests.Dequeue());
+                }
+                else
+                {
 #if DEBUG_LOG
-                Debug.Log("PUT Request was not successful");
+                    Debug.Log("PUT Request was not successful");
 #endif // DEBUG_LOG
+                }
+                m_readyForNextRequest = true;
             }
-            m_readyForNextRequest = true;
         }
     }
 }

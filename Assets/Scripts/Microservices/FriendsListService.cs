@@ -97,7 +97,8 @@ namespace ubv.microservices
         [SerializeField]
         private UserService m_users;
 
-        public void Start()
+#if UNITY_EDITOR
+        public void TestWithMurphy()
         {
             m_auth.Request(new PostAuthenticationRequest("murphy", "password", (string id) => {
                 
@@ -121,6 +122,7 @@ namespace ubv.microservices
                 ));
             }));
         }
+#endif // UNITY_EDITOR
 
         public List<string> GetFriendsFrom(RelationInfo[] infos)
         {
