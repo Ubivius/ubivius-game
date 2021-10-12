@@ -48,7 +48,13 @@ namespace ubv.microservices
         private AuthenticationService m_auth;
         [SerializeField]
         private UserService m_users;
+
         private void Start()
+        {
+            // TestWithMurphy();
+        }
+
+        private void TestWithMurphy()
         {
             string murphyID = "00bfd9f9-b93a-42dd-b27c-f8e03db4a946";
             string conversationID = "b07964e7-6525-469d-bb34-e0bead1b1836";
