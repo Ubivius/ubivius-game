@@ -33,8 +33,7 @@ namespace ubv.client.logic
         private Dictionary<int, UnityAction<bool>> m_sprintActions;
 
         
-
-        public override void Init(ClientState clientState, int localID) 
+        public override void Init(WorldState clientState, int localID)
         {
             m_sprintActions = new Dictionary<int, UnityAction<bool>>();
             m_timeSinceLastGoal = 0;
@@ -70,7 +69,7 @@ namespace ubv.client.logic
             
         }
 
-        public override bool NeedsCorrection(ClientState localState, ClientState remoteState)
+        public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
         {
             bool err = false;
             // mettre un bool pour IsAlreadyCorrecting ?
@@ -87,7 +86,7 @@ namespace ubv.client.logic
             return err;
         }
 
-        public override void UpdateStateFromWorld(ref ClientState state)
+        public override void UpdateStateFromWorld(ref WorldState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {
@@ -103,23 +102,27 @@ namespace ubv.client.logic
                     player.Rotation.Value = Bodies[player.GUID.Value].rotation;
                     player.Velocity.Value = Bodies[player.GUID.Value].velocity;
                 }
+                player.States.Set((int)PlayerStateEnum.IS_SPRINTING, m_isSprinting[player.GUID.Value]);
             }
         }
 
         public override void Step(InputFrame input, float deltaTime)
         {
             m_timeSinceLastGoal += deltaTime;
+            m_isSprinting[m_playerGUID] = input.Sprinting.Value;
             foreach (PlayerState player in m_goalStates.Values)
             {
                 if (player.GUID.Value != m_playerGUID)
                 {
                     LerpTowardGoalState(player, m_timeSinceLastGoal);
+                    m_sprintActions[player.GUID.Value].Invoke(player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING));
                 }
+                m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
         }
 
-        public override void UpdateWorldFromState(ClientState state)
+        public override void UpdateWorldFromState(WorldState state)
         {
             m_timeSinceLastGoal = 0;
             foreach (PlayerState player in state.Players().Values)
@@ -134,11 +137,7 @@ namespace ubv.client.logic
                     Bodies[player.GUID.Value].velocity = player.Velocity.Value;
                 }
 
-                if (player.States.IsTrue(0) != m_isSprinting[player.GUID.Value])
-                {
-                    m_isSprinting[player.GUID.Value] = player.States.IsTrue(0);
-                    m_sprintActions[player.GUID.Value].Invoke(m_isSprinting[player.GUID.Value]);
-                }
+                m_isSprinting[player.GUID.Value] = player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING);
             }
         }
 
@@ -149,12 +148,6 @@ namespace ubv.client.logic
 
         private void LerpTowardGoalState(PlayerState player, float time)
         {
-            if (player.States.IsTrue(0) != m_isSprinting[player.GUID.Value])
-            {
-                m_isSprinting[player.GUID.Value] = player.States.IsTrue(0);
-                m_sprintActions[player.GUID.Value].Invoke(m_isSprinting[player.GUID.Value]);
-            }
-
             Bodies[player.GUID.Value].velocity = Vector2.Lerp(Bodies[player.GUID.Value].velocity, m_goalStates[player.GUID.Value].Velocity.Value, time / m_lerpTime);
             if ((Bodies[player.GUID.Value].velocity - m_goalStates[player.GUID.Value].Velocity.Value).sqrMagnitude < 0.01f)
             {
