@@ -13,9 +13,16 @@ namespace ubv.microservices
 
         private Dictionary<string, string> m_cachedConversations;
 
+        // message id, user id, text
+        public UnityAction<string, string, string> OnNewMessageFrom;
         private void Awake()
         {
             m_cachedConversations = new Dictionary<string, string>();
+        }
+
+        private void Update()
+        {
+            
         }
 
         public struct JSONConversationInfo
