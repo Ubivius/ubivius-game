@@ -36,7 +36,7 @@ namespace ubv.microservices
             if (originalRequest is GetCharactersFromUserRequest)
             {
                 string JSONFixed = JsonHelper.FixJsonArrayFromServer(JSON);
-                JSONCharacterData[] jsonDataArray = JsonHelper.FromJson<JSONCharacterData>(JSONFixed);
+                JSONCharacterData[] jsonDataArray = JsonHelper.ArrayFromJsonString<JSONCharacterData>(JSONFixed);
 
                 CharacterData[] characters = new CharacterData[jsonDataArray.Length];
                 for (int i = 0; i < jsonDataArray.Length; i++)

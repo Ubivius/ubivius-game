@@ -1,9 +1,8 @@
-﻿using UnityEngine;
-using System.Collections;
-using ubv.http.client;
-using System.Collections.Generic;
-using System.Net.Http;
+﻿using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using ubv.http.client;
+using UnityEngine;
 
 namespace ubv.microservices
 {
@@ -11,7 +10,6 @@ namespace ubv.microservices
         where GetReq : GetMicroserviceRequest where PostReq : PostMicroserviceRequest
         where PutReq : PutMicroserviceRequest where DelReq : DeleteMicroserviceRequest
     {
-        public const int REQUEST_CHECK_TIME = 3;
         protected readonly object m_requestLock = new object();
 
         [SerializeField] protected bool m_mock;
@@ -19,84 +17,37 @@ namespace ubv.microservices
 
         [SerializeField] protected HTTPClient m_HTTPClient;
         [SerializeField] protected string m_serviceEndpoint;
-
-        private bool m_readyForNextRequest;
-        private Queue<GetReq> m_getRequests;
-        private Queue<PostReq> m_postRequests;
-        private Queue<PutReq> m_putRequests;
-        private Queue<DelReq> m_deleteRequests;
-
-        private void Awake()
-        {
-            m_readyForNextRequest = true;
-            m_getRequests = new Queue<GetReq>();
-            m_postRequests = new Queue<PostReq>();
-            m_putRequests = new Queue<PutReq>();
-            m_deleteRequests = new Queue<DelReq>();
-        }
-
-        private void Update()
-        {
-            if (Time.frameCount % REQUEST_CHECK_TIME == 0)
-            {
-                lock (m_requestLock)
-                {
-                    if (m_readyForNextRequest)
-                    {
-                        if (m_getRequests.Count > 0)
-                        {
-                            MicroserviceRequest request = m_getRequests.Dequeue();
-                            Request(request);
-                        }
-
-                        if (m_postRequests.Count > 0)
-                        {
-                            MicroserviceRequest request = m_postRequests.Dequeue();
-                            Request(request);
-                        }
-
-                        if (m_putRequests.Count > 0)
-                        {
-                            MicroserviceRequest request = m_putRequests.Dequeue();
-                            Request(request);
-                        }
-
-                        if (m_deleteRequests.Count > 0)
-                        {
-                            MicroserviceRequest request = m_deleteRequests.Dequeue();
-                            Request(request);
-                        }
-                    }
-                }
-            }
-        }
-
+        
         private void GetRequest(GetReq request)
         {
-            m_readyForNextRequest = false;
             m_HTTPClient.SetEndpoint(m_serviceEndpoint);
-            m_HTTPClient.Get(request.URL(), OnGetResponse);
+            m_HTTPClient.Get(request.URL(), (HttpResponseMessage message) => {
+                OnGetResponse(message, request);
+            });
         }
 
         private void PutRequest(PutReq request)
         {
-            m_readyForNextRequest = false;
             m_HTTPClient.SetEndpoint(m_serviceEndpoint);
-            m_HTTPClient.PutJSON(request.URL(), request.JSONString(), OnPutResponse);
+            m_HTTPClient.PutJSON(request.URL(), request.JSONString(), (HttpResponseMessage message) => {
+                OnPutResponse(message, request);
+            } );
         }
 
         private void DeleteRequest(DelReq request)
         {
-            m_readyForNextRequest = false;
             m_HTTPClient.SetEndpoint(m_serviceEndpoint);
-            m_HTTPClient.Delete(request.URL(), OnDeleteResponse);
+            m_HTTPClient.Delete(request.URL(), (HttpResponseMessage message) => {
+                OnDeleteResponse(message, request);
+            });
         }
 
         private void PostRequest(PostReq request)
         {
-            m_readyForNextRequest = false;
             m_HTTPClient.SetEndpoint(m_serviceEndpoint);
-            m_HTTPClient.PostJSON(request.URL(), request.JSONString(), OnPostResponse);
+            m_HTTPClient.PostJSON(request.URL(), request.JSONString(), (HttpResponseMessage message) => {
+                OnPostResponse(message, request);
+            });
         }
 
         public void Request<Req>(Req request) where Req : MicroserviceRequest
@@ -116,28 +67,6 @@ namespace ubv.microservices
 
             lock (m_requestLock)
             {
-                if (request is GetReq)
-                {
-                    m_getRequests.Enqueue(request as GetReq);
-                }
-                else if (request is PostReq)
-                {
-                    m_postRequests.Enqueue(request as PostReq);
-                }
-                else if (request is PutReq)
-                {
-                    m_putRequests.Enqueue(request as PutReq);
-                }
-                else if (request is DelReq)
-                {
-                    m_deleteRequests.Enqueue(request as DelReq);
-                }
-
-                if (!m_readyForNextRequest)
-                {
-                    return;
-                }
-
                 if (request is GetReq)
                 {
                     GetRequest(request as GetReq);
@@ -167,79 +96,63 @@ namespace ubv.microservices
         protected virtual void OnDeleteResponse(string JSON, DelReq originalRequest) { }
         protected virtual void OnPutResponse(string JSON, PutReq originalRequest) { }
 
-        private void OnGetResponse(HttpResponseMessage message)
+        private void OnGetResponse(HttpResponseMessage message, GetReq request)
         {
-            lock (m_requestLock)
+            if (message.IsSuccessStatusCode)
             {
-                if (message.StatusCode == HttpStatusCode.OK)
-                {
-                    string JSON = message.Content.ReadAsStringAsync().Result;
-                    OnGetResponse(JSON, m_getRequests.Dequeue());
-                }
-                else
-                {
+                string JSON = message.Content.ReadAsStringAsync().Result;
+                OnGetResponse(JSON, request);
+            }
+            else
+            {
 #if DEBUG_LOG
-                    Debug.Log("GET Request was not successful");
+                Debug.Log("GET Request was not successful");
 #endif // DEBUG_LOG
-                }
-                m_readyForNextRequest = true;
             }
         }
 
-        private void OnPostResponse(HttpResponseMessage message)
+        private void OnPostResponse(HttpResponseMessage message, PostReq request)
         {
-            lock (m_requestLock)
+            if (message.IsSuccessStatusCode)
             {
-                if (message.StatusCode == HttpStatusCode.OK)
-                {
-                    string JSON = message.Content.ReadAsStringAsync().Result;
-                    OnPostResponse(JSON, m_postRequests.Dequeue());
-                }
-                else
-                {
+                string JSON = message.Content.ReadAsStringAsync().Result;
+                OnPostResponse(JSON, request);
+            }
+            else
+            {
 #if DEBUG_LOG
-                    Debug.Log("POST Request was not successful");
+                Debug.Log("POST Request " + request.URL() + " was not successful: " + message.ReasonPhrase);
 #endif // DEBUG_LOG
-                }
-                m_readyForNextRequest = true;
             }
         }
 
-        private void OnPutResponse(HttpResponseMessage message)
+        private void OnPutResponse(HttpResponseMessage message, PutReq request)
         {
-            lock (m_requestLock)
+            if (message.IsSuccessStatusCode)
             {
-                if (message.StatusCode == HttpStatusCode.OK)
-                {
-                    string JSON = message.Content.ReadAsStringAsync().Result;
-                    OnPutResponse(JSON, m_putRequests.Dequeue());
-                }
-                else
-                {
+                string JSON = message.Content.ReadAsStringAsync().Result;
+                OnPutResponse(JSON, request);
+            }
+            else
+            {
 #if DEBUG_LOG
-                    Debug.Log("PUT Request was not successful");
+                Debug.Log("PUT Request was not successful");
 #endif // DEBUG_LOG
-                }
-                m_readyForNextRequest = true;
             }
         }
 
-        private void OnDeleteResponse(HttpResponseMessage message)
+        private void OnDeleteResponse(HttpResponseMessage message, DelReq request)
         {
-            lock (m_requestLock)
+            if (message.IsSuccessStatusCode)
             {
-                if (message.StatusCode == HttpStatusCode.OK)
-                {
-                    string JSON = message.Content.ReadAsStringAsync().Result;
-                    OnDeleteResponse(JSON, m_deleteRequests.Dequeue());
-                }
-                else
-                {
+                string JSON = message.Content.ReadAsStringAsync().Result;
+                OnDeleteResponse(JSON, request);
+            }
+            else
+            {
 #if DEBUG_LOG
-                    Debug.Log("PUT Request was not successful");
+                Debug.Log("DELETE Request was not successful");
 #endif // DEBUG_LOG
-                }
-                m_readyForNextRequest = true;
             }
         }
     }

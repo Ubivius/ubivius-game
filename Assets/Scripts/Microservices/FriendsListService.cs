@@ -30,7 +30,7 @@ namespace ubv.microservices
             JSONRelationInfo[] relationsResponse = null;
             try
             {
-                relationsResponse = JsonHelper.FromJson<JSONRelationInfo>(JSONFixed);
+                relationsResponse = JsonHelper.ArrayFromJsonString<JSONRelationInfo>(JSONFixed);
             }
             catch(Exception e)
             {
@@ -92,12 +92,17 @@ namespace ubv.microservices
             return invites;
         }
 
+#if UNITY_EDITOR
         [SerializeField]
         private AuthenticationService m_auth;
         [SerializeField]
         private UserService m_users;
 
-#if UNITY_EDITOR
+        public void Start()
+        {
+            //TestWithMurphy();
+        }
+
         public void TestWithMurphy()
         {
             m_auth.Request(new PostAuthenticationRequest("murphy", "password", (string id) => {
@@ -107,15 +112,16 @@ namespace ubv.microservices
                 {
                     m_users.Request(new GetUserInfoRequest(id, (UserInfo userInfo) =>
                     {
+                        Debug.Log("ID:" + userInfo.ID);
                         Debug.Log(userInfo.UserName + "'s friends :");
                     }));
-
-                    List<string> list = GetFriendsFrom(infos);
-                    foreach (string friendID in list)
+                    
+                    foreach (RelationInfo info in infos)
                     {
-                        m_users.Request(new GetUserInfoRequest(friendID, (UserInfo userInfo) => 
+                        m_users.Request(new GetUserInfoRequest(info.FriendUserID, (UserInfo userInfo) => 
                         {
-                            Debug.Log(userInfo.UserName);
+                            Debug.Log("Conversation :" + info.ConversationID);
+                            Debug.Log(" with user " + userInfo.UserName);
                         }));
                     }
                 }
