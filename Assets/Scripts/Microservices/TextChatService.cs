@@ -1,11 +1,23 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using UnityEngine.Events;
 
 namespace ubv.microservices
 {
-    public class TextChatService : Microservice<GetTextChatRequest, 
+    public class TextChatService : Microservice<GetTextChatRequest,
         PostTextChatRequest, PutMicroserviceRequest, DeleteMicroserviceRequest>
     {
+        [SerializeField]
+        private FriendsListService m_friends;
+
+        private Dictionary<string, string> m_cachedConversations;
+
+        private void Awake()
+        {
+            m_cachedConversations = new Dictionary<string, string>();
+        }
+
         public struct JSONConversationInfo
         {
             public string[] user_id;
@@ -22,9 +34,9 @@ namespace ubv.microservices
                 MessageInfo[] infos = new MessageInfo[messages.Length];
                 for (int i = 0; i < messages.Length; i++)
                 {
-                    infos[i] = new MessageInfo(messages[i].id, 
-                        messages[i].user_id, 
-                        messages[i].conversation_id, 
+                    infos[i] = new MessageInfo(messages[i].id,
+                        messages[i].user_id,
+                        messages[i].conversation_id,
                         messages[i].text);
                 }
 
@@ -33,7 +45,7 @@ namespace ubv.microservices
             else if (originalRequest is GetConversationInfoRequest convReq)
             {
                 JSONConversationInfo conversationJSON = JsonUtility.FromJson<JSONConversationInfo>(JSON);
-                
+
                 convReq.Callback.Invoke(new ConversationInfo(conversationJSON.user_id, conversationJSON.game_id));
             }
         }
@@ -41,6 +53,27 @@ namespace ubv.microservices
         protected override void OnPostResponse(string JSON, PostTextChatRequest originalRequest)
         {
             originalRequest.Callback.Invoke();
+        }
+
+        public void SendMessageTo(string currentUserID, string otherUserID, string text, UnityAction callback = default)
+        {
+            // get le conversation id associé à la relation entre current user pis other user
+            // le cache (dans TextChat ?)
+            if (m_cachedConversations.ContainsKey(otherUserID))
+            {
+                this.Request(new PostTextChatRequest(currentUserID, m_cachedConversations[otherUserID], text, callback));
+            }
+            else
+            {
+                m_friends.GetConversationWith(currentUserID, otherUserID, (string convID) => 
+                {
+                    if (convID != null)
+                    {
+                        m_cachedConversations.Add(otherUserID, convID);
+                        this.Request(new PostTextChatRequest(currentUserID, m_cachedConversations[otherUserID], text, callback));
+                    }
+                });
+            }
         }
 
 #if UNITY_EDITOR

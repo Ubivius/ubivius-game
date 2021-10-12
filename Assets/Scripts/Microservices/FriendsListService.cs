@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using UnityEngine.Events;
 
 namespace ubv.microservices
 {
@@ -64,6 +65,21 @@ namespace ubv.microservices
             }
 
             originalRequest.Callback.Invoke(relations);
+        }
+
+        public void GetConversationWith(string currentUserID, string otherUserID, UnityAction<string> OnGetConversation)
+        {
+            this.Request(new GetRelationsFromUserRequest(currentUserID, (RelationInfo[] infos) => {
+                foreach(RelationInfo info in infos)
+                {
+                    if(info.FriendUserID == otherUserID)
+                    {
+                        OnGetConversation(info.ConversationID);
+                        return;
+                    }
+                    OnGetConversation(null);
+                }
+            }));
         }
 
         public List<string> GetAllConfirmedFriends(RelationInfo[] relations)
