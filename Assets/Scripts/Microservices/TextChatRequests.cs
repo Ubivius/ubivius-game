@@ -1,0 +1,105 @@
+﻿using UnityEngine;
+using UnityEditor;
+
+namespace ubv.microservices
+{
+    public class ConversationInfo
+    {
+        public readonly string[] UserIDs;
+        public readonly string GameID;
+
+        public ConversationInfo(string[] userIDs, string gameID)
+        {
+            UserIDs = userIDs;
+            GameID = gameID;
+        }
+    }
+
+    public class MessageInfo
+    {
+        public readonly string UserID;
+        public readonly string ConversationID;
+        public readonly string Text;
+
+        public MessageInfo(string userID, string conversationID, string text)
+        {
+            UserID = userID;
+            ConversationID = conversationID;
+            Text = text;
+        }
+    }
+
+    public struct JSONMessage
+    {
+        public string user_id;
+        public string conversation_id;
+        public string text;
+    }
+
+    public delegate void OnGetConversationRequest(ConversationInfo info);
+    public delegate void OnGetMessagesRequest(MessageInfo[] infos);
+
+    public abstract class GetTextChatRequest : GetMicroserviceRequest { }
+
+    public class GetMessagesRequest : GetTextChatRequest
+    {
+        private readonly string m_conversationID;
+        public readonly OnGetMessagesRequest Callback;
+
+        public GetMessagesRequest(string conversationID, OnGetMessagesRequest callback)
+        {
+            m_conversationID = conversationID;
+            Callback = callback;
+        }
+
+        public override string URL()
+        {
+            return "messages/conversation/" + m_conversationID;
+        }
+    }
+
+    public class GetConversationInfoRequest : GetTextChatRequest
+    {
+        private readonly string m_conversationID;
+        public readonly OnGetConversationRequest Callback;
+
+        public GetConversationInfoRequest(string conversationID, OnGetConversationRequest callback)
+        {
+            m_conversationID = conversationID;
+            Callback = callback;
+        }
+
+        public override string URL()
+        {
+            return "conversations/" + m_conversationID;
+        }
+    }
+
+    public class PostTextChatRequest : PostMicroserviceRequest
+    {
+        private readonly string m_userID;
+        private readonly string m_conversationID;
+        private readonly string m_text;
+
+        public PostTextChatRequest(string userID, string conversationID, string text)
+        {
+            m_userID = userID;
+            m_conversationID = conversationID;
+            m_text = text;
+        }
+
+        public override string JSONString()
+        {
+            return JsonUtility.ToJson(new JSONMessage {
+                user_id = m_userID,
+                conversation_id = m_conversationID,
+                text = m_text
+            }).ToString();
+        }
+
+        public override string URL()
+        {
+            return "messages";
+        }
+    }
+}

@@ -37,6 +37,7 @@ Transform:
   - {fileID: 1424532028110512240}
   - {fileID: 9190401287086597186}
   - {fileID: 8156371440444099849}
+  - {fileID: 4120744887446643272}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -283,6 +284,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f571978d471691c4eb1222fb51982cdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &5559869940634413922
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4120744887446643272}
+  - component: {fileID: 7282349304918615770}
+  m_Layer: 0
+  m_Name: TextChat
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4120744887446643272
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5559869940634413922}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1584834600992003656}
+  m_RootOrder: 9
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7282349304918615770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5559869940634413922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b319d7c021aa2b14396ffc58ba4ffd07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_mock: 0
+  m_mockData: {fileID: 0}
+  m_HTTPClient: {fileID: 1775558437836293882}
+  m_serviceEndpoint: http://textchat.dev.ubivius.tk/
 --- !u!1 &5927109276514483343
 GameObject:
   m_ObjectHideFlags: 0
@@ -339,6 +387,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8156371440444099849}
+  - component: {fileID: 8253229592228528839}
   m_Layer: 0
   m_Name: FriendsList
   m_TagString: Untagged
@@ -360,6 +409,24 @@ Transform:
   m_Father: {fileID: 1584834600992003656}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8253229592228528839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5991273713136953469}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b7f85f241571ac49a236622141b30e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_mock: 0
+  m_mockData: {fileID: 0}
+  m_HTTPClient: {fileID: 0}
+  m_serviceEndpoint: 
+  m_auth: {fileID: 0}
+  m_users: {fileID: 0}
 --- !u!1 &8747356472878904221
 GameObject:
   m_ObjectHideFlags: 0
