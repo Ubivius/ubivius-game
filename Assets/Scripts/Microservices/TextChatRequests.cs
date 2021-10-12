@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using UnityEngine.Events;
 
 namespace ubv.microservices
 {
@@ -17,20 +18,24 @@ namespace ubv.microservices
 
     public class MessageInfo
     {
+        public readonly string MessageID;
         public readonly string UserID;
         public readonly string ConversationID;
         public readonly string Text;
 
-        public MessageInfo(string userID, string conversationID, string text)
+        public MessageInfo(string id, string userID, string conversationID, string text)
         {
+            MessageID = id;
             UserID = userID;
             ConversationID = conversationID;
             Text = text;
         }
     }
 
+    [System.Serializable]
     public struct JSONMessage
     {
+        public string id;
         public string user_id;
         public string conversation_id;
         public string text;
@@ -81,11 +86,14 @@ namespace ubv.microservices
         private readonly string m_conversationID;
         private readonly string m_text;
 
-        public PostTextChatRequest(string userID, string conversationID, string text)
+        public readonly UnityAction Callback;
+
+        public PostTextChatRequest(string userID, string conversationID, string text, UnityAction callback)
         {
             m_userID = userID;
             m_conversationID = conversationID;
             m_text = text;
+            Callback = callback;
         }
 
         public override string JSONString()

@@ -1866,6 +1866,27 @@ PrefabInstance:
       propertyPath: m_mockCharacterPlayerID
       value: murphy-django-id
       objectReference: {fileID: 0}
+    - target: {fileID: 7282349304918615770, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_auth
+      value: 
+      objectReference: {fileID: 1130825511}
+    - target: {fileID: 7282349304918615770, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_users
+      value: 
+      objectReference: {fileID: 853064862}
+    - target: {fileID: 7282349304918615770, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_mockData
+      value: 
+      objectReference: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c,
+        type: 2}
+    - target: {fileID: 7282349304918615770, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serviceEndpoint
+      value: http://textchat.dev.ubivius.tk
+      objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_mock
