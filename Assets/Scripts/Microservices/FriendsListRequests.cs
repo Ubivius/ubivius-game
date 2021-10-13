@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System;
+using UnityEngine.Events;
 
 namespace ubv.microservices
 {
@@ -26,6 +28,29 @@ namespace ubv.microservices
             RelationType = relationship;
             ConversationID = conversationID;
         }
+    }
+    
+    [Serializable]
+    public struct JSONFriendInfo
+    {
+        public string user_id;
+        public string relationship_type;
+    }
+
+    [Serializable]
+    public struct JSONRelationInfo
+    {
+        public string id;
+        public JSONFriendInfo user_1;
+        public JSONFriendInfo user_2;
+        public string conversation_id;
+    }
+
+    [Serializable]
+    public struct JSONPostRelation
+    {
+        public JSONFriendInfo user_1;
+        public JSONFriendInfo user_2;
     }
 
     public delegate void OnGetFriendsRequest(RelationInfo[] friendsInfo);
@@ -60,6 +85,43 @@ namespace ubv.microservices
         public override string URL()
         {
             return "invites/" + UserID;
+        }
+    }
+
+    public class PostInviteRequest : PostMicroserviceRequest
+    {
+        private readonly string m_user_1;
+        private readonly string m_user_2;
+
+        public readonly UnityAction Callback;
+
+        public PostInviteRequest(string user_1, string user_2, UnityAction callback = default)
+        {
+            Callback = callback;
+            m_user_1 = user_1;
+            m_user_2 = user_2;
+        }
+
+        public override string JSONString()
+        {
+            return JsonUtility.ToJson(new JSONPostRelation
+            {
+                user_1 = new JSONFriendInfo
+                {
+                    user_id = m_user_1,
+                    relationship_type = "PendingOutgoing"
+                },
+                user_2 = new JSONFriendInfo
+                {
+                    user_id = m_user_2,
+                    relationship_type = "PendingIncoming"
+                }
+            }).ToString();
+        }
+
+        public override string URL()
+        {
+            return "relationships";
         }
     }
 }

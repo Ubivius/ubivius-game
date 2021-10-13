@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Events;
+using System.Collections.Generic;
 
 namespace ubv.microservices
 {
@@ -16,21 +17,19 @@ namespace ubv.microservices
         private TextChatService m_textChat;
         [SerializeField]
         private FriendsListService m_friendsList;
-
-        public UserService UserService {
-            get
-            {
-                return m_users;
-            }
-        }
-
+        
         public UnityAction<string> OnAuthentication;
         public UnityAction<string, MessageInfo> OnNewMessageFrom;
+        public UnityAction<string> OnNewInviteFrom;
+
+        private Dictionary<string, UserInfo> m_cachedUsers;
 
         private void Awake()
         {
+            m_cachedUsers = new Dictionary<string, UserInfo>();
             CurrentUser = null;
             m_textChat.OnNewMessageFrom += OnNewMessageFrom;
+            m_friendsList.OnNewFriendInvite += OnNewInviteFrom;
         }
 
         public void Authenticate(string user, string password)
@@ -40,6 +39,9 @@ namespace ubv.microservices
                 m_users.Request(new GetUserInfoRequest(userID, (UserInfo info) =>
                 {
                     CurrentUser = info;
+                    m_friendsList.DefaultUser = CurrentUser.ID;
+                    m_textChat.IsFetcherActive = true;
+                    m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
                 }));
             }));
@@ -50,5 +52,16 @@ namespace ubv.microservices
             m_textChat.SendMessageTo(CurrentUser.ID, otherUserID, message);
         }
         
+        public void GetUserInfo(string userID, OnGetInfo callback)
+        {
+            if (m_cachedUsers.ContainsKey(userID))
+            {
+                callback(m_cachedUsers[userID]);
+            }
+            else
+            {
+                m_users.Request(new GetUserInfoRequest(userID, callback));
+            }
+        }
     }
 }

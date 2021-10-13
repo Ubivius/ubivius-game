@@ -43,6 +43,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a8c4cbe801a6d0409e0b584b0234c56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_timerOffset: 0
   m_conversationFetchInterval: 3
 --- !u!1 &1584834600992003659
 GameObject:
@@ -281,6 +282,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a8c4cbe801a6d0409e0b584b0234c56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_timerOffset: 0
   m_conversationFetchInterval: 3
 --- !u!1 &4998171549256964432
 GameObject:
@@ -420,7 +422,7 @@ MonoBehaviour:
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
   m_serviceEndpoint: http://textchat.dev.ubivius.tk
-  m_fetcher: {fileID: 4058432572729070908}
+  m_messagesFetcher: {fileID: 4058432572729070908}
   m_friends: {fileID: 8253229592228528839}
   m_auth: {fileID: 5996061036848143753}
   m_users: {fileID: 7756809264957448054}
@@ -519,7 +521,8 @@ MonoBehaviour:
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
   m_serviceEndpoint: http://friendslist.dev.ubivius.tk/
-  m_fetcher: {fileID: 6443474415815815136}
+  m_invitesFetcher: {fileID: 6443474415815815136}
+  DefaultUser: 
   m_auth: {fileID: 5996061036848143753}
   m_users: {fileID: 7756809264957448054}
 --- !u!1 &6648407336966310920

@@ -18,10 +18,12 @@ namespace ubv.microservices
         // conversationID, messages
         private Dictionary<string, Dictionary<string, MessageInfo>> m_cachedConversations;
 
+        public bool IsFetcherActive;
         // userID, msgInfo
         public UnityAction<string, MessageInfo> OnNewMessageFrom;
         private void Awake()
         {
+            IsFetcherActive = false;
             m_cachedConversations = new Dictionary<string, Dictionary<string, MessageInfo>>();
             m_cachedUsers = new Dictionary<string, string>();
             m_messagesFetcher.FetchLogic += FetchNewMessages;
@@ -29,6 +31,9 @@ namespace ubv.microservices
 
         private void FetchNewMessages()
         {
+            if (!IsFetcherActive)
+                return;
+
             foreach (string conversationID in m_cachedConversations.Keys)
             {
                 this.Request(new GetMessagesRequest(conversationID, (MessageInfo[] msgs) => 
@@ -50,21 +55,14 @@ namespace ubv.microservices
                 return;
             }
             
-            List<MessageInfo> newMessages = new List<MessageInfo>();
             foreach(MessageInfo msg in messages)
             {
                 if (!m_cachedConversations[conversationID].ContainsKey(msg.MessageID))
                 {
-                    newMessages.Add(msg);
+                    m_cachedConversations[conversationID].Add(msg.MessageID, msg);
                     OnNewMessageFrom.Invoke(msg.UserID, msg);
                 }
             }
-
-            foreach(MessageInfo msg in newMessages)
-            {
-                m_cachedConversations[conversationID].Add(msg.MessageID, msg);
-            }
-
             m_messagesFetcher.ReadyForNewFetch();
         }
 
@@ -102,7 +100,7 @@ namespace ubv.microservices
 
         protected override void OnPostResponse(string JSON, PostTextChatRequest originalRequest)
         {
-            originalRequest.Callback.Invoke();
+            originalRequest.Callback?.Invoke();
         }
 
         public void SendMessageTo(string currentUserID, string otherUserID, string text, UnityAction callback = default)

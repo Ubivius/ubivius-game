@@ -16,7 +16,7 @@ namespace ubv.ui.client
         [SerializeField] private ubv.client.logic.ClientSyncLobby m_lobby;
         [SerializeField] private TextMeshProUGUI m_defaultPlayerNameItem;
         [SerializeField] private LoadingScreen m_loadingScreen;
-        private UserService m_userService;
+        private SocialServicesController m_socialServices;
 
         private Dictionary<int, TextMeshProUGUI> m_playerTextsObjects;
         
@@ -42,7 +42,7 @@ namespace ubv.ui.client
 
         private void Start()
         {
-            m_userService = ubv.client.logic.ClientNetworkingManager.Instance.SocialServices.UserService;
+            m_socialServices = ubv.client.logic.ClientNetworkingManager.Instance.SocialServices;
             m_loadingScreen.gameObject.SetActive(false);
             m_lobby.ClientListUpdate.AddListener(UpdatePlayers);
         }
@@ -102,7 +102,7 @@ namespace ubv.ui.client
                     playerIntIDs.Add(playerIntID);
                     if (!m_users.ContainsKey(playerIntID))
                     {
-                        m_userService.Request(new GetUserInfoRequest(character.PlayerID, OnGetUserInfo));
+                        m_socialServices.GetUserInfo(character.PlayerID, OnGetUserInfo);
                     }
                 }
 
