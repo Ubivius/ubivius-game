@@ -1,0 +1,150 @@
+name: CI for Merge on dev
+
+on:
+  push:
+    branches: [ dev ]
+
+env:
+  BUILD_TYPE: test  # Can be test or prod
+  DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
+  DOCKERHUB_PWD: ${{ secrets.DOCKERHUB_PWD }}
+  REPO_VERSION: 0.0.0
+
+jobs:
+  server-build:
+    name: Server build
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-ubivius-game-StandaloneLinux64
+          restore-keys: |
+            Library-ubivius-game-
+            Library-
+      
+      # Build
+      - name: Server build 
+        uses: game-ci/unity-builder@v2
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          buildMethod: Build.ServerBuild
+          targetPlatform: StandaloneLinux64
+          unityVersion: 2019.4.25f1
+      
+      # Test edit and play mode
+      - name: Run tests
+        uses: game-ci/unity-test-runner@v2
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Server tests results
+      
+      # Return License if steps failed to ensure it was returned
+      - name: Return license
+        uses: game-ci/unity-return-license@v1
+        if: failure()
+
+      # Prepare Docker variables
+      - name: Pre-load env-var
+        if: success()
+        id: fetch-vars
+        run: |
+            IN=$(echo ${GITHUB_REPOSITORY})
+            NAME=${IN#"Ubivius/"}
+            VERSION=${{ env.REPO_VERSION }}
+            echo "::set-output name=REPO_NAME::$(echo $NAME)"
+            echo "::set-output name=BRANCH::$(echo $GITHUB_REF)"
+            echo "::set-output name=REPO_VERSION::$(echo $VERSION)"
+        shell: bash
+
+      # Docker publish server image
+      - name: Build and Push Artefact to Registry
+        if: success()
+        uses: elgohr/Publish-Docker-Github-Action@master
+        env:
+          BUILD_TYPE: ${{ env.BUILD_TYPE }}
+        with:
+          name: ubiviushub/${{ steps.fetch-vars.outputs.REPO_NAME }}
+          username: ${{ env.DOCKERHUB_USER }}
+          password: ${{ env.DOCKERHUB_PWD }}
+          buildargs: BUILD_TYPE
+          dockerfile: Dockerfile
+          tags: "${{ steps.fetch-docker-vars.outputs.REPO_VERSION }}"
+
+      # Also publish build output as zip archive
+      - uses: actions/upload-artifact@v2
+        if: success()
+        with:
+          name: Server
+          path: build
+
+  client-build:
+    name: Client build
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-ubivius-game-StandaloneWindows64
+          restore-keys: |
+            Library-ubivius-game-
+            Library-
+
+      # Build
+      - name: Client build
+        uses: game-ci/unity-builder@v2
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          buildMethod: Build.ClientBuild
+          targetPlatform: StandaloneWindows64
+          unityVersion: 2019.4.25f1
+
+      # Test edit and play mode
+      - name: Run tests
+        uses: game-ci/unity-test-runner@v2
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Client tests results
+
+      # Return License if steps failed to ensure it was returned
+      - name: Return license
+        uses: game-ci/unity-return-license@v1
+        if: failure()
+
+      # Publish build output as zip archive
+      - uses: actions/upload-artifact@v2
+        if: success()
+        with:
+          name: Client
+          path: build
