@@ -9,7 +9,7 @@ namespace ubv.ui.client
 
         private EventSystem system;
 
-        private void Start()
+        protected void Start()
         {
             system = EventSystem.current;
         }

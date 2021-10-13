@@ -21,11 +21,15 @@ namespace ubv.ui.client
         // offer choice to choose among living characters/make a new one ?
         private void Start()
         {
+            base.Start();
+
             m_characters = m_initState.GetCharacters();
         }
 
         private void Update()
         {
+            base.Update();
+
             if (Time.frameCount % 69 == 0)
             {
                 if(m_characters == null)
@@ -37,7 +41,7 @@ namespace ubv.ui.client
             }
         }
 
-        public void nextCharacter()
+        public void NextCharacter()
         {
             if(selectedCharacterIndex < m_characters.Length-1)
             {
@@ -50,7 +54,7 @@ namespace ubv.ui.client
             }
             setActiveCharacter();
         }
-        public void previousCharacter()
+        public void PreviousCharacter()
         {
             if (selectedCharacterIndex > 0)
             {
