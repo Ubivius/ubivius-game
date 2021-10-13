@@ -42,7 +42,7 @@ namespace ubv.ui.client
 
         private void Start()
         {
-            m_userService = ubv.client.logic.ClientNetworkingManager.Instance.User;
+            m_userService = ubv.client.logic.ClientNetworkingManager.Instance.SocialServices.UserService;
             m_loadingScreen.gameObject.SetActive(false);
             m_lobby.ClientListUpdate.AddListener(UpdatePlayers);
         }

@@ -25,6 +25,26 @@ namespace ubv.microservices
             public string conversation_id;
         }
 
+        [SerializeField]
+        private MicroserviceAutoFetcher m_invitesFetcher;
+
+        [HideInInspector]
+        public string DefaultUser;
+
+        private void Awake()
+        {
+            m_invitesFetcher.FetchLogic += Fetch;
+        }
+
+        private void Fetch()
+        {
+            this.Request(new GetInvitesForUserRequest(DefaultUser, (RelationInfo[] infos) => 
+            {
+                // etc.
+            }
+            ));
+        }
+
         protected override void OnGetResponse(string JSON, GetFriendRequest originalRequest)
         {
             string JSONFixed = JsonHelper.FixJsonArrayFromServer(JSON);
