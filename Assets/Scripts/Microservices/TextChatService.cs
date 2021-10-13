@@ -9,20 +9,63 @@ namespace ubv.microservices
         PostTextChatRequest, PutMicroserviceRequest, DeleteMicroserviceRequest>
     {
         [SerializeField]
+        private MicroserviceAutoFetcher m_messagesFetcher;
+
+        [SerializeField]
         private FriendsListService m_friends;
 
-        private Dictionary<string, string> m_cachedConversations;
+        private Dictionary<string, string> m_cachedUsers;
+        // conversationID, messages
+        private Dictionary<string, Dictionary<string, MessageInfo>> m_cachedConversations;
 
-        // message id, user id, text
-        public UnityAction<string, string, string> OnNewMessageFrom;
+        // userID, msgInfo
+        public UnityAction<string, MessageInfo> OnNewMessageFrom;
         private void Awake()
         {
-            m_cachedConversations = new Dictionary<string, string>();
+            m_cachedConversations = new Dictionary<string, Dictionary<string, MessageInfo>>();
+            m_cachedUsers = new Dictionary<string, string>();
+            m_messagesFetcher.FetchLogic += FetchNewMessages;
         }
 
-        private void Update()
+        private void FetchNewMessages()
         {
+            foreach (string conversationID in m_cachedConversations.Keys)
+            {
+                this.Request(new GetMessagesRequest(conversationID, (MessageInfo[] msgs) => 
+                {
+                    RefreshConversation(conversationID, new List<MessageInfo>(msgs));
+                }));
+            }
+        }
+
+        private void RefreshConversation(string conversationID, List<MessageInfo> messages)
+        {
+            if (!m_cachedConversations.ContainsKey(conversationID))
+            {
+                m_cachedConversations.Add(conversationID, new Dictionary<string, MessageInfo>());
+            }
+
+            if (messages.Count == m_cachedConversations[conversationID].Count)
+            {
+                return;
+            }
             
+            List<MessageInfo> newMessages = new List<MessageInfo>();
+            foreach(MessageInfo msg in messages)
+            {
+                if (!m_cachedConversations[conversationID].ContainsKey(msg.MessageID))
+                {
+                    newMessages.Add(msg);
+                    OnNewMessageFrom.Invoke(msg.UserID, msg);
+                }
+            }
+
+            foreach(MessageInfo msg in newMessages)
+            {
+                m_cachedConversations[conversationID].Add(msg.MessageID, msg);
+            }
+
+            m_messagesFetcher.ReadyForNewFetch();
         }
 
         public struct JSONConversationInfo
@@ -66,9 +109,9 @@ namespace ubv.microservices
         {
             // get le conversation id associé à la relation entre current user pis other user
             // le cache (dans TextChat ?)
-            if (m_cachedConversations.ContainsKey(otherUserID))
+            if (m_cachedUsers.ContainsKey(otherUserID))
             {
-                this.Request(new PostTextChatRequest(currentUserID, m_cachedConversations[otherUserID], text, callback));
+                this.Request(new PostTextChatRequest(currentUserID, m_cachedUsers[otherUserID], text, callback));
             }
             else
             {
@@ -76,8 +119,8 @@ namespace ubv.microservices
                 {
                     if (convID != null)
                     {
-                        m_cachedConversations.Add(otherUserID, convID);
-                        this.Request(new PostTextChatRequest(currentUserID, m_cachedConversations[otherUserID], text, callback));
+                        m_cachedUsers.Add(otherUserID, convID);
+                        this.Request(new PostTextChatRequest(currentUserID, m_cachedUsers[otherUserID], text, callback));
                     }
                 });
             }

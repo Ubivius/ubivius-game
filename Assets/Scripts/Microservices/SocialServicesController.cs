@@ -4,7 +4,7 @@ using UnityEngine.Events;
 
 namespace ubv.microservices
 {
-    public class MicroservicesController : MonoBehaviour
+    public class SocialServicesController : MonoBehaviour
     {
         public UserInfo CurrentUser { get; private set; }
 
@@ -14,8 +14,24 @@ namespace ubv.microservices
         private UserService m_users;
         [SerializeField]
         private TextChatService m_textChat;
+        [SerializeField]
+        private FriendsListService m_friendsList;
 
-        public UnityAction OnAuthentication;
+        public UserService UserService {
+            get
+            {
+                return m_users;
+            }
+        }
+
+        public UnityAction<string> OnAuthentication;
+        public UnityAction<string, MessageInfo> OnNewMessageFrom;
+
+        private void Awake()
+        {
+            CurrentUser = null;
+            m_textChat.OnNewMessageFrom += OnNewMessageFrom;
+        }
 
         public void Authenticate(string user, string password)
         {
@@ -24,7 +40,7 @@ namespace ubv.microservices
                 m_users.Request(new GetUserInfoRequest(userID, (UserInfo info) =>
                 {
                     CurrentUser = info;
-                    OnAuthentication.Invoke();
+                    OnAuthentication.Invoke(userID);
                 }));
             }));
         }
