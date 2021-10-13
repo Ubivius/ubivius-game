@@ -97,7 +97,7 @@ namespace ubv.client.logic
                     enemySatesDatas.Add(new EnemyStateData(id));
                 }
                 m_clientStateBuffer[i] = new WorldState(playerStates);
-                m_clientStateBuffer[i] = new WorldState(enemySatesDatas);
+                //m_clientStateBuffer[i] = new WorldState(enemySatesDatas);
 
                 m_inputBuffer[i] = new InputFrame();
                 m_inputBuffer[i].SetToNeutral();
