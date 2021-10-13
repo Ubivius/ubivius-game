@@ -40,7 +40,7 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
 
 
-            m_authenticationService.SendLoginRequest(user, pass, OnLogin);
+            m_authenticationService.Request(new microservices.PostAuthenticationRequest(user, pass, OnLogin));
         }
 
         private void GoToMenu()
@@ -57,7 +57,7 @@ namespace ubv.client.logic
             if (playerIDString != null)
             {
                 PlayerID = playerIDString.GetHashCode();
-                m_userService.SendUserInfoRequest(playerIDString, OnGetUserInfo);
+                m_userService.Request(new microservices.GetUserInfoRequest(playerIDString, OnGetUserInfo));
             }
             else
             {
@@ -67,7 +67,7 @@ namespace ubv.client.logic
             }
         }
 
-        private void OnGetUserInfo(microservices.UserService.UserInfo info)
+        private void OnGetUserInfo(microservices.UserInfo info)
         {
             UserInfo = info;
             m_readyToGoToMenu = true;

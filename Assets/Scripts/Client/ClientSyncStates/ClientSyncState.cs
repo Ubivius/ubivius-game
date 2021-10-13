@@ -14,7 +14,7 @@ namespace ubv.client.logic
     {
         static public int? PlayerID { get; protected set; }
 
-        static public UserService.UserInfo UserInfo { get; protected set; }
+        static public UserInfo UserInfo { get; protected set; }
 
         static protected ClientSyncState m_currentState = null;
 

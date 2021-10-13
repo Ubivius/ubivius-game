@@ -1826,6 +1826,11 @@ PrefabInstance:
       propertyPath: m_authEndpoint
       value: http://auth.anon.dev.ubivius.tk
       objectReference: {fileID: 0}
+    - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serviceEndpoint
+      value: http://auth.anon.dev.ubivius.tk
+      objectReference: {fileID: 0}
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_mock
@@ -1840,6 +1845,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_mockCharacterID
       value: murphy-django-id-char
+      objectReference: {fileID: 0}
+    - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serviceEndpoint
+      value: http://character.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -1906,6 +1916,11 @@ PrefabInstance:
       propertyPath: m_forceUserName
       value: murphy-django
       objectReference: {fileID: 0}
+    - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_serviceEndpoint
+      value: http://user.dev.ubivius.tk
+      objectReference: {fileID: 0}
     - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_Name
@@ -1945,6 +1960,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1130825507}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1130825511 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 1130825507}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51495b9d4b5acef459ae08d6054305ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1177968216
 GameObject:
   m_ObjectHideFlags: 0
@@ -2283,6 +2310,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1508713832}
   m_CullTransparentMesh: 0
+--- !u!114 &1557068054 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1775558437836293882, guid: c732e1b58c017874bbf5da45531902cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 1130825507}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f571978d471691c4eb1222fb51982cdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1582728269
 GameObject:
   m_ObjectHideFlags: 0
@@ -2964,6 +3003,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1754764884}
   m_CullTransparentMesh: 0
+--- !u!1 &1780317376 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5991273713136953469, guid: c732e1b58c017874bbf5da45531902cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 1130825507}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1780317377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1780317376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b7f85f241571ac49a236622141b30e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_mock: 0
+  m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
+  m_HTTPClient: {fileID: 1557068054}
+  m_serviceEndpoint: http://friendslist.dev.ubivius.tk/
+  m_auth: {fileID: 1130825511}
+  m_users: {fileID: 853064862}
 --- !u!1 &1942111338
 GameObject:
   m_ObjectHideFlags: 0

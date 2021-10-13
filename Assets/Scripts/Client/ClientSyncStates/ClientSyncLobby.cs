@@ -10,6 +10,7 @@ using UnityEngine.Events;
 using static ubv.microservices.CharacterDataService;
 using static ubv.common.data.CharacterListMessage;
 using ubv.utils;
+using ubv.microservices;
 
 namespace ubv.client.logic
 {
@@ -80,15 +81,15 @@ namespace ubv.client.logic
                     Debug.Log("Fetching character " + id.Value + " from microservice");
                     // fetch character data from microservice
                     string strID = id.Value;
-                    m_characterService.GetCharacter(strID, (CharacterData character) =>
+                    m_characterService.Request(new GetSingleCharacterRequest(strID, (CharacterData[] characters) =>
                     {
                         lock (m_lock)
                         {
-                            Debug.Log("Got character from " + character.PlayerID + " : " + character.Name);
-                            m_clientCharacters[character.PlayerID.GetHashCode()] = character;
+                            Debug.Log("Got character from " + characters[0].PlayerID + " : " + characters[0].Name);
+                            m_clientCharacters[characters[0].PlayerID.GetHashCode()] = characters[0];
                             ClientListUpdate.Invoke(new List<CharacterData>(m_clientCharacters.Values));
                         }
-                    });
+                    }));
                 }
                 return;
             }

@@ -21,12 +21,12 @@ namespace ubv.ui.client
         private Dictionary<int, TextMeshProUGUI> m_playerTextsObjects;
         
         private List<CharacterData> m_characters;
-        private Dictionary<int, UserService.UserInfo> m_users;
+        private Dictionary<int, UserInfo> m_users;
 
         private void Awake()
         {
             m_characters = new List<CharacterData>();
-            m_users = new Dictionary<int, microservices.UserService.UserInfo>();
+            m_users = new Dictionary<int, UserInfo>();
             m_playerTextsObjects = new Dictionary<int, TextMeshProUGUI>();
             m_lobby.OnStartLoadWorld += () =>
             {
@@ -102,7 +102,7 @@ namespace ubv.ui.client
                     playerIntIDs.Add(playerIntID);
                     if (!m_users.ContainsKey(playerIntID))
                     {
-                        m_userService.SendUserInfoRequest(character.PlayerID, OnGetUserInfo);
+                        m_userService.Request(new GetUserInfoRequest(character.PlayerID, OnGetUserInfo));
                     }
                 }
 
@@ -123,7 +123,7 @@ namespace ubv.ui.client
             }
         }
 
-        private void OnGetUserInfo(UserService.UserInfo info)
+        private void OnGetUserInfo(UserInfo info)
         {
             lock (m_userLock)
             {
