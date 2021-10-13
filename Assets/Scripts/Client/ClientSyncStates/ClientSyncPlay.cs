@@ -97,7 +97,7 @@ namespace ubv.client.logic
                     enemySatesDatas.Add(new EnemyStateData(id));
                 }
                 m_clientStateBuffer[i] = new WorldState(playerStates);
-                //m_clientStateBuffer[i] = new WorldState(enemySatesDatas);
+                m_clientStateBuffer[i+1] = new WorldState(enemySatesDatas);
 
                 m_inputBuffer[i] = new InputFrame();
                 m_inputBuffer[i].SetToNeutral();
@@ -106,6 +106,7 @@ namespace ubv.client.logic
             foreach (ClientStateUpdater updater in m_updaters)
             {
                 updater.Init(m_clientStateBuffer[0], PlayerID.Value);
+                updater.Init(m_clientStateBuffer[1]);
             }
 
             m_UDPClient.Subscribe(this);
