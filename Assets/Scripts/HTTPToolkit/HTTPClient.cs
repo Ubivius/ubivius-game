@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
@@ -15,12 +16,17 @@ namespace ubv.http.client
     /// </summary>
     public class HTTPClient : MonoBehaviour
     {
-        static private readonly HttpClient m_client = new HttpClient();
+        static private readonly HttpClient m_client = new HttpClient(
+            new HttpClientHandler()
+            {
+                SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls
+            }
+        );
 
         private string m_endPoint = "http://localhost:9090";
         
         public delegate void HttpResponseMessageDelegate(HttpResponseMessage response);
-
+        
         public void SetAuthenticationToken(string token)
         {
             m_client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
