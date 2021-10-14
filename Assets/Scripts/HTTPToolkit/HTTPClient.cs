@@ -16,17 +16,19 @@ namespace ubv.http.client
     /// </summary>
     public class HTTPClient : MonoBehaviour
     {
-        static private readonly HttpClient m_client = new HttpClient(
-            new HttpClientHandler()
-            {
-                SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls
-            }
-        );
+        static private HttpClient m_client = null;
 
         private string m_endPoint = "http://localhost:9090";
         
         public delegate void HttpResponseMessageDelegate(HttpResponseMessage response);
-        
+
+        private void Awake()
+        {
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+            m_client = new HttpClient();
+        }
+
         public void SetAuthenticationToken(string token)
         {
             m_client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
