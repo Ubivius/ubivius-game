@@ -16,9 +16,8 @@ namespace ubv.client.logic
         public DispatcherMicroservice Dispatcher;
 
         [Header("Microservices")]
-        public AuthenticationService Authentication;
+        public SocialServicesController SocialServices;
         public CharacterDataService CharacterData;
-        public UserService User;
 
         private void Awake()
         {

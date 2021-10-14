@@ -24,6 +24,11 @@ namespace ubv.client.logic
             m_readyToGoToMenu = false;
         }
 
+        protected override void StateStart()
+        {
+            m_socialServices.OnAuthentication += OnLogin;
+        }
+
         protected override void StateUpdate()
         {
             if (m_readyToGoToMenu)
@@ -39,8 +44,8 @@ namespace ubv.client.logic
             Debug.Log("Trying to log in with " + user);
 #endif // DEBUG_LOG
 
-
-            m_authenticationService.SendLoginRequest(user, pass, OnLogin);
+            
+            m_socialServices.Authenticate(user, pass);
         }
 
         private void GoToMenu()
@@ -57,7 +62,8 @@ namespace ubv.client.logic
             if (playerIDString != null)
             {
                 PlayerID = playerIDString.GetHashCode();
-                m_userService.SendUserInfoRequest(playerIDString, OnGetUserInfo);
+                UserInfo = m_socialServices.CurrentUser;
+                m_readyToGoToMenu = true;
             }
             else
             {
@@ -65,12 +71,6 @@ namespace ubv.client.logic
                 Debug.Log("Login failed. Maybe wrong credentials ?");
 #endif // DEBUG_LOG
             }
-        }
-
-        private void OnGetUserInfo(microservices.UserService.UserInfo info)
-        {
-            UserInfo = info;
-            m_readyToGoToMenu = true;
         }
     }   
 }

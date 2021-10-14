@@ -14,7 +14,7 @@ namespace ubv.client.logic
     {
         static public int? PlayerID { get; protected set; }
 
-        static public UserService.UserInfo UserInfo { get; protected set; }
+        static public UserInfo UserInfo { get; protected set; }
 
         static protected ClientSyncState m_currentState = null;
 
@@ -27,9 +27,8 @@ namespace ubv.client.logic
         static protected udp.client.UDPClient m_UDPClient;
         static protected http.client.HTTPClient m_HTTPClient;
         static protected DispatcherMicroservice m_dispatcherService;
-        static protected AuthenticationService m_authenticationService;
+        static protected SocialServicesController m_socialServices;
         static protected CharacterDataService m_characterService;
-        static protected UserService m_userService;
 
         static private bool m_isSetup = false;
 
@@ -46,9 +45,8 @@ namespace ubv.client.logic
                 m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
                 m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
                 m_dispatcherService = ClientNetworkingManager.Instance.Dispatcher;
-                m_authenticationService = ClientNetworkingManager.Instance.Authentication;
+                m_socialServices = ClientNetworkingManager.Instance.SocialServices;
                 m_characterService = ClientNetworkingManager.Instance.CharacterData;
-                m_userService = ClientNetworkingManager.Instance.User;
 
                 m_isSetup = true;
             }
