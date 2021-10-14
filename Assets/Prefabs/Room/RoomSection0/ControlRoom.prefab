@@ -515,6 +515,7 @@ GameObject:
   - component: {fileID: 7053584823877388390}
   - component: {fileID: 2714856369489422487}
   - component: {fileID: 1474867360786988444}
+  - component: {fileID: 8819343598055446837}
   m_Layer: 0
   m_Name: Tilemap_finalDoor
   m_TagString: Untagged
@@ -685,6 +686,22 @@ TilemapRenderer:
   m_Mode: 0
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
+--- !u!19719996 &8819343598055446837
+TilemapCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6529226105910525718}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_MaximumTileChangeCount: 1000
+  m_ExtrusionFactor: 0.00001
 --- !u!1 &7163644224572794670
 GameObject:
   m_ObjectHideFlags: 0
@@ -696,6 +713,7 @@ GameObject:
   - component: {fileID: 5074814611576219097}
   - component: {fileID: 6894968734483860612}
   - component: {fileID: 4682645559464977464}
+  - component: {fileID: 1112276527969455246}
   m_Layer: 0
   m_Name: Tilemap_finalButton
   m_TagString: Untagged
@@ -846,6 +864,22 @@ TilemapRenderer:
   m_Mode: 0
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
+--- !u!19719996 &1112276527969455246
+TilemapCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7163644224572794670}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_MaximumTileChangeCount: 1000
+  m_ExtrusionFactor: 0.00001
 --- !u!1 &7202778681305857152
 GameObject:
   m_ObjectHideFlags: 0

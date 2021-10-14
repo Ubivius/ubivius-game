@@ -13,8 +13,9 @@ namespace ubv.server.logic
 
         private Dictionary<SectionDoorButtonCell, Vector2Int> m_sectionDoorButtonList;
         private Dictionary<SectionButton, Vector2Int> m_buttonSectionList;
+        private Dictionary<FinalButtonCell, Vector2Int> m_finalButtonList;
 
-        const float c_buttonDistance = 1f;
+        const float c_buttonDistance = 1.5f;
 
         public void Awake()
         {
@@ -63,6 +64,8 @@ namespace ubv.server.logic
                         }
                     }
 
+                    //foreach
+
                 }
             }
             
@@ -77,6 +80,8 @@ namespace ubv.server.logic
             m_sectionDoorButtonList =  m_gameMaster.GetWorldGenerator().FetchAllWithPosition<SectionDoorButtonCell>();
 
             m_buttonSectionList = m_gameMaster.GetWorldGenerator().FetchAllWithPosition<SectionButton>();
+
+            //m_finalButtonList = 
         }
 
     }
