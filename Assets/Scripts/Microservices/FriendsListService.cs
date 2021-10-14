@@ -2,26 +2,59 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using UnityEngine.Events;
 
 namespace ubv.microservices
 {
     public class FriendsListService : Microservice<GetFriendRequest, 
-        PostMicroserviceRequest, PutMicroserviceRequest, DeleteMicroserviceRequest>
+        PostInviteRequest, PutMicroserviceRequest, DeleteMicroserviceRequest>
     {
-        [Serializable]
-        public struct JSONFriendInfo
+        [SerializeField]
+        private MicroserviceAutoFetcher m_invitesFetcher;
+
+        [HideInInspector]
+        public string DefaultUser;
+
+        private HashSet<string> m_currentPendingIncomingInvites;
+        public UnityAction<string> OnNewFriendInvite;
+
+        public bool IsFetcherActive;
+
+        private void Awake()
         {
-            public string user_id;
-            public string relationship_type;
+            m_currentPendingIncomingInvites = new HashSet<string>();
+            m_invitesFetcher.FetchLogic += Fetch;
+            IsFetcherActive = false;
         }
 
-        [Serializable]
-        public struct JSONRelationInfo
+        private void Fetch()
         {
-            public string id;
-            public JSONFriendInfo user_1;
-            public JSONFriendInfo user_2;
-            public string conversation_id;
+            if (!IsFetcherActive)
+                return;
+
+             this.Request(new GetInvitesForUserRequest(DefaultUser, OnGetNewInvites));
+        }
+
+        public void SendInviteTo(string userID)
+        {
+            this.Request(new PostInviteRequest(DefaultUser, userID));
+        }
+
+        private void OnGetNewInvites(RelationInfo[] infos)
+        {
+            HashSet<string> invites = GetAllInvites(infos);
+            foreach(string friend in invites)
+            {
+                if (!m_currentPendingIncomingInvites.Contains(friend))
+                {
+                    OnNewFriendInvite(friend);
+                    m_currentPendingIncomingInvites.Add(friend);
+                }
+            }
+        }
+        protected override void OnPostResponse(string JSON, PostInviteRequest originalRequest)
+        {
+            originalRequest.Callback?.Invoke();
         }
 
         protected override void OnGetResponse(string JSON, GetFriendRequest originalRequest)
@@ -30,7 +63,7 @@ namespace ubv.microservices
             JSONRelationInfo[] relationsResponse = null;
             try
             {
-                relationsResponse = JsonHelper.FromJson<JSONRelationInfo>(JSONFixed);
+                relationsResponse = JsonHelper.ArrayFromJsonString<JSONRelationInfo>(JSONFixed);
             }
             catch(Exception e)
             {
@@ -66,9 +99,24 @@ namespace ubv.microservices
             originalRequest.Callback.Invoke(relations);
         }
 
-        public List<string> GetAllConfirmedFriends(RelationInfo[] relations)
+        public void GetConversationWith(string currentUserID, string otherUserID, UnityAction<string> OnGetConversation)
         {
-            List<string> friends = new List<string>();
+            this.Request(new GetRelationsFromUserRequest(currentUserID, (RelationInfo[] infos) => {
+                foreach(RelationInfo info in infos)
+                {
+                    if(info.FriendUserID == otherUserID)
+                    {
+                        OnGetConversation(info.ConversationID);
+                        return;
+                    }
+                    OnGetConversation(null);
+                }
+            }));
+        }
+
+        private HashSet<string> GetAllConfirmedFriends(RelationInfo[] relations)
+        {
+            HashSet<string> friends = new HashSet<string>();
             foreach(RelationInfo relation in relations)
             {
                 if (relation.RelationType == RelationInfo.RelationshipType.Friend)
@@ -79,9 +127,9 @@ namespace ubv.microservices
             return friends;
         }
 
-        public List<string> GetAllInvites(RelationInfo[] relations)
+        private HashSet<string> GetAllInvites(RelationInfo[] relations)
         {
-            List<string> invites = new List<string>();
+            HashSet<string> invites = new HashSet<string>();
             foreach (RelationInfo relation in relations)
             {
                 if (relation.RelationType == RelationInfo.RelationshipType.PendingIncoming)
@@ -92,12 +140,17 @@ namespace ubv.microservices
             return invites;
         }
 
+#if UNITY_EDITOR
         [SerializeField]
         private AuthenticationService m_auth;
         [SerializeField]
         private UserService m_users;
 
-#if UNITY_EDITOR
+        public void Start()
+        {
+            //TestWithMurphy();
+        }
+
         public void TestWithMurphy()
         {
             m_auth.Request(new PostAuthenticationRequest("murphy", "password", (string id) => {
@@ -107,15 +160,16 @@ namespace ubv.microservices
                 {
                     m_users.Request(new GetUserInfoRequest(id, (UserInfo userInfo) =>
                     {
+                        Debug.Log("ID:" + userInfo.ID);
                         Debug.Log(userInfo.UserName + "'s friends :");
                     }));
-
-                    List<string> list = GetFriendsFrom(infos);
-                    foreach (string friendID in list)
+                    
+                    foreach (RelationInfo info in infos)
                     {
-                        m_users.Request(new GetUserInfoRequest(friendID, (UserInfo userInfo) => 
+                        m_users.Request(new GetUserInfoRequest(info.FriendUserID, (UserInfo userInfo) => 
                         {
-                            Debug.Log(userInfo.UserName);
+                            Debug.Log("Conversation :" + info.ConversationID);
+                            Debug.Log(" with user " + userInfo.UserName);
                         }));
                     }
                 }
@@ -123,11 +177,5 @@ namespace ubv.microservices
             }));
         }
 #endif // UNITY_EDITOR
-
-        public List<string> GetFriendsFrom(RelationInfo[] infos)
-        {
-            List<string> friends = GetAllConfirmedFriends(infos);
-            return friends;
-        }
     }
 }
