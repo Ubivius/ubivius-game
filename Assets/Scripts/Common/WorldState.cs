@@ -45,8 +45,9 @@ namespace ubv.common
             InitSerializableMembers(m_enemyStatesDatas);
         }
 
-        public WorldState(System.Collections.Generic.List<common.data.PlayerState> playerStates) : base()
+        public WorldState(System.Collections.Generic.List<common.data.PlayerState> playerStates, System.Collections.Generic.List<common.data.EnemyStateData> enemyStatesDatas) : base()
         {
+            Debug.Log("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBB");
             Dictionary<int, common.data.PlayerState> dictStates = new Dictionary<int, data.PlayerState>();
             foreach(data.PlayerState state in playerStates)
             {
@@ -54,6 +55,14 @@ namespace ubv.common
             }
             m_playerStates = new PlayerHashMap(dictStates);
             InitSerializableMembers(m_playerStates);
+
+            Dictionary<int, common.data.EnemyStateData> dictStatesEnemy = new Dictionary<int, data.EnemyStateData>();
+            foreach (data.EnemyStateData state in enemyStatesDatas)
+            {
+                dictStatesEnemy.Add(state.GUID.Value, state);
+            }
+            m_enemyStatesDatas = new EnemyHashMap(dictStatesEnemy);
+            InitSerializableMembers(m_enemyStatesDatas);
         }
 
         public WorldState(System.Collections.Generic.List<common.data.EnemyStateData> enemyStatesDatas) : base()
@@ -64,7 +73,7 @@ namespace ubv.common
                 dictStates.Add(state.GUID.Value, state);
             }
             m_enemyStatesDatas = new EnemyHashMap(dictStates);
-            InitSerializableMembers(m_playerStates);
+            InitSerializableMembers(m_enemyStatesDatas);
         }
 
         public WorldState(ref WorldState state) : base()

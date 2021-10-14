@@ -90,14 +90,13 @@ namespace ubv.client.logic
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
-                List<EnemyStateData> enemySatesDatas = new List<EnemyStateData>();
+                List<EnemyStateData> enemyStatesDatas = new List<EnemyStateData>();
                 foreach (int id in playerIDs)
                 {
                     playerStates.Add(new PlayerState(id));
-                    enemySatesDatas.Add(new EnemyStateData(id));
+                    enemyStatesDatas.Add(new EnemyStateData(id));
                 }
-                m_clientStateBuffer[i] = new WorldState(playerStates);
-                m_clientStateBuffer[i+1] = new WorldState(enemySatesDatas);
+                m_clientStateBuffer[i] = new WorldState(playerStates, enemyStatesDatas);
 
                 m_inputBuffer[i] = new InputFrame();
                 m_inputBuffer[i].SetToNeutral();
@@ -105,8 +104,9 @@ namespace ubv.client.logic
 
             foreach (ClientStateUpdater updater in m_updaters)
             {
+                Debug.Log(m_updaters.ToArray().Length);
+                Debug.Log("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                 updater.Init(m_clientStateBuffer[0], PlayerID.Value);
-                updater.Init(m_clientStateBuffer[1]);
             }
 
             m_UDPClient.Subscribe(this);

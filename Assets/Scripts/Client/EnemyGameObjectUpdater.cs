@@ -30,7 +30,7 @@ namespace ubv.client.logic
 
         public override void Init(WorldState clientState, int localID)
         {
-
+            Debug.Log("BUUUULLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSHHHHHHHHHHHITTT");
             //for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             //{
             //    List<PlayerState> playerStates = new List<PlayerState>();

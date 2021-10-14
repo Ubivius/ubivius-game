@@ -701,6 +701,7 @@ MonoBehaviour:
   m_physicsSceneName: proto_move_server
   m_updaters:
   - {fileID: 1470650681}
+  - {fileID: 469398075}
   - {fileID: 380608787}
 --- !u!4 &1089558532
 Transform:

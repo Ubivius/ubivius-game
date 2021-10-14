@@ -27,11 +27,13 @@ namespace ubv.server.logic
 
         public override void InitWorld(WorldState state)
         {
+            Debug.Log("ENEMy INIT world");
             m_pathfindingGridManager.OnPathFindingManagerGenerated += () => { OnPathFindingManagerGenerated(state); };
         }
 
         private void OnPathFindingManagerGenerated(WorldState state)
         {
+            Debug.Log("Pathfinding grid manager");
             foreach (int id in state.Players().Keys)
             {
                 GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);

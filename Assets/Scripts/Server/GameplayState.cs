@@ -41,6 +41,7 @@ namespace ubv.server.logic
 
         public void Init(ICollection<int> clients)
         {
+            Debug.Log("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANNNNNNNNNNNNNNNNNN");
             m_tickAccumulator = 0;
             m_masterTick = 0;
             m_currentWorldState = new WorldState();
@@ -59,6 +60,7 @@ namespace ubv.server.logic
             // add each player and enemies to client states
             foreach (int id in m_clients)
             {
+                Debug.Log("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII");
                 PlayerState player = new PlayerState();
                 EnemyStateData enemy = new EnemyStateData();
                 player.GUID.Value = id;
@@ -70,6 +72,7 @@ namespace ubv.server.logic
             
             foreach (ServerGameplayStateUpdater updater in m_updaters)
             {
+                Debug.Log("ccccccccccccccccccccaaaaaaaaaaaaaaaaaaalllllllllllllllllllliiiiiiiiiiiiiiiiiiiiiiiiisssssssssssssssssss");
                 updater.Setup();
             }
             
