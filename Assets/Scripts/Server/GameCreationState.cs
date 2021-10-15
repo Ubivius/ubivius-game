@@ -16,7 +16,7 @@ namespace ubv.server.logic
     /// In charge of regrouping player parties, and launching 
     /// the game with a fixed number of players
     /// </summary>
-    public class GameCreationState : ServerState, tcp.server.ITCPServerReceiver, udp.server.IUDPServerReceiver
+    public class GameCreationState : ServerState
     {
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
 

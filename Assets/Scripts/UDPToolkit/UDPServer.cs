@@ -161,7 +161,7 @@ namespace ubv
 
                     for (int i = 0; i < m_receivers.Count; i++)
                     {
-                        m_receivers[i].Receive(packet, playerID);
+                        m_receivers[i].UDPReceive(packet, playerID);
                     }
                 }
 

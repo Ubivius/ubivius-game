@@ -13,7 +13,7 @@ namespace ubv.server.logic
     /// Represents the state of the server during the game
     /// https://www.gabrielgambetta.com/client-server-game-architecture.html
     /// </summary>
-    public class GameplayState : ServerState, udp.server.IUDPServerReceiver, tcp.server.ITCPServerReceiver
+    public class GameplayState : ServerState
     {
         private HashSet<int> m_clients;
         private WorldState m_currentWorldState;
@@ -140,14 +140,14 @@ namespace ubv.server.logic
             }
         }
 
-        public void Receive(udp.UDPToolkit.Packet packet, int playerID)
+        public override void UDPReceive(udp.UDPToolkit.Packet packet, int playerID)
         {
             if (!m_connectedClients[playerID])
             {
 #if DEBUG_LOG
                 Debug.Log("Received UDP packet from unconnected client (ID " + playerID + "). Ignoring.");
-                return;
 #endif //DEBUG_LOG
+                return;
             }
 
             InputMessage inputs = IConvertible.CreateFromBytes<InputMessage>(packet.Data.ArraySegment());
@@ -161,22 +161,10 @@ namespace ubv.server.logic
                     for (int i = 0; i < inputFrames.Count; i++)
                     {
                         frameIndex = (int)inputFrames[i].Info.Tick.Value;
-                        //Debug.Log("SERVER received " + frameIndex + " tick at master tick " + m_masterTick);
                         if (frameIndex >= m_masterTick)
                         {
-                            //Debug.Log("SERVER Enqueued input tick " + frameIndex + " from client");
                             m_clientInputBuffers[playerID][frameIndex] = inputFrames[i];
                         }
-
-                        /*if(frameIndex < m_masterTick)
-                        {
-                            Debug.Log("SERVER Client sent already processed input for tick " + frameIndex + " vs master tick " + m_masterTick);
-                        }
-
-                        if(frameIndex > m_masterTick + ServerNetworkingManager.SERVER_TICK_BUFFER_SIZE)
-                        {
-                            Debug.Log("SERVER Client is too far ahead of server at tick " + frameIndex + " vs master tick " + m_masterTick);
-                        }*/
                     }
                 }
             }
@@ -191,7 +179,7 @@ namespace ubv.server.logic
             }
         }
 
-        public void ReceivePacket(TCPToolkit.Packet packet, int playerID)
+        public override void TCPReceive(TCPToolkit.Packet packet, int playerID)
         {
             // if we receive ID message from player (who's trying to reconnect)
             // ...
@@ -205,14 +193,14 @@ namespace ubv.server.logic
             }
         }
 
-        public void OnConnect(int playerID)
+        protected override void OnPlayerConnect(int playerID)
         {
 #if DEBUG_LOG
             Debug.Log("Player " + playerID + " just connected. Awaiting identification packet.");
 #endif // DEBUG_LOG
         }
 
-        public void OnDisconnect(int playerID)
+        protected void OnPlayerDisconnect(int playerID)
         {
 #if DEBUG_LOG
             Debug.Log("Player " + playerID + " disconnected");

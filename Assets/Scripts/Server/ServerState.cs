@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using ubv.tcp;
 using ubv.common.data;
 using ubv.common.serialization;
+using ubv.udp.server;
+using ubv.tcp.server;
 
 namespace ubv.server.logic
 {
@@ -17,12 +19,7 @@ namespace ubv.server.logic
         static protected ServerState m_currentState = null;
         static protected GameplayState m_gameplayState;
         static protected GameCreationState m_gameCreationState;
-
-        protected tcp.server.TCPServer m_TCPServer;
-        protected udp.server.UDPServer m_UDPServer;
-
-        protected readonly object m_lock = new object();
-                
+        
         private void Awake()
         {
             StateAwake();
@@ -30,8 +27,6 @@ namespace ubv.server.logic
 
         private void Start()
         {
-            m_TCPServer = ServerNetworkingManager.Instance.TCPServer;
-            m_UDPServer = ServerNetworkingManager.Instance.UDPServer;
             StateStart();
         }
 
@@ -55,5 +50,6 @@ namespace ubv.server.logic
         protected virtual void StateStart() { }
         protected virtual void StateUpdate() { }
         protected virtual void StateFixedUpdate() { }
+        
     }
 }
