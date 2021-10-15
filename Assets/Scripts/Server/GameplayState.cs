@@ -62,10 +62,8 @@ namespace ubv.server.logic
             {
                 Debug.Log("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII");
                 PlayerState player = new PlayerState();
-                EnemyStateData enemy = new EnemyStateData();
                 player.GUID.Value = id;
                 m_currentWorldState.AddPlayer(player);
-                m_currentWorldState.AddEnemy(enemy);
                 m_clientInputBuffers[id] = new Dictionary<int, InputFrame>();
                 m_connectedClients.Add(id, true);
             }

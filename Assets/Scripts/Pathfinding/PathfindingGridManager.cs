@@ -27,6 +27,7 @@ namespace ubv.server.logic
 
         private void Start()
         {
+            Debug.Log("Manager Started");
             m_worldGenerator.OnWorldGenerated += OnWorldGenerated;            
         }
 
@@ -37,6 +38,7 @@ namespace ubv.server.logic
 
         private void OnWorldGenerated()
         {
+            Debug.Log("Leworld se genere");
             LogicGrid logicGrid = m_worldGenerator.GetMasterLogicGrid();
             if (logicGrid != null)
             {
@@ -46,6 +48,7 @@ namespace ubv.server.logic
 
         private void SetPathNodesFromLogicGrid(LogicGrid logicGrid)
         {
+            Debug.Log("SetPathNodesFromLogicGrid");
             m_cellToNodes = new Dictionary<common.world.cellType.LogicCell, PathNode>();
             m_logicGrid = logicGrid;
             m_pathNodes = new PathNode[m_logicGrid.Width, m_logicGrid.Height];
