@@ -19,6 +19,8 @@ namespace ubv.server.logic
         static protected ServerState m_currentState = null;
         static protected GameplayState m_gameplayState;
         static protected GameCreationState m_gameCreationState;
+
+        static protected ServerConnectionManager m_serverConnection;
         
         private void Awake()
         {
@@ -27,6 +29,7 @@ namespace ubv.server.logic
 
         private void Start()
         {
+            m_serverConnection = ServerNetworkingManager.Instance.ServerConnection;
             StateStart();
         }
 

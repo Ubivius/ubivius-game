@@ -53,10 +53,6 @@ namespace ubv.server.logic
             {
                 initializer.Init();
             }
-                    
-            m_TCPServer.Subscribe(this);
-            m_UDPServer.Subscribe(this);
-            m_UDPServer.AcceptNewClients = true;
         }
 
         private bool EveryoneIsReady()

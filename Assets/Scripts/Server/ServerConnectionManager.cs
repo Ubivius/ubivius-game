@@ -5,19 +5,29 @@ using ubv.tcp.server;
 using ubv.server.logic;
 using System.Collections.Generic;
 using ubv.udp;
+using ubv.tcp;
+using ubv.common.data;
+using ubv.common.serialization;
+using UnityEngine.Events;
 
-namespace ubv.microservices
+namespace ubv.server
 {
-    abstract public class ServerConnectionManager : MonoBehaviour, IUDPServerReceiver, ITCPServerReceiver
+    public class ServerConnectionManager : MonoBehaviour, IUDPServerReceiver, ITCPServerReceiver
     {
-        protected TCPServer m_TCPServer;
-        protected UDPServer m_UDPServer;
+        public TCPServer TCPServer;
+        public UDPServer UDPServer;
 
         protected readonly object m_lock = new object();
         protected readonly object m_connectionLock = new object();
 
         protected HashSet<int> m_pendingPlayers; // players awaiting UDP + TCP identification
         protected HashSet<int> m_connectedPlayers;
+
+        public UnityAction<int> OnPlayerConnect;
+        public UnityAction<int> OnPlayerDisconnect;
+
+        public UnityAction<UDPToolkit.Packet, int> OnUDPPacketFor;
+        public UnityAction<TCPToolkit.Packet, int> OnTCPPacketFor;
 
         private void Awake()
         {
@@ -27,15 +37,18 @@ namespace ubv.microservices
 
         private void Start()
         {
-            m_TCPServer = ServerNetworkingManager.Instance.TCPServer;
-            m_UDPServer = ServerNetworkingManager.Instance.UDPServer;
+            TCPServer = ServerNetworkingManager.Instance.TCPServer;
+            UDPServer = ServerNetworkingManager.Instance.UDPServer;
+            TCPServer.Subscribe(this);
+            UDPServer.Subscribe(this);
+            UDPServer.AcceptNewClients = true;
         }
         
         public void UDPReceive(UDPToolkit.Packet packet, int playerID)
         {
             if (m_connectedPlayers.Contains(playerID))
             {
-                UDPConnectedReceive(packet, playerID);
+                OnUDPPacketFor.Invoke(packet, playerID);
             }
             else if (m_pendingPlayers.Contains(playerID))
             {
@@ -46,7 +59,7 @@ namespace ubv.microservices
                     Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
 #endif // DEBUG_LOG
                     m_connectedPlayers.Add(playerID);
-                    m_currentState.OnPlayerConnect(playerID);
+                    OnPlayerConnect.Invoke(playerID);
                     m_pendingPlayers.Remove(playerID);
                 }
             }
@@ -56,7 +69,7 @@ namespace ubv.microservices
         {
             if (m_connectedPlayers.Contains(playerID))
             {
-                m_currentState.TCPConnectedReceive(packet, playerID);
+                OnTCPPacketFor.Invoke(packet, playerID);
             }
         }
 
@@ -75,7 +88,7 @@ namespace ubv.microservices
                 m_pendingPlayers.Remove(playerID);
                 m_connectedPlayers.Remove(playerID);
             }
-            m_currentState.OnPlayerDisconnect(playerID);
+            OnPlayerDisconnect.Invoke(playerID);
         }
 
         protected bool IsConnected(int playerID)
@@ -87,11 +100,5 @@ namespace ubv.microservices
             }
             return state;
         }
-
-        protected abstract void OnPlayerConnect(int playerID);
-        protected abstract void OnPlayerDisconnect(int playerID);
-
-        protected abstract void UDPConnectedReceive(UDPToolkit.Packet packet, int playerID);
-        protected abstract void TCPConnectedReceive(TCPToolkit.Packet packet, int playerID);
     }
 }
