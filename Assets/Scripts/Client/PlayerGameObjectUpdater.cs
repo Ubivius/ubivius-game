@@ -177,5 +177,10 @@ namespace ubv.client.logic
         {
             return m_localPlayerBody.transform;
         }
+
+        public Dictionary<int, PlayerPrefab> GetPlayersGameObject()
+        {
+            return Players;
+        }
     }
 }

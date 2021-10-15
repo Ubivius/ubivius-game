@@ -20,20 +20,22 @@ namespace ubv
                 {
                     Sprinting = new serialization.types.Bool(false);
                     Shooting = new serialization.types.Bool(false);
+                    ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     Movement = new serialization.types.Vector2(Vector2.zero);
                     Info = new NetInfo(0);
 
-                    InitSerializableMembers(Sprinting, Shooting, Movement, Info);
+                    InitSerializableMembers(Sprinting, Shooting, ShootingDirection, Movement, Info);
                 }
 
-                public InputFrame(bool sprinting, bool shooting, Vector2 movement, long time, int tick)
+                public InputFrame(bool sprinting, bool shooting, Vector2 shootingDirection, Vector2 movement, long time, int tick)
                 {
                     Sprinting = new serialization.types.Bool(sprinting);
                     Shooting = new serialization.types.Bool(shooting);
+                    ShootingDirection = new serialization.types.Vector2(shootingDirection);
                     Movement = new serialization.types.Vector2(movement);
                     Info = new NetInfo(tick);
 
-                    InitSerializableMembers(Sprinting, Movement, Info);
+                    InitSerializableMembers(Sprinting, Shooting, ShootingDirection, Movement, Info);
                 }
                 
 
@@ -42,6 +44,7 @@ namespace ubv
                     Movement.Value = Vector2.zero;
                     Sprinting.Value = false;
                     Shooting.Value = false;
+                    ShootingDirection.Value = Vector2.zero;
                 }
                 
                 protected override ID.BYTE_TYPE SerializationID()

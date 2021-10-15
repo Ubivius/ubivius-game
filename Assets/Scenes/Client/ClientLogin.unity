@@ -1781,6 +1781,16 @@ PrefabInstance:
       propertyPath: m_serverAddress
       value: 192.168.0.141
       objectReference: {fileID: 0}
+    - target: {fileID: 1584834601926501245, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 1224486477}
+    - target: {fileID: 1584834601926501245, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_playerUpdater
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 2629458355001083077, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: User

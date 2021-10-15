@@ -81,7 +81,8 @@ namespace ubv
                 m_currentInputFrame.Sprinting.Value = m_IsSprinting;
 
                 m_currentInputFrame.Shooting.Value = m_IsShooting;
-                Vector2 aimDir = new Vector2(0, 0);
+
+                Vector2 aimDir = Vector2.zero;
                 if (m_playerTransform != null)
                 {
                     Vector2 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);

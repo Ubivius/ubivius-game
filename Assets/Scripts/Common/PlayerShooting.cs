@@ -25,16 +25,16 @@ namespace ubv
                 }
                 static float m_lastShot = 0;
 
-                static public void Execute(PlayerPrefab player, PlayerShootingSettings playerShootingSettings, common.data.InputFrame input, float deltaTime)
+                static public void Execute(PlayerPrefab player, PlayerShootingSettings playerShootingSettings, Vector2 aimDirection, float deltaTime)
                 {
-                    if (input.Shooting.Value && m_lastShot > playerShootingSettings.BulletDelay)
+                    if (m_lastShot > playerShootingSettings.BulletDelay)
                     {
                         GameObject bullet = Instantiate(playerShootingSettings.BulletPrefab);
                         bullet.transform.position = player.FirePoint.transform.position;
                         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
 
-                        Vector3 aimDirection = new Vector3(input.ShootingDirection.Value.x, input.ShootingDirection.Value.y, 0.0f);
-                        rb.AddForce(aimDirection * playerShootingSettings.BulletForce, ForceMode2D.Impulse);
+                        Vector3 shootingDirection = new Vector3(aimDirection.x, aimDirection.y, 0.0f);
+                        rb.AddForce(shootingDirection * playerShootingSettings.BulletForce, ForceMode2D.Impulse);
 
                         m_lastShot = 0;
                     }

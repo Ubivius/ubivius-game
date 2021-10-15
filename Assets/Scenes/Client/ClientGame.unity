@@ -157,6 +157,7 @@ MonoBehaviour:
   m_defaultRTTEstimate: 0.08
   m_updaters:
   - {fileID: 554541790}
+  - {fileID: 969313555}
   m_packetLossChance: 0.01
 --- !u!4 &134844666
 Transform:
@@ -1105,6 +1106,8 @@ MonoBehaviour:
   m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
   m_playerShootingSettings: {fileID: 11400000, guid: e9e0b7007b894254586ea1109e168b46,
     type: 2}
+  m_playerGameObjectUpdater: {fileID: 554541790}
+  m_correctionTolerance: 0.05
 --- !u!1 &1303596447
 GameObject:
   m_ObjectHideFlags: 0
