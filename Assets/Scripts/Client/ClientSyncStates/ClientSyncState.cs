@@ -13,67 +13,36 @@ namespace ubv.client.logic
     abstract public class ClientSyncState : MonoBehaviour
     {
         static public int? PlayerID { get; protected set; }
-
         static public UserInfo UserInfo { get; protected set; }
-
-        static protected ClientSyncState m_currentState = null;
-
-        static protected ClientSyncLogin    m_loginState;
-        static protected ClientSyncInit     m_initState;
-        static protected ClientSyncLobby    m_lobbyState;
-        static protected ClientSyncPlay     m_playState;
-
+        
         static protected tcp.client.TCPClient m_TCPClient;
         static protected udp.client.UDPClient m_UDPClient;
         static protected http.client.HTTPClient m_HTTPClient;
         static protected DispatcherMicroservice m_dispatcherService;
         static protected SocialServicesController m_socialServices;
         static protected CharacterDataService m_characterService;
+        static protected ClientStateManager m_stateManager;
 
-        static private bool m_isSetup = false;
-
-        private void Awake()
+        static public void InitDependencies()
         {
-            StateAwake();
+            m_TCPClient = ClientNetworkingManager.Instance.TCPClient;
+            m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
+            m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
+            m_dispatcherService = ClientNetworkingManager.Instance.Dispatcher;
+            m_socialServices = ClientNetworkingManager.Instance.SocialServices;
+            m_characterService = ClientNetworkingManager.Instance.CharacterData;
+            m_stateManager = ClientStateManager.Instance;
         }
-
-        private void Start()
-        {
-            if (!m_isSetup)
-            {
-                m_TCPClient = ClientNetworkingManager.Instance.TCPClient;
-                m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
-                m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
-                m_dispatcherService = ClientNetworkingManager.Instance.Dispatcher;
-                m_socialServices = ClientNetworkingManager.Instance.SocialServices;
-                m_characterService = ClientNetworkingManager.Instance.CharacterData;
-
-                m_isSetup = true;
-            }
-            StateStart();
-        }
-
-        private void Update()
-        {
-            if (m_currentState != this)
-                return;
-
-            StateUpdate();
-        }
-
-        private void FixedUpdate()
-        {
-            if (m_currentState != this)
-                return;
-
-            StateFixedUpdate();
-        }
-
-        protected virtual void StateAwake() { }
-        protected virtual void StateStart() { }
-        protected virtual void StateUpdate() { }
-        protected virtual void StateFixedUpdate() { }
 
         protected readonly object m_lock = new object();
+        
+        public virtual void StateLoad() { }
+        
+        public virtual void StateUpdate() { }
+
+        public virtual void StateFixedUpdate() { }
+
+        public virtual void StateUnload() { }
+
     }
 }

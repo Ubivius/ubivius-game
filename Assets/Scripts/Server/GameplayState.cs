@@ -75,9 +75,6 @@ namespace ubv.server.logic
             {
                 updater.InitWorld(m_currentWorldState);
             }
-            
-            m_UDPServer.Subscribe(this);
-            m_TCPServer.Subscribe(this);
         }
                 
         protected override void StateFixedUpdate()
@@ -87,19 +84,19 @@ namespace ubv.server.logic
                 // update state based on received input
                 foreach (int id in m_clients)
                 {
-                    if (!m_connectedClients[id])
-                        continue;
-
-                    if (!m_clientInputBuffers[id].ContainsKey(m_masterTick))
+                    InputFrame frame = m_zeroFrame;
+                    if (m_clientInputBuffers[id].ContainsKey(m_masterTick) && !m_connectedClients[id])
                     {
+                        // zero OR duplicate last frame ?
+                        // duplicate implies future correction of inputs
+                        frame = m_clientInputBuffers[id][m_masterTick];
+                    }
+#if DEBUG_LOG
+                    else
+                    { 
                         Debug.Log("SERVER Missed input " + m_masterTick + " from client " + id);
                     }
-
-                    // zero OR duplicate last frame ?
-                    // duplicate implies future correction of inputs
-                    InputFrame frame = m_clientInputBuffers[id].ContainsKey(m_masterTick) ?
-                        m_clientInputBuffers[id][m_masterTick] : 
-                        m_zeroFrame;
+#endif // DEBUG_LOG
 
                     m_currentInputFrames[id] = frame;
 
@@ -124,7 +121,7 @@ namespace ubv.server.logic
                 m_masterTick++;
                 if (++m_tickAccumulator >= m_snapshotTicks)
                 {
-                    foreach (int id in m_connectedClients.Keys)
+                    foreach (int id in m_clients)
                     {
                         if (m_connectedClients[id])
                         {
@@ -132,7 +129,7 @@ namespace ubv.server.logic
                             NetInfo info = new NetInfo(m_masterTick);
                             ClientStateMessage msg = new ClientStateMessage(m_currentWorldState, info);
                             //Debug.Log("SERVER Sending validated tick " + m_masterTick + " to client " + id);
-                            m_UDPServer.Send(msg.GetBytes(), id);
+                            m_serverConnection.UDPServer.Send(msg.GetBytes(), id);
                         }
                     }
                     m_tickAccumulator = 0;
@@ -140,7 +137,7 @@ namespace ubv.server.logic
             }
         }
 
-        public override void UDPReceive(udp.UDPToolkit.Packet packet, int playerID)
+        protected override void OnUDPReceiveFrom(udp.UDPToolkit.Packet packet, int playerID)
         {
             if (!m_connectedClients[playerID])
             {
@@ -174,39 +171,27 @@ namespace ubv.server.logic
                 if (rttMsg != null)
                 {
                     // TODO cache bytes + add check "isRttMessage" that checks the object enum type value
-                    m_UDPServer.Send(rttMsg.GetBytes(), playerID);
+                    m_serverConnection.UDPServer.Send(rttMsg.GetBytes(), playerID);
                 }
             }
         }
-
-        public override void TCPReceive(TCPToolkit.Packet packet, int playerID)
-        {
-            // if we receive ID message from player (who's trying to reconnect)
-            // ...
-            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data.ArraySegment());
-            if (identification != null)
-            {
-#if DEBUG_LOG
-                Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
-#endif // DEBUG_LOG
-                m_connectedClients[playerID] = true;
-            }
-        }
-
+        
         protected override void OnPlayerConnect(int playerID)
         {
 #if DEBUG_LOG
-            Debug.Log("Player " + playerID + " just connected. Awaiting identification packet.");
+            Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
 #endif // DEBUG_LOG
+
+            m_connectedClients[playerID] = true;
         }
 
-        protected void OnPlayerDisconnect(int playerID)
+        protected override void OnPlayerDisconnect(int playerID)
         {
 #if DEBUG_LOG
             Debug.Log("Player " + playerID + " disconnected");
-            m_connectedClients[playerID] = false;
-            // DisconnectPlayer() // pour gérer la déco?
 #endif // DEBUG_LOG
+
+            m_connectedClients[playerID] = false;
         }
     }
 }

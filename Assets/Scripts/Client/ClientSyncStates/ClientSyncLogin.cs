@@ -10,26 +10,27 @@ using System.Net.Http;
 
 namespace ubv.client.logic
 {
+    /// <summary>
+    /// Reprensents the client state before he is logged in
+    /// </summary>
     public class ClientSyncLogin : ClientSyncState
     {
         [SerializeField] private string m_clientMenuScene;
-        [SerializeField] private IPEndPoint m_authEndPoint;
 
         private bool m_readyToGoToMenu;
         
-        protected override void StateAwake()
+        public override void StateLoad()
         {
-            ClientSyncState.m_loginState = this;
-            ClientSyncState.m_currentState = this;
             m_readyToGoToMenu = false;
-        }
-
-        protected override void StateStart()
-        {
             m_socialServices.OnAuthentication += OnLogin;
         }
 
-        protected override void StateUpdate()
+        public override void StateUnload()
+        {
+            m_socialServices.OnAuthentication -= OnLogin;
+        }
+
+        public override void StateUpdate()
         {
             if (m_readyToGoToMenu)
             {
@@ -53,7 +54,9 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Going to menu.");
 #endif // DEBUG_LOG
+            
             AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_clientMenuScene);
+            m_stateManager.PopState();
             // animation petit cercle de load to lobby
         }
 

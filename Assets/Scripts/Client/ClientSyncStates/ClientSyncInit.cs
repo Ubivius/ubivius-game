@@ -15,55 +15,57 @@ using ubv.microservices;
 
 namespace ubv.client.logic
 {
+    /// <summary>
+    /// Represents the client state after he's logged in, and before he finds a lobby
+    /// </summary>
     public class ClientSyncInit : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
     {
+        private enum SubState
+        {
+            SUBSTATE_WAITING_FOR_TCP,
+            SUBSTATE_WAITING_FOR_UDP,
+            SUBSTATE_GOING_TO_LOBBY
+        }
+
         [SerializeField] private string m_clientLobbyScene;
-
-        private ServerInfo? m_cachedServerInfo;
-
+        
         [SerializeField] private float m_UDPPingTimerIntervalMS = 500f;
         private float m_UPDPingTimer;
         
         private byte[] m_identificationMessageBytes;
 
-        private Flag m_readyToGoToLobby;
+        private bool m_receivedUDPConfirmation;
         private bool m_loadingLobby;
 
+        private SubState m_currentSubState;
+
         static private CharacterData m_activeCharacter = null;
-        
-        protected override void StateAwake()
+
+        private void Awake()
         {
-            m_readyToGoToLobby = new Flag();
-            m_loadingLobby = false;
-            ClientSyncState.m_initState = this;
-            ClientSyncState.m_currentState = this;
-            Init();
+            m_stateManager.PushState(this);
         }
 
-        public void Init(bool clearServerInfo = true)
+        public override void StateLoad()
         {
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_TCP;
+            m_receivedUDPConfirmation = false;
+            m_loadingLobby = false;
 #if DEBUG_LOG
             Debug.Log("Initializing client state [init]");
 #endif // DEBUG_LOG
-            
+
             m_identificationMessageBytes = new IdentificationMessage().GetBytes();
             m_TCPClient.SetPlayerID(PlayerID.Value);
             m_TCPClient.Subscribe(this);
-            if (clearServerInfo)
-            {
-                m_cachedServerInfo = null;
-            }
-        }
 
-        private void Start()
-        {
             // try to fetch characters from microservice
             if (m_activeCharacter == null)
-            { 
+            {
                 m_characterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedFromService));
             }
         }
-
+        
         private void OnCharactersFetchedFromService(CharacterData[] characters)
         {
             // for now, assume only one character 
@@ -80,30 +82,32 @@ namespace ubv.client.logic
             return m_activeCharacter;
         }
 
-        protected override void StateUpdate()
+        public override void StateUpdate()
         {
-            lock (m_lock)
+            switch (m_currentSubState)
             {
-                if (m_TCPClient.IsConnected())
-                {
-                    if (!m_loadingLobby && m_activeCharacter != null)
+                case SubState.SUBSTATE_WAITING_FOR_TCP:
+                    break;
+                case SubState.SUBSTATE_WAITING_FOR_UDP:
+                    if (m_TCPClient.IsConnected() && m_receivedUDPConfirmation )
                     {
-                        if (m_readyToGoToLobby.Read())
+                        if (!m_loadingLobby && m_activeCharacter != null)
                         {
                             GoToLobby();
                         }
                     }
-                }
-            }
-
-            if (m_TCPClient.IsConnected() && !m_readyToGoToLobby.Peek())
-            {
-                m_UDPPingTimerIntervalMS += Time.deltaTime;
-                if (m_UPDPingTimer > m_UDPPingTimerIntervalMS / 1000f)
-                {
-                    m_UPDPingTimer = 0;
-                    m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
-                }
+                    else if (m_TCPClient.IsConnected())
+                    {
+                        m_UDPPingTimerIntervalMS += Time.deltaTime;
+                        if (m_UPDPingTimer > m_UDPPingTimerIntervalMS / 1000f)
+                        {
+                            m_UPDPingTimer = 0;
+                            m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
+                        }
+                    }
+                    break;
+                case SubState.SUBSTATE_GOING_TO_LOBBY:
+                    break;
             }
         }
 
@@ -143,6 +147,7 @@ namespace ubv.client.logic
         private void GoToLobby()
         {
             m_loadingLobby = true;
+            m_currentSubState = SubState.SUBSTATE_GOING_TO_LOBBY;
             StartCoroutine(LoadLobbyCoroutine());
         }
         
@@ -159,13 +164,6 @@ namespace ubv.client.logic
 
             m_loadingLobby = false;
             m_TCPClient.Unsubscribe(this);
-            SetLobbyStateActive();
-        }
-
-        private void SetLobbyStateActive()
-        {
-            ClientSyncState.m_lobbyState.Init(GetActiveCharacter().ID);
-            ClientSyncState.m_currentState = ClientSyncState.m_lobbyState;
         }
 
         public void OnDisconnect()
@@ -174,7 +172,9 @@ namespace ubv.client.logic
             Debug.Log("Disconnected from server");
 #endif // DEBUG_LOG
 
-            m_readyToGoToLobby.Reset();
+            m_loadingLobby = false;
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_TCP;
+            m_receivedUDPConfirmation = false;
         }
 
         public void OnSuccessfulTCPConnect()
@@ -184,7 +184,7 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
             
             m_UDPClient.Subscribe(this);
-            m_readyToGoToLobby.Reset();
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_UDP;
             m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_udp_ip, m_cachedServerInfo.Value.udp_port);
             m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
         }
@@ -197,8 +197,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                 Debug.Log("Received UDP connection confirmation.");
 #endif // DEBUG_LOG
-
-                m_readyToGoToLobby.Raise();
+                m_receivedUDPConfirmation = true;
             }
         }
 

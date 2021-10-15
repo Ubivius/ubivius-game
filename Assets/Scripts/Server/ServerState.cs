@@ -16,11 +16,13 @@ namespace ubv.server.logic
 
     abstract public class ServerState : MonoBehaviour
     {
-        static protected ServerState m_currentState = null;
+        static private ServerState m_currentState = null;
         static protected GameplayState m_gameplayState;
         static protected GameCreationState m_gameCreationState;
 
         static protected ServerConnectionManager m_serverConnection;
+
+        protected object m_lock = new object();
         
         private void Awake()
         {
@@ -49,10 +51,34 @@ namespace ubv.server.logic
             StateFixedUpdate();
         }
 
+        protected void ChangeState(ServerState newState)
+        {
+            if (m_currentState != null)
+            {
+                m_serverConnection.OnPlayerConnect -= m_currentState.OnPlayerConnect;
+                m_serverConnection.OnPlayerDisconnect -= m_currentState.OnPlayerDisconnect;
+                m_serverConnection.OnTCPPacketFor -= m_currentState.OnTCPReceiveFrom;
+                m_serverConnection.OnUDPPacketFor -= m_currentState.OnUDPReceiveFrom;
+            }
+
+            m_currentState = newState;
+
+            m_serverConnection.OnPlayerConnect += m_currentState.OnPlayerConnect;
+            m_serverConnection.OnPlayerDisconnect += m_currentState.OnPlayerDisconnect;
+            m_serverConnection.OnTCPPacketFor += m_currentState.OnTCPReceiveFrom;
+            m_serverConnection.OnUDPPacketFor += m_currentState.OnUDPReceiveFrom;
+        }
+
         protected virtual void StateAwake() { }
         protected virtual void StateStart() { }
         protected virtual void StateUpdate() { }
         protected virtual void StateFixedUpdate() { }
-        
+
+        protected abstract void OnPlayerConnect(int playerID);
+        protected abstract void OnPlayerDisconnect(int playerID);
+
+        protected virtual void OnTCPReceiveFrom(TCPToolkit.Packet packet, int playerID) { }
+        protected virtual void OnUDPReceiveFrom(UDPToolkit.Packet packet, int playerID) { }
+
     }
 }

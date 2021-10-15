@@ -51,8 +51,7 @@ namespace ubv.client.logic
 
         [SerializeField] private float m_defaultRTTEstimate = 0.050f;
         [SerializeField] private List<ClientStateUpdater> m_updaters;
-
-        public bool Initialized { get; private set; }
+        
         private bool ConnectedToServer { get { return m_TCPClient.IsConnected(); } }
         
         public UnityAction OnInitializationDone;
@@ -61,12 +60,7 @@ namespace ubv.client.logic
         [SerializeField] private float m_packetLossChance = 0.15f;
 #endif // NETWORK_SIMULATE
 
-        protected override void StateAwake()
-        {
-            ClientSyncState.m_playState = this;
-        }
-
-        public void Init(List<int> playerIDs, ClientGameInfo gameInfo)
+        public override void StateLoad()
         {
             m_localTick = 0;
             m_goalOffset = 0;
@@ -82,9 +76,10 @@ namespace ubv.client.logic
 
             m_fixedUpdateDeltaTime = Time.fixedDeltaTime;
             m_baseTickTime = m_fixedUpdateDeltaTime;
-            
-            Initialized = false;
-            
+        }
+
+        public void Init(List<int> playerIDs, ClientGameInfo gameInfo)
+        {
             GameInfo = gameInfo;
             
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
@@ -109,12 +104,11 @@ namespace ubv.client.logic
             m_TCPClient.Subscribe(this);
 
             UpdateClockOffset(LatencyFromRTT(m_meanRTT));
-
-            Initialized = true;
+            
             OnInitializationDone?.Invoke();
         }
 
-        protected override void StateFixedUpdate()
+        public override void StateFixedUpdate()
         {
             lock (m_lock)
             {
@@ -147,25 +141,14 @@ namespace ubv.client.logic
             }
         }
 
-        protected override void StateUpdate()
+        public override void StateUpdate()
         {
-            if (!Initialized)
-                return;
-
-            if (ConnectedToServer)
+            if (ShouldUpdate())
             {
                 m_lastInput = InputController.CurrentFrame();
             }
         }
-
-        public void RegisterUpdater(ClientStateUpdater updater)
-        {
-            if (!Initialized)
-                return;
-
-            m_updaters.Add(updater);
-        }
-
+        
         private void UpdateStateFromWorldAndStep(ref WorldState state, InputFrame input, float deltaTime)
         {
             if (!ShouldUpdate())
@@ -367,7 +350,7 @@ namespace ubv.client.logic
 
         private bool ShouldUpdate()
         {
-            return Initialized && ConnectedToServer;
+            return ConnectedToServer;
         }
 
         private void UpdateClientState(int bufferIndex)

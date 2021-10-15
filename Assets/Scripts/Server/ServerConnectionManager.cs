@@ -56,8 +56,12 @@ namespace ubv.server
                 if (identification != null)
                 {
 #if DEBUG_LOG
-                    Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
+                    Debug.Log("Player " + playerID + " successfully connected and identified with UDP and TCP. Rejoining.");
 #endif // DEBUG_LOG
+                    
+                    ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
+                    TCPServer.Send(serverSuccessPing.GetBytes(), playerID);
+
                     m_connectedPlayers.Add(playerID);
                     OnPlayerConnect.Invoke(playerID);
                     m_pendingPlayers.Remove(playerID);
