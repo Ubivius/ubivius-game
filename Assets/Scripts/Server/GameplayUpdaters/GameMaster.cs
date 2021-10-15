@@ -60,7 +60,6 @@ namespace ubv.server.logic
             return m_world.GetPlayerSpawnPos();
         }
 
-        // Callback for section door opening
         public void InteractSectionDoorButton(ubv.common.world.cellType.SectionDoorButtonCell cell)
         {
             //Debug.Log("ButtonSectionDoor Pressed");
@@ -82,7 +81,6 @@ namespace ubv.server.logic
             OpeningDoor();
         }
 
-        // Callback for final door opening
         public void InteractSectionButton(ubv.common.world.cellType.SectionButton cell)
         {
             //Debug.Log("SectionButton Pressed");
@@ -105,6 +103,13 @@ namespace ubv.server.logic
             {
                 RemoveDoor(m_finalDoor);
             }
+        }
+
+        public void InteractFinalButton()
+        {
+            Debug.Log("Partie terminer");
+
+            // Finir la partie
         }
 
         private void OpeningDoor()

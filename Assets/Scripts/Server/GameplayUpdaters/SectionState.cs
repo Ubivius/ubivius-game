@@ -44,7 +44,8 @@ namespace ubv.server.logic
                 case DoorType.Section_South:
                     return _SouthEastDoorButton && _SouthWestDoorButton ? true : false;
                 case DoorType.Section_West:
-                    return _NorthEastDoorButton && _NorthWestDoorButton ? true : false;
+                    return _NorthWestDoorButton && _SouthWestDoorButton ? true : false;
+
 
                 case DoorType.Section0_NorthEast:
                     return _NorthEastDoorButton;

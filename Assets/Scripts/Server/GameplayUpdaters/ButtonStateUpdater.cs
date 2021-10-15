@@ -64,7 +64,16 @@ namespace ubv.server.logic
                         }
                     }
 
-                    //foreach
+                    foreach (FinalButtonCell button in m_finalButtonList.Keys)
+                    {
+                        Vector2 buttonPos = m_finalButtonList[button];
+                        float diff = (playerPosition - buttonPos).sqrMagnitude;
+                        if (diff <= c_buttonDistance)
+                        {
+                            m_gameMaster.InteractFinalButton();
+                            continue;
+                        }
+                    }
 
                 }
             }
@@ -81,7 +90,7 @@ namespace ubv.server.logic
 
             m_buttonSectionList = m_gameMaster.GetWorldGenerator().FetchAllWithPosition<SectionButton>();
 
-            //m_finalButtonList = 
+            m_finalButtonList = m_gameMaster.GetWorldGenerator().FetchAllWithPosition<FinalButtonCell>(); 
         }
 
     }

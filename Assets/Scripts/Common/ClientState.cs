@@ -65,7 +65,7 @@ namespace ubv.common
             SetPlayers(state.m_playerStates.Value);
             m_openingDoorList = new OpeningDoorList(new System.Collections.Generic.List<serialization.types.Vector2Int>());
             SetOpeningDoor(state.m_openingDoorList.Value);
-            InitSerializableMembers(m_playerStates);
+            InitSerializableMembers(m_playerStates, m_openingDoorList);
         }
             
         protected override ID.BYTE_TYPE SerializationID()
