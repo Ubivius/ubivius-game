@@ -36,17 +36,12 @@ namespace ubv.server.logic
                 m_bodies.Add(id, body);
                 m_isSprinting.Add(id, false);
 
-                PlayerState playerState = new PlayerState(id);
+                PlayerState playerState = state.Players()[id];
 
                 playerState.Position.Value = m_bodies[id].position;
 
                 m_playerControllers.Add(id, playerCtrl);
                 m_playerStates.Add(id, playerState);
-            }
-            
-            foreach (PlayerState player in m_playerStates.Values)
-            {
-                state.AddPlayer(player);
             }
         }
         
