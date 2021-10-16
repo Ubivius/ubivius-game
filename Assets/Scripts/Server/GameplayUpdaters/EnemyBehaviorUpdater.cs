@@ -19,11 +19,13 @@ namespace ubv.server.logic
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, EnemyState> m_states;
 
+        private int id;
         public override void Setup()
         {
             //instantier un seul ennemy pur le moment
             m_bodies = new Dictionary<int, Rigidbody2D>();
             m_states = new Dictionary<int, EnemyState>();
+            m_enemyStatesData = new Dictionary<int, EnemyStateData>();
         }
 
         public override void InitWorld(WorldState state)
@@ -36,7 +38,7 @@ namespace ubv.server.logic
             //EnemyStateMachine enemyStateMachine = enemyGameObject.GetComponent<EnemyStateMachine>();
             //enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
 
-            int id = System.Guid.NewGuid().GetHashCode();
+            id = System.Guid.NewGuid().GetHashCode();
             body.position = new Vector2(10, 10); // enemyPathFindingMovement.GetPosition();
             body.name = "Server enemy " + id.ToString(); // + enemyStateMachine.CurrentEnemyState;
 
@@ -92,13 +94,15 @@ namespace ubv.server.logic
 
         public override void UpdateWorld(WorldState client)
         {
-            foreach (int id in client.Enemies().Keys)
+            Debug.Log("update world chie");
+            //Debug.Log(client.Enemies().Keys);
+            foreach (int id in client.Enemies().Keys) //ici ca chie
             {
                 Rigidbody2D body = m_bodies[id];
                 EnemyStateData enemy = m_enemyStatesData[id];
                 enemy.Position.Value = body.position;
                 enemy.Rotation.Value = body.rotation;
-                enemy.EnemyState = m_states[id];
+                //enemy.EnemyState = m_states[id];
             }
         }
     }

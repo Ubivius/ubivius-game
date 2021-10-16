@@ -52,6 +52,7 @@ namespace ubv.common
             {
                 dictStates.Add(state.GUID.Value, state);
             }
+
             m_playerStates = new PlayerHashMap(dictStates);
             m_enemyStatesDatas = new EnemyHashMap(new Dictionary<int, common.data.EnemyStateData>());
             InitSerializableMembers(m_playerStates, m_enemyStatesDatas);
@@ -91,6 +92,7 @@ namespace ubv.common
 
         public void AddEnemy(data.EnemyStateData enemyStateData)
         {
+            Debug.Log("tu chies ou");
             m_enemyStatesDatas.Value[enemyStateData.GUID.Value] = enemyStateData;
         }
 

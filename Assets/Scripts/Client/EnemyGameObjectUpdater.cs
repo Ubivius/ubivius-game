@@ -113,6 +113,7 @@ namespace ubv.client.logic
             m_timeSinceLastGoal = 0;
             foreach (EnemyStateData enemy in remoteState.Enemies().Values)
             {
+                Debug.Log("Instantiate enemy client");
                 // va falloir gérer pour les enemies mort
                 id = enemy.GUID.Value;
                 GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
