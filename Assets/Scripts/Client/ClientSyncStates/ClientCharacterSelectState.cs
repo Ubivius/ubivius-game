@@ -18,13 +18,14 @@ namespace ubv.client.logic
     /// <summary>
     /// Represents the client state after he's logged in, and before he finds a lobby
     /// </summary>
-    public class ClientSyncInit : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
+    public class ClientCharacterSelectState : ClientSyncState, tcp.client.ITCPClientReceiver
     {
         private enum SubState
         {
             SUBSTATE_WAITING_FOR_TCP,
             SUBSTATE_WAITING_FOR_UDP,
-            SUBSTATE_GOING_TO_LOBBY
+            SUBSTATE_GOING_TO_LOBBY,
+            SUBSTATE_TRANSITION,
         }
 
         [SerializeField] private string m_clientLobbyScene;
@@ -35,22 +36,16 @@ namespace ubv.client.logic
         private byte[] m_identificationMessageBytes;
 
         private bool m_receivedUDPConfirmation;
-        private bool m_loadingLobby;
-
         private SubState m_currentSubState;
 
         static private CharacterData m_activeCharacter = null;
-
-        private void Awake()
-        {
-            m_stateManager.PushState(this);
-        }
-
-        public override void StateLoad()
+        static private ServerInfo? m_cachedServerInfo = null;
+        
+        protected override void StateLoad()
         {
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_TCP;
             m_receivedUDPConfirmation = false;
-            m_loadingLobby = false;
+
 #if DEBUG_LOG
             Debug.Log("Initializing client state [init]");
 #endif // DEBUG_LOG
@@ -89,24 +84,24 @@ namespace ubv.client.logic
                 case SubState.SUBSTATE_WAITING_FOR_TCP:
                     break;
                 case SubState.SUBSTATE_WAITING_FOR_UDP:
-                    if (m_TCPClient.IsConnected() && m_receivedUDPConfirmation )
-                    {
-                        if (!m_loadingLobby && m_activeCharacter != null)
-                        {
-                            GoToLobby();
-                        }
-                    }
-                    else if (m_TCPClient.IsConnected())
+                    if (m_TCPClient.IsConnected())
                     {
                         m_UDPPingTimerIntervalMS += Time.deltaTime;
                         if (m_UPDPingTimer > m_UDPPingTimerIntervalMS / 1000f)
                         {
                             m_UPDPingTimer = 0;
-                            m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
+                            SendUDPIdentificationPing();
                         }
                     }
                     break;
                 case SubState.SUBSTATE_GOING_TO_LOBBY:
+                    if (m_activeCharacter != null)
+                    {
+                        LoadingData.ActiveCharacterID = m_activeCharacter.ID;
+                        GoToLobby();
+                    }
+                    break;
+                default:
                     break;
             }
         }
@@ -146,33 +141,17 @@ namespace ubv.client.logic
 
         private void GoToLobby()
         {
-            m_loadingLobby = true;
-            m_currentSubState = SubState.SUBSTATE_GOING_TO_LOBBY;
-            StartCoroutine(LoadLobbyCoroutine());
+            m_currentSubState = SubState.SUBSTATE_TRANSITION;
+            ClientStateManager.Instance.PushState(m_clientLobbyScene);
         }
         
-        private IEnumerator LoadLobbyCoroutine()
-        {
-            m_UDPClient.Unsubscribe(this);
-
-            // animation petit cercle de load to scene
-            AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_clientLobbyScene);
-            while (!loadLobby.isDone)
-            {
-                yield return null;
-            }
-
-            m_loadingLobby = false;
-            m_TCPClient.Unsubscribe(this);
-        }
 
         public void OnDisconnect()
         {
 #if DEBUG_LOG
             Debug.Log("Disconnected from server");
 #endif // DEBUG_LOG
-
-            m_loadingLobby = false;
+            
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_TCP;
             m_receivedUDPConfirmation = false;
         }
@@ -180,28 +159,57 @@ namespace ubv.client.logic
         public void OnSuccessfulTCPConnect()
         {
 #if DEBUG_LOG
-            Debug.Log("Successful TCP connection to server. Sending UDP identification message with ID " + PlayerID.Value);
+            Debug.Log("Successful TCP connection to server.");
 #endif // DEBUG_LOG
             
-            m_UDPClient.Subscribe(this);
-            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_UDP;
-            m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_udp_ip, m_cachedServerInfo.Value.udp_port);
-            m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
         }
 
-        public void ReceivePacket(UDPToolkit.Packet packet)
+        private void SendUDPIdentificationPing()
         {
-            ServerSuccessfulConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulConnectMessage>(packet.Data.ArraySegment());
-            if (serverSuccessPing != null)
+            m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
+        }
+        
+        public void ReceivePacket(TCPToolkit.Packet packet)
+        {
+            if (m_currentSubState == SubState.SUBSTATE_WAITING_FOR_TCP)
             {
+                ServerSuccessfulTCPConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulTCPConnectMessage>(packet.Data.ArraySegment());
+                if (serverSuccessPing != null)
+                {
 #if DEBUG_LOG
-                Debug.Log("Received UDP connection confirmation.");
+                    Debug.Log("Received TCP connection confirmation (via TCP).");
 #endif // DEBUG_LOG
-                m_receivedUDPConfirmation = true;
+                    m_currentSubState = SubState.SUBSTATE_WAITING_FOR_UDP;
+                    m_UDPClient.SetTargetServer(m_cachedServerInfo.Value.server_udp_ip, m_cachedServerInfo.Value.udp_port);
+                    SendUDPIdentificationPing();
+                }
+            }
+            else if (m_currentSubState == SubState.SUBSTATE_WAITING_FOR_UDP)
+            {
+                ServerSuccessfulUDPConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulUDPConnectMessage>(packet.Data.ArraySegment());
+                if (serverSuccessPing != null)
+                {
+#if DEBUG_LOG
+                    Debug.Log("Received UDP connection confirmation (via TCP).");
+#endif // DEBUG_LOG
+                    m_currentSubState = SubState.SUBSTATE_GOING_TO_LOBBY;
+                }
             }
         }
 
-        public void ReceivePacket(TCPToolkit.Packet packet)
-        { }
+        protected override void StateUnload()
+        {
+            m_TCPClient.Unsubscribe(this);
+        }
+
+        protected override void StatePause()
+        {
+            m_TCPClient.Unsubscribe(this);
+        }
+
+        protected override void StateResume()
+        {
+            m_TCPClient.Subscribe(this);
+        }
     }   
 }

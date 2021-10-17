@@ -15,7 +15,6 @@ namespace ubv.ui.client
         [SerializeField] private Transform m_playerListParent;
         [SerializeField] private ubv.client.logic.ClientSyncLobby m_lobby;
         [SerializeField] private TextMeshProUGUI m_defaultPlayerNameItem;
-        [SerializeField] private LoadingScreen m_loadingScreen;
         private SocialServicesController m_socialServices;
 
         private Dictionary<int, TextMeshProUGUI> m_playerTextsObjects;
@@ -28,22 +27,11 @@ namespace ubv.ui.client
             m_characters = new List<CharacterData>();
             m_users = new Dictionary<int, UserInfo>();
             m_playerTextsObjects = new Dictionary<int, TextMeshProUGUI>();
-            m_lobby.OnStartLoadWorld += () =>
-            {
-                m_loadingScreen.gameObject.SetActive(true);
-                m_loadingScreen.FadeLoadingScreen(1, 0.5f);
-            };
-
-            m_lobby.OnGameStart += () =>
-            {
-                m_loadingScreen.FadeAway(1);
-            };
         }
 
         private void Start()
         {
             m_socialServices = ubv.client.logic.ClientNetworkingManager.Instance.SocialServices;
-            m_loadingScreen.gameObject.SetActive(false);
             m_lobby.ClientListUpdate.AddListener(UpdatePlayers);
         }
 
@@ -82,11 +70,6 @@ namespace ubv.ui.client
                 {
                     m_playerTextsObjects.Remove(id);
                 }
-            }
-
-            if (m_loadingScreen.isActiveAndEnabled)
-            {
-                m_loadingScreen.LoadPercentage = m_lobby.LoadPercentage;
             }
         }
         

@@ -66,7 +66,6 @@ namespace ubv
                     
                     if (bytes.Length < byteCount)
                     {
-                        Debug.Log("Packet not ready to be built yet: " + bytes.Length + " vs " + byteCount);
                         return null;
                     }
 

@@ -59,7 +59,7 @@ namespace ubv.server
                     Debug.Log("Player " + playerID + " successfully connected and identified with UDP and TCP. Rejoining.");
 #endif // DEBUG_LOG
                     
-                    ServerSuccessfulConnectMessage serverSuccessPing = new ServerSuccessfulConnectMessage();
+                    ServerSuccessfulUDPConnectMessage serverSuccessPing = new ServerSuccessfulUDPConnectMessage();
                     TCPServer.Send(serverSuccessPing.GetBytes(), playerID);
 
                     m_connectedPlayers.Add(playerID);
@@ -82,6 +82,7 @@ namespace ubv.server
             lock (m_connectionLock)
             {
                 m_pendingPlayers.Add(playerID);
+                TCPServer.Send(new ServerSuccessfulTCPConnectMessage().GetBytes(), playerID);
             }
         }
 

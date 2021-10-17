@@ -18,6 +18,12 @@ namespace ubv.client.logic
     /// </summary>
     public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
     {
+        private enum SubState
+        {
+            SUBSTATE_WAITING_FOR_SERVER_GO,
+            SUBSTATE_PLAY
+        }
+
         [SerializeField] private string m_physicsScene;
 
         public ClientGameInfo GameInfo { get; private set; }
@@ -51,6 +57,8 @@ namespace ubv.client.logic
 
         [SerializeField] private float m_defaultRTTEstimate = 0.050f;
         [SerializeField] private List<ClientStateUpdater> m_updaters;
+
+        private SubState m_currentSubState;
         
         private bool ConnectedToServer { get { return m_TCPClient.IsConnected(); } }
         
@@ -60,8 +68,12 @@ namespace ubv.client.logic
         [SerializeField] private float m_packetLossChance = 0.15f;
 #endif // NETWORK_SIMULATE
 
-        public override void StateLoad()
+        protected override void StateLoad()
         {
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
+            ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage();
+            m_TCPClient.Send(worldLoaded.GetBytes());
+
             m_localTick = 0;
             m_goalOffset = 0;
             m_offsetErrorDuration = 0;
@@ -350,7 +362,7 @@ namespace ubv.client.logic
 
         private bool ShouldUpdate()
         {
-            return ConnectedToServer;
+            return ConnectedToServer && m_currentSubState == SubState.SUBSTATE_PLAY;
         }
 
         private void UpdateClientState(int bufferIndex)
@@ -426,7 +438,15 @@ namespace ubv.client.logic
 
         public void ReceivePacket(TCPToolkit.Packet packet)
         {
-            // empty for now
+            ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data.ArraySegment());
+            if (ready != null)
+            {
+#if DEBUG_LOG
+                Debug.Log("Received server start message.");
+#endif // DEBUG_LOG
+                m_currentSubState = SubState.SUBSTATE_PLAY;
+                return;
+            }
         }
 
         public void OnDisconnect()
@@ -434,6 +454,18 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Disconnected from server.");
 #endif // DEBUG_LOG
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
+        }
+
+        protected override void StateUnload()
+        { }
+
+        protected override void StatePause()
+        {
+        }
+
+        protected override void StateResume()
+        {
         }
     }
 }

@@ -134,7 +134,7 @@ namespace ubv.server.logic
             }
         }
 
-        public void OnTCPPacketFor(TCPToolkit.Packet packet, int playerID)
+        protected override void OnTCPReceiveFrom (TCPToolkit.Packet packet, int playerID)
         {
             OnLobbyEnteredMessage lobbyEnter = Serializable.CreateFromBytes<OnLobbyEnteredMessage>(packet.Data.ArraySegment());
             if (lobbyEnter != null)

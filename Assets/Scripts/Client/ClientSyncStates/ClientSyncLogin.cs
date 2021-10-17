@@ -15,17 +15,17 @@ namespace ubv.client.logic
     /// </summary>
     public class ClientSyncLogin : ClientSyncState
     {
-        [SerializeField] private string m_clientMenuScene;
+        [SerializeField] private string m_menuScene;
 
         private bool m_readyToGoToMenu;
         
-        public override void StateLoad()
+        protected override void StateLoad()
         {
             m_readyToGoToMenu = false;
             m_socialServices.OnAuthentication += OnLogin;
         }
 
-        public override void StateUnload()
+        protected override void StateUnload()
         {
             m_socialServices.OnAuthentication -= OnLogin;
         }
@@ -51,13 +51,7 @@ namespace ubv.client.logic
 
         private void GoToMenu()
         {
-#if DEBUG_LOG
-            Debug.Log("Going to menu.");
-#endif // DEBUG_LOG
-            
-            AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_clientMenuScene);
-            m_stateManager.PopState();
-            // animation petit cercle de load to lobby
+            ClientStateManager.Instance.PushState(m_menuScene);
         }
 
         private void OnLogin(string playerIDString)
@@ -75,5 +69,9 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
             }
         }
+
+        protected override void StatePause() { }
+
+        protected override void StateResume() { }
     }   
 }

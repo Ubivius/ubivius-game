@@ -26,12 +26,12 @@ namespace ubv.server.logic
         
         private void Awake()
         {
+            m_serverConnection = ServerNetworkingManager.Instance.ServerConnection;
             StateAwake();
         }
 
         private void Start()
         {
-            m_serverConnection = ServerNetworkingManager.Instance.ServerConnection;
             StateStart();
         }
 

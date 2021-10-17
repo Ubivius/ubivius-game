@@ -21,7 +21,8 @@ namespace ubv.client.logic
         static protected DispatcherMicroservice m_dispatcherService;
         static protected SocialServicesController m_socialServices;
         static protected CharacterDataService m_characterService;
-        static protected ClientStateManager m_stateManager;
+
+        private bool m_isPaused;
 
         static public void InitDependencies()
         {
@@ -31,18 +32,47 @@ namespace ubv.client.logic
             m_dispatcherService = ClientNetworkingManager.Instance.Dispatcher;
             m_socialServices = ClientNetworkingManager.Instance.SocialServices;
             m_characterService = ClientNetworkingManager.Instance.CharacterData;
-            m_stateManager = ClientStateManager.Instance;
         }
 
         protected readonly object m_lock = new object();
-        
-        public virtual void StateLoad() { }
+
+        private void Awake()
+        {
+            m_isPaused = false;
+            StateLoad();
+        }
+
+        protected abstract void StateLoad();
+        protected abstract void StateUnload();
+
+        protected abstract void StatePause();
+        protected abstract void StateResume();
         
         public virtual void StateUpdate() { }
 
         public virtual void StateFixedUpdate() { }
 
-        public virtual void StateUnload() { }
+        private void OnDestroy()
+        {
+            StateUnload();
+        }
 
+        private void OnEnable()
+        {
+            ClientStateManager.Instance.CurrentState = this;
+            if (m_isPaused)
+            {
+                StateResume();
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (!m_isPaused)
+            {
+                m_isPaused = true;
+                StatePause();
+            }
+        }
     }
 }
