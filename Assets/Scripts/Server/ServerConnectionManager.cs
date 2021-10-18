@@ -41,7 +41,6 @@ namespace ubv.server
             UDPServer = ServerNetworkingManager.Instance.UDPServer;
             TCPServer.Subscribe(this);
             UDPServer.Subscribe(this);
-            UDPServer.AcceptNewClients = true;
         }
         
         public void UDPReceive(UDPToolkit.Packet packet, int playerID)

@@ -16,7 +16,6 @@ namespace ubv
             /// <summary>
             /// Wrapper around System.Net.Sockets.UdpClient. 
             /// Manages server-side UDP connections with other clients
-            /// + manages input messages from clients and computes their positions, then sends them back
             /// https://www.winsocketdotnetworkprogramming.com/clientserversocketnetworkcommunication8d.html<
             /// https://gafferongames.com/ 
             /// https://gafferongames.com/post/client_server_connection/
@@ -55,25 +54,16 @@ namespace ubv
                 
                 public void Send(byte[] data, int playerID)
                 {
-                    if (m_playerEndpoints.ContainsKey(playerID))
+                    IPEndPoint endPoint = m_playerEndpoints[playerID];
+                    try
                     {
-                        IPEndPoint endPoint = m_playerEndpoints[playerID];
-                        try
-                        {
-                            byte[] bytes = m_clientConnections[playerID].Send(data, playerID).RawBytes;
-                            m_server.BeginSend(bytes, bytes.Length, endPoint, EndSendCallback, m_server);
-                        }
-                        catch (SocketException e)
-                        {
-#if DEBUG_LOG
-                            Debug.Log("Server socket exception: " + e);
-#endif // DEBUG_LOG
-                        }
+                        byte[] bytes = m_clientConnections[playerID].Send(data, playerID).RawBytes;
+                        m_server.BeginSend(bytes, bytes.Length, endPoint, EndSendCallback, m_server);
                     }
-                    else
+                    catch (SocketException e)
                     {
 #if DEBUG_LOG
-                        Debug.Log("Client " + playerID + " is not registered. Ignoring data send request.");
+                        Debug.Log("Server socket exception: " + e);
 #endif // DEBUG_LOG
                     }
                 }
@@ -88,6 +78,15 @@ namespace ubv
                     m_clientConnections.Add(playerID, new UDPToolkit.ConnectionData());
                     m_clients[playerID].Connect(ep);
                     m_endpointsSet.Add(ep);
+                }
+
+                private void RemoveClient(int playerID)
+                {
+                    m_endpointsSet.Remove(m_playerEndpoints[playerID]);
+                    m_playerEndpoints.Remove(playerID);
+                    m_clients[playerID].Close();
+                    m_clients.Remove(playerID);
+                    m_clientConnections.Remove(playerID);
                 }
 
                 private void EndReceiveCallback(System.IAsyncResult ar)
@@ -123,7 +122,6 @@ namespace ubv
                             if (!m_endpointsSet.Contains(clientEndPoint))
                             {
                                 // this means the player client doesnt have the same UDP endpoint (probably because he DC'd)
-                                
                                 // we delete the endpoint previously paired with the playerID (if any)
                                 if(m_playerEndpoints.ContainsKey(playerID))
                                 {
@@ -137,6 +135,7 @@ namespace ubv
                                 m_endpointsSet.Add(clientEndPoint);
 
                                 m_clients[playerID].Close();
+                                m_clients[playerID] = new UdpClient();
                                 m_clients[playerID].Connect(clientEndPoint);
                             }
 
@@ -174,6 +173,21 @@ namespace ubv
                 public void Unsubscribe(IUDPServerReceiver receiver)
                 {
                     m_receivers.Remove(receiver);
+                }
+
+                private void OnDestroy()
+                {
+                    List<int> playerIDs = new List<int>(m_clients.Keys);
+                    foreach(int id in playerIDs)
+                    {
+                        RemoveClient(id);
+                    }
+
+                    List<IUDPServerReceiver> receivers = new List<IUDPServerReceiver>(m_receivers);
+                    foreach(IUDPServerReceiver rcv in receivers)
+                    {
+                        m_receivers.Remove(rcv);
+                    }
                 }
             }
         }

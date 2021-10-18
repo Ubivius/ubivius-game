@@ -41,6 +41,7 @@ namespace ubv.server.logic
 
         public void Init(ICollection<int> clients)
         {
+            m_serverConnection.UDPServer.AcceptNewClients = false;
             m_tickAccumulator = 0;
             m_masterTick = 0;
             m_currentWorldState = new WorldState();

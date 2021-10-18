@@ -654,7 +654,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_snapshotTicks: 8
-  m_physicsSceneName: proto_move_server
+  m_physicsSceneName: Server
   m_updaters:
   - {fileID: 1470650681}
   - {fileID: 380608787}
