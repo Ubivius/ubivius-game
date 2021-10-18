@@ -168,7 +168,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b694c0d986d43044ba03b11c7d536263, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gameSearchScene: ClientGameSearch
+  m_clientGameSearch: ClientGameSearch
+  m_clientCharacterSelect: ClientCharacterSelect
 --- !u!1001 &327035189
 PrefabInstance:
   m_ObjectHideFlags: 0

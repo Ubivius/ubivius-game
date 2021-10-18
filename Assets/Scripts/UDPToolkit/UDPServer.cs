@@ -34,10 +34,13 @@ namespace ubv
                 private List<IUDPServerReceiver> m_receivers = new List<IUDPServerReceiver>();
 
                 public bool AcceptNewClients;
+
+                private byte[] m_packetBytesBuffer;
                 
 
                 private void Awake()
                 {
+                    m_packetBytesBuffer = new byte[0];
                     m_clients = new Dictionary<int, UdpClient>();
                     m_clientConnections = new Dictionary<int, UDPToolkit.ConnectionData>();
                     m_playerEndpoints = new Dictionary<int, IPEndPoint>();
@@ -94,62 +97,90 @@ namespace ubv
                     IPEndPoint clientEndPoint = new IPEndPoint(0, 0);
                     UdpClient server = (UdpClient)ar.AsyncState;
                     
-                    byte[] bytes = server.EndReceive(ar, ref clientEndPoint);
-
-                    UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
-                    int playerID = packet.PlayerID;
-                    if (packet.HasValidProtocolID())
+                    byte[] bytes = null;
+                    try
                     {
-                        if (!m_clients.ContainsKey(playerID))
+                        bytes = server.EndReceive(ar, ref clientEndPoint);
+                    }
+                    catch (SocketException e)
+                    {
+                        Debug.Log("Socket error: " + e.ToString());
+                    }
+
+                    if (bytes != null)
+                    {
+                        // append to m_packetBytesBuffer
+                        byte[] tmp = new byte[m_packetBytesBuffer.Length];
+                        for (int i = 0; i < tmp.Length; i++)
                         {
-                            if (AcceptNewClients)
+                            tmp[i] = m_packetBytesBuffer[i];
+                        }
+                        m_packetBytesBuffer = new byte[tmp.Length + bytes.Length];
+
+                        for (int i = tmp.Length; i < m_packetBytesBuffer.Length; i++)
+                        {
+                            m_packetBytesBuffer[i] = bytes[i];
+                        }
+
+                        UDPToolkit.Packet packet = UDPToolkit.Packet.FirstPacketFromBytes(m_packetBytesBuffer);
+                        if (packet != null)
+                        {
+                            m_packetBytesBuffer = new byte[0];
+                            int playerID = packet.PlayerID;
+                            if (packet.HasValidProtocolID())
                             {
+                                if (!m_clients.ContainsKey(playerID))
+                                {
+                                    if (AcceptNewClients)
+                                    {
 #if DEBUG_LOG
-                                Debug.Log("Received data from unregistered client(" + playerID.ToString() + "). Adding to clients.");
+                                        Debug.Log("Received data from unregistered client(" + playerID.ToString() + "). Adding to clients.");
 #endif // DEBUG_LOG
-                                AddNewClient(playerID, clientEndPoint);
+                                        AddNewClient(playerID, clientEndPoint);
+                                    }
+                                    else
+                                    {
+#if DEBUG_LOG
+                                        Debug.Log("Received data from unregistered client(" + playerID.ToString() + "). Not accepting new connections.");
+#endif // DEBUG_LOG
+                                    }
+                                }
+
+                                if (m_clients.ContainsKey(playerID))
+                                {
+                                    if (!m_endpointsSet.Contains(clientEndPoint))
+                                    {
+                                        // this means the player client doesnt have the same UDP endpoint (probably because he DC'd)
+                                        // we delete the endpoint previously paired with the playerID (if any)
+                                        if (m_playerEndpoints.ContainsKey(playerID))
+                                        {
+                                            if (m_playerEndpoints[playerID] != null)
+                                            {
+                                                m_endpointsSet.Remove(m_playerEndpoints[playerID]);
+                                            }
+                                        }
+
+                                        m_playerEndpoints[playerID] = clientEndPoint;
+                                        m_endpointsSet.Add(clientEndPoint);
+
+                                        m_clients[playerID].Close();
+                                        m_clients[playerID] = new UdpClient();
+                                        m_clients[playerID].Connect(clientEndPoint);
+                                    }
+
+                                    if (m_clientConnections[playerID].Receive(packet))
+                                    {
+                                        OnReceive(packet, playerID);
+                                    }
+                                }
                             }
                             else
                             {
 #if DEBUG_LOG
-                                Debug.Log("Received data from unregistered client(" + playerID.ToString() + "). Not accepting new connections.");
-#endif // DEBUG_LOG
-                            }
-                        }
-
-                        if (m_clients.ContainsKey(playerID))
-                        {
-                            if (!m_endpointsSet.Contains(clientEndPoint))
-                            {
-                                // this means the player client doesnt have the same UDP endpoint (probably because he DC'd)
-                                // we delete the endpoint previously paired with the playerID (if any)
-                                if(m_playerEndpoints.ContainsKey(playerID))
-                                {
-                                    if(m_playerEndpoints[playerID] != null)
-                                    {
-                                        m_endpointsSet.Remove(m_playerEndpoints[playerID]);
-                                    }
-                                }
-
-                                m_playerEndpoints[playerID] = clientEndPoint;
-                                m_endpointsSet.Add(clientEndPoint);
-
-                                m_clients[playerID].Close();
-                                m_clients[playerID] = new UdpClient();
-                                m_clients[playerID].Connect(clientEndPoint);
-                            }
-
-                            if (m_clientConnections[playerID].Receive(packet))
-                            {
-                                OnReceive(packet, playerID);
-                            }
-                        }
-                    }
-                    else
-                    {
-#if DEBUG_LOG
-                        Debug.Log("Received invalid network protocol ID packet. Rejecting.");
+                                Debug.Log("Received invalid network protocol ID packet. Rejecting.");
 #endif //DEBUG_LOG
+                            }
+                        }
                     }
                     server.BeginReceive(EndReceiveCallback, server);
                 }

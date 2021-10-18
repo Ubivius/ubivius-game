@@ -49,7 +49,8 @@ namespace ubv.common.serialization
             INT64,
             RTT_MSG,
             BITSET,
-            SERVER_SUCCESSFUL_UDP_CONNECT_MESSAGE
+            SERVER_SUCCESSFUL_UDP_CONNECT_MESSAGE,
+            CLIENT_CACHE_DATA
         }
     }
 }

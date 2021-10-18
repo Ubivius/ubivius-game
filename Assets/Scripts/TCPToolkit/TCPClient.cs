@@ -110,6 +110,7 @@ namespace ubv.tcp.client
                 {
                     m_activeEndpoint = true;
                     HandleConnection(stream);
+                    m_exitSignal = true;
                     stream.Close();
                 }
 

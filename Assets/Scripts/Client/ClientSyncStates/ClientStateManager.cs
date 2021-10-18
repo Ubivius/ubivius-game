@@ -23,6 +23,8 @@ namespace ubv.client.logic
         [HideInInspector]
         public ClientSyncState CurrentState = null;
 
+        public io.ClientFileSaveManager FileSaveManager;
+
         private void Awake()
         {
             if(Instance == null)

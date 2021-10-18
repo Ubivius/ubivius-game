@@ -43,11 +43,6 @@ namespace ubv
                     return packet;
                 }
 
-                public static Packet PacketFromBytes(byte[] bytes)
-                {
-                    return new Packet(bytes);
-                }
-
                 public static Packet FirstPacketFromBytes(byte[] bytes)
                 {
                     if(bytes.Length < TCP_HEADER_SIZE)

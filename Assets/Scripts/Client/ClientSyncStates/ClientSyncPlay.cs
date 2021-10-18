@@ -71,8 +71,6 @@ namespace ubv.client.logic
         protected override void StateLoad()
         {
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
-            ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage();
-            m_TCPClient.Send(worldLoaded.GetBytes());
 
             m_localTick = 0;
             m_goalOffset = 0;
@@ -90,7 +88,12 @@ namespace ubv.client.logic
             m_baseTickTime = m_fixedUpdateDeltaTime;
         }
 
-        public void Init(List<int> playerIDs, ClientGameInfo gameInfo)
+        private void Start()
+        {
+            Init(LoadingData.PlayerIDs, LoadingData.GameInfo);
+        }
+
+        private void Init(List<int> playerIDs, ClientGameInfo gameInfo)
         {
             GameInfo = gameInfo;
             
@@ -116,7 +119,10 @@ namespace ubv.client.logic
             m_TCPClient.Subscribe(this);
 
             UpdateClockOffset(LatencyFromRTT(m_meanRTT));
-            
+
+            ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage();
+            m_TCPClient.Send(worldLoaded.GetBytes());
+
             OnInitializationDone?.Invoke();
         }
 

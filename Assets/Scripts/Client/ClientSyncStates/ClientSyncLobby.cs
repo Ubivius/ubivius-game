@@ -25,8 +25,7 @@ namespace ubv.client.logic
             SUBSTATE_WAITING_FOR_WORLD,
             SUBSTATE_GOING_TO_GAME
         }
-
-        [SerializeField] private string m_clientGameSearchScene;
+        
         [SerializeField] private string m_clientPlayScene;
 
         private Flag m_serverSignal;
@@ -50,7 +49,7 @@ namespace ubv.client.logic
             ClientListUpdate = new ClientListUpdateEvent();
             LoadPercentage = 0;
             m_clientCharacters = new Dictionary<int, CharacterData>();
-            Init(LoadingData.ActiveCharacterID);
+            Init();
         }
         
         public void SendReadyToServer()
@@ -120,7 +119,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                 Debug.Log("Starting to load world.");
 #endif // DEBUG_LOG
-                LoadingData.WorldToLoad = m_awaitedInitMessage.CellInfo2DArray.Value;
+                LoadingData.ServerInit = m_awaitedInitMessage;
                 m_awaitedInitMessage = null;
                 GoToGame();
             }
@@ -130,12 +129,12 @@ namespace ubv.client.logic
         {
             LoadingData.PlayerIDs = m_playerIDs;
             LoadingData.GameInfo = new ClientGameInfo(m_clientCharacters.Values);
-            ClientStateManager.Instance.PushState("ClientGame");
+            ClientStateManager.Instance.PushState(m_clientPlayScene);
         }
 
-        private void Init(string activeCharacterID)
+        private void Init()
         {
-            m_activeCharacterID = activeCharacterID;
+            m_activeCharacterID = LoadingData.ActiveCharacter.ID;
             m_awaitedInitMessage = null;
             m_clientCharacters?.Clear();
             m_TCPClient.Subscribe(this);
