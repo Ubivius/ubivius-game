@@ -18,6 +18,8 @@ namespace ubv.server.logic
     /// </summary>
     public class GameCreationState : ServerState
     {
+        static public ServerInitMessage CachedServerInit;
+
         private enum SubState
         {
             SUBSTATE_WAITING_FOR_PLAYERS = 0,
@@ -39,6 +41,7 @@ namespace ubv.server.logic
 
         protected override void StateAwake()
         {
+            CachedServerInit = null;
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_PLAYERS;
             ServerState.m_gameCreationState = this;
             ChangeState(this);
@@ -82,11 +85,11 @@ namespace ubv.server.logic
                     {
                         common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
 
-                        ServerInitMessage message = new ServerInitMessage(m_clientCharacters, cellInfoArray);
+                        CachedServerInit = new ServerInitMessage(m_clientCharacters, cellInfoArray);
 
                         foreach (int id in m_clientCharacters.Keys)
                         {
-                            m_serverConnection.TCPServer.Send(message.GetBytes(), id);
+                            m_serverConnection.TCPServer.Send(CachedServerInit.GetBytes(), id);
                         }
 #if DEBUG_LOG
                         Debug.Log("Waiting for clients to load their worlds");

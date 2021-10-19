@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using ubv.client.logic;
+using System;
 
 namespace ubv.client
 {
@@ -19,16 +20,23 @@ namespace ubv.client
             data.ClientCacheData cache = ClientStateManager.Instance.FileSaveManager.LoadFromFile<data.ClientCacheData>("cache.ubv");
             if (cache != null)
             {
-                if (cache.IsInGame.Value)
+                if ((DateTime.UtcNow - cache.LastUpdated).TotalSeconds > 1200)
                 {
-                    LoadingData.ServerInit = cache.CachedInitMessage;
+                    cache.WasInGame = false;
+                    ClientStateManager.Instance.FileSaveManager.SaveFile(cache, "cache.ubv");
+                }
+                else if (cache.WasInGame)
+                {
+                    data.LoadingData.IsTryingToRejoinGame = cache.WasInGame;
+                    // for now, auto rejoin
+                    RejoinGame();
                 }
             }
         }
 
         public void RejoinGame()
         {
-            if (LoadingData.ServerInit != null)
+            if (data.LoadingData.IsTryingToRejoinGame)
             {
                 ClientStateManager.Instance.PushState(m_clientGameSearch);
             }

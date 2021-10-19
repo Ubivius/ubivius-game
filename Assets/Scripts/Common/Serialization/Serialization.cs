@@ -50,7 +50,8 @@ namespace ubv.common.serialization
             RTT_MSG,
             BITSET,
             SERVER_SUCCESSFUL_UDP_CONNECT_MESSAGE,
-            CLIENT_CACHE_DATA
+            CLIENT_CACHE_DATA,
+            SERVER_REJOIN_GAME_DEMAND
         }
     }
 }

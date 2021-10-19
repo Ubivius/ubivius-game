@@ -28,27 +28,24 @@ namespace ubv.client.logic
         {
             m_cachedCharacters = null;
             m_joiningGame = false;
-            if (LoadingData.ActiveCharacter == null)
-            {
-                m_characterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedFromService));
-            }
+            CharacterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedFromService));
         }
         
         private void OnCharactersFetchedFromService(CharacterData[] characters)
         {
             m_cachedCharacters = characters;
             // for now, skip selection
-            SetActiveCharacter(m_cachedCharacters[0]);
+            SetActiveCharacter(m_cachedCharacters[0].ID);
         }
 
-        public void SetActiveCharacter(CharacterData character)
+        public void SetActiveCharacter(string characterID)
         {
-            LoadingData.ActiveCharacter = character;
+            data.LoadingData.ActiveCharacterID = characterID;
         }
 
         public override void StateUpdate()
         {
-            if (LoadingData.ActiveCharacter != null && !m_joiningGame)
+            if (data.LoadingData.ActiveCharacterID != null && !m_joiningGame)
             {
                 GoToJoinGame();
             }

@@ -23,7 +23,7 @@ namespace ubv.client.world
         
         private void Awake()
         {
-            BuildWorldFromCellInfo(LoadingData.ServerInit.CellInfo2DArray.Value);
+            BuildWorldFromCellInfo(data.LoadingData.ServerInit.CellInfo2DArray.Value);
         }
 
         private void BuildWorldFromCellInfo(CellInfo[,] cellInfos)

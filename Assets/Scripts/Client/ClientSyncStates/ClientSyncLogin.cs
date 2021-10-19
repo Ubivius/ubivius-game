@@ -22,12 +22,12 @@ namespace ubv.client.logic
         protected override void StateLoad()
         {
             m_readyToGoToMenu = false;
-            m_socialServices.OnAuthentication += OnLogin;
+            SocialServices.OnAuthentication += OnLogin;
         }
 
         protected override void StateUnload()
         {
-            m_socialServices.OnAuthentication -= OnLogin;
+            SocialServices.OnAuthentication -= OnLogin;
         }
 
         public override void StateUpdate()
@@ -46,7 +46,7 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
 
             
-            m_socialServices.Authenticate(user, pass);
+            SocialServices.Authenticate(user, pass);
         }
 
         private void GoToMenu()
@@ -59,7 +59,7 @@ namespace ubv.client.logic
             if (playerIDString != null)
             {
                 PlayerID = playerIDString.GetHashCode();
-                UserInfo = m_socialServices.CurrentUser;
+                UserInfo = SocialServices.CurrentUser;
                 m_readyToGoToMenu = true;
             }
             else

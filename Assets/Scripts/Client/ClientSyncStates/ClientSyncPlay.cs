@@ -25,8 +25,6 @@ namespace ubv.client.logic
         }
 
         [SerializeField] private string m_physicsScene;
-
-        public ClientGameInfo GameInfo { get; private set; }
         
         private int m_lastReceivedRemoteTick;
         private int m_localTick;
@@ -38,6 +36,7 @@ namespace ubv.client.logic
         private const ushort CLIENT_STATE_BUFFER_SIZE = 64;
 
         private WorldState[] m_clientStateBuffer;
+
         private InputFrame[] m_inputBuffer;
         private InputFrame m_lastInput;
         private WorldState m_lastReceivedServerState;
@@ -90,17 +89,20 @@ namespace ubv.client.logic
 
         private void Start()
         {
-            Init(LoadingData.PlayerIDs, LoadingData.GameInfo);
+            Init(data.LoadingData.ServerInit);
         }
 
-        private void Init(List<int> playerIDs, ClientGameInfo gameInfo)
+        private void Init(ServerInitMessage serverInit)
         {
-            GameInfo = gameInfo;
+            data.ClientCacheData cache = new data.ClientCacheData();
+            cache.WasInGame = true;
+            cache.LastUpdated = DateTime.UtcNow;
+            ClientStateManager.Instance.FileSaveManager.SaveFile(cache, "cache.ubv");
             
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
-                foreach (int id in playerIDs)
+                foreach (int id in serverInit.PlayerCharacters.Value.Keys)
                 {
                     playerStates.Add(new PlayerState(id));
                 }
@@ -464,7 +466,9 @@ namespace ubv.client.logic
         }
 
         protected override void StateUnload()
-        { }
+        {
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
+        }
 
         protected override void StatePause()
         {

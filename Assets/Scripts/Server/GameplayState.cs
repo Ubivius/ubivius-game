@@ -86,7 +86,7 @@ namespace ubv.server.logic
                 foreach (int id in m_clients)
                 {
                     InputFrame frame = m_zeroFrame;
-                    if (m_clientInputBuffers[id].ContainsKey(m_masterTick) && !m_connectedClients[id])
+                    if (m_clientInputBuffers[id].ContainsKey(m_masterTick) && m_connectedClients[id])
                     {
                         // zero OR duplicate last frame ?
                         // duplicate implies future correction of inputs
@@ -156,6 +156,7 @@ namespace ubv.server.logic
                     List<InputFrame> inputFrames = inputs.InputFrames.Value;
                     int frameIndex = 0;
                     
+
                     for (int i = 0; i < inputFrames.Count; i++)
                     {
                         frameIndex = (int)inputFrames[i].Info.Tick.Value;
@@ -176,23 +177,46 @@ namespace ubv.server.logic
                 }
             }
         }
-        
+
+        protected override void OnTCPReceiveFrom(TCPToolkit.Packet packet, int playerID)
+        {
+            ServerRejoinGameDemand confirmation = common.serialization.IConvertible.CreateFromBytes<ServerRejoinGameDemand>(packet.Data.ArraySegment());
+            if (confirmation != null)
+            {
+                if (m_connectedClients.ContainsKey(playerID))
+                {
+                    m_serverConnection.TCPServer.Send(GameCreationState.CachedServerInit.GetBytes(), playerID);
+                }
+                else
+                {
+                    m_serverConnection.TCPServer.Send(confirmation.GetBytes(), playerID);
+                }
+            }
+        }
+
         protected override void OnPlayerConnect(int playerID)
         {
+            if (m_connectedClients.ContainsKey(playerID))
+            {
+
 #if DEBUG_LOG
-            Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
+                Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
 #endif // DEBUG_LOG
 
-            m_connectedClients[playerID] = true;
+                m_connectedClients[playerID] = true;
+            }
         }
 
         protected override void OnPlayerDisconnect(int playerID)
         {
+            if (m_connectedClients.ContainsKey(playerID))
+            {
 #if DEBUG_LOG
-            Debug.Log("Player " + playerID + " disconnected");
+                Debug.Log("Player " + playerID + " disconnected");
 #endif // DEBUG_LOG
 
-            m_connectedClients[playerID] = false;
+                m_connectedClients[playerID] = false;
+            }
         }
     }
 }

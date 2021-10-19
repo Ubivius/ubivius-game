@@ -1,12 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Net;
-using ubv.udp;
-using System.Collections.Generic;
-using UnityEngine.SceneManagement;
-using ubv.common.data;
-using ubv.tcp;
-using ubv.microservices;
+﻿using ubv.microservices;
+using UnityEngine;
 
 namespace ubv.client.logic
 {
@@ -18,9 +11,9 @@ namespace ubv.client.logic
         static protected tcp.client.TCPClient m_TCPClient;
         static protected udp.client.UDPClient m_UDPClient;
         static protected http.client.HTTPClient m_HTTPClient;
-        static protected DispatcherMicroservice m_dispatcherService;
-        static protected SocialServicesController m_socialServices;
-        static protected CharacterDataService m_characterService;
+        static public DispatcherMicroservice DispatcherService;
+        static public SocialServicesController SocialServices;
+        static public CharacterDataService CharacterService;
 
         private bool m_isPaused;
 
@@ -29,9 +22,9 @@ namespace ubv.client.logic
             m_TCPClient = ClientNetworkingManager.Instance.TCPClient;
             m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
             m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
-            m_dispatcherService = ClientNetworkingManager.Instance.Dispatcher;
-            m_socialServices = ClientNetworkingManager.Instance.SocialServices;
-            m_characterService = ClientNetworkingManager.Instance.CharacterData;
+            DispatcherService = ClientNetworkingManager.Instance.Dispatcher;
+            SocialServices = ClientNetworkingManager.Instance.SocialServices;
+            CharacterService = ClientNetworkingManager.Instance.CharacterData;
         }
 
         protected readonly object m_lock = new object();

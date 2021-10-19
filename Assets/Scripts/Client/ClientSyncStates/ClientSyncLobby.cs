@@ -33,7 +33,6 @@ namespace ubv.client.logic
         private Dictionary<int, CharacterData> m_clientCharacters;
 
         private ServerInitMessage m_awaitedInitMessage;
-        private List<int> m_playerIDs;
 
         public ClientListUpdateEvent ClientListUpdate { get; private set; }
 
@@ -71,7 +70,7 @@ namespace ubv.client.logic
                     Debug.Log("Fetching character " + id.Value + " from microservice");
                     // fetch character data from microservice
                     string strID = id.Value;
-                    m_characterService.Request(new GetSingleCharacterRequest(strID, (CharacterData[] characters) =>
+                    CharacterService.Request(new GetSingleCharacterRequest(strID, (CharacterData[] characters) =>
                     {
                         lock (m_lock)
                         {
@@ -86,16 +85,20 @@ namespace ubv.client.logic
             
             Thread deserializeWorldThread = new Thread(() => 
             {
+#if DEBUG_LOG
                 System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
                 watch.Start();
-                ServerInitMessage start = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data.ArraySegment());
+#endif // DEBUG_LOG
+                ServerInitMessage init = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data.ArraySegment());
+#if DEBUG_LOG
                 watch.Stop();
-                if (start != null)
+#endif //DEBUG_LOG
+                if (init != null)
                 {
 #if DEBUG_LOG
                     Debug.Log("Time elapsed for world deserialization : " + watch.ElapsedMilliseconds + " ms");
 #endif // DEBUG_LOG
-                    m_awaitedInitMessage = start;
+                    m_awaitedInitMessage = init;
                 }
             });
             deserializeWorldThread.Start();
@@ -105,21 +108,15 @@ namespace ubv.client.logic
         {
             if(m_awaitedInitMessage != null)
             {
-                m_playerIDs = new List<int>();
-
-                foreach(int id in m_awaitedInitMessage.PlayerCharacters.Value.Keys)
-                {
-                    m_playerIDs.Add(id);
-                }
 
 #if DEBUG_LOG
-                Debug.Log("Client received confirmation that server is about to start game with " + m_playerIDs.Count + " players");
+                Debug.Log("Client received confirmation that server is about to start game with " + m_awaitedInitMessage.PlayerCharacters.Value.Keys.Count + " players");
 #endif // DEBUG_LOG
 
 #if DEBUG_LOG
                 Debug.Log("Starting to load world.");
 #endif // DEBUG_LOG
-                LoadingData.ServerInit = m_awaitedInitMessage;
+                data.LoadingData.ServerInit = m_awaitedInitMessage;
                 m_awaitedInitMessage = null;
                 GoToGame();
             }
@@ -127,14 +124,12 @@ namespace ubv.client.logic
 
         private void GoToGame()
         {
-            LoadingData.PlayerIDs = m_playerIDs;
-            LoadingData.GameInfo = new ClientGameInfo(m_clientCharacters.Values);
             ClientStateManager.Instance.PushState(m_clientPlayScene);
         }
 
         private void Init()
         {
-            m_activeCharacterID = LoadingData.ActiveCharacter.ID;
+            m_activeCharacterID = data.LoadingData.ActiveCharacterID;
             m_awaitedInitMessage = null;
             m_clientCharacters?.Clear();
             m_TCPClient.Subscribe(this);
@@ -161,7 +156,7 @@ namespace ubv.client.logic
 
         protected override void StateResume()
         {
-            m_TCPClient.Subscribe(this);
+            ClientStateManager.Instance.PopState();
         }
 
         public void OnSuccessfulTCPConnect() { }

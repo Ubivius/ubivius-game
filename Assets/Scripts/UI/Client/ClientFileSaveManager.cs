@@ -8,7 +8,7 @@ namespace ubv.client.io
 {
     public class ClientFileSaveManager : MonoBehaviour
     {
-        public void SaveFile(Serializable obj, string filePath)
+        public void SaveFile(object obj, string filePath)
         {
             string dest = Application.persistentDataPath + "/" + filePath;
             FileStream file;
@@ -22,30 +22,32 @@ namespace ubv.client.io
                 file = File.Create(dest);
             }
 
+            // TODO: Use something else
             BinaryFormatter bf = new BinaryFormatter();
-            bf.Serialize(file, obj.GetBytes());
+            bf.Serialize(file, obj);
             file.Close();
         }
 
-        public T LoadFromFile<T>(string filePath) where T : Serializable, new()
+        public T LoadFromFile<T>(string filePath)
         {
             FileStream file;
-
-            if (File.Exists(filePath))
+            string dest = Application.persistentDataPath + "/" + filePath;
+            if (File.Exists(dest))
             {
-                file = File.OpenRead(filePath);
+                file = File.OpenRead(dest);
             }
             else
             {
                 Debug.LogError("File not found");
-                return null;
+                return default;
             }
 
             BinaryFormatter bf = new BinaryFormatter();
-            byte[] data = (byte[])bf.Deserialize(file);
+            file.Position = 0;
+            T data = (T)bf.Deserialize(file);
             file.Close();
 
-            return IConvertible.CreateFromBytes<T>(data.ArraySegment());
+            return data;
         }
     }
 }
