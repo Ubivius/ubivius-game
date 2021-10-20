@@ -191,6 +191,18 @@ namespace ubv.server.logic
                 {
                     m_serverConnection.TCPServer.Send(confirmation.GetBytes(), playerID);
                 }
+                return;
+            }
+
+            ClientWorldLoadedMessage worldLoaded = common.serialization.IConvertible.CreateFromBytes<ClientWorldLoadedMessage>(packet.Data.ArraySegment());
+            if(worldLoaded != null)
+            {
+                if (m_connectedClients.ContainsKey(playerID))
+                {
+                    ServerStartsMessage starts = new ServerStartsMessage();
+                    m_serverConnection.TCPServer.Send(starts.GetBytes(), playerID);
+                }
+                return;
             }
         }
 

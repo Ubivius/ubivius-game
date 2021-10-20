@@ -68,6 +68,7 @@ namespace ubv.client.logic
         
         protected override void StateUnload()
         {
+            m_joiningGame = false;
         }
 
         protected override void StatePause()
