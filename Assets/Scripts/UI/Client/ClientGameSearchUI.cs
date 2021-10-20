@@ -76,7 +76,7 @@ namespace ubv.ui.client
         {
             CharacterData selectedCharacter = m_characters[selectedCharacterIndex];
             m_characterName.text = selectedCharacter.Name;
-            m_initState.SetActiveCharacter(selectedCharacter);
+            m_initState.SetActiveCharacter(selectedCharacter.ID);
         }
     }
 }

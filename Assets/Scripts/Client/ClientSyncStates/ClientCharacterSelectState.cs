@@ -43,6 +43,11 @@ namespace ubv.client.logic
             data.LoadingData.ActiveCharacterID = characterID;
         }
 
+        public CharacterData[] GetCharacters()
+        {
+            return m_cachedCharacters;
+        }
+
         public override void StateUpdate()
         {
             if (data.LoadingData.ActiveCharacterID != null && !m_joiningGame)

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TMPro;
+using ubv.microservices;
 using UnityEngine;
 using static ubv.microservices.CharacterDataService;
-using static ubv.microservices.UserService;
 
 namespace ubv.ui.client
 {

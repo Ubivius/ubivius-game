@@ -60,7 +60,7 @@ namespace ubv.client.logic
             }
         }
 
-        public UserService.UserInfo GetActiveUser()
+        public UserInfo GetActiveUser()
         {
             return UserInfo;
         }

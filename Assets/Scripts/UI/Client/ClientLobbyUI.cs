@@ -21,7 +21,7 @@ namespace ubv.ui.client
         [SerializeField] private PlayerInLobby m_playerTwo;
         [SerializeField] private PlayerInLobby m_playerThree;
 
-        private UserService.UserInfo m_activeUser;
+        private UserInfo m_activeUser;
         private bool activeUserDisplayed = false;
 
         private SocialServicesController m_socialServices;
@@ -152,7 +152,7 @@ namespace ubv.ui.client
         public void Back()
         {
             m_lobby.Disconnect();
-            AsyncOperation loadGameSearch = SceneManager.LoadSceneAsync(m_gameSearchScene);
+            //Go to game search scene
         }
 
         public void ToggleReady()
