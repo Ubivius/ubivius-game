@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace ubv.ui.client
 {
-    public class LoadingScreen : MonoBehaviour
+    public class LoadingScreenUI : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI m_percentageText;
         [SerializeField] private Image m_background;
@@ -14,11 +14,22 @@ namespace ubv.ui.client
         [SerializeField] private Image m_backgroundLoadingBar;
         [SerializeField] private CanvasGroup m_canvasGroup;
 
-        public float LoadPercentage;
+        [SerializeField]
+        private LoadingScreen m_loadingScreen;
+
+        private float m_currentPercentage;
+
+        private void Awake()
+        {
+            m_loadingScreen.OnPercentageChanged += (float value) => 
+            {
+                m_currentPercentage = value;
+            };
+        }
 
         private void Update()
         {
-            SetLoadPercentage(LoadPercentage);
+            SetLoadPercentage(m_currentPercentage);
         }
 
         private void SetLoadPercentage(float percentage)

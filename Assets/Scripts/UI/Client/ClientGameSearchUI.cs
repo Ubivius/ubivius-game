@@ -11,7 +11,7 @@ namespace ubv.ui.client
     {
         [SerializeField] private string m_mainMenuScene;
 
-        [SerializeField] private ubv.client.logic.ClientSyncInit m_initState;
+        [SerializeField] private ubv.client.logic.ClientCharacterSelectState m_initState;
         [SerializeField] private TextMeshProUGUI m_characterName;
 
         private int selectedCharacterIndex = 0;

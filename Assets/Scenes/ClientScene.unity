@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ca744133d03f29458f145316e1a9c46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_sceneToLoad: ClientMenu
+  m_sceneToLoad: Init
   m_loadAdditive: 0
 --- !u!4 &1466355311
 Transform:

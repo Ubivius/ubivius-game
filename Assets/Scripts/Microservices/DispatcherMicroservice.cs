@@ -29,9 +29,9 @@ namespace ubv.microservices
         private bool m_readyForNextRequest;
         private Queue<ServerInfoRequest> m_serverInfoRequests;
         
+        [System.Serializable]
         public struct ServerInfo
         {
-            public string server_ip;
             public string server_tcp_ip;
             public string server_udp_ip;
             public int tcp_port;

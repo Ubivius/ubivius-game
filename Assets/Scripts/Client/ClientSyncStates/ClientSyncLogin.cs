@@ -10,21 +10,27 @@ using System.Net.Http;
 
 namespace ubv.client.logic
 {
+    /// <summary>
+    /// Reprensents the client state before he is logged in
+    /// </summary>
     public class ClientSyncLogin : ClientSyncState
     {
-        [SerializeField] private string m_clientMenuScene;
-        [SerializeField] private IPEndPoint m_authEndPoint;
+        [SerializeField] private string m_menuScene;
 
         private bool m_readyToGoToMenu;
         
-        protected override void StateAwake()
+        protected override void StateLoad()
         {
-            ClientSyncState.m_loginState = this;
-            ClientSyncState.m_currentState = this;
             m_readyToGoToMenu = false;
+            SocialServices.OnAuthentication += OnLogin;
         }
 
-        protected override void StateUpdate()
+        protected override void StateUnload()
+        {
+            SocialServices.OnAuthentication -= OnLogin;
+        }
+
+        public override void StateUpdate()
         {
             if (m_readyToGoToMenu)
             {
@@ -39,17 +45,13 @@ namespace ubv.client.logic
             Debug.Log("Trying to log in with " + user);
 #endif // DEBUG_LOG
 
-
-            m_authenticationService.SendLoginRequest(user, pass, OnLogin);
+            
+            SocialServices.Authenticate(user, pass);
         }
 
         private void GoToMenu()
         {
-#if DEBUG_LOG
-            Debug.Log("Going to menu.");
-#endif // DEBUG_LOG
-            AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_clientMenuScene);
-            // animation petit cercle de load to lobby
+            ClientStateManager.Instance.PushScene(m_menuScene);
         }
 
         private void OnLogin(string playerIDString)
@@ -57,7 +59,8 @@ namespace ubv.client.logic
             if (playerIDString != null)
             {
                 PlayerID = playerIDString.GetHashCode();
-                m_userService.SendUserInfoRequest(playerIDString, OnGetUserInfo);
+                UserInfo = SocialServices.CurrentUser;
+                m_readyToGoToMenu = true;
             }
             else
             {
@@ -67,10 +70,8 @@ namespace ubv.client.logic
             }
         }
 
-        private void OnGetUserInfo(microservices.UserService.UserInfo info)
-        {
-            UserInfo = info;
-            m_readyToGoToMenu = true;
-        }
+        protected override void StatePause() { }
+
+        protected override void StateResume() { }
     }   
 }
