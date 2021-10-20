@@ -2,6 +2,7 @@
 using System.Collections;
 using ubv.client.logic;
 using System.Collections.Generic;
+using ubv.microservices;
 
 namespace ubv.ui.client
 {
@@ -28,9 +29,12 @@ namespace ubv.ui.client
             {
                 CharacterUI characterUI = GameObject.Instantiate(m_characterUIPrefab, transform);
                 m_characterUIs[id] = characterUI;
-                string name = m_clientPlayState.GameInfo.PlayerCharacters[id].Name;
-                characterUI.SetName(name);
-                characterUI.TargetPlayerTransform = m_playerUpdater.Bodies[id].transform;
+                string strID = ubv.client.data.LoadingData.ServerInit.PlayerCharacters.Value[id].Value;
+                ClientSyncState.CharacterService.Request(new GetSingleCharacterRequest(strID, (CharacterDataService.CharacterData[] character) =>
+                {
+                    characterUI.SetName(character[0].Name);
+                    characterUI.TargetPlayerTransform = m_playerUpdater.Bodies[id].transform;
+                }));
             }
         }
 

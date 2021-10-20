@@ -207,7 +207,7 @@ namespace ubv.tcp.server
             {
                 foreach (ITCPServerReceiver receiver in m_receivers)
                 {
-                    receiver.OnConnect(playerID);
+                    receiver.OnTCPConnect(playerID);
                 }
             }
         }
@@ -227,7 +227,7 @@ namespace ubv.tcp.server
             {
                 foreach (ITCPServerReceiver receiver in m_receivers)
                 {
-                    receiver.OnDisconnect(playerID);
+                    receiver.OnTCPDisconnect(playerID);
                 }
             }
         }
@@ -301,7 +301,7 @@ namespace ubv.tcp.server
                             {
                                 foreach (ITCPServerReceiver receiver in m_receivers)
                                 {
-                                    receiver.ReceivePacket(packet, playerID);
+                                    receiver.TCPReceive(packet, playerID);
                                 }
                             }
                         }

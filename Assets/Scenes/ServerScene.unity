@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ca744133d03f29458f145316e1a9c46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_sceneToLoad: proto_move_server
+  m_sceneToLoad: Server
   m_loadAdditive: 0
 --- !u!4 &487330921
 Transform:

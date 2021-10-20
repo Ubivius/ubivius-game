@@ -10,26 +10,27 @@ using System.Net.Http;
 
 namespace ubv.client.logic
 {
+    /// <summary>
+    /// Reprensents the client state before he is logged in
+    /// </summary>
     public class ClientSyncLogin : ClientSyncState
     {
-        [SerializeField] private string m_clientMenuScene;
-        [SerializeField] private IPEndPoint m_authEndPoint;
+        [SerializeField] private string m_menuScene;
 
         private bool m_readyToGoToMenu;
         
-        protected override void StateAwake()
+        protected override void StateLoad()
         {
-            ClientSyncState.m_loginState = this;
-            ClientSyncState.m_currentState = this;
             m_readyToGoToMenu = false;
+            SocialServices.OnAuthentication += OnLogin;
         }
 
-        protected override void StateStart()
+        protected override void StateUnload()
         {
-            m_socialServices.OnAuthentication += OnLogin;
+            SocialServices.OnAuthentication -= OnLogin;
         }
 
-        protected override void StateUpdate()
+        public override void StateUpdate()
         {
             if (m_readyToGoToMenu)
             {
@@ -45,16 +46,12 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
 
             
-            m_socialServices.Authenticate(user, pass);
+            SocialServices.Authenticate(user, pass);
         }
 
         private void GoToMenu()
         {
-#if DEBUG_LOG
-            Debug.Log("Going to menu.");
-#endif // DEBUG_LOG
-            AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_clientMenuScene);
-            // animation petit cercle de load to lobby
+            ClientStateManager.Instance.PushScene(m_menuScene);
         }
 
         private void OnLogin(string playerIDString)
@@ -62,7 +59,7 @@ namespace ubv.client.logic
             if (playerIDString != null)
             {
                 PlayerID = playerIDString.GetHashCode();
-                UserInfo = m_socialServices.CurrentUser;
+                UserInfo = SocialServices.CurrentUser;
                 m_readyToGoToMenu = true;
             }
             else
@@ -72,5 +69,9 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
             }
         }
+
+        protected override void StatePause() { }
+
+        protected override void StateResume() { }
     }   
 }

@@ -1,79 +1,72 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Net;
-using ubv.udp;
-using System.Collections.Generic;
-using UnityEngine.SceneManagement;
-using ubv.common.data;
-using ubv.tcp;
-using ubv.microservices;
+﻿using ubv.microservices;
+using UnityEngine;
 
 namespace ubv.client.logic
 {
     abstract public class ClientSyncState : MonoBehaviour
     {
         static public int? PlayerID { get; protected set; }
-
         static public UserInfo UserInfo { get; protected set; }
-
-        static protected ClientSyncState m_currentState = null;
-
-        static protected ClientSyncLogin    m_loginState;
-        static protected ClientSyncInit     m_initState;
-        static protected ClientSyncLobby    m_lobbyState;
-        static protected ClientSyncPlay     m_playState;
-
+        
         static protected tcp.client.TCPClient m_TCPClient;
         static protected udp.client.UDPClient m_UDPClient;
         static protected http.client.HTTPClient m_HTTPClient;
-        static protected DispatcherMicroservice m_dispatcherService;
-        static protected SocialServicesController m_socialServices;
-        static protected CharacterDataService m_characterService;
+        static public DispatcherMicroservice DispatcherService;
+        static public SocialServicesController SocialServices;
+        static public CharacterDataService CharacterService;
 
-        static private bool m_isSetup = false;
+        private bool m_isPaused;
+
+        static public void InitDependencies()
+        {
+            m_TCPClient = ClientNetworkingManager.Instance.TCPClient;
+            m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
+            m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
+            DispatcherService = ClientNetworkingManager.Instance.Dispatcher;
+            SocialServices = ClientNetworkingManager.Instance.SocialServices;
+            CharacterService = ClientNetworkingManager.Instance.CharacterData;
+        }
+
+        protected readonly object m_lock = new object();
 
         private void Awake()
         {
-            StateAwake();
+            m_isPaused = false;
+            ClientStateManager.Instance.AddStateToManager(gameObject.scene.name, this);
+            StateLoad();
         }
 
-        private void Start()
+        protected abstract void StateLoad();
+        protected abstract void StateUnload();
+
+        protected abstract void StatePause();
+        protected abstract void StateResume();
+        
+        public virtual void StateUpdate() { }
+
+        public virtual void StateFixedUpdate() { }
+
+        private void OnDestroy()
         {
-            if (!m_isSetup)
+            StateUnload();
+        }
+
+        private void OnEnable()
+        {
+            ClientStateManager.Instance.SetCurrentState(this);
+            if (m_isPaused)
             {
-                m_TCPClient = ClientNetworkingManager.Instance.TCPClient;
-                m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
-                m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
-                m_dispatcherService = ClientNetworkingManager.Instance.Dispatcher;
-                m_socialServices = ClientNetworkingManager.Instance.SocialServices;
-                m_characterService = ClientNetworkingManager.Instance.CharacterData;
-
-                m_isSetup = true;
+                StateResume();
             }
-            StateStart();
         }
 
-        private void Update()
+        private void OnDisable()
         {
-            if (m_currentState != this)
-                return;
-
-            StateUpdate();
+            if (!m_isPaused)
+            {
+                m_isPaused = true;
+                StatePause();
+            }
         }
-
-        private void FixedUpdate()
-        {
-            if (m_currentState != this)
-                return;
-
-            StateFixedUpdate();
-        }
-
-        protected virtual void StateAwake() { }
-        protected virtual void StateStart() { }
-        protected virtual void StateUpdate() { }
-        protected virtual void StateFixedUpdate() { }
-
-        protected readonly object m_lock = new object();
     }
 }
