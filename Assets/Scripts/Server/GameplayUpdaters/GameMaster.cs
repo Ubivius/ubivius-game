@@ -88,15 +88,19 @@ namespace ubv.server.logic
             {
                 case Section.NorthEast:
                     m_sectionState._NorthEastButton = true;
+                    Debug.Log("Section North East");
                     break;
                 case Section.SouthEast:
                     m_sectionState._SouthEastButton = true;
+                    Debug.Log("Section South East");
                     break;
                 case Section.SouthWest:
                     m_sectionState._SouthWestButton = true;
+                    Debug.Log("Section South West");
                     break;
                 case Section.NorthWest:
                     m_sectionState._NorthWestButton = true;
+                    Debug.Log("Section North West");
                     break;
             }
             if (m_sectionState.UnlockFinalDoor())
@@ -107,7 +111,7 @@ namespace ubv.server.logic
 
         public void InteractFinalButton()
         {
-            Debug.Log("Partie terminer");
+            Debug.Log("PARTIE FINI FINI FINI FINI FINI FINI FINI");
 
             // Finir la partie
         }
@@ -117,41 +121,49 @@ namespace ubv.server.logic
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section0_NorthEast))
             {
                 RemoveDoor(m_doorSection0NorthEast);
+                m_sectionState._DoorNorthEastOpened = true;
                 Debug.Log("Section0 - North East Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section0_SouthEast))
             {
                 RemoveDoor(m_doorSection0SouthEast);
+                m_sectionState._DoorSouthEastOpened = true;
                 Debug.Log("Section0 - South East Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section0_SouthWest))
             {
                 RemoveDoor(m_doorSection0SouthWest);
+                m_sectionState._DoorSouthWestOpened = true;
                 Debug.Log("Section0 - South West Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section0_NorthWest))
             {
                 RemoveDoor(m_doorSection0NorthWest);
+                m_sectionState._DoorNorthWestOpened = true;
                 Debug.Log("Section0 - North West Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section_North))
             {
                 RemoveDoor(m_doorNorth);
+                m_sectionState._DoorNorthOpened = true;
                 Debug.Log("North Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section_East))
             {
                 RemoveDoor(m_doorEast);
+                m_sectionState._DoorEastOpened = true;
                 Debug.Log("East Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section_South))
             {
                 RemoveDoor(m_doorSouth);
+                m_sectionState._DoorSouthOpened = true;
                 Debug.Log("South Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section_West))
             {
                 RemoveDoor(m_doorWest);
+                m_sectionState._DoorWestOpened = true;
                 Debug.Log("West Opened");
             }
         }

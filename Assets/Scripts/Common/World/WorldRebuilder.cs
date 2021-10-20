@@ -56,6 +56,9 @@ namespace ubv.client.world
             List<Vector3Int> doorButtonPos =  new List<Vector3Int>();
             List<Vector3Int> playerSpawnPos = new List<Vector3Int>();
 
+
+
+
             for (int x = 0; x < cellInfos.GetLength(0); x++)
             {
                 for (int y = 0; y < cellInfos.GetLength(1); y++)
