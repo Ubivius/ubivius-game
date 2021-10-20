@@ -254,6 +254,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_clientGameScene: ClientGame
   m_clientLobbyScene: ClientLobby
+  m_rejoinDemandTime: 5
+  m_TCPTimeout: 5
+  m_dispatcherTimeout: 5
   m_UDPPingTimerIntervalMS: 500
 --- !u!1001 &1265392523
 PrefabInstance:

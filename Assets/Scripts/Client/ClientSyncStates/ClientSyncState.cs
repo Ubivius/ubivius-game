@@ -32,6 +32,7 @@ namespace ubv.client.logic
         private void Awake()
         {
             m_isPaused = false;
+            ClientStateManager.Instance.AddStateToManager(gameObject.scene.name, this);
             StateLoad();
         }
 
@@ -52,7 +53,7 @@ namespace ubv.client.logic
 
         private void OnEnable()
         {
-            ClientStateManager.Instance.CurrentState = this;
+            ClientStateManager.Instance.SetCurrentState(this);
             if (m_isPaused)
             {
                 StateResume();

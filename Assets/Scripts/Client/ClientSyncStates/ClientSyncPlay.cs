@@ -94,10 +94,7 @@ namespace ubv.client.logic
 
         private void Init(ServerInitMessage serverInit)
         {
-            data.ClientCacheData cache = new data.ClientCacheData();
-            cache.WasInGame = true;
-            cache.LastUpdated = DateTime.UtcNow;
-            ClientStateManager.Instance.FileSaveManager.SaveFile(cache, "cache.ubv");
+            data.ClientCacheData.SaveCache(true);
             
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {

@@ -6,9 +6,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace ubv.client.io
 {
-    public class ClientFileSaveManager : MonoBehaviour
+    public class ClientFileSaveManager
     {
-        public void SaveFile(object obj, string filePath)
+        static public void SaveFile(object obj, string filePath)
         {
             string dest = Application.persistentDataPath + "/" + filePath;
             FileStream file;
@@ -22,13 +22,13 @@ namespace ubv.client.io
                 file = File.Create(dest);
             }
 
-            // TODO: Use something else
+            // TODO: Use something else (BinaryFormatter is not secure)
             BinaryFormatter bf = new BinaryFormatter();
             bf.Serialize(file, obj);
             file.Close();
         }
 
-        public T LoadFromFile<T>(string filePath)
+        static public T LoadFromFile<T>(string filePath)
         {
             FileStream file;
             string dest = Application.persistentDataPath + "/" + filePath;

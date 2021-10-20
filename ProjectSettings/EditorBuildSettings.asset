@@ -20,9 +20,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Client/ClientLobby.unity
     guid: 10f132591ffbfb84bbee232a843710cd
-  - enabled: 0
-    path: Assets/Scenes/Prototypes/proto_move_client.unity
-    guid: ce42f548dd5b2f147970832d5aeff2a5
   - enabled: 1
     path: Assets/Scenes/ClientScene.unity
     guid: d4457cac4ca0fc04a95fe767583543a6

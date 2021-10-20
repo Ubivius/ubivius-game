@@ -63,7 +63,7 @@ namespace ubv.client.logic
         private void GoToJoinGame()
         {
             m_joiningGame = true;
-            ClientStateManager.Instance.PushState(m_clientGameSearch);
+            ClientStateManager.Instance.PushScene(m_clientGameSearch);
         }
         
         protected override void StateUnload()

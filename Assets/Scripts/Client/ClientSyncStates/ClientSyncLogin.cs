@@ -51,7 +51,7 @@ namespace ubv.client.logic
 
         private void GoToMenu()
         {
-            ClientStateManager.Instance.PushState(m_menuScene);
+            ClientStateManager.Instance.PushScene(m_menuScene);
         }
 
         private void OnLogin(string playerIDString)

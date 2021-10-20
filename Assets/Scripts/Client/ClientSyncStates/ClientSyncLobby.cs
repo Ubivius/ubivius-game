@@ -124,7 +124,7 @@ namespace ubv.client.logic
 
         private void GoToGame()
         {
-            ClientStateManager.Instance.PushState(m_clientPlayScene);
+            ClientStateManager.Instance.PushScene(m_clientPlayScene);
         }
 
         private void Init()

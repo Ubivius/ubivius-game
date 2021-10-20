@@ -12,18 +12,17 @@ namespace ubv.client
 
         public void GoToPlay()
         {
-            ClientStateManager.Instance.PushState(m_clientCharacterSelect);
+            ClientStateManager.Instance.PushScene(m_clientCharacterSelect);
         }
 
         private void Start()
         {
-            data.ClientCacheData cache = ClientStateManager.Instance.FileSaveManager.LoadFromFile<data.ClientCacheData>("cache.ubv");
+            data.ClientCacheData cache = data.ClientCacheData.LoadCache();
             if (cache != null)
             {
                 if ((DateTime.UtcNow - cache.LastUpdated).TotalSeconds > 1200)
                 {
-                    cache.WasInGame = false;
-                    ClientStateManager.Instance.FileSaveManager.SaveFile(cache, "cache.ubv");
+                    data.ClientCacheData.SaveCache(false);
                 }
                 else if (cache.WasInGame)
                 {
@@ -38,7 +37,7 @@ namespace ubv.client
         {
             if (data.LoadingData.IsTryingToRejoinGame)
             {
-                ClientStateManager.Instance.PushState(m_clientGameSearch);
+                ClientStateManager.Instance.PushScene(m_clientGameSearch);
             }
         }
 
