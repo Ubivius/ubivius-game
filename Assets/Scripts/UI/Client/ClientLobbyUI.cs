@@ -53,6 +53,7 @@ namespace ubv.ui.client
 
         private void Start()
         {
+            base.Start();
             m_userService = ubv.client.logic.ClientNetworkingManager.Instance.User;
             m_loadingScreen.gameObject.SetActive(false);
             m_lobby.ClientListUpdate.AddListener(UpdatePlayers);
@@ -65,6 +66,8 @@ namespace ubv.ui.client
 
         private void Update()
         {
+            base.Update();
+
             if(Time.frameCount % 69 == 0)
             {
                 foreach (CharacterData character in m_characters)
@@ -167,6 +170,7 @@ namespace ubv.ui.client
 
         public void Back()
         {
+            m_lobby.Disconnect();
             AsyncOperation loadGameSearch = SceneManager.LoadSceneAsync(m_gameSearchScene);
         }
 

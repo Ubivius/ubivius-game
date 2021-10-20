@@ -190,6 +190,12 @@ namespace ubv.client.logic
             }
         }
 
+        public void Disconnect()
+        {
+            m_TCPClient.Disconnect();
+            m_UDPClient.Disconnect();
+        }
+
         public void OnDisconnect()
         {
             ClientListUpdate.Invoke(new List<CharacterData>());

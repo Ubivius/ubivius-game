@@ -139,6 +139,11 @@ namespace ubv
                         m_receivers[i].ReceivePacket(packet);
                     }
                 }
+
+                public void Disconnect()
+                {
+                    m_client.Close();
+                }
             }
         }
     }

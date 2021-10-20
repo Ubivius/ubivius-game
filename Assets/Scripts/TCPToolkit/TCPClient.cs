@@ -393,7 +393,11 @@ namespace ubv.tcp.client
             Thread thread = new Thread(new ThreadStart(CommThread));
             thread.Start();
         }
-        
+
+        public void Disconnect()
+        {
+            m_client.Close();
+        }
 
         public bool IsConnected()
         {
