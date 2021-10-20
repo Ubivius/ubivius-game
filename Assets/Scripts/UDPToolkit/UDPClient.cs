@@ -29,8 +29,11 @@ namespace ubv
 
                 private List<IUDPClientReceiver> m_receivers = new List<IUDPClientReceiver>();
 
+                private byte[] m_packetBytesBuffer;
+
                 private void Awake()
                 {
+                    m_packetBytesBuffer = new byte[0];
                     m_connectionData = new UDPToolkit.ConnectionData();
                     m_sequencesSendTime = new Dictionary<uint, float>();
                     
@@ -110,11 +113,26 @@ namespace ubv
 
                     if (bytes != null)
                     {
-                        UDPToolkit.Packet packet = UDPToolkit.Packet.PacketFromBytes(bytes);
-                        
-                        if (m_connectionData.Receive(packet))
+                        byte[] tmp = new byte[m_packetBytesBuffer.Length];
+                        for (int i = 0; i < tmp.Length; i++)
                         {
-                            Distribute(packet);
+                            tmp[i] = m_packetBytesBuffer[i];
+                        }
+                        m_packetBytesBuffer = new byte[tmp.Length + bytes.Length];
+
+                        for (int i = tmp.Length; i < m_packetBytesBuffer.Length; i++)
+                        {
+                            m_packetBytesBuffer[i] = bytes[i];
+                        }
+
+                        UDPToolkit.Packet packet = UDPToolkit.Packet.FirstPacketFromBytes(m_packetBytesBuffer);
+                        if (packet != null)
+                        {
+                            m_packetBytesBuffer = new byte[0];
+                            if (m_connectionData.Receive(packet))
+                            {
+                                Distribute(packet);
+                            }
                         }
                     }
 
