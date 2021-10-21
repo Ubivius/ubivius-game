@@ -170,6 +170,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_clientGameSearch: ClientGameSearch
   m_clientCharacterSelect: ClientCharacterSelect
+  m_inputModule: {fileID: 686921231}
 --- !u!1001 &327035189
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -115,6 +115,7 @@ namespace ubv.client.logic
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneToLoad));
             m_loadingScreen.gameObject.SetActive(false);
             m_sceneStates[sceneToLoad].gameObject.SetActive(true);
+            m_sceneStates[sceneToLoad].OnStart();
         }
 
         private IEnumerator UnloadSceneCoroutine(string sceneToUnload)
