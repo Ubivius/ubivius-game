@@ -131,6 +131,7 @@ GameObject:
   m_Component:
   - component: {fileID: 134844666}
   - component: {fileID: 134844665}
+  - component: {fileID: 134844667}
   m_Layer: 0
   m_Name: ClientSyncPlay
   m_TagString: Untagged
@@ -157,7 +158,6 @@ MonoBehaviour:
   m_defaultRTTEstimate: 0.08
   m_updaters:
   - {fileID: 554541790}
-  - {fileID: 969313555}
   m_packetLossChance: 0.01
 --- !u!4 &134844666
 Transform:
@@ -339,7 +339,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_playerUpdater: {fileID: 554541790}
-  cam: {fileID: 8568193984628607418}
+  cam: {fileID: 8568193984628607419}
 --- !u!4 &376912850
 Transform:
   m_ObjectHideFlags: 0
@@ -352,7 +352,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &482350416
 GameObject:
@@ -1731,6 +1731,12 @@ MonoBehaviour:
 --- !u!4 &8568193984628607418 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8568193985000567095, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
+    type: 3}
+  m_PrefabInstance: {fileID: 8568193984628607415}
+  m_PrefabAsset: {fileID: 0}
+--- !u!20 &8568193984628607419 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
     type: 3}
   m_PrefabInstance: {fileID: 8568193984628607415}
   m_PrefabAsset: {fileID: 0}

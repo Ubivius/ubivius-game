@@ -42,11 +42,6 @@ namespace ubv.server.logic
                 m_isSprinting.Add(id, false);
 
                 PlayerState playerState = state.Players()[id];
-				
-                m_isShooting[id] = false;
-                m_shootingDirection[id] = new Vector2(0, 0);
-
-                PlayerState playerState = state.Players()[id];
 
                 playerState.Position.Value = m_bodies[id].position;
 
