@@ -4,12 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using ubv.client;
 
 namespace ubv.ui.client
 {
     public class ClientMenuUI : TabBehaviour
     {
-        [SerializeField] private string m_gameSearchScene;
+        [SerializeField]
+        private ClientMenuState m_menuState;
 
         [SerializeField] private Button m_playButton;
         [SerializeField] private Button m_statsButton;
@@ -18,7 +20,7 @@ namespace ubv.ui.client
 
         public void Play()
         {
-            AsyncOperation loadLobby = SceneManager.LoadSceneAsync(m_gameSearchScene);
+            m_menuState.GoToPlay();
         }
 
         public void Stats()

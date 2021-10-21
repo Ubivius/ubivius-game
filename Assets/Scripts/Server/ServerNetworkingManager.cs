@@ -9,6 +9,7 @@ namespace ubv.server.logic
 
         public const int SERVER_TICK_BUFFER_SIZE = 4;
 
+        public ServerConnectionManager ServerConnection;
         public tcp.server.TCPServer TCPServer;
         public udp.server.UDPServer UDPServer;
 

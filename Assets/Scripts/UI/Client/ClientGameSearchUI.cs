@@ -7,7 +7,7 @@ namespace ubv.ui.client
 {
     public class ClientGameSearchUI : MonoBehaviour
     {
-        [SerializeField] private ubv.client.logic.ClientSyncInit m_initState;
+        [SerializeField] private ubv.client.logic.ClientCharacterSelectState m_initState;
         [SerializeField] private TextMeshProUGUI m_characterName;
 
         // TODO LATER:

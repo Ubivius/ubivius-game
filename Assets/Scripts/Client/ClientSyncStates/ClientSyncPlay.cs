@@ -18,9 +18,13 @@ namespace ubv.client.logic
     /// </summary>
     public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
     {
-        [SerializeField] private string m_physicsScene;
+        private enum SubState
+        {
+            SUBSTATE_WAITING_FOR_SERVER_GO,
+            SUBSTATE_PLAY
+        }
 
-        public ClientGameInfo GameInfo { get; private set; }
+        [SerializeField] private string m_physicsScene;
         
         private int m_lastReceivedRemoteTick;
         private int m_localTick;
@@ -32,6 +36,7 @@ namespace ubv.client.logic
         private const ushort CLIENT_STATE_BUFFER_SIZE = 64;
 
         private WorldState[] m_clientStateBuffer;
+
         private InputFrame[] m_inputBuffer;
         private InputFrame m_lastInput;
         private WorldState m_lastReceivedServerState;
@@ -52,7 +57,8 @@ namespace ubv.client.logic
         [SerializeField] private float m_defaultRTTEstimate = 0.050f;
         [SerializeField] private List<ClientStateUpdater> m_updaters;
 
-        public bool Initialized { get; private set; }
+        private SubState m_currentSubState;
+        
         private bool ConnectedToServer { get { return m_TCPClient.IsConnected(); } }
         
         public UnityAction OnInitializationDone;
@@ -61,13 +67,10 @@ namespace ubv.client.logic
         [SerializeField] private float m_packetLossChance = 0.15f;
 #endif // NETWORK_SIMULATE
 
-        protected override void StateAwake()
+        protected override void StateLoad()
         {
-            ClientSyncState.m_playState = this;
-        }
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
 
-        public void Init(List<int> playerIDs, ClientGameInfo gameInfo)
-        {
             m_localTick = 0;
             m_goalOffset = 0;
             m_offsetErrorDuration = 0;
@@ -82,15 +85,21 @@ namespace ubv.client.logic
 
             m_fixedUpdateDeltaTime = Time.fixedDeltaTime;
             m_baseTickTime = m_fixedUpdateDeltaTime;
-            
-            Initialized = false;
-            
-            GameInfo = gameInfo;
+        }
+
+        private void Start()
+        {
+            Init(data.LoadingData.ServerInit);
+        }
+
+        private void Init(ServerInitMessage serverInit)
+        {
+            data.ClientCacheData.SaveCache(true);
             
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
-                foreach (int id in playerIDs)
+                foreach (int id in serverInit.PlayerCharacters.Value.Keys)
                 {
                     playerStates.Add(new PlayerState(id));
                 }
@@ -110,11 +119,13 @@ namespace ubv.client.logic
 
             UpdateClockOffset(LatencyFromRTT(m_meanRTT));
 
-            Initialized = true;
+            ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage();
+            m_TCPClient.Send(worldLoaded.GetBytes());
+
             OnInitializationDone?.Invoke();
         }
 
-        protected override void StateFixedUpdate()
+        public override void StateFixedUpdate()
         {
             lock (m_lock)
             {
@@ -147,25 +158,14 @@ namespace ubv.client.logic
             }
         }
 
-        protected override void StateUpdate()
+        public override void StateUpdate()
         {
-            if (!Initialized)
-                return;
-
-            if (ConnectedToServer)
+            if (ShouldUpdate())
             {
                 m_lastInput = InputController.CurrentFrame();
             }
         }
-
-        public void RegisterUpdater(ClientStateUpdater updater)
-        {
-            if (!Initialized)
-                return;
-
-            m_updaters.Add(updater);
-        }
-
+        
         private void UpdateStateFromWorldAndStep(ref WorldState state, InputFrame input, float deltaTime)
         {
             if (!ShouldUpdate())
@@ -367,7 +367,7 @@ namespace ubv.client.logic
 
         private bool ShouldUpdate()
         {
-            return Initialized && ConnectedToServer;
+            return ConnectedToServer && m_currentSubState == SubState.SUBSTATE_PLAY;
         }
 
         private void UpdateClientState(int bufferIndex)
@@ -443,7 +443,15 @@ namespace ubv.client.logic
 
         public void ReceivePacket(TCPToolkit.Packet packet)
         {
-            // empty for now
+            ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data.ArraySegment());
+            if (ready != null)
+            {
+#if DEBUG_LOG
+                Debug.Log("Received server start message.");
+#endif // DEBUG_LOG
+                m_currentSubState = SubState.SUBSTATE_PLAY;
+                return;
+            }
         }
 
         public void OnDisconnect()
@@ -451,6 +459,20 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Disconnected from server.");
 #endif // DEBUG_LOG
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
+        }
+
+        protected override void StateUnload()
+        {
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
+        }
+
+        protected override void StatePause()
+        {
+        }
+
+        protected override void StateResume()
+        {
         }
     }
 }
