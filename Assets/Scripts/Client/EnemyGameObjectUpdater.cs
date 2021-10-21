@@ -25,7 +25,6 @@ namespace ubv.client.logic
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private EnemySettings m_enemySettings;
 
-        private int m_nbOfEnemy;
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, EnemyStateMachine> EnemyStateMachine { get; private set; }
 
@@ -37,19 +36,8 @@ namespace ubv.client.logic
 
         public override void Init(WorldState clientState, int localID)
         {
-            Debug.Log("BUUUULLLLLLLLLLLLLLLLLLLLLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSHHHHHHHHHHHITTT");
-
-            int id = 0;
-            /*foreach (EnemyStateData state in clientState.Enemies().Values)
-            {
-                id = state.GUID.Value;
-                m_goalStates[id] = state;
-            }*/
-
             m_goalStates = new Dictionary<int, EnemyStateData>();
             Bodies = new Dictionary<int, Rigidbody2D>();
-            m_nbOfEnemy = 0;
-
         }
 
         public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
@@ -57,6 +45,12 @@ namespace ubv.client.logic
             bool err = false;
             // mettre un bool pour IsAlreadyCorrecting ?
             // check correction on goalStates au lieu du current position TODO
+
+            if (localState.Enemies().Count != remoteState.Enemies().Count)
+            {
+                return true;
+            }
+
             foreach (EnemyStateData enemyStateData in remoteState.Enemies().Values)
             {
                 err = ((enemyStateData.Position.Value - localState.Enemies()[enemyStateData.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance) &&
@@ -109,23 +103,40 @@ namespace ubv.client.logic
 
         public override void UpdateWorldFromState(WorldState remoteState)
         {
-            int id = 0;
             m_timeSinceLastGoal = 0;
+
             foreach (EnemyStateData enemy in remoteState.Enemies().Values)
             {
-                Debug.Log("Instantiate enemy client");
-                // va falloir gérer pour les enemies mort
-                id = enemy.GUID.Value;
-                GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
-                Bodies[id] = enemyGameObject.GetComponent<Rigidbody2D>();
-                Bodies[id].name = "Client enemy " + id.ToString();
-                //EnemyStateMachine[id] = enemyGameObject.GetComponent<EnemyStateMachine>();
-
-                m_goalStates[enemy.GUID.Value] = enemy;
+                if (!Bodies.ContainsKey(enemy.GUID.Value))
+                {
+                    Debug.Log("Instantiate enemy client");
+                    GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
+                    Bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
+                    Bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
+                    //EnemyStateMachine[id] = enemyGameObject.GetComponent<EnemyStateMachine>();
+                }
 
                 Bodies[enemy.GUID.Value].position = enemy.Position.Value;
                 Bodies[enemy.GUID.Value].rotation = enemy.Rotation.Value;
                 //EnemyStateMachine[enemy.GUID.Value].CurrentEnemyState = enemy.EnemyState;
+
+                m_goalStates[enemy.GUID.Value] = enemy;
+            }
+
+            //Destroy enemy
+            List<int> destroyElements = new List<int>();
+            foreach (int enemyKey in Bodies.Keys)
+            {
+                if(remoteState.Enemies().ContainsKey(enemyKey))
+                {
+                    destroyElements.Add(enemyKey);
+                }
+            }
+
+            foreach(int enemyKey in destroyElements)
+            {
+                Bodies.Remove(enemyKey);
+                m_goalStates.Remove(enemyKey);    // A faire Function pour spawner et destroy enemy
             }
         }
 

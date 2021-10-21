@@ -39,7 +39,7 @@ namespace ubv.server.logic
             //enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
 
             id = System.Guid.NewGuid().GetHashCode();
-            body.position = new Vector2(10, 10); // enemyPathFindingMovement.GetPosition();
+            body.position = new Vector2(94, 97); // enemyPathFindingMovement.GetPosition();
             body.name = "Server enemy " + id.ToString(); // + enemyStateMachine.CurrentEnemyState;
 
             //m_states.Add(id, enemyStateMachine.CurrentEnemyState);
@@ -98,8 +98,10 @@ namespace ubv.server.logic
             //Debug.Log(client.Enemies().Keys);
             foreach (int id in client.Enemies().Keys) //ici ca chie
             {
+                Debug.Log("boucleboule");
                 Rigidbody2D body = m_bodies[id];
                 EnemyStateData enemy = m_enemyStatesData[id];
+                Debug.Log("Update world enemy positon" + body.position);
                 enemy.Position.Value = body.position;
                 enemy.Rotation.Value = body.rotation;
                 //enemy.EnemyState = m_states[id];
