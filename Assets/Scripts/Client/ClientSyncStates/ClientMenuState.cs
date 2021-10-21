@@ -10,11 +10,10 @@ namespace ubv.client
     {
         [SerializeField] private string m_clientGameSearch;
         [SerializeField] private string m_clientCharacterSelect;
-        [SerializeField] private BaseInputModule m_inputModule;
+        [SerializeField] private EventSystem m_eventSystem;
         
         public override void OnStart()
         {
-            m_inputModule.ActivateModule();
             data.ClientCacheData cache = data.ClientCacheData.LoadCache();
             if (cache != null)
             {
@@ -51,7 +50,9 @@ namespace ubv.client
         { }
 
         protected override void StateResume()
-        { }
+        {
+            m_eventSystem.UpdateModules();
+        }
 
         protected override void StateUnload()
         { }

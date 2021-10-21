@@ -79,6 +79,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                         Debug.Log("Cannot connect to TCP Server");
 #endif // DEBUG_LOG
+                        data.ClientCacheData.SaveCache(false);
                         GoBackToPreviousState();
                     }
                     break;
