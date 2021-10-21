@@ -399,11 +399,6 @@ namespace ubv.tcp.client
             thread.Start();
         }
 
-        public void Disconnect()
-        {
-            m_client.Close();
-        }
-
         public bool IsConnected()
         {
             return m_activeEndpoint;

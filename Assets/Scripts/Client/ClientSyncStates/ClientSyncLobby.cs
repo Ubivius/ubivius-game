@@ -136,12 +136,6 @@ namespace ubv.client.logic
             m_TCPClient.Send(new OnLobbyEnteredMessage(m_activeCharacterID).GetBytes());
         }
         
-        public void Disconnect()
-        {
-            m_TCPClient.Disconnect();
-            m_UDPClient.Disconnect();
-        }
-        
         public void OnDisconnect()
         {
 #if DEBUG_LOG

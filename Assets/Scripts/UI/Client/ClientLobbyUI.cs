@@ -151,7 +151,6 @@ namespace ubv.ui.client
 
         public void Back()
         {
-            m_lobby.Disconnect();
             //Go to game search scene
         }
 

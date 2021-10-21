@@ -12,6 +12,7 @@ using static ubv.microservices.CharacterDataService;
 using UnityEngine.Events;
 using ubv.utils;
 using ubv.microservices;
+using TMPro;
 
 namespace ubv.client.logic
 {
@@ -22,6 +23,7 @@ namespace ubv.client.logic
     {
         [SerializeField] private string m_clientGameSearch;
         private CharacterData[] m_cachedCharacters;
+        private int selectedCharacterIndex = 0;
         private bool m_joiningGame;
         
         protected override void StateLoad()
@@ -34,8 +36,7 @@ namespace ubv.client.logic
         private void OnCharactersFetchedFromService(CharacterData[] characters)
         {
             m_cachedCharacters = characters;
-            // for now, skip selection
-            SetActiveCharacter(m_cachedCharacters[0].ID);
+            SetActiveCharacter(m_cachedCharacters[selectedCharacterIndex].ID);
         }
 
         public void SetActiveCharacter(string characterID)
@@ -43,34 +44,55 @@ namespace ubv.client.logic
             data.LoadingData.ActiveCharacterID = characterID;
         }
 
-        public CharacterData[] GetCharacters()
-        {
-            return m_cachedCharacters;
-        }
-
         public override void StateUpdate()
         {
-            if (data.LoadingData.ActiveCharacterID != null && !m_joiningGame)
-            {
-                GoToJoinGame();
-            }
         }
 
         public CharacterData GetActiveCharacter()
         {
             if (m_cachedCharacters != null)
             {
-                return m_cachedCharacters[0];
+                return m_cachedCharacters[selectedCharacterIndex];
             }
             return null;
         }
         
-        private void GoToJoinGame()
+        public void GoToJoinGame()
         {
             m_joiningGame = true;
             ClientStateManager.Instance.PushScene(m_clientGameSearch);
         }
-        
+
+        public string NextCharacter()
+        {
+            string characterName = null;
+            if (selectedCharacterIndex < m_cachedCharacters.Length - 1)
+            {
+                selectedCharacterIndex++;
+                CharacterData character = m_cachedCharacters[selectedCharacterIndex];
+                SetActiveCharacter(character.ID);
+
+                characterName = character.Name;
+            }
+
+            return characterName;
+        }
+
+        public string PreviousCharacter()
+        {
+            string characterName = null;
+            if (selectedCharacterIndex > 0)
+            {
+                selectedCharacterIndex--;
+                CharacterData character = m_cachedCharacters[selectedCharacterIndex];
+                SetActiveCharacter(character.ID);
+
+                characterName = character.Name;
+            }
+
+            return characterName;
+        }
+
         protected override void StateUnload()
         {
             m_joiningGame = false;
