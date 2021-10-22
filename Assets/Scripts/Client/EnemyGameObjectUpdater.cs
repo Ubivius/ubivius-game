@@ -105,12 +105,14 @@ namespace ubv.client.logic
         {
             m_timeSinceLastGoal = 0;
 
+            Debug.Log("nb of enemy in remote:"+remoteState.Enemies().Count.ToString());
             foreach (EnemyStateData enemy in remoteState.Enemies().Values)
             {
                 if (!Bodies.ContainsKey(enemy.GUID.Value))
                 {
                     Debug.Log("Instantiate enemy client");
                     GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
+                    enemyGameObject.transform.position = Vector3.zero;
                     Bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
                     Bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
                     //EnemyStateMachine[id] = enemyGameObject.GetComponent<EnemyStateMachine>();
@@ -127,7 +129,7 @@ namespace ubv.client.logic
             List<int> destroyElements = new List<int>();
             foreach (int enemyKey in Bodies.Keys)
             {
-                if(remoteState.Enemies().ContainsKey(enemyKey))
+                if(!remoteState.Enemies().ContainsKey(enemyKey))
                 {
                     destroyElements.Add(enemyKey);
                 }
@@ -135,6 +137,7 @@ namespace ubv.client.logic
 
             foreach(int enemyKey in destroyElements)
             {
+                Destroy(Bodies[enemyKey]);
                 Bodies.Remove(enemyKey);
                 m_goalStates.Remove(enemyKey);    // A faire Function pour spawner et destroy enemy
             }

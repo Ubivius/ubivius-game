@@ -33,13 +33,14 @@ namespace ubv.server.logic
             Debug.Log("ENEMy INIT world");
 
             GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
+            enemyGameObject.transform.position = Vector3.zero;
             Rigidbody2D body = enemyGameObject.GetComponent<Rigidbody2D>();
             // EnemyPathFindingMovement enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
             //EnemyStateMachine enemyStateMachine = enemyGameObject.GetComponent<EnemyStateMachine>();
             //enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
 
             id = System.Guid.NewGuid().GetHashCode();
-            body.position = new Vector2(94, 97); // enemyPathFindingMovement.GetPosition();
+            body.position = new Vector3(107, 124); // enemyPathFindingMovement.GetPosition();
             body.name = "Server enemy " + id.ToString(); // + enemyStateMachine.CurrentEnemyState;
 
             //m_states.Add(id, enemyStateMachine.CurrentEnemyState);
@@ -98,7 +99,6 @@ namespace ubv.server.logic
             //Debug.Log(client.Enemies().Keys);
             foreach (int id in client.Enemies().Keys) //ici ca chie
             {
-                Debug.Log("boucleboule");
                 Rigidbody2D body = m_bodies[id];
                 EnemyStateData enemy = m_enemyStatesData[id];
                 Debug.Log("Update world enemy positon" + body.position);

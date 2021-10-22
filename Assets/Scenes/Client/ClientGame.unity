@@ -158,6 +158,7 @@ MonoBehaviour:
   m_defaultRTTEstimate: 0.08
   m_updaters:
   - {fileID: 554541790}
+  - {fileID: 1172440998}
   m_packetLossChance: 0.01
 --- !u!4 &134844666
 Transform:
