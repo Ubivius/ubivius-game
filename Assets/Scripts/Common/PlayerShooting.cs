@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using ubv.common.gameplay.shooting;
 
 namespace ubv
 {
@@ -29,12 +30,19 @@ namespace ubv
                 {
                     if (m_lastShot > playerShootingSettings.BulletDelay)
                     {
-                        GameObject bullet = Instantiate(playerShootingSettings.BulletPrefab);
-                        bullet.transform.position = player.FirePoint.transform.position;
-                        Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-
                         Vector3 shootingDirection = new Vector3(aimDirection.x, aimDirection.y, 0.0f);
-                        rb.AddForce(shootingDirection * playerShootingSettings.BulletForce, ForceMode2D.Impulse);
+                        RaycastHit2D[] hits = Physics2D.RaycastAll(player.transform.position, shootingDirection);
+
+                        RaycastHit2D hit = hits[2]; // ignore the first -> player
+                        if (hit.collider != null)
+                        {
+                            Hittable hittable = hit.collider.GetComponent<Hittable>();
+                            if (hittable != null)
+                            {
+                                hittable.OnHit();
+                            }
+                            Debug.DrawLine(player.transform.position, hit.point, Color.green, 1.0f);
+                        }
 
                         m_lastShot = 0;
                     }
