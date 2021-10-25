@@ -593,6 +593,16 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1524123813941880248, guid: bcad3073013bf7e40b03e1cb10780a39,
+        type: 3}
+      propertyPath: m_Padding.m_Top
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1524123813941880248, guid: bcad3073013bf7e40b03e1cb10780a39,
+        type: 3}
+      propertyPath: m_Padding.m_Bottom
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 1524123814079555450, guid: bcad3073013bf7e40b03e1cb10780a39,
         type: 3}
       propertyPath: m_Name
