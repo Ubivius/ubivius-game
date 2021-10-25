@@ -593,16 +593,6 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1524123813941880248, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_Padding.m_Top
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123813941880248, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_Padding.m_Bottom
-      value: 5
-      objectReference: {fileID: 0}
     - target: {fileID: 1524123814079555450, guid: bcad3073013bf7e40b03e1cb10780a39,
         type: 3}
       propertyPath: m_Name
@@ -712,51 +702,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_ErrorColor.a
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_ErrorColor.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_ErrorColor.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_ErrorColor.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_defaultColor.b
-      value: 0.43867922
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_defaultColor.g
-      value: 0.78305614
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_defaultColor.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814586921725, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814586921725, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: -17
       objectReference: {fileID: 0}
     - target: {fileID: 1524123815419339147, guid: bcad3073013bf7e40b03e1cb10780a39,
         type: 3}

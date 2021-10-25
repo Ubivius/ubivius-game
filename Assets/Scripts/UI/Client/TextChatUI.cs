@@ -16,24 +16,28 @@ using UnityEngine.InputSystem.Interactions;
 
 namespace ubv.ui.client
 {
+    [RequireComponent(typeof(RectTransform))]
     public class TextChatUI : MonoBehaviour
     {
         private RectTransform m_rectTransform;
 
         private EventSystem m_system;
 
+        private SocialServicesController m_socialServices;
+
+        [Header("UI components")]
         [SerializeField] private GameObject m_messagesBox;
         [SerializeField] private GameObject m_chatBox;
         [SerializeField] private Scrollbar m_scrollbar;
         [SerializeField] private InputField m_messageInputField;
         [SerializeField] private GameObject m_messagePrefab;
-        [SerializeField] private EventSystem m_eventSystem;
         [SerializeField] private Button m_sendButton;
         [SerializeField] private Button m_showButton;
         [SerializeField] private Button m_hideButton;
         [SerializeField] private Button m_shrinkButton;
         [SerializeField] private Button m_expandButton;
 
+        [Header("Colors")]
         [SerializeField] private Color m_privateColor;
         [SerializeField] private Color m_defaultColor;
         [SerializeField] private Color m_ErrorColor;
@@ -44,28 +48,33 @@ namespace ubv.ui.client
         private const string m_invalidRegex = @"^(\/\S+)";
 
         private bool m_textChatIsActive;
-        public bool m_textChatIsExpanded { get; set; }
-        public bool m_textChatIsHidden { get; set; }
+        public bool TextChatIsExpanded { get; set; }
+        public bool TextChatIsHidden { get; set; }
+
+        private void Awake()
+        {
+            m_socialServices = ClientSyncState.SocialServices;
+        }
 
         void Start() {
-            m_textChatIsExpanded = false;
+            TextChatIsExpanded = false;
             m_textChatIsActive = true;
-            m_textChatIsHidden = false;
+            TextChatIsHidden = false;
             ToggleDisplayChat();
 
             m_system = EventSystem.current;
             m_rectTransform = transform.GetComponent<RectTransform>();
             m_scrollbar.value = 0;
 
-            // TODO Get the current player to be use in send method to send data to the microservice
-            m_playerName = "Jean-Maurice"; // Placeholder name
+            m_playerName = m_socialServices.CurrentUser.UserName;
+            m_socialServices.OnNewMessageFrom += OnNewMessageFrom;
         }
 
         void Update() {
             // Toggle the chat display by pressing return key
             if (Input.GetKeyDown(KeyCode.Return) &&
                 m_system.currentSelectedGameObject != m_messageInputField.gameObject) {
-                if (m_textChatIsHidden)
+                if (TextChatIsHidden)
                     Show();
 
                 ToggleDisplayChat();
@@ -78,14 +87,12 @@ namespace ubv.ui.client
                 m_messageInputField.DeactivateInputField();
                 m_system.SetSelectedGameObject(null);
             }
-
-            // TODO Check if new message in the conversation and print them with PrintGeneralMessage() / PrintPrivateMessage()
         }
 
         public void ToggleDisplayChat() {
             m_textChatIsActive = !m_textChatIsActive;
 
-            if (m_textChatIsExpanded && !m_textChatIsHidden)
+            if (TextChatIsExpanded && !TextChatIsHidden)
                 m_shrinkButton.gameObject.SetActive(m_textChatIsActive);
             else
                 m_expandButton.gameObject.SetActive(m_textChatIsActive);
@@ -104,7 +111,7 @@ namespace ubv.ui.client
             m_messageInputField.gameObject.SetActive(m_textChatIsActive);
             m_sendButton.gameObject.SetActive(m_textChatIsActive);
 
-            if (m_textChatIsHidden)
+            if (TextChatIsHidden)
                 m_showButton.gameObject.SetActive(m_textChatIsActive);
             else
                 m_hideButton.gameObject.SetActive(m_textChatIsActive);
@@ -112,7 +119,7 @@ namespace ubv.ui.client
         }
 
         public void Expand() {
-            m_textChatIsExpanded = true;
+            TextChatIsExpanded = true;
 
             m_rectTransform.offsetMax = new Vector2(m_rectTransform.offsetMax.x, -10);
 
@@ -121,7 +128,7 @@ namespace ubv.ui.client
         }
 
         public void Shrink() {
-            m_textChatIsExpanded = false;
+            TextChatIsExpanded = false;
 
             m_rectTransform.offsetMax = new Vector2(m_rectTransform.offsetMax.x, -820);
 
@@ -131,7 +138,7 @@ namespace ubv.ui.client
 
         public void Hide() {
             m_chatBox.SetActive(false);
-            m_textChatIsHidden = true;
+            TextChatIsHidden = true;
 
             m_hideButton.gameObject.SetActive(false);
             m_showButton.gameObject.SetActive(true);
@@ -142,12 +149,12 @@ namespace ubv.ui.client
 
         public void Show() {
             m_chatBox.SetActive(true);
-            m_textChatIsHidden = false;
+            TextChatIsHidden = false;
 
             m_hideButton.gameObject.SetActive(true);
             m_showButton.gameObject.SetActive(false);
 
-            if (m_textChatIsExpanded)
+            if (TextChatIsExpanded)
                 m_shrinkButton.gameObject.SetActive(true);
             else
                 m_expandButton.gameObject.SetActive(true);
@@ -162,7 +169,7 @@ namespace ubv.ui.client
                 if (t_matchFriend.Success) {
                     PrintPrivateMessage(m_playerName, t_matchFriend.Groups[2].Value, t_matchFriend.Groups[3].Value);
 
-                    // TODO Send message to microservice
+                    m_socialServices.SendMessageTo(t_matchFriend.Groups[2].Value, m_messageInputField.text);
                 }
                 else if (t_matchInvalidCommand.Success) {
                     PrintInvalidMessage(t_matchInvalidCommand.Groups[0].Value);
@@ -170,12 +177,17 @@ namespace ubv.ui.client
                 else {
                     PrintGeneralMessage(m_playerName, m_messageInputField.text);
 
-                    // TODO Send message to microservice
+                    m_socialServices.SendMessageTo(t_matchFriend.Groups[2].Value, m_messageInputField.text);
                 }
 
                 m_messageInputField.text = "";
                 m_scrollbar.value = 0;
             }
+        }
+
+        private void OnNewMessageFrom(string message, MessageInfo msg)
+        {
+            PrintPrivateMessage(msg.UserID, m_playerName, message);
         }
 
         private void PrintPrivateMessage(string a_sender, string a_receiver, string a_message) {
