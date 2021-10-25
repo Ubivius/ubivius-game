@@ -40,8 +40,8 @@ namespace ubv.ui.client
 
         private string m_playerName;
 
-        private string m_friendRegex = @"^(\/w|\/W)\s\""([a-zA-Z0-9 _]+)\""\s(.+)";
-        private string m_invalidRegex = @"^(\/\S+)";
+        private const string m_friendRegex = @"^(\/w|\/W)\s\""([a-zA-Z0-9 _]+)\""\s(.+)";
+        private const string m_invalidRegex = @"^(\/\S+)";
 
         private bool m_textChatIsActive;
         public bool m_textChatIsExpanded { get; set; }
