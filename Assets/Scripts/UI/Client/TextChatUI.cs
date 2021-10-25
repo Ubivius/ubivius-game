@@ -57,8 +57,8 @@ namespace ubv.ui.client
             m_rectTransform = transform.GetComponent<RectTransform>();
             m_scrollbar.value = 0;
 
-            // TODO Get the current player Name to be use in send
-            m_playerName = "Jean-Maurice";
+            // TODO Get the current player to be use in send method to send data to the microservice
+            m_playerName = "Jean-Maurice"; // Placeholder name
         }
 
         void Update() {
