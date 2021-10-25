@@ -32,11 +32,8 @@ namespace ubv
 
                 private UdpClient m_server;
                 private List<IUDPServerReceiver> m_receivers = new List<IUDPServerReceiver>();
-
-                public bool AcceptNewClients;
-
-                private byte[] m_packetBytesBuffer;
                 
+                private byte[] m_packetBytesBuffer;
 
                 private void Awake()
                 {
@@ -83,7 +80,7 @@ namespace ubv
                     m_endpointsSet.Add(ep);
                 }
 
-                private void RemoveClient(int playerID)
+                public void RemoveClient(int playerID)
                 {
                     m_endpointsSet.Remove(m_playerEndpoints[playerID]);
                     m_playerEndpoints.Remove(playerID);
@@ -131,19 +128,10 @@ namespace ubv
                             {
                                 if (!m_clients.ContainsKey(playerID))
                                 {
-                                    if (AcceptNewClients)
-                                    {
 #if DEBUG_LOG
-                                        Debug.Log("Received data from unregistered client(" + playerID.ToString() + "). Adding to clients.");
+                                    Debug.Log("Received data from unregistered client(" + playerID.ToString() + "). Adding to clients.");
 #endif // DEBUG_LOG
-                                        AddNewClient(playerID, clientEndPoint);
-                                    }
-                                    else
-                                    {
-#if DEBUG_LOG
-                                        Debug.Log("Received data from unregistered client(" + playerID.ToString() + "). Not accepting new connections.");
-#endif // DEBUG_LOG
-                                    }
+                                    AddNewClient(playerID, clientEndPoint);
                                 }
 
                                 if (m_clients.ContainsKey(playerID))

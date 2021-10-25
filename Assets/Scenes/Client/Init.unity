@@ -447,12 +447,12 @@ PrefabInstance:
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverTCPAddress
-      value: 127.0.0.1
+      value: 10.238.173.51
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverUDPAddress
-      value: 127.0.0.1
+      value: 10.238.173.51
       objectReference: {fileID: 0}
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
