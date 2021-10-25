@@ -10,6 +10,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using System.Text.RegularExpressions;
+using UnityEngine.InputSystem.Interactions;
 
 public class TextChatUI : MonoBehaviour
 {
@@ -19,7 +20,6 @@ public class TextChatUI : MonoBehaviour
 
     [SerializeField] private GameObject m_messagesBox;
     [SerializeField] private GameObject m_chatBox;
-
     [SerializeField] private Scrollbar m_scrollbar;
     [SerializeField] private InputField m_messageInputField;
     [SerializeField] private GameObject m_messagePrefab;
@@ -32,14 +32,15 @@ public class TextChatUI : MonoBehaviour
 
     [SerializeField] private Color m_privateColor;
     [SerializeField] private Color m_defaultColor;
+    [SerializeField] private Color m_ErrorColor;
 
     private string m_friendRegex = @"^(\/w|\/W)\s\""([a-zA-Z0-9 _]+)\""\s(.+)";
+    private string m_invalidRegex = @"^(\/\S+)";
 
     private bool m_textChatIsActive;
     public bool m_textChatIsExpanded { get; set; }
     public bool m_textChatIsHidden { get; set; }
 
-    // Start is called before the first frame update
     void Start() {
         m_textChatIsExpanded = false;
         m_textChatIsActive = true;
@@ -51,8 +52,9 @@ public class TextChatUI : MonoBehaviour
         m_scrollbar.value = 0;
     }
 
-    // Update is called once per frame
     void Update() {
+
+        // Toggle the chat display by pressing return key
         if (Input.GetKeyDown(KeyCode.Return) && system.currentSelectedGameObject != m_messageInputField.gameObject) {
             if (m_textChatIsHidden)
                 Show();
@@ -67,6 +69,8 @@ public class TextChatUI : MonoBehaviour
             m_messageInputField.DeactivateInputField();
             system.SetSelectedGameObject(null);
         }
+
+
     }
 
     public void ToggleDisplayChat() {
@@ -98,7 +102,6 @@ public class TextChatUI : MonoBehaviour
 
     }
 
-
     public void Expand() {
         m_textChatIsExpanded = true;
 
@@ -118,19 +121,20 @@ public class TextChatUI : MonoBehaviour
     }
 
     public void Hide() {
+        m_chatBox.SetActive(false);
         m_textChatIsHidden = true;
 
         m_hideButton.gameObject.SetActive(false);
         m_showButton.gameObject.SetActive(true);
+
         m_expandButton.gameObject.SetActive(false);
         m_shrinkButton.gameObject.SetActive(false);
-        m_chatBox.SetActive(false);
     }
 
     public void Show() {
+        m_chatBox.SetActive(true);
         m_textChatIsHidden = false;
 
-        m_chatBox.SetActive(true);
         m_hideButton.gameObject.SetActive(true);
         m_showButton.gameObject.SetActive(false);
 
@@ -143,25 +147,48 @@ public class TextChatUI : MonoBehaviour
     public void Send() {
         if (!string.IsNullOrEmpty(m_messageInputField.text)) {
             string tmpName = "Jean-Maurice";
-            GameObject t_newMessage = Instantiate(m_messagePrefab, m_messagesBox.transform);
+            
 
-            // If match the friend regex, it's a private message
-            Debug.Log(m_messageInputField.text);
-            Match m = Regex.Match(m_messageInputField.text, m_friendRegex);
-            if (m.Success) {
-                t_newMessage.name = "Private Message - <INSERT ID HERE>";
-                t_newMessage.GetComponent<Text>().text = $"[{DateTime.Now.Hour}:{DateTime.Now.Minute}] {tmpName} -> {m.Groups[2]} : {m.Groups[3]}";
-                t_newMessage.GetComponent<Text>().color = m_privateColor;
+            Match t_matchFriend = Regex.Match(m_messageInputField.text, m_friendRegex);
+            Match t_matchInvalidCommand = Regex.Match(m_messageInputField.text, m_invalidRegex);
+
+            if (t_matchFriend.Success) {
+                PrintPrivateMessage(tmpName, t_matchFriend.Groups[2].Value, t_matchFriend.Groups[3].Value);
+
+                // Send message to microservice?
+            }
+            else if (t_matchInvalidCommand.Success) {
+                PrintInvalidMessage(t_matchInvalidCommand.Groups[0].Value);
             }
             else {
-                t_newMessage.name = "Message - <INSERT ID HERE>";
+                PrintGeneralMessage(tmpName, m_messageInputField.text);
 
-                t_newMessage.GetComponent<Text>().text = $"[{DateTime.Now.Hour}:{DateTime.Now.Minute}] {tmpName} : {m_messageInputField.text}";
-                t_newMessage.GetComponent<Text>().color = m_defaultColor;
+                // Send message to microservice?
             }
 
             m_messageInputField.text = "";
             m_scrollbar.value = 0;
         }
+    }
+
+    private void PrintPrivateMessage(string a_sender, string a_receiver, string a_message) {
+        GameObject t_newMessage = Instantiate(m_messagePrefab, m_messagesBox.transform);
+        t_newMessage.name = $"Private Message - {a_sender}";
+        t_newMessage.GetComponent<Text>().text = $"[{DateTime.Now.Hour}:{DateTime.Now.Minute}] {a_sender} -> {a_receiver} : {a_message}";
+        t_newMessage.GetComponent<Text>().color = m_privateColor;
+    }
+
+    private void PrintGeneralMessage(string a_sender, string a_message) {
+        GameObject t_newMessage = Instantiate(m_messagePrefab, m_messagesBox.transform);
+        t_newMessage.name = $"Message - {a_sender}";
+        t_newMessage.GetComponent<Text>().text = $"[{DateTime.Now.Hour}:{DateTime.Now.Minute}] {a_sender} : {a_message}";
+        t_newMessage.GetComponent<Text>().color = m_defaultColor;
+    }
+
+    private void PrintInvalidMessage(string a_invalidCommand) {
+        GameObject t_newMessage = Instantiate(m_messagePrefab, m_messagesBox.transform);
+        t_newMessage.name = $"Error Message";
+        t_newMessage.GetComponent<Text>().text = $"[{DateTime.Now.Hour}:{DateTime.Now.Minute}] The command {a_invalidCommand} isn't valid.";
+        t_newMessage.GetComponent<Text>().color = m_ErrorColor;
     }
 }
