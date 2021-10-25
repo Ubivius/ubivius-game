@@ -2,6 +2,7 @@
 using System.Collections;
 using ubv.client.logic;
 using System;
+using UnityEngine.EventSystems;
 
 namespace ubv.client
 {
@@ -9,13 +10,9 @@ namespace ubv.client
     {
         [SerializeField] private string m_clientGameSearch;
         [SerializeField] private string m_clientCharacterSelect;
-
-        public void GoToPlay()
-        {
-            ClientStateManager.Instance.PushScene(m_clientCharacterSelect);
-        }
-
-        private void Start()
+        [SerializeField] private EventSystem m_eventSystem;
+        
+        public override void OnStart()
         {
             data.ClientCacheData cache = data.ClientCacheData.LoadCache();
             if (cache != null)
@@ -41,6 +38,11 @@ namespace ubv.client
             }
         }
 
+        public void GoToPlay()
+        {
+            ClientStateManager.Instance.PushScene(m_clientCharacterSelect);
+        }
+
         protected override void StateLoad()
         { }
 
@@ -48,7 +50,9 @@ namespace ubv.client
         { }
 
         protected override void StateResume()
-        { }
+        {
+            m_eventSystem.UpdateModules();
+        }
 
         protected override void StateUnload()
         { }

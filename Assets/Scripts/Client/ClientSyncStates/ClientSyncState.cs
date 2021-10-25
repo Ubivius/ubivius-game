@@ -45,6 +45,8 @@ namespace ubv.client.logic
         public virtual void StateUpdate() { }
 
         public virtual void StateFixedUpdate() { }
+        
+        public virtual void OnStart() { }
 
         private void OnDestroy()
         {

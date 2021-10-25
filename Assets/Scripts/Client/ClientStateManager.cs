@@ -74,16 +74,7 @@ namespace ubv.client.logic
 
         public void AddStateToManager(string scene, ClientSyncState state)
         {
-            if (!m_sceneStates.ContainsValue(state))
-            {
-                m_sceneStates.Add(scene, state);
-            }
-#if DEBUG_LOG
-            else
-            {
-                Debug.LogWarning("State already registered. Ignoring.");
-            }
-#endif // DEBUG_LOG
+            m_sceneStates[scene] = state;
         }
         
         public void PushScene(string scene)
@@ -115,6 +106,7 @@ namespace ubv.client.logic
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneToLoad));
             m_loadingScreen.gameObject.SetActive(false);
             m_sceneStates[sceneToLoad].gameObject.SetActive(true);
+            m_sceneStates[sceneToLoad].OnStart();
         }
 
         private IEnumerator UnloadSceneCoroutine(string sceneToUnload)
