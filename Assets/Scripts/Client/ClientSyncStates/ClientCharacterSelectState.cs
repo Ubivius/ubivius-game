@@ -1,18 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Net;
-using ubv.udp;
-using System.Collections.Generic;
-using UnityEngine.SceneManagement;
-using ubv.common.data;
-using ubv.tcp;
-using System.Net.Http;
-using static ubv.microservices.DispatcherMicroservice;
 using static ubv.microservices.CharacterDataService;
-using UnityEngine.Events;
-using ubv.utils;
 using ubv.microservices;
-using TMPro;
 
 namespace ubv.client.logic
 {
@@ -23,9 +11,22 @@ namespace ubv.client.logic
     {
         [SerializeField] private string m_clientGameSearch;
         private CharacterData[] m_cachedCharacters;
-        private int selectedCharacterIndex = 0;
+        [SerializeField] private AddCharacterUI m_addCharacterUI;
+        private int m_selectedCharacterIndex = 0;
         private bool m_joiningGame;
-        
+
+        public struct CharacterCount
+        {
+            public int selected;
+            public int total;
+
+            public CharacterCount(int selected, int total)
+            {
+                this.selected = selected;
+                this.total = total;
+            }
+        }
+
         protected override void StateLoad()
         {
             m_cachedCharacters = null;
@@ -36,7 +37,7 @@ namespace ubv.client.logic
         private void OnCharactersFetchedFromService(CharacterData[] characters)
         {
             m_cachedCharacters = characters;
-            SetActiveCharacter(m_cachedCharacters[selectedCharacterIndex].ID);
+            SetActiveCharacter(m_cachedCharacters[m_selectedCharacterIndex].ID);
         }
 
         public void SetActiveCharacter(string characterID)
@@ -52,9 +53,18 @@ namespace ubv.client.logic
         {
             if (m_cachedCharacters != null)
             {
-                return m_cachedCharacters[selectedCharacterIndex];
+                return m_cachedCharacters[m_selectedCharacterIndex];
             }
             return null;
+        }
+
+        public CharacterCount GetCharacterCount()
+        {
+            if(m_cachedCharacters != null)
+            {
+                return new CharacterCount(m_selectedCharacterIndex, m_cachedCharacters.Length);
+            }
+            return new CharacterCount(0, 1);
         }
         
         public void GoToJoinGame()
@@ -63,13 +73,50 @@ namespace ubv.client.logic
             ClientStateManager.Instance.PushScene(m_clientGameSearch);
         }
 
+        public void AddCharacter(string characterName)
+        {
+            m_addCharacterUI.SetError(null);
+            CharacterService.Request(new PostCharacterRequest(UserInfo.ID, characterName, OnCharacterAdd));
+        }
+
+        private void OnCharacterAdd()
+        {
+            CharacterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedAfterCharacterAdd));
+        }
+
+        private void OnCharactersFetchedAfterCharacterAdd(CharacterData[] characters)
+        {
+            m_cachedCharacters = characters;
+            m_selectedCharacterIndex = m_cachedCharacters.Length - 1;
+            SetActiveCharacter(m_cachedCharacters[m_selectedCharacterIndex].ID);
+            m_addCharacterUI.SetCanCloseModal(true);
+        }
+
+        public void DeleteActiveCharacter()
+        {
+            CharacterService.Request(new DeleteCharacterRequest(m_cachedCharacters[m_selectedCharacterIndex].ID, OnCharacterDelete));
+        }
+
+        private void OnCharacterDelete()
+        {
+            CharacterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedAfterDelete));
+        }
+
+        private void OnCharactersFetchedAfterDelete(CharacterData[] characters)
+        {
+            m_cachedCharacters = characters;
+            if(m_selectedCharacterIndex >= m_cachedCharacters.Length)  
+                m_selectedCharacterIndex = m_cachedCharacters.Length - 1;
+            SetActiveCharacter(m_cachedCharacters[m_selectedCharacterIndex].ID);
+        }
+
         public string NextCharacter()
         {
             string characterName = null;
-            if (selectedCharacterIndex < m_cachedCharacters.Length - 1)
+            if (m_selectedCharacterIndex < m_cachedCharacters.Length - 1)
             {
-                selectedCharacterIndex++;
-                CharacterData character = m_cachedCharacters[selectedCharacterIndex];
+                m_selectedCharacterIndex++;
+                CharacterData character = m_cachedCharacters[m_selectedCharacterIndex];
                 SetActiveCharacter(character.ID);
 
                 characterName = character.Name;
@@ -81,10 +128,10 @@ namespace ubv.client.logic
         public string PreviousCharacter()
         {
             string characterName = null;
-            if (selectedCharacterIndex > 0)
+            if (m_selectedCharacterIndex > 0)
             {
-                selectedCharacterIndex--;
-                CharacterData character = m_cachedCharacters[selectedCharacterIndex];
+                m_selectedCharacterIndex--;
+                CharacterData character = m_cachedCharacters[m_selectedCharacterIndex];
                 SetActiveCharacter(character.ID);
 
                 characterName = character.Name;

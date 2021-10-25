@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using TMPro;
 using ubv.microservices;
 using UnityEngine;
+using UnityEngine.UI;
 using static ubv.microservices.CharacterDataService;
 
 namespace ubv.ui.client
 {
     public class PlayerInLobby : MonoBehaviour
     {
+        [SerializeField] private HorizontalLayoutGroup m_playerInfo;
         [SerializeField] private TextMeshProUGUI m_character;
         [SerializeField] private TextMeshProUGUI m_username;
         [SerializeField] private TextMeshProUGUI m_status;
@@ -23,9 +25,7 @@ namespace ubv.ui.client
             m_username.text = user.UserName;
             m_status.text = "NOT READY";
 
-            m_character.gameObject.SetActive(true);
-            m_username.gameObject.SetActive(true);
-            m_status.gameObject.SetActive(true);
+            m_playerInfo.gameObject.SetActive(true);
             if(m_placeholder)
             {
                 m_placeholder.gameObject.SetActive(false);
@@ -34,9 +34,7 @@ namespace ubv.ui.client
 
         public void RemovePlayer()
         {
-            m_character.gameObject.SetActive(false);
-            m_username.gameObject.SetActive(false);
-            m_status.gameObject.SetActive(false);
+            m_playerInfo.gameObject.SetActive(false);
             if (m_placeholder)
             {
                 m_placeholder.gameObject.SetActive(true);
