@@ -46,19 +46,27 @@ namespace ubv.client.logic
         {
             foreach (PlayerState player in remoteState.Players().Values)
             {
-                if (player.States.IsTrue(2) && !localState.Players()[player.GUID.Value].States.IsTrue(2)
-                 || !player.States.IsTrue(2) && localState.Players()[player.GUID.Value].States.IsTrue(2))
-                {
-                    return true;
-                }
+                int playerId = player.GUID.Value;
 
-                if (!(player.ShootingDirection.Value.x > localState.Players()[player.GUID.Value].ShootingDirection.Value.x * (1 - m_correctionTolerance))
-                 && !(player.ShootingDirection.Value.x < localState.Players()[player.GUID.Value].ShootingDirection.Value.x * (1 + m_correctionTolerance))
-                 && !(player.ShootingDirection.Value.y > localState.Players()[player.GUID.Value].ShootingDirection.Value.y * (1 - m_correctionTolerance))
-                 && !(player.ShootingDirection.Value.y < localState.Players()[player.GUID.Value].ShootingDirection.Value.y * (1 + m_correctionTolerance)))
+                if (player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING) && !localState.Players()[playerId].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING)
+                 || !player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING) && localState.Players()[playerId].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING))
                 {
+                    //Debug.Log("IS_SHOOTING -> Client: " + localState.Players()[playerId].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING)
+                    //        + ", Server: " + player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING));
                     return true;
                 }
+                else if (player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING))
+                {
+                    if (!(player.ShootingDirection.Value.x > localState.Players()[playerId].ShootingDirection.Value.x * (1 - m_correctionTolerance))
+                     && !(player.ShootingDirection.Value.x < localState.Players()[playerId].ShootingDirection.Value.x * (1 + m_correctionTolerance))
+                     && !(player.ShootingDirection.Value.y > localState.Players()[playerId].ShootingDirection.Value.y * (1 - m_correctionTolerance))
+                     && !(player.ShootingDirection.Value.y < localState.Players()[playerId].ShootingDirection.Value.y * (1 + m_correctionTolerance)))
+                    {
+                        //Debug.Log("SHOOTING_DIRECTION -> Client: (" + localState.Players()[player.GUID.Value].ShootingDirection.Value.x + ", " + localState.Players()[player.GUID.Value].ShootingDirection.Value.y
+                        //     + "), Server: (" + player.ShootingDirection.Value.x + ", " + player.ShootingDirection.Value.y + ")");
+                        return true;
+                    }
+                }                
             }
 
             return false;

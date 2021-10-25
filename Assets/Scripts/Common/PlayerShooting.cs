@@ -31,9 +31,8 @@ namespace ubv
                     if (m_lastShot > playerShootingSettings.BulletDelay)
                     {
                         Vector3 shootingDirection = new Vector3(aimDirection.x, aimDirection.y, 0.0f);
-                        RaycastHit2D[] hits = Physics2D.RaycastAll(player.transform.position, shootingDirection);
+                        RaycastHit2D hit = Physics2D.Raycast(player.transform.position, shootingDirection);
 
-                        RaycastHit2D hit = hits[2]; // ignore the first -> player
                         if (hit.collider != null)
                         {
                             Hittable hittable = hit.collider.GetComponent<Hittable>();
