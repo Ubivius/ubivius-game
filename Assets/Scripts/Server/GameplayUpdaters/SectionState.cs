@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ubv.common.world.cellType;
+using UnityEngine;
 
 namespace ubv.server.logic
 {
@@ -81,7 +82,11 @@ namespace ubv.server.logic
 
         public bool UnlockFinalDoor()
         {
-            if (_NorthEastButton && _NorthEastButton && _NorthEastButton && _NorthEastButton)
+            Debug.LogWarning("_NorthEastButton : " + _NorthEastButton);
+            Debug.LogWarning("_SouthEastButton : " + _SouthEastButton);
+            Debug.LogWarning("_SouthWestButton : " + _SouthWestButton);
+            Debug.LogWarning("_NorthWestButton : " + _NorthWestButton);
+            if (_NorthEastButton && _SouthEastButton && _SouthWestButton && _NorthWestButton)
             {
                 return true;
             }

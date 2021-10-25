@@ -62,7 +62,7 @@ namespace ubv.common.world
             SectionDoorButtonManagement(m_sectionDoorButton_NorthWest, Section.NorthWest);
             SectionButtonManagement(m_sectionButton_NorthEast, Section.NorthEast);
             SectionButtonManagement(m_sectionButton_SouthEast, Section.SouthEast);
-            SectionButtonManagement(m_sectionButton_SouthWest, Section.SouthEast);
+            SectionButtonManagement(m_sectionButton_SouthWest, Section.SouthWest);
             SectionButtonManagement(m_sectionButton_NorthWest, Section.NorthWest);
 
             FloorManagement();

@@ -105,14 +105,15 @@ namespace ubv.server.logic
             }
             if (m_sectionState.UnlockFinalDoor())
             {
-                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.FinalDoor));
+                Debug.LogWarning("Dans le débareur de porte final");
                 RemoveDoor(m_finalDoor);
+                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.FinalDoor));
             }
         }
 
         public void InteractFinalButton()
         {
-            Debug.Log("PARTIE FINI FINI FINI FINI FINI FINI FINI");
+            Debug.LogWarning("PARTIE FINI FINI FINI FINI FINI FINI FINI");
 
             // Finir la partie
         }
