@@ -29,12 +29,12 @@ namespace ubv.server.logic
         private Dictionary<DoorCell, Vector2Int> m_doorSection0SouthWest;
         private Dictionary<DoorCell, Vector2Int> m_doorSection0NorthWest;
 
-        private List<common.serialization.types.Vector2Int> m_openingDoorList;
+        private List<common.serialization.types.Int32> m_openingDoorList;
 
         private void Awake()
         {
             m_world.OnWorldGenerated += OnWorldGenerated;
-            m_openingDoorList = new List<common.serialization.types.Vector2Int>();
+            m_openingDoorList = new List<common.serialization.types.Int32>();
         }
 
         public override void Setup()
@@ -105,6 +105,7 @@ namespace ubv.server.logic
             }
             if (m_sectionState.UnlockFinalDoor())
             {
+                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.FinalDoor));
                 RemoveDoor(m_finalDoor);
             }
         }
@@ -121,48 +122,56 @@ namespace ubv.server.logic
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section0_NorthEast))
             {
                 RemoveDoor(m_doorSection0NorthEast);
+                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.Section0_NorthEast));
                 m_sectionState._DoorNorthEastOpened = true;
                 Debug.Log("Section0 - North East Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section0_SouthEast))
             {
                 RemoveDoor(m_doorSection0SouthEast);
+                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.Section0_SouthEast));
                 m_sectionState._DoorSouthEastOpened = true;
                 Debug.Log("Section0 - South East Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section0_SouthWest))
             {
                 RemoveDoor(m_doorSection0SouthWest);
+                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.Section0_SouthWest));
                 m_sectionState._DoorSouthWestOpened = true;
                 Debug.Log("Section0 - South West Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section0_NorthWest))
             {
                 RemoveDoor(m_doorSection0NorthWest);
+                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.Section0_NorthWest));
                 m_sectionState._DoorNorthWestOpened = true;
                 Debug.Log("Section0 - North West Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section_North))
             {
                 RemoveDoor(m_doorNorth);
+                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.Section_North));
                 m_sectionState._DoorNorthOpened = true;
                 Debug.Log("North Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section_East))
             {
                 RemoveDoor(m_doorEast);
+                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.Section_East));
                 m_sectionState._DoorEastOpened = true;
                 Debug.Log("East Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section_South))
             {
                 RemoveDoor(m_doorSouth);
+                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.Section_South));
                 m_sectionState._DoorSouthOpened = true;
                 Debug.Log("South Opened");
             }
             if (m_sectionState.UnlockSectionAvailable(DoorType.Section_West))
             {
                 RemoveDoor(m_doorWest);
+                m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.Section_West));
                 m_sectionState._DoorWestOpened = true;
                 Debug.Log("West Opened");
             }
@@ -176,7 +185,6 @@ namespace ubv.server.logic
                 door.OpenDoor();
                 m_world.GetDoorTilemap().SetTile(pos, null);
                 m_world.GetDoorTilemap().RefreshTile(pos);
-                m_openingDoorList.Add(new common.serialization.types.Vector2Int(new Vector2Int(pos.x, pos.y)));
             }
         }
 

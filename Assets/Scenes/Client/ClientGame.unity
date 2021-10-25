@@ -357,6 +357,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_tileDoor: {fileID: 1549189266}
+  m_world: {fileID: 624650640}
 --- !u!1 &482350416
 GameObject:
   m_ObjectHideFlags: 0
@@ -385,6 +386,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 554541789}
+  - {fileID: 477368830}
   m_Father: {fileID: 134844666}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -614,7 +616,7 @@ Transform:
   - {fileID: 583337821}
   - {fileID: 1549189263}
   - {fileID: 304581785}
-  - {fileID: 1320442778}
+  - {fileID: 669137786}
   m_Father: {fileID: 134844666}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -642,6 +644,15 @@ MonoBehaviour:
     type: 2}
   m_defaultPlayerSpawnTile: {fileID: 11400000, guid: d7869141ffc6bc243a3d1b336d7727c6,
     type: 2}
+  FinalDoor: []
+  DoorNorth: []
+  DoorEast: []
+  DoorSouth: []
+  DoorWest: []
+  DoorSection0NorthEast: []
+  DoorSection0SouthEast: []
+  DoorSection0SouthWest: []
+  DoorSection0NorthWest: []
 --- !u!1 &669137785
 GameObject:
   m_ObjectHideFlags: 0
