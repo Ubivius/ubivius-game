@@ -54,7 +54,6 @@ namespace ubv.server.logic
 
         public void Init()
         {
-            m_serverConnection.UDPServer.AcceptNewClients = true;
             m_clientCharacters = new Dictionary<int, common.serialization.types.String>();
 
             m_readyClients = new HashSet<int>();
