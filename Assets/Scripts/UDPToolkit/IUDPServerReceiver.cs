@@ -9,7 +9,7 @@ namespace ubv
         {
             public interface IUDPServerReceiver
             {
-                void Receive(UDPToolkit.Packet packet, int playerID);
+                void UDPReceive(UDPToolkit.Packet packet, int playerID);
             }
 
         }

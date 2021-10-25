@@ -49,14 +49,17 @@ namespace ubv.common.serialization
             CHARACTER_LIST_MESSAGE,
             SERVER_STARTS_MESSAGE,
             CLIENT_WORLD_LOADED_MESSAGE,
-            SERVER_SUCCESSFUL_CONNECT_MESSAGE,
+            SERVER_SUCCESSFUL_TCP_CONNECT_MESSAGE,
             LOBBY_ENTER_MESSAGE,
             HASHMAP_INT_STRING,
             NET_INFO,
             CLIENT_STATE_MESSAGE,
             INT64,
             RTT_MSG,
-            BITSET
+            BITSET,
+            SERVER_SUCCESSFUL_UDP_CONNECT_MESSAGE,
+            CLIENT_CACHE_DATA,
+            SERVER_REJOIN_GAME_DEMAND
         }
     }
 }

@@ -268,6 +268,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 564a26a8721ba8d4898c77829faa560f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ServerConnection: {fileID: 1452719146}
   TCPServer: {fileID: 1617214407}
   UDPServer: {fileID: 1538287030}
 --- !u!4 &196055088
@@ -286,6 +287,7 @@ Transform:
   - {fileID: 907557553}
   - {fileID: 1740651405}
   - {fileID: 160762944}
+  - {fileID: 1452719145}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -698,7 +700,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_snapshotTicks: 8
-  m_physicsSceneName: proto_move_server
+  m_physicsSceneName: Server
   m_updaters:
   - {fileID: 1470650681}
   - {fileID: 469398075}
@@ -997,6 +999,51 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1452719144
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1452719145}
+  - component: {fileID: 1452719146}
+  m_Layer: 0
+  m_Name: ServerConnectionManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1452719145
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452719144}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 196055088}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1452719146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452719144}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5597ddbf198bb14e9edb1e8cb168ba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TCPServer: {fileID: 1617214407}
+  UDPServer: {fileID: 1538287030}
 --- !u!1 &1470650679
 GameObject:
   m_ObjectHideFlags: 0

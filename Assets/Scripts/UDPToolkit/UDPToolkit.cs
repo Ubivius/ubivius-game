@@ -61,7 +61,7 @@ namespace ubv
 
             public class Packet : network.Packet
             {
-                public const ushort UDP_MAX_PAYLOAD_SIZE = 512 * 2 * 2; // TODO: WARN WHEN EXCEEDING THIS AND FIND RIGHT SIZE
+                public const ushort UDP_MAX_PAYLOAD_SIZE = 2048 * 4; // TODO: WARN WHEN EXCEEDING THIS AND FIND RIGHT SIZE
                 public const ushort UDP_HEADER_SIZE = DEFAULT_HEADER_SIZE + (2 * sizeof(int));
                 public const ushort UDP_PACKET_SIZE = UDP_HEADER_SIZE + UDP_MAX_PAYLOAD_SIZE; // size in bytes
 
@@ -104,9 +104,30 @@ namespace ubv
                     return "Packet bytes: " + System.BitConverter.ToString(RawBytes);
                 }
                 
-                public static Packet PacketFromBytes(byte[] bytes)
+                public static Packet FirstPacketFromBytes(byte[] bytes)
                 {
-                    return new Packet(bytes);
+                    if (bytes.Length < UDP_HEADER_SIZE)
+                    {
+                        return null;
+                    }
+
+                    Packet packet = new Packet(bytes.SubArray(0, UDP_HEADER_SIZE));
+
+                    if (!packet.HasValidProtocolID())
+                    {
+                        return null;
+                    }
+
+                    int byteCount = packet.DataSize + UDP_HEADER_SIZE;
+
+                    if (bytes.Length < byteCount)
+                    {
+                        return null;
+                    }
+
+                    packet = new Packet(bytes.SubArray(0, byteCount));
+
+                    return packet;
                 }
             }
         }

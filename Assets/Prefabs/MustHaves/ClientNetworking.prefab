@@ -1,5 +1,50 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1007737408094946709
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2551886390118559980}
+  - component: {fileID: 6443474415815815136}
+  m_Layer: 0
+  m_Name: InvitesFetcher
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2551886390118559980
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1007737408094946709}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 8156371440444099849}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6443474415815815136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1007737408094946709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a8c4cbe801a6d0409e0b584b0234c56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_timerOffset: 0
+  m_conversationFetchInterval: 3
 --- !u!1 &1584834600992003659
 GameObject:
   m_ObjectHideFlags: 0
@@ -32,10 +77,13 @@ Transform:
   - {fileID: 1584834601926501234}
   - {fileID: 5980181654224121731}
   - {fileID: 1124455532151190757}
-  - {fileID: 2971893872073089457}
   - {fileID: 7676663511256152388}
+  - {fileID: 2971893872073089457}
   - {fileID: 1424532028110512240}
   - {fileID: 9190401287086597186}
+  - {fileID: 8156371440444099849}
+  - {fileID: 4120744887446643272}
+  - {fileID: 2833739906713535996}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -55,9 +103,8 @@ MonoBehaviour:
   UDPClient: {fileID: 1584834601242082865}
   HTTPClient: {fileID: 1775558437836293882}
   Dispatcher: {fileID: 7434323783986351494}
-  Authentication: {fileID: 5996061036848143753}
+  SocialServices: {fileID: 6364726453977678431}
   CharacterData: {fileID: 6793292407888554963}
-  User: {fileID: 0}
 --- !u!1 &1584834601242082864
 GameObject:
   m_ObjectHideFlags: 0
@@ -188,10 +235,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb690e47281ac4347af0f980681b44d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_mock: 1
+  m_mock: 0
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
-  m_userEndpoint: http://localhost:9091
+  m_serviceEndpoint: http://user.dev.ubivius.tk
+--- !u!1 &4804925736443939815
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6633474365914935811}
+  - component: {fileID: 4058432572729070908}
+  m_Layer: 0
+  m_Name: ConvoFetcher
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6633474365914935811
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4804925736443939815}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4120744887446643272}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4058432572729070908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4804925736443939815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a8c4cbe801a6d0409e0b584b0234c56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_timerOffset: 0
+  m_conversationFetchInterval: 3
 --- !u!1 &4998171549256964432
 GameObject:
   m_ObjectHideFlags: 0
@@ -221,7 +313,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1584834600992003656}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5996061036848143753
 MonoBehaviour:
@@ -235,10 +327,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51495b9d4b5acef459ae08d6054305ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_mock: 1
+  m_mock: 0
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
-  m_authEndpoint: http://localhost:9092
+  m_serviceEndpoint: http://auth.anon.dev.ubivius.tk
 --- !u!1 &5254342688879064719
 GameObject:
   m_ObjectHideFlags: 0
@@ -282,6 +374,58 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f571978d471691c4eb1222fb51982cdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &5559869940634413922
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4120744887446643272}
+  - component: {fileID: 7282349304918615770}
+  m_Layer: 0
+  m_Name: TextChat
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4120744887446643272
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5559869940634413922}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 6633474365914935811}
+  m_Father: {fileID: 1584834600992003656}
+  m_RootOrder: 9
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7282349304918615770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5559869940634413922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b319d7c021aa2b14396ffc58ba4ffd07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_mock: 0
+  m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
+  m_HTTPClient: {fileID: 1775558437836293882}
+  m_serviceEndpoint: http://textchat.dev.ubivius.tk
+  m_messagesFetcher: {fileID: 4058432572729070908}
+  m_friends: {fileID: 8253229592228528839}
+  m_auth: {fileID: 5996061036848143753}
+  m_users: {fileID: 7756809264957448054}
 --- !u!1 &5927109276514483343
 GameObject:
   m_ObjectHideFlags: 0
@@ -325,10 +469,109 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 113191b355f46834087c8c9bd9715d2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_mock: 1
+  m_mock: 0
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1775558437836293882}
-  m_characterDataEndpoint: http://localhost:9093
+  m_serviceEndpoint: http://character.dev.ubivius.tk
+--- !u!1 &5991273713136953469
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8156371440444099849}
+  - component: {fileID: 8253229592228528839}
+  m_Layer: 0
+  m_Name: FriendsList
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8156371440444099849
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5991273713136953469}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 2551886390118559980}
+  m_Father: {fileID: 1584834600992003656}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8253229592228528839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5991273713136953469}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b7f85f241571ac49a236622141b30e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_mock: 0
+  m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
+  m_HTTPClient: {fileID: 1775558437836293882}
+  m_serviceEndpoint: http://friendslist.dev.ubivius.tk/
+  m_invitesFetcher: {fileID: 6443474415815815136}
+  DefaultUser: 
+  m_auth: {fileID: 5996061036848143753}
+  m_users: {fileID: 7756809264957448054}
+--- !u!1 &6648407336966310920
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2833739906713535996}
+  - component: {fileID: 6364726453977678431}
+  m_Layer: 0
+  m_Name: SocialServices
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2833739906713535996
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6648407336966310920}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1584834600992003656}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6364726453977678431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6648407336966310920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efdadf42f1058d34f8ab16a6ac62c041, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_auth: {fileID: 5996061036848143753}
+  m_users: {fileID: 7756809264957448054}
+  m_textChat: {fileID: 7282349304918615770}
+  m_friendsList: {fileID: 8253229592228528839}
 --- !u!1 &8747356472878904221
 GameObject:
   m_ObjectHideFlags: 0
@@ -358,7 +601,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1584834600992003656}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7434323783986351494
 MonoBehaviour:
@@ -375,9 +618,10 @@ MonoBehaviour:
   m_HTTPClient: {fileID: 1775558437836293882}
   m_dispatcherEndpoint: http://localhost:9090
   m_mock: 1
-  m_serverAddress: 192.168.0.141
-  m_serverTCPPort: 9191
-  m_serverUDPPort: 9190
+  m_serverTCPAddress: 127.0.0.1
+  m_serverUDPAddress: 127.0.0.1
+  m_serverTCPPort: 9151
+  m_serverUDPPort: 9150
 --- !u!1 &8752211695502532364
 GameObject:
   m_ObjectHideFlags: 0
@@ -421,7 +665,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37271d27156413948aba6f3d52b03edf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AutoReconnect: 0
-  m_connectionTimeoutInMS: 500000
+  AutoReconnect: 1
+  m_connectionTimeoutInMS: 30000
   m_reconnectTryIntervalMS: 2000
-  m_connectionKeepAliveIntervalMS: 250
+  m_connectionKeepAliveIntervalMS: 1000
