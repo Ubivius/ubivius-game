@@ -33,7 +33,6 @@ namespace ubv.client.world
 
         private void Awake()
         {
-            BuildWorldFromCellInfo(data.LoadingData.ServerInit.CellInfo2DArray.Value);
             FinalDoor = new List<Vector2Int>();
             DoorNorth = new List<Vector2Int>();
             DoorEast = new List<Vector2Int>();
@@ -43,6 +42,7 @@ namespace ubv.client.world
             DoorSection0SouthEast = new List<Vector2Int>();
             DoorSection0SouthWest = new List<Vector2Int>();
             DoorSection0NorthWest = new List<Vector2Int>();
+            BuildWorldFromCellInfo(data.LoadingData.ServerInit.CellInfo2DArray.Value);
         }
 
         private void BuildWorldFromCellInfo(CellInfo[,] cellInfos)
@@ -62,7 +62,6 @@ namespace ubv.client.world
             List<Vector3Int> doorPos =        new List<Vector3Int>();
             List<Vector3Int> doorButtonPos =  new List<Vector3Int>();
             List<Vector3Int> playerSpawnPos = new List<Vector3Int>();
-
 
             for (int x = 0; x < cellInfos.GetLength(0); x++)
             {
