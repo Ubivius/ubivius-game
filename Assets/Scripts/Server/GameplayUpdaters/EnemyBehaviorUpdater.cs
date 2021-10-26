@@ -30,62 +30,39 @@ namespace ubv.server.logic
 
         public override void InitWorld(WorldState state)
         {
-            Debug.Log("ENEMy INIT world");
+            Debug.Log("GGGGGGGGGGGGGGGGGGGGGGGOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOODDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+            Debug.Log("Is pathfinding grid manager ready? = " + m_pathfindingGridManager.IsSetUpDone());
 
-            GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
-            enemyGameObject.transform.position = Vector3.zero;
+            OnPathFindingManagerGenerated(state); 
+        }
+
+        private void OnPathFindingManagerGenerated(WorldState state)
+        {
+            Debug.Log("ENEMy Pathfinding grid manager is initialized");
+
+            GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy, new Vector3(107, 124, 0), Quaternion.identity);
             Rigidbody2D body = enemyGameObject.GetComponent<Rigidbody2D>();
-            // EnemyPathFindingMovement enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
-            //EnemyStateMachine enemyStateMachine = enemyGameObject.GetComponent<EnemyStateMachine>();
-            //enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
+            EnemyPathFindingMovement enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
+            EnemyStateMachine enemyStateMachine = enemyGameObject.GetComponent<EnemyStateMachine>();
 
             id = System.Guid.NewGuid().GetHashCode();
-            body.position = new Vector3(107, 124); // enemyPathFindingMovement.GetPosition();
+
+            enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
+            //body.position = new Vector2(110, 160);
+            body.position = enemyPathFindingMovement.GetPosition(); //new Vector2(110, 160);
+            Debug.Log("Server printing enemy position" + body.position);
             body.name = "Server enemy " + id.ToString(); // + enemyStateMachine.CurrentEnemyState;
 
-            //m_states.Add(id, enemyStateMachine.CurrentEnemyState);
+            m_states.Add(id, enemyStateMachine.CurrentEnemyState);
             m_bodies.Add(id, body);
 
             EnemyStateData enemyStateData = new EnemyStateData(id);
 
             enemyStateData.Position.Value = m_bodies[id].position;
+            enemyStateData.EnemyState = m_states[id];
 
             m_enemyStatesData.Add(id, enemyStateData);
-            //Je pense que le state est a null
             state.AddEnemy(enemyStateData);
-
-            Debug.Log("GGGGGGGGGGGGGGGGGGGGGGGOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOODDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
-            //m_pathfindingGridManager.OnPathFindingManagerGenerated += () => { OnPathFindingManagerGenerated(state); };
-        }
-
-        private void OnPathFindingManagerGenerated(WorldState state)
-        {
-            Debug.Log("Pathfinding grid manager");
-            foreach (int id in state.Enemies().Keys)
-            {
-                GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
-                Rigidbody2D body = enemyGameObject.GetComponent<Rigidbody2D>();
-                EnemyPathFindingMovement enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
-                EnemyStateMachine enemyStateMachine = enemyGameObject.GetComponent<EnemyStateMachine>();
-                enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
-
-                body.position = enemyPathFindingMovement.GetPosition();
-                body.name = "Server enemy " + id.ToString() + enemyStateMachine.CurrentEnemyState;
-
-                m_states.Add(id, enemyStateMachine.CurrentEnemyState);
-                m_bodies.Add(id, body);
-
-                EnemyStateData enemyStateData = new EnemyStateData(id);
-
-                enemyStateData.Position.Value = m_bodies[id].position;
-
-                m_enemyStatesData.Add(id, enemyStateData);
-            }
-
-            foreach (EnemyStateData enemy in m_enemyStatesData.Values)
-            {
-                state.AddEnemy(enemy);
-            }
         }
 
         public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
@@ -104,7 +81,7 @@ namespace ubv.server.logic
                 Debug.Log("Update world enemy positon" + body.position);
                 enemy.Position.Value = body.position;
                 enemy.Rotation.Value = body.rotation;
-                //enemy.EnemyState = m_states[id];
+                enemy.EnemyState = m_states[id];
             }
         }
     }

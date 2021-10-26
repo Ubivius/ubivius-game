@@ -26,18 +26,17 @@ namespace ubv.client.logic
         [SerializeField] private EnemySettings m_enemySettings;
 
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
-        public Dictionary<int, EnemyStateMachine> EnemyStateMachine { get; private set; }
+        public Dictionary<int, EnemyState> EnemyState { get; private set; }
 
         private float m_timeSinceLastGoal;
 
         private Dictionary<int, EnemyStateData> m_goalStates;
 
-        public UnityAction OnInitialized;
-
         public override void Init(WorldState clientState, int localID)
         {
             m_goalStates = new Dictionary<int, EnemyStateData>();
             Bodies = new Dictionary<int, Rigidbody2D>();
+            EnemyState = new Dictionary<int, EnemyState>();
         }
 
         public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
@@ -53,9 +52,8 @@ namespace ubv.client.logic
 
             foreach (EnemyStateData enemyStateData in remoteState.Enemies().Values)
             {
-                err = ((enemyStateData.Position.Value - localState.Enemies()[enemyStateData.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance) &&
-                    (enemyStateData.NbOfEnemy.Value != localState.Enemies()[enemyStateData.GUID.Value].NbOfEnemy.Value);/*&&
-                    (enemyStateData.EnemyState != localState.Enemies()[enemyStateData.GUID.Value].EnemyState)*/
+                err = ((enemyStateData.Position.Value - localState.Enemies()[enemyStateData.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
+                     &&(enemyStateData.EnemyState != localState.Enemies()[enemyStateData.GUID.Value].EnemyState);
 
                 if (err)
                 {
@@ -68,8 +66,6 @@ namespace ubv.client.logic
 
         public override void UpdateStateFromWorld(ref WorldState state)
         {
-            int id = 0;
-            //mettre le need correcton 
             foreach (EnemyStateData enemy in state.Enemies().Values)
             {
                 //if (enemy.NbOfEnemy.Value != m_nbOfEnemy)
@@ -88,7 +84,7 @@ namespace ubv.client.logic
 
                 enemy.Position.Value = m_goalStates[enemy.GUID.Value].Position.Value;
                 enemy.Rotation.Value = m_goalStates[enemy.GUID.Value].Rotation.Value;
-                //enemy.EnemyState = m_goalStates[enemy.GUID.Value].EnemyState;
+                enemy.EnemyState = m_goalStates[enemy.GUID.Value].EnemyState;
             }
         }
 
@@ -111,16 +107,19 @@ namespace ubv.client.logic
                 if (!Bodies.ContainsKey(enemy.GUID.Value))
                 {
                     Debug.Log("Instantiate enemy client");
-                    GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
-                    enemyGameObject.transform.position = Vector3.zero;
+                    GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy, new Vector3(0, 0, 0), Quaternion.identity);
                     Bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
                     Bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
-                    //EnemyStateMachine[id] = enemyGameObject.GetComponent<EnemyStateMachine>();
+                    EnemyState[enemy.GUID.Value] = enemyGameObject.GetComponent<EnemyState>();
                 }
+
+                Debug.Log("INputtt Outputtttttt position avant changement" + enemy.Position.Value);
 
                 Bodies[enemy.GUID.Value].position = enemy.Position.Value;
                 Bodies[enemy.GUID.Value].rotation = enemy.Rotation.Value;
-                //EnemyStateMachine[enemy.GUID.Value].CurrentEnemyState = enemy.EnemyState;
+
+                Debug.Log("enemy Positionnnnnnnnnnnnnnnnnnnnnnn" + enemy.Position.Value);
+                EnemyState[enemy.GUID.Value] = enemy.EnemyState;
 
                 m_goalStates[enemy.GUID.Value] = enemy;
             }
@@ -139,7 +138,7 @@ namespace ubv.client.logic
             {
                 Destroy(Bodies[enemyKey]);
                 Bodies.Remove(enemyKey);
-                m_goalStates.Remove(enemyKey);    // A faire Function pour spawner et destroy enemy
+                m_goalStates.Remove(enemyKey);
             }
         }
 
@@ -161,10 +160,10 @@ namespace ubv.client.logic
                 Bodies[enemy.GUID.Value].rotation = m_goalStates[enemy.GUID.Value].Rotation.Value;
             }
 
-            //if (EnemyStateMachine[enemy.GUID.Value].CurrentEnemyState != m_goalStates[enemy.GUID.Value].EnemyState)
-            //{
-            //    EnemyStateMachine[enemy.GUID.Value].CurrentEnemyState = m_goalStates[enemy.GUID.Value].EnemyState;
-            //}
+            if (EnemyState[enemy.GUID.Value] != m_goalStates[enemy.GUID.Value].EnemyState)
+            {
+                EnemyState[enemy.GUID.Value] = m_goalStates[enemy.GUID.Value].EnemyState;
+            }
         }
     }
 }

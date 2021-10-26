@@ -29,7 +29,7 @@ namespace ubv.server.logic.ai
         // Update is called once per frames
         public override EnemyState Update()
         {
-            //if (!m_enemyPathFindingMovement.IsPositionWalkable(m_roamPosition)|| Vector3.SqrMagnitude(m_roamPosition - m_enemyPathFindingMovement.GetPosition()) < m_reachedPositionDistance * m_reachedPositionDistance /*|| verify if target is walkable with a getnode*/)
+            //if (!m_enemyPathFindingMovement.IsPositionWalkable(m_roamPosition) || Vector3.SqrMagnitude(m_roamPosition - m_enemyPathFindingMovement.GetPosition()) < m_reachedPositionDistance * m_reachedPositionDistance /*|| verify if target is walkable with a getnode*/)
             //{
             //    // Reached Roam Position
             //    m_roamPosition = GetRoamingPosition();
@@ -37,15 +37,13 @@ namespace ubv.server.logic.ai
             //    m_inMotion = false;
             //}
 
-            //else if(!m_inMotion)
+            //else if (!m_inMotion)
             //{
             //    m_enemyPathFindingMovement.MoveTo(m_roamPosition);
             //    m_inMotion = true;
             //}
 
-            //return FindTarget();
-
-            return this;
+            return FindTarget();
         }
 
         private Vector3 GetRoamingPosition()

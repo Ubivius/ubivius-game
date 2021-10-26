@@ -15,12 +15,12 @@ namespace ubv.server.logic.ai
         private void Awake()
         {
             m_pathfindingMovement = GetComponent<EnemyPathFindingMovement>();
+            CurrentEnemyState = new RoamingState(m_pathfindingMovement);
         }
 
         // Use this for initialization
         void Start()
         {
-            CurrentEnemyState = new RoamingState(m_pathfindingMovement);
         }
 
         // Update is called once per frame
