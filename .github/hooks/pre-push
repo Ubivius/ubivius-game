@@ -1,0 +1,14 @@
+#!/bin/sh
+
+local_branch="$(git rev-parse --abbrev-ref HEAD)"
+valid_chars="^(feature|hotfix)\/(UBI)-([0-9]{3,4})-([A-Za-z-]+)$"
+message='Failed to push due to bad branch name. Please use the following format : feature/UBI-123-description or hotfix/UBI-321-description'
+
+if [[ ! $local_branch =~ $valid_chars ]]
+then
+    printf '%s\n' "$message"
+	
+    exit 1
+fi
+
+exit 0
