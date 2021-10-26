@@ -30,7 +30,10 @@ namespace ubv.microservices
         private void Fetch()
         {
             if (!IsFetcherActive)
+            {
+                m_invitesFetcher.ReadyForNewFetch();
                 return;
+            }
 
              this.Request(new GetInvitesForUserRequest(DefaultUser, OnGetNewInvites));
         }
@@ -38,6 +41,14 @@ namespace ubv.microservices
         public void SendInviteTo(string userID)
         {
             this.Request(new PostInviteRequest(DefaultUser, userID));
+        }
+
+        public void GetAllFriendsIDs(string userID, UnityAction<HashSet<string>> OnGetFriendIDs)
+        {
+            this.Request(new GetRelationsFromUserRequest(userID, (RelationInfo[] relations) => 
+            {
+                OnGetFriendIDs(GetAllConfirmedFriends(relations));
+            }));
         }
 
         private void OnGetNewInvites(RelationInfo[] infos)
@@ -51,6 +62,7 @@ namespace ubv.microservices
                     m_currentPendingIncomingInvites.Add(friend);
                 }
             }
+            m_invitesFetcher.ReadyForNewFetch();
         }
         protected override void OnPostResponse(string JSON, PostInviteRequest originalRequest)
         {

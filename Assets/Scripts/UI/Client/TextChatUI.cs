@@ -169,7 +169,10 @@ namespace ubv.ui.client
                 if (t_matchFriend.Success) {
                     PrintPrivateMessage(m_playerName, t_matchFriend.Groups[2].Value, t_matchFriend.Groups[3].Value);
 
-                    m_socialServices.SendMessageTo(t_matchFriend.Groups[2].Value, m_messageInputField.text);
+                    m_socialServices.GetFriendIDFromName(t_matchFriend.Groups[2].Value, (string id) =>
+                    {
+                        m_socialServices.SendMessageTo(id, t_matchFriend.Groups[3].Value);
+                    });
                 }
                 else if (t_matchInvalidCommand.Success) {
                     PrintInvalidMessage(t_matchInvalidCommand.Groups[0].Value);
