@@ -110,7 +110,7 @@ namespace ubv.client.logic
                     GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy, new Vector3(0, 0, 0), Quaternion.identity);
                     Bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
                     Bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
-                    EnemyState[enemy.GUID.Value] = enemyGameObject.GetComponent<EnemyState>();
+                    EnemyState[enemy.GUID.Value] = enemyGameObject.GetComponent<EnemyStateMachine>().CurrentEnemyState;
                 }
 
                 Debug.Log("INputtt Outputtttttt position avant changement" + enemy.Position.Value);
