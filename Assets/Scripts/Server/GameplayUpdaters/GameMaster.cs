@@ -9,6 +9,7 @@ using ubv.common;
 using UnityEngine;
 using ubv.common.world.cellType;
 using ubv.common.world;
+using UnityEngine.Tilemaps;
 
 namespace ubv.server.logic
 {
@@ -31,10 +32,14 @@ namespace ubv.server.logic
 
         private List<common.serialization.types.Int32> m_openingDoorList;
 
+        private Tilemap m_finalDoorTilemap;
+        private bool m_alreadyOpen;
+
         private void Awake()
         {
             m_world.OnWorldGenerated += OnWorldGenerated;
             m_openingDoorList = new List<common.serialization.types.Int32>();
+            m_alreadyOpen = false;
         }
 
         public override void Setup()
@@ -103,11 +108,26 @@ namespace ubv.server.logic
                     Debug.Log("Section North West");
                     break;
             }
-            if (m_sectionState.UnlockFinalDoor())
+            if (m_sectionState.UnlockFinalDoor() && !m_alreadyOpen)
             {
+                m_alreadyOpen = true;
                 Debug.LogWarning("Dans le débareur de porte final");
-                RemoveDoor(m_finalDoor);
+                //RemoveDoor(m_finalDoor);
                 m_openingDoorList.Add(new common.serialization.types.Int32((int)DoorType.FinalDoor));
+
+                foreach (DoorCell door in m_finalDoor.Keys)
+                {
+                    door.OpenDoor();
+                }
+
+                m_finalDoorTilemap.ClearAllTiles();
+                m_finalDoorTilemap.RefreshAllTiles();
+                //for (int i = 0; i < 4; i++)
+                //{
+                //    Vector3Int pos = new Vector3Int(i, 0, 0);
+                //    m_finalDoorTilemap.SetTile(pos, null);
+                //    m_finalDoorTilemap.RefreshTile(pos);
+                //}
             }
         }
 
@@ -206,6 +226,8 @@ namespace ubv.server.logic
             m_doorSection0SouthEast = m_world.FetchDoorWithPosition(DoorType.Section0_SouthEast);
             m_doorSection0SouthWest = m_world.FetchDoorWithPosition(DoorType.Section0_SouthWest);
             m_doorSection0NorthWest = m_world.FetchDoorWithPosition(DoorType.Section0_NorthWest);
+
+            m_finalDoorTilemap = GameObject.Find("Tilemap_finalDoor").GetComponent<Tilemap>();
         }
     }
 }

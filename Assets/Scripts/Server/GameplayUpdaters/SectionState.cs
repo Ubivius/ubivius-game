@@ -82,10 +82,8 @@ namespace ubv.server.logic
 
         public bool UnlockFinalDoor()
         {
-            Debug.LogWarning("_NorthEastButton : " + _NorthEastButton);
-            Debug.LogWarning("_SouthEastButton : " + _SouthEastButton);
-            Debug.LogWarning("_SouthWestButton : " + _SouthWestButton);
-            Debug.LogWarning("_NorthWestButton : " + _NorthWestButton);
+            Debug.LogWarning("_NorthEastButton : " + _NorthEastButton + " / " + "_SouthEastButton : " + _SouthEastButton  + "/" + "_SouthWestButton : " + _SouthWestButton + " / " + "_NorthWestButton : " + _NorthWestButton);
+
             if (_NorthEastButton && _SouthEastButton && _SouthWestButton && _NorthWestButton)
             {
                 return true;
