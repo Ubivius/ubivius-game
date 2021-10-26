@@ -39,7 +39,7 @@ namespace ubv.microservices
 
         protected override void OnGetResponse(string JSON, GetAchievementRequest originalRequest)
         {
-            if (originalRequest is GetAchievementRequest)
+            if (originalRequest is GetAllAchievementsRequest)
             {
                 string JSONFixed = JsonHelper.FixJsonArrayFromServer(JSON);
                 JSONAchievement[] jsonDataArray = JsonHelper.ArrayFromJsonString<JSONAchievement>(JSONFixed);
