@@ -42,6 +42,8 @@ namespace ubv.server.logic
         {
             Debug.Log("ENEMy Pathfinding grid manager is initialized");
 
+            m_pathNodes = m_pathfindingGridManager.GetPathNodeArray();
+
             EnemySpawn(state);
 
             /*m_pathNodes = m_pathfindingGridManager.GetPathNodeArray();

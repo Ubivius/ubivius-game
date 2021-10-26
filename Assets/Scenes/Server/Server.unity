@@ -465,7 +465,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enemySettings: {fileID: 11400000, guid: 387cec5fcfcc1a6499b0d050382f46fd, type: 2}
   m_pathfindingGridManager: {fileID: 1171094596}
-  m_enemyCount: 9
+  m_enemyCount: 5
 --- !u!1 &779656959
 GameObject:
   m_ObjectHideFlags: 0
