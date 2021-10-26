@@ -658,6 +658,7 @@ MonoBehaviour:
   m_updaters:
   - {fileID: 1470650681}
   - {fileID: 380608787}
+  - {fileID: 1926701262}
 --- !u!4 &1089558532
 Transform:
   m_ObjectHideFlags: 0
@@ -1294,6 +1295,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_playerShootingSettings: {fileID: 11400000, guid: e9e0b7007b894254586ea1109e168b46,
     type: 2}
+  m_playerMovementUpdater: {fileID: 1470650681}
 --- !u!1 &2123676788
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,4 +15,4 @@ MonoBehaviour:
   BulletPrefab: {fileID: 7419865453471933861, guid: 30e0be4506d6747a4a0300c7cfd9e0ed,
     type: 3}
   BulletForce: 3
-  BulletDelay: 0.25
+  BulletDelay: 0.5

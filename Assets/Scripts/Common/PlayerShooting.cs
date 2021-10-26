@@ -40,7 +40,7 @@ namespace ubv
                             {
                                 hittable.OnHit();
                             }
-                            Debug.DrawLine(player.transform.position, hit.point, Color.green, 1.0f);
+                            Debug.DrawLine(player.transform.position, hit.point, Color.green, 0.25f);
                         }
 
                         m_lastShot = 0;
