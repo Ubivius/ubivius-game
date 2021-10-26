@@ -2,11 +2,19 @@
 
 local_branch="$(git rev-parse --abbrev-ref HEAD)"
 valid_chars="^(feature|hotfix)\/(UBI)-([0-9]{3,4})-([A-Za-z-]+)$"
-message='Failed to push due to bad branch name. Please use the following format : feature/UBI-123-description or hotfix/UBI-321-description'
+messageRegex='Failed to push due to bad branch name. Please use the following format : feature/UBI-123-description or hotfix/UBI-321-description'
+messageLength='Failed to push due branch name being too long. Maximum 50 characters'
 
 if [[ ! $local_branch =~ $valid_chars ]]
 then
-    printf '%s\n' "$message"
+    printf '%s\n' "$messageRegex"
+	
+    exit 1
+fi
+
+if [[ ${#myvar} > 50 ]]
+then
+    printf '%s\n' "$messageLength"
 	
     exit 1
 fi

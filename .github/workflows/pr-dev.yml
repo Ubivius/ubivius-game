@@ -158,5 +158,5 @@ jobs:
           regex: '^(major|minor|patch)\/(feature|hotfix)\/(UBI)-([0-9]{3})-([A-Za-z-]+)$' # e.g. "major|minor|patch/{{branch name}}"
           prefix_case_sensitive: false # title prefix are case insensitive
           min_length: 5 # Min length of the branch name
-          max_length: 30 # Max length of the branch name
+          max_length: 60 # Max length of the branch name
           github_token: ${{ env.GITHUB_TOKEN }}
