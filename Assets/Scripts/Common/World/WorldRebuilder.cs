@@ -172,8 +172,7 @@ namespace ubv.client.world
                     {
                         wallPos.Add(pos);
 
-                        if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell &&
-                            diagoUpLeftCell is WallCell && diagoUpRightCell is WallCell && diagoBottomLeftCell is WallCell && diagoBottomRightCell is WallCell)
+                        if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell && diagoUpLeftCell is WallCell && diagoUpRightCell is WallCell && diagoBottomLeftCell is WallCell && diagoBottomRightCell is WallCell)
                             wallCells.Add(m_defaultWallTile);
 
                         else if (leftCell is WallCell && rightCell is WallCell == false && topCell is WallCell == false && bottomCell is WallCell == false)
@@ -184,47 +183,43 @@ namespace ubv.client.world
                             wallCells.Add(m_wallUUpTile);
                         else if (leftCell is WallCell == false && rightCell is WallCell == false && topCell is WallCell == false && bottomCell is WallCell)
                             wallCells.Add(m_wallUDownTile);
-
-                        else if (leftCell is WallCell && rightCell is WallCell == false)
+    
+                        // BASIC SIDE WALLS
+                        else if (leftCell is WallCell && rightCell is WallCell == false && topCell is WallCell && bottomCell is WallCell && diagoUpLeftCell is WallCell && diagoBottomLeftCell is WallCell)
                             wallCells.Add(m_wallLeftTile);
-                        else if (leftCell is WallCell == false && rightCell is WallCell)
+                        else if (leftCell is WallCell == false && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell && diagoUpRightCell is WallCell && diagoBottomRightCell is WallCell)
                             wallCells.Add(m_wallRightTile);
-                        else if (topCell is WallCell == false && bottomCell is WallCell)
+                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell == false && bottomCell is WallCell && diagoBottomLeftCell is WallCell && diagoBottomRightCell is WallCell)
                             wallCells.Add(m_wallDownTile);
-                        else if (topCell is WallCell && bottomCell is WallCell == false)
+                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell == false && diagoUpLeftCell is WallCell && diagoUpRightCell is WallCell)
                             wallCells.Add(m_wallUpTile);
 
+                        // BASIC DOUBLE WALLS
                         else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell == false && bottomCell is WallCell == false)
                             wallCells.Add(m_wallHorizontalTile);
                         else if (leftCell is WallCell == false && rightCell is WallCell == false && topCell is WallCell && bottomCell is WallCell)
                             wallCells.Add(m_wallVerticalTile);
-                        
 
-                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell &&
-                                 diagoUpLeftCell is WallCell && diagoUpRightCell is WallCell && diagoBottomLeftCell is WallCell && diagoBottomRightCell is WallCell == false)
-                            wallCells.Add(m_cornerInsideUpLeftTile);
-
-                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell &&
-                                 diagoUpLeftCell is WallCell && diagoUpRightCell is WallCell && diagoBottomLeftCell is WallCell == false && diagoBottomRightCell is WallCell)
-                            wallCells.Add(m_cornerInsideUpRightTile);
-
-                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell &&
-                                 diagoUpLeftCell is WallCell && diagoUpRightCell is WallCell == false && diagoBottomLeftCell is WallCell && diagoBottomRightCell is WallCell)
-                            wallCells.Add(m_cornerInsideDownLeftTile);
-
-                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell &&
-                                 diagoUpLeftCell is WallCell == false && diagoUpRightCell is WallCell && diagoBottomLeftCell is WallCell && diagoBottomRightCell is WallCell)
-                            wallCells.Add(m_cornerInsideDownRightTile);
-                        /*
-                        else if (leftCell is not WallCell && rightCell is WallCell && topCell is not WallCell && bottomCell is WallCell)
+                        // BASIC OUTSIDE CORNERS
+                        else if (leftCell is WallCell == false && rightCell is WallCell && topCell is WallCell == false && bottomCell is WallCell && diagoUpLeftCell is WallCell == false && diagoBottomRightCell is WallCell)
                             wallCells.Add(m_cornerOutsideUpLeftTile);
-                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell)
+                        else if (leftCell is WallCell && rightCell is WallCell == false && topCell is WallCell == false && bottomCell is WallCell && diagoUpRightCell is WallCell == false && diagoBottomLeftCell is WallCell)
                             wallCells.Add(m_cornerOutsideUpRightTile);
-                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell)
+                        else if (leftCell is WallCell == false && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell == false && diagoUpRightCell is WallCell && diagoBottomLeftCell is WallCell == false)
                             wallCells.Add(m_cornerOutsideDownLeftTile);
-                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell)
+                        else if (leftCell is WallCell && rightCell is WallCell == false && topCell is WallCell && bottomCell is WallCell == false && diagoUpLeftCell is WallCell && diagoBottomRightCell is WallCell == false)
                             wallCells.Add(m_cornerOutsideDownRightTile);
-                        */
+
+                        // BASIC INSIDE CORNERS
+                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell && diagoUpLeftCell is WallCell && diagoUpRightCell is WallCell && diagoBottomLeftCell is WallCell && diagoBottomRightCell is WallCell == false)
+                            wallCells.Add(m_cornerInsideUpLeftTile);
+                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell && diagoUpLeftCell is WallCell && diagoUpRightCell is WallCell && diagoBottomLeftCell is WallCell == false && diagoBottomRightCell is WallCell)
+                            wallCells.Add(m_cornerInsideUpRightTile);
+                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell && diagoUpLeftCell is WallCell && diagoUpRightCell is WallCell == false && diagoBottomLeftCell is WallCell && diagoBottomRightCell is WallCell)
+                            wallCells.Add(m_cornerInsideDownLeftTile);
+                        else if (leftCell is WallCell && rightCell is WallCell && topCell is WallCell && bottomCell is WallCell && diagoUpLeftCell is WallCell == false && diagoUpRightCell is WallCell && diagoBottomLeftCell is WallCell && diagoBottomRightCell is WallCell)
+                            wallCells.Add(m_cornerInsideDownRightTile);
+                        
                         else
                             wallCells.Add(m_wallCenterTile);
 
