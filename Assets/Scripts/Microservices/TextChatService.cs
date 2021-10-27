@@ -126,7 +126,7 @@ namespace ubv.microservices
                         messages[i].user_id,
                         messages[i].conversation_id,
                         messages[i].text, 
-                        System.DateTime.Parse(messages[i].created_on));
+                        System.DateTime.Parse(messages[i].created_on.Split('.')[0]));
                 }
 
                 msgReq.Callback.Invoke(infos);
