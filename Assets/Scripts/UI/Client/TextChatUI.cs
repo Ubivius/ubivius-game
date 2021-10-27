@@ -43,6 +43,7 @@ namespace ubv.ui.client
         [SerializeField] private Color m_ErrorColor;
 
         private string m_playerName;
+        private Queue<Tuple<string, string, System.DateTime>> m_newPrivateMessagesQueue;
 
         private const string m_friendRegex = @"^(\/w|\/W)\s\""([a-zA-Z0-9 _]+)\""\s(.+)";
         private const string m_invalidRegex = @"^(\/\S+)";
@@ -53,6 +54,7 @@ namespace ubv.ui.client
 
         private void Awake()
         {
+            m_newPrivateMessagesQueue = new Queue<Tuple<string, string, System.DateTime>>();
             m_socialServices = ClientSyncState.SocialServices;
         }
 
@@ -65,8 +67,7 @@ namespace ubv.ui.client
             m_system = EventSystem.current;
             m_rectTransform = transform.GetComponent<RectTransform>();
             m_scrollbar.value = 0;
-
-            m_playerName = m_socialServices.CurrentUser.UserName;
+            
             m_socialServices.OnNewMessageFrom += OnNewMessageFrom;
         }
 
@@ -86,6 +87,12 @@ namespace ubv.ui.client
                 Send();
                 m_messageInputField.DeactivateInputField();
                 m_system.SetSelectedGameObject(null);
+            }
+
+            while(m_newPrivateMessagesQueue.Count > 0)
+            {
+                Tuple<string, string, DateTime> msg = m_newPrivateMessagesQueue.Dequeue();
+                PrintPrivateMessage(msg.Item1, m_playerName, msg.Item2);
             }
         }
 
@@ -188,9 +195,11 @@ namespace ubv.ui.client
             }
         }
 
-        private void OnNewMessageFrom(string message, MessageInfo msg)
+        private void OnNewMessageFrom(string id, MessageInfo msg)
         {
-            PrintPrivateMessage(msg.UserID, m_playerName, message);
+            m_socialServices.GetUserInfo(id, (UserInfo info) => {
+                m_newPrivateMessagesQueue.Enqueue(new Tuple<string, string, DateTime>(info.UserName, msg.Text, msg.CreatedOn));
+            });
         }
 
         private void PrintPrivateMessage(string a_sender, string a_receiver, string a_message) {

@@ -64,6 +64,7 @@ namespace ubv.microservices
             }
             m_invitesFetcher.ReadyForNewFetch();
         }
+
         protected override void OnPostResponse(string JSON, PostInviteRequest originalRequest)
         {
             originalRequest.Callback?.Invoke();
