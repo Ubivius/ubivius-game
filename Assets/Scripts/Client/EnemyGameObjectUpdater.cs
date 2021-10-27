@@ -6,13 +6,7 @@ using ubv.common;
 using UnityEngine.Events;
 using ubv.common.serialization;
 using ubv.server.logic.ai;
-
-
-// a faire, spawn serverside
-// debug log
-// ajoute au worldstate
-// client :instance en checkant le iff entre le client et serveur
-// 
+using ubv.server.logic;
 
 namespace ubv.client.logic
 {
@@ -24,11 +18,13 @@ namespace ubv.client.logic
         [SerializeField] private float m_lerpTime = 0.2f;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private EnemySettings m_enemySettings;
+        [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
+
+        private float m_timeSinceLastGoal;
 
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, EnemyState> EnemyState { get; private set; }
-
-        private float m_timeSinceLastGoal;
+        public Dictionary<int, Vector2> GoalPosition { get; private set; }
 
         private Dictionary<int, EnemyStateData> m_goalStates;
 
@@ -37,6 +33,7 @@ namespace ubv.client.logic
             m_goalStates = new Dictionary<int, EnemyStateData>();
             Bodies = new Dictionary<int, Rigidbody2D>();
             EnemyState = new Dictionary<int, EnemyState>();
+            GoalPosition = new Dictionary<int, Vector2>();
         }
 
         public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
@@ -53,7 +50,8 @@ namespace ubv.client.logic
             foreach (EnemyStateData enemyStateData in remoteState.Enemies().Values)
             {
                 err = ((enemyStateData.Position.Value - localState.Enemies()[enemyStateData.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
-                     &&(enemyStateData.EnemyState != localState.Enemies()[enemyStateData.GUID.Value].EnemyState);
+                     && (enemyStateData.EnemyState != localState.Enemies()[enemyStateData.GUID.Value].EnemyState)
+                     && (enemyStateData.GoalPosition.Value != localState.Enemies()[enemyStateData.GUID.Value].GoalPosition.Value);
 
                 if (err)
                 {
@@ -68,23 +66,10 @@ namespace ubv.client.logic
         {
             foreach (EnemyStateData enemy in state.Enemies().Values)
             {
-                //if (enemy.NbOfEnemy.Value != m_nbOfEnemy)
-                //{
-                //    // va falloir gérer pour les enemies mort
-                //    for (int i=0; i<(enemy.NbOfEnemy.Value); i++)
-                //    {
-                //        id = enemy.GUID.Value;
-                //        GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy);
-                //        Bodies[id] = enemyGameObject.GetComponent<Rigidbody2D>();
-                //        Bodies[id].name = "Client enemy " + id.ToString();
-                //        EnemyStateMachine[id] = enemyGameObject.GetComponent<EnemyStateMachine>();
-                //    }
-
-                //}
-
                 enemy.Position.Value = m_goalStates[enemy.GUID.Value].Position.Value;
                 enemy.Rotation.Value = m_goalStates[enemy.GUID.Value].Rotation.Value;
                 enemy.EnemyState = m_goalStates[enemy.GUID.Value].EnemyState;
+                enemy.GoalPosition = m_goalStates[enemy.GUID.Value].GoalPosition;
             }
         }
 
@@ -108,16 +93,22 @@ namespace ubv.client.logic
                 {
                     Debug.Log("Instantiate enemy client");
                     GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy, new Vector3(0, 0, 0), Quaternion.identity);
+                    EnemyPathFindingMovement enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
+                    enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
+
                     Bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
                     Bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
                 }
 
                 Debug.Log("INputtt Outputtttttt position avant changement" + enemy.Position.Value);
+                Debug.Log("enemy Positionnnnnnnnnnnnnnnnnnnnnnn" + enemy.Position.Value);
 
                 Bodies[enemy.GUID.Value].position = enemy.Position.Value;
                 Bodies[enemy.GUID.Value].rotation = enemy.Rotation.Value;
 
-                Debug.Log("enemy Positionnnnnnnnnnnnnnnnnnnnnnn" + enemy.Position.Value);
+                GoalPosition[enemy.GUID.Value] = enemy.GoalPosition.Value;
+                
+
                 EnemyState[enemy.GUID.Value] = enemy.EnemyState;
 
                 m_goalStates[enemy.GUID.Value] = enemy;
@@ -137,6 +128,8 @@ namespace ubv.client.logic
             {
                 Destroy(Bodies[enemyKey]);
                 Bodies.Remove(enemyKey);
+                EnemyState.Remove(enemyKey);
+                GoalPosition.Remove(enemyKey);
                 m_goalStates.Remove(enemyKey);
             }
         }
@@ -162,6 +155,11 @@ namespace ubv.client.logic
             if (EnemyState[enemy.GUID.Value] != m_goalStates[enemy.GUID.Value].EnemyState)
             {
                 EnemyState[enemy.GUID.Value] = m_goalStates[enemy.GUID.Value].EnemyState;
+            }
+
+            if (GoalPosition[enemy.GUID.Value] != m_goalStates[enemy.GUID.Value].GoalPosition.Value)
+            {
+                GoalPosition[enemy.GUID.Value] = m_goalStates[enemy.GUID.Value].GoalPosition.Value;
             }
         }
     }

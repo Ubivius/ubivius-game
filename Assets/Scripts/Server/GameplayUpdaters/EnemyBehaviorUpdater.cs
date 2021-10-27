@@ -20,6 +20,7 @@ namespace ubv.server.logic
 
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, EnemyState> m_states;
+        private Dictionary<int, List<Vector2>> m_goalPositions;
 
         private int id;
         public override void Setup()
@@ -89,6 +90,7 @@ namespace ubv.server.logic
                 Debug.Log("Update world enemy positon" + body.position);
                 enemy.Position.Value = body.position;
                 enemy.Rotation.Value = body.rotation;
+                enemy.GoalPosition.Value = m_goalPositions[id][1];
                 enemy.EnemyState = m_states[id];
             }
         }
@@ -111,19 +113,22 @@ namespace ubv.server.logic
                     EnemyPathFindingMovement enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
                     EnemyStateMachine enemyStateMachine = enemyGameObject.GetComponent<EnemyStateMachine>();
 
+                    enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
+
                     id = System.Guid.NewGuid().GetHashCode();
 
-                    enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
                     body.position = enemyPathFindingMovement.GetPosition();
                     Debug.Log("Server printing enemy position" + body.position);
                     body.name = "Server enemy " + id.ToString();
 
+                    m_goalPositions.Add(id, enemyPathFindingMovement.GetPathVectorList());
                     m_states.Add(id, enemyStateMachine.CurrentEnemyState);
                     m_bodies.Add(id, body);
 
                     EnemyStateData enemyStateData = new EnemyStateData(id);
 
                     enemyStateData.Position.Value = m_bodies[id].position;
+                    enemyStateData.GoalPosition.Value = m_goalPositions[id][1];
                     enemyStateData.EnemyState = m_states[id];
 
                     m_enemyStatesData.Add(id, enemyStateData);

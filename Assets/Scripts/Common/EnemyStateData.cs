@@ -20,6 +20,7 @@ namespace ubv
             {
                 // send this over network
                 public serialization.types.Vector2 Position;
+                public serialization.types.Vector2 GoalPosition;
                 public serialization.types.Float Rotation;
                 //public ubv.server.logic.ai.EnemyState EnemyState;
 
