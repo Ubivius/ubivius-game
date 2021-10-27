@@ -23,9 +23,9 @@ namespace ubv.common
             }
         }
 
-        public class OpeningDoorList : serialization.types.List<serialization.types.Int32>
+        public class Vector2IntList : serialization.types.List<serialization.types.Int32>
         {
-            public OpeningDoorList(System.Collections.Generic.List<serialization.types.Int32> doorList) : base(doorList)
+            public Vector2IntList(System.Collections.Generic.List<serialization.types.Int32> doorList) : base(doorList)
             {
 
             }
@@ -38,12 +38,12 @@ namespace ubv.common
 
         private PlayerHashMap m_playerStates;
 
-        private OpeningDoorList m_openingDoorList;
+        private Vector2IntList m_openingDoorList;
 
         public WorldState() : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
-            m_openingDoorList = new OpeningDoorList(new System.Collections.Generic.List<serialization.types.Int32>());
+            m_openingDoorList = new Vector2IntList(new System.Collections.Generic.List<serialization.types.Int32>());
             InitSerializableMembers(m_playerStates, m_openingDoorList);
         }
 
@@ -55,7 +55,7 @@ namespace ubv.common
                 dictStates.Add(state.GUID.Value, state);
             }
             m_playerStates = new PlayerHashMap(dictStates);
-            m_openingDoorList = new OpeningDoorList(new System.Collections.Generic.List<serialization.types.Int32>());
+            m_openingDoorList = new Vector2IntList(new System.Collections.Generic.List<serialization.types.Int32>());
             InitSerializableMembers(m_playerStates, m_openingDoorList);
         }
 
@@ -63,7 +63,7 @@ namespace ubv.common
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
             SetPlayers(state.m_playerStates.Value);
-            m_openingDoorList = new OpeningDoorList(new System.Collections.Generic.List<serialization.types.Int32>());
+            m_openingDoorList = new Vector2IntList(new System.Collections.Generic.List<serialization.types.Int32>());
             SetOpeningDoor(state.m_openingDoorList.Value);
             InitSerializableMembers(m_playerStates, m_openingDoorList);
         }
@@ -92,7 +92,7 @@ namespace ubv.common
             return m_playerStates.Value;
         }
 
-        public OpeningDoorList OpeningDoors()
+        public Vector2IntList OpeningDoors()
         {
             return m_openingDoorList;
         }

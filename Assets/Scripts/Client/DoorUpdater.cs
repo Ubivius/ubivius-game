@@ -60,31 +60,31 @@ namespace Assets.Scripts.Client
                 switch (doorSection.Value)
                 {
                     case (int)DoorType.Section_North:
-                        RemoveDoor(m_world.DoorNorth);
+                        RemoveDoorsAtPositions(m_world.DoorNorth);
                         break;
                     case (int)DoorType.Section_East:
-                        RemoveDoor(m_world.DoorEast);
+                        RemoveDoorsAtPositions(m_world.DoorEast);
                         break;
                     case (int)DoorType.Section_South:
-                        RemoveDoor(m_world.DoorSouth);
+                        RemoveDoorsAtPositions(m_world.DoorSouth);
                         break;
                     case (int)DoorType.Section_West:
-                        RemoveDoor(m_world.DoorWest);
+                        RemoveDoorsAtPositions(m_world.DoorWest);
                         break;
                     case (int)DoorType.Section0_NorthEast:
-                        RemoveDoor(m_world.DoorSection0NorthEast);
+                        RemoveDoorsAtPositions(m_world.DoorSection0NorthEast);
                         break;
                     case (int)DoorType.Section0_SouthEast:
-                        RemoveDoor(m_world.DoorSection0SouthEast);
+                        RemoveDoorsAtPositions(m_world.DoorSection0SouthEast);
                         break;
                     case (int)DoorType.Section0_SouthWest:
-                        RemoveDoor(m_world.DoorSection0SouthWest);
+                        RemoveDoorsAtPositions(m_world.DoorSection0SouthWest);
                         break;
                     case (int)DoorType.Section0_NorthWest:
-                        RemoveDoor(m_world.DoorSection0NorthWest);
+                        RemoveDoorsAtPositions(m_world.DoorSection0NorthWest);
                         break;
                     case (int)DoorType.FinalDoor:
-                        RemoveDoor(m_world.FinalDoor);
+                        RemoveDoorsAtPositions(m_world.FinalDoor);
                         break;
                     default:
                         break;
@@ -117,7 +117,7 @@ namespace Assets.Scripts.Client
             return tmp;
         }
 
-        private void RemoveDoor(List<Vector2Int> doorList)
+        private void RemoveDoorsAtPositions(List<Vector2Int> doorList)
         {
             foreach (Vector2Int doorPos in doorList)
             {
