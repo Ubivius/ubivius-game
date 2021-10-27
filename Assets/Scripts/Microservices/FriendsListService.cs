@@ -86,8 +86,13 @@ namespace ubv.microservices
             RelationInfo[] relations = new RelationInfo[relationsResponse.Length];
             for (int i = 0; i < relationsResponse.Length; i++)
             {
+                // we don't know who we are in the relationship 
+                JSONFriendInfo otherUser = originalRequest.UserID.Equals(relationsResponse[i].user_1.user_id) ? 
+                    relationsResponse[i].user_2 : 
+                    relationsResponse[i].user_1;
+
                 RelationInfo.RelationshipType relationshipType;
-                switch (relationsResponse[i].user_2.relationship_type)
+                switch (otherUser.relationship_type)
                 {
                     case "Friend":
                         relationshipType = RelationInfo.RelationshipType.Friend;
@@ -105,7 +110,7 @@ namespace ubv.microservices
                         relationshipType = RelationInfo.RelationshipType.None;
                         break;
                 }
-                relations[i] = new RelationInfo(relationsResponse[i].id, relationsResponse[i].user_2.user_id, relationshipType, relationsResponse[i].conversation_id);
+                relations[i] = new RelationInfo(relationsResponse[i].id, otherUser.user_id, relationshipType, relationsResponse[i].conversation_id);
             }
 
             originalRequest.Callback.Invoke(relations);
