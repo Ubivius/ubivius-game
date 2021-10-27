@@ -111,7 +111,7 @@ namespace ubv.microservices
             originalRequest.Callback.Invoke(relations);
         }
 
-        public void GetConversationWith(string currentUserID, string otherUserID, UnityAction<string> OnGetConversation)
+        public void GetConversationIDWith(string currentUserID, string otherUserID, UnityAction<string> OnGetConversation)
         {
             this.Request(new GetRelationsFromUserRequest(currentUserID, (RelationInfo[] infos) => {
                 foreach(RelationInfo info in infos)

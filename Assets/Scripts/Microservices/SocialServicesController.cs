@@ -24,14 +24,14 @@ namespace ubv.microservices
 
         private Dictionary<string, UserInfo> m_cachedUsers;
         private Dictionary<string, string> m_userNameIDs;
+        private Dictionary<string, string> m_cachedUserConversations;
 
         private void Awake()
         {
             m_cachedUsers = new Dictionary<string, UserInfo>();
             m_userNameIDs = new Dictionary<string, string>();
+            m_cachedUserConversations = new Dictionary<string, string>();
             CurrentUser = null;
-            m_textChat.OnNewMessageFrom += OnNewMessageFrom;
-            m_friendsList.OnNewFriendInvite += OnNewInviteFrom;
         }
 
         public void Authenticate(string user, string password)
@@ -45,8 +45,25 @@ namespace ubv.microservices
                     m_textChat.IsFetcherActive = true;
                     m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
+                    m_textChat.OnNewMessageFrom += OnNewMessageFrom;
+                    m_friendsList.OnNewFriendInvite += OnNewInviteFrom;
+
+                    FetchAllPrivateConversations();
                 }));
             }));
+        }
+
+        private void FetchAllPrivateConversations()
+        {
+            m_friendsList.GetAllFriendsIDs(CurrentUser.ID, (HashSet<string> friends) => {
+
+                foreach (string id in friends)
+                {
+                    m_friendsList.GetConversationIDWith(CurrentUser.ID, id, (string conversation) => {
+                        m_textChat.AddConversationToCache(conversation);
+                    });
+                }
+            });
         }
 
         public void GetFriendIDFromName(string friendName, UnityAction<string> OnGetFriendID)
@@ -87,7 +104,17 @@ namespace ubv.microservices
 
         public void SendMessageTo(string otherUserID, string message)
         {
-            m_textChat.SendMessageTo(CurrentUser.ID, otherUserID, message);
+            if (m_cachedUserConversations.ContainsKey(otherUserID))
+            {
+                m_textChat.SendMessageToConversation(CurrentUser.ID, m_cachedUserConversations[otherUserID], message);
+            }
+            else
+            {
+                m_friendsList.GetConversationIDWith(CurrentUser.ID, otherUserID, (string conversationID) => {
+                    m_cachedUserConversations.Add(otherUserID, conversationID);
+                    m_textChat.SendMessageToConversation(CurrentUser.ID, m_cachedUserConversations[otherUserID], message);
+                });
+            }
         }
         
         public void GetUserInfo(string userID, OnGetInfo callback)
