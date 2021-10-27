@@ -45,7 +45,9 @@ namespace ubv.microservices
                     m_textChat.IsFetcherActive = true;
                     m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
-                    m_textChat.OnNewMessageFrom += OnNewMessageFrom;
+                    m_textChat.OnNewMessageFrom += (string id, MessageInfo msg) => {
+                        OnNewMessageFrom(id, msg);
+                    };
                     m_friendsList.OnNewFriendInvite += OnNewInviteFrom;
 
                     FetchAllPrivateConversations();
