@@ -17,6 +17,8 @@ namespace ubv.tcp.client
     {
         public bool AutoReconnect;
 
+        private bool m_tryToReconnect;
+
         protected readonly object m_lock = new object();
 
         private string m_serverAddress;
@@ -61,6 +63,7 @@ namespace ubv.tcp.client
             m_exitSignal = false;
             m_dataToSend = new Queue<byte[]>();
             m_activeEndpoint = false;
+            m_tryToReconnect = false;
 
             m_iteratingTroughReceivers = false;
 
@@ -102,6 +105,7 @@ namespace ubv.tcp.client
                     receiver.OnSuccessfulTCPConnect();
                 }
                 m_iteratingTroughReceivers = false;
+                m_tryToReconnect = true;
 #if DEBUG_LOG
                 Debug.Log("Connected to server.");
 #endif // DEBUG_LOG
@@ -110,6 +114,7 @@ namespace ubv.tcp.client
                 {
                     m_activeEndpoint = true;
                     HandleConnection(stream);
+                    m_exitSignal = true;
                     stream.Close();
                 }
 
@@ -218,6 +223,7 @@ namespace ubv.tcp.client
 #if DEBUG_LOG
             Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal);
 #endif // DEBUG_LOG
+            m_activeEndpoint = false;
         }
 
         public void Reconnect()
@@ -240,7 +246,7 @@ namespace ubv.tcp.client
 
         private void ReconnectCheck()
         {
-            if (!m_activeEndpoint && AutoReconnect)
+            if (!m_activeEndpoint && AutoReconnect && m_tryToReconnect)
             {
                 m_reconnectTryTimer += Time.deltaTime;
                 if (m_reconnectTryTimer * 1000 > m_reconnectTryIntervalMS)
@@ -338,6 +344,7 @@ namespace ubv.tcp.client
                 }
             }
             Debug.Log("State at client sending thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal);
+            m_activeEndpoint = false;
         }
 
         private void OnDestroy()
@@ -392,6 +399,12 @@ namespace ubv.tcp.client
 
             Thread thread = new Thread(new ThreadStart(CommThread));
             thread.Start();
+        }
+
+        public void Disconnect()
+        {
+            m_tryToReconnect = false;
+            m_exitSignal = true;
         }
         
 

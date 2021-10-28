@@ -13,14 +13,15 @@ namespace ubv.server.logic
     /// Represents the state of the server during the game
     /// https://www.gabrielgambetta.com/client-server-game-architecture.html
     /// </summary>
-    public class GameplayState : ServerState, udp.server.IUDPServerReceiver, tcp.server.ITCPServerReceiver
+    public class GameplayState : ServerState
     {
         private HashSet<int> m_clients;
-        private Dictionary<int, ClientState> m_clientStates;
+        private WorldState m_currentWorldState;
         private int m_masterTick;
         private Dictionary<int, bool> m_connectedClients;
                 
         private Dictionary<int, Dictionary<int, InputFrame>> m_clientInputBuffers;
+        private Dictionary<int, InputFrame> m_currentInputFrames;
         
         [SerializeField] private uint m_snapshotTicks;
         [SerializeField] private string m_physicsSceneName;
@@ -38,12 +39,14 @@ namespace ubv.server.logic
             ServerState.m_gameplayState = this;
         }
 
-        public void Init(Dictionary<int, common.serialization.types.String> clients)
+        public void Init(ICollection<int> clients)
         {
             m_tickAccumulator = 0;
             m_masterTick = 0;
-            m_clientStates = new Dictionary<int, ClientState>();
-            m_clients = new HashSet<int>(clients.Keys);
+            m_currentWorldState = new WorldState();
+            m_clients = new HashSet<int>(clients);
+
+            m_currentInputFrames = new Dictionary<int, InputFrame>();
 
             m_connectedClients = new Dictionary<int, bool>();
 
@@ -58,48 +61,20 @@ namespace ubv.server.logic
             {
                 PlayerState player = new PlayerState();
                 player.GUID.Value = id;
-                m_clientStates[id] = new ClientState(id);
-                m_clientStates[id].AddPlayer(player);
+                m_currentWorldState.AddPlayer(player);
+                m_clientInputBuffers[id] = new Dictionary<int, InputFrame>();
                 m_connectedClients.Add(id, true);
-            }
-
-            // add each player to each other client state
-            foreach (ClientState baseState in m_clientStates.Values)
-            {
-                m_clientInputBuffers[baseState.PlayerGUID] = new Dictionary<int, InputFrame>();
-                foreach (ClientState otherState in m_clientStates.Values)
-                {
-                    PlayerState currentPlayer = otherState.GetPlayer();
-                    if (baseState.PlayerGUID != otherState.PlayerGUID)
-                    {
-                        baseState.AddPlayer(currentPlayer);
-                    }
-                }
             }
             
             foreach (ServerGameplayStateUpdater updater in m_updaters)
             {
                 updater.Setup();
             }
-
-            foreach (ClientState state in m_clientStates.Values)
-            {
-                foreach(ServerGameplayStateUpdater updater in m_updaters)
-                {
-                    updater.InitClient(state);
-                }
-            }
-
-            foreach (ClientState state in m_clientStates.Values)
-            {
-                foreach (ServerGameplayStateUpdater updater in m_updaters)
-                {
-                    updater.InitPlayer(state.GetPlayer());
-                }
-            }
             
-            m_UDPServer.Subscribe(this);
-            m_TCPServer.Subscribe(this);
+            foreach(ServerGameplayStateUpdater updater in m_updaters)
+            {
+                updater.InitWorld(m_currentWorldState);
+            }
         }
                 
         protected override void StateFixedUpdate()
@@ -107,57 +82,54 @@ namespace ubv.server.logic
             lock (m_lock)
             {
                 // update state based on received input
-                foreach (int id in m_clientStates.Keys)
+                foreach (int id in m_clients)
                 {
-                    if (!m_connectedClients[id])
-                        continue;
-
-                    if (!m_clientInputBuffers[id].ContainsKey(m_masterTick))
+                    InputFrame frame = m_zeroFrame;
+                    if (m_clientInputBuffers[id].ContainsKey(m_masterTick) && m_connectedClients[id])
                     {
+                        // zero OR duplicate last frame ?
+                        // duplicate implies future correction of inputs
+                        frame = m_clientInputBuffers[id][m_masterTick];
+                    }
+#if DEBUG_LOG
+                    else
+                    { 
                         Debug.Log("SERVER Missed input " + m_masterTick + " from client " + id);
                     }
+#endif // DEBUG_LOG
 
-                    // zero OR duplicate last frame ?
-                    // duplicate implies future correction of inputs
-                    InputFrame frame = m_clientInputBuffers[id].ContainsKey(m_masterTick) ?
-                        m_clientInputBuffers[id][m_masterTick] : 
-                        m_zeroFrame;
-                    
-                    // must be called in main unity thread
-                    foreach (ServerGameplayStateUpdater updater in m_updaters)
-                    {
-                        updater.FixedUpdateFromClient(m_clientStates[id], frame, Time.fixedDeltaTime);
-                    }
+                    m_currentInputFrames[id] = frame;
 
                     // remove used entries in dict if we use a dict later
                     if(m_clientInputBuffers[id].ContainsKey(m_masterTick))
                        m_clientInputBuffers[id].Remove(m_masterTick);
                 }
 
-                m_serverPhysics.Simulate(Time.fixedDeltaTime);
-
-                // update client states based on simulation
-                foreach (int id in m_clientStates.Keys)
+                // must be called in main unity thread
+                foreach (ServerGameplayStateUpdater updater in m_updaters)
                 {
-                    ClientState client = m_clientStates[id];
-                    foreach (ServerGameplayStateUpdater updater in m_updaters)
-                    {
-                        updater.UpdateClient(client);
-                    }
+                    updater.FixedUpdateFromClient(m_currentWorldState, m_currentInputFrames, Time.fixedDeltaTime);
+                }
+
+                m_serverPhysics.Simulate(Time.fixedDeltaTime);
+                
+                foreach (ServerGameplayStateUpdater updater in m_updaters)
+                {
+                    updater.UpdateWorld(m_currentWorldState);
                 }
                 
                 m_masterTick++;
                 if (++m_tickAccumulator >= m_snapshotTicks)
                 {
-                    foreach (int id in m_connectedClients.Keys)
+                    foreach (int id in m_clients)
                     {
                         if (m_connectedClients[id])
                         {
                             // OPTIMIZATION : Cache le message et l'info au lieu d'en recréer des new à chaque send
                             NetInfo info = new NetInfo(m_masterTick);
-                            ClientStateMessage msg = new ClientStateMessage(m_clientStates[id], info);
+                            ClientStateMessage msg = new ClientStateMessage(m_currentWorldState, info);
                             //Debug.Log("SERVER Sending validated tick " + m_masterTick + " to client " + id);
-                            m_UDPServer.Send(msg.GetBytes(), id);
+                            m_serverConnection.UDPServer.Send(msg.GetBytes(), id);
                         }
                     }
                     m_tickAccumulator = 0;
@@ -165,14 +137,14 @@ namespace ubv.server.logic
             }
         }
 
-        public void Receive(udp.UDPToolkit.Packet packet, int playerID)
+        protected override void OnUDPReceiveFrom(udp.UDPToolkit.Packet packet, int playerID)
         {
             if (!m_connectedClients[playerID])
             {
 #if DEBUG_LOG
                 Debug.Log("Received UDP packet from unconnected client (ID " + playerID + "). Ignoring.");
-                return;
 #endif //DEBUG_LOG
+                return;
             }
 
             InputMessage inputs = IConvertible.CreateFromBytes<InputMessage>(packet.Data.ArraySegment());
@@ -180,29 +152,17 @@ namespace ubv.server.logic
             {
                 lock (m_lock)
                 {
-                    ClientState clientState = m_clientStates[playerID];
                     List<InputFrame> inputFrames = inputs.InputFrames.Value;
                     int frameIndex = 0;
                     
+
                     for (int i = 0; i < inputFrames.Count; i++)
                     {
                         frameIndex = (int)inputFrames[i].Info.Tick.Value;
-                        //Debug.Log("SERVER received " + frameIndex + " tick at master tick " + m_masterTick);
                         if (frameIndex >= m_masterTick)
                         {
-                            //Debug.Log("SERVER Enqueued input tick " + frameIndex + " from client");
                             m_clientInputBuffers[playerID][frameIndex] = inputFrames[i];
                         }
-
-                        /*if(frameIndex < m_masterTick)
-                        {
-                            Debug.Log("SERVER Client sent already processed input for tick " + frameIndex + " vs master tick " + m_masterTick);
-                        }
-
-                        if(frameIndex > m_masterTick + ServerNetworkingManager.SERVER_TICK_BUFFER_SIZE)
-                        {
-                            Debug.Log("SERVER Client is too far ahead of server at tick " + frameIndex + " vs master tick " + m_masterTick);
-                        }*/
                     }
                 }
             }
@@ -212,39 +172,62 @@ namespace ubv.server.logic
                 if (rttMsg != null)
                 {
                     // TODO cache bytes + add check "isRttMessage" that checks the object enum type value
-                    m_UDPServer.Send(rttMsg.GetBytes(), playerID);
+                    m_serverConnection.UDPServer.Send(rttMsg.GetBytes(), playerID);
                 }
             }
         }
 
-        public void ReceivePacket(TCPToolkit.Packet packet, int playerID)
+        protected override void OnTCPReceiveFrom(TCPToolkit.Packet packet, int playerID)
         {
-            // if we receive ID message from player (who's trying to reconnect)
-            // ...
-            IdentificationMessage identification = Serializable.CreateFromBytes<IdentificationMessage>(packet.Data.ArraySegment());
-            if (identification != null)
+            ServerRejoinGameDemand confirmation = common.serialization.IConvertible.CreateFromBytes<ServerRejoinGameDemand>(packet.Data.ArraySegment());
+            if (confirmation != null)
             {
+                if (m_connectedClients.ContainsKey(playerID))
+                {
+                    m_serverConnection.TCPServer.Send(GameCreationState.CachedServerInit.GetBytes(), playerID);
+                }
+                else
+                {
+                    m_serverConnection.TCPServer.Send(confirmation.GetBytes(), playerID);
+                }
+                return;
+            }
+
+            ClientWorldLoadedMessage worldLoaded = common.serialization.IConvertible.CreateFromBytes<ClientWorldLoadedMessage>(packet.Data.ArraySegment());
+            if(worldLoaded != null)
+            {
+                if (m_connectedClients.ContainsKey(playerID))
+                {
+                    ServerStartsMessage starts = new ServerStartsMessage();
+                    m_serverConnection.TCPServer.Send(starts.GetBytes(), playerID);
+                }
+                return;
+            }
+        }
+
+        protected override void OnPlayerConnect(int playerID)
+        {
+            if (m_connectedClients.ContainsKey(playerID))
+            {
+
 #if DEBUG_LOG
                 Debug.Log("Player " + playerID + " successfully connected and identified. Rejoining.");
 #endif // DEBUG_LOG
+
                 m_connectedClients[playerID] = true;
             }
         }
 
-        public void OnConnect(int playerID)
+        protected override void OnPlayerDisconnect(int playerID)
         {
+            if (m_connectedClients.ContainsKey(playerID))
+            {
 #if DEBUG_LOG
-            Debug.Log("Player " + playerID + " just connected. Awaiting identification packet.");
+                Debug.Log("Player " + playerID + " disconnected");
 #endif // DEBUG_LOG
-        }
 
-        public void OnDisconnect(int playerID)
-        {
-#if DEBUG_LOG
-            Debug.Log("Player " + playerID + " disconnected");
-            m_connectedClients[playerID] = false;
-            // DisconnectPlayer() // pour gérer la déco?
-#endif // DEBUG_LOG
+                m_connectedClients[playerID] = false;
+            }
         }
     }
 }

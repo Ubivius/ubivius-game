@@ -1,12 +1,11 @@
-name: CI for Pull-Request and Merge on master/main
+name: CI for Pull-Request on master/main
 
 on:
-  pull_request:
-    branches: [ master, main ]
   push:
     branches: [ master, main ]
 
 env:
+  BUILD_TYPE: prod  # Can be test or prod
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
   DOCKERHUB_PWD: ${{ secrets.DOCKERHUB_PWD }}
@@ -35,7 +34,7 @@ jobs:
       
       # Build
       - name: Server build 
-        uses: webbertakken/unity-builder@v2
+        uses: game-ci/unity-builder@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -43,11 +42,11 @@ jobs:
         with:
           buildMethod: Build.ServerBuild
           targetPlatform: StandaloneLinux64
-          unityVersion: 2019.4.24f1
+          unityVersion: 2019.4.25f1
       
       # Test edit and play mode
       - name: Run tests
-        uses: webbertakken/unity-test-runner@v2
+        uses: game-ci/unity-test-runner@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -68,20 +67,25 @@ jobs:
         run: |
             IN=$(echo ${GITHUB_REPOSITORY})
             NAME=${IN#"Ubivius/"}
+            VERSION=${{ env.REPO_VERSION }}
             echo "::set-output name=REPO_NAME::$(echo $NAME)"
             echo "::set-output name=BRANCH::$(echo $GITHUB_REF)"
+            echo "::set-output name=REPO_VERSION::$(echo $VERSION)"
         shell: bash
 
       # Docker publish server image
       - name: Build and Push Artefact to Registry
         if: success()
         uses: elgohr/Publish-Docker-Github-Action@master
+        env:
+          BUILD_TYPE: ${{ env.BUILD_TYPE }}
         with:
           name: ubiviushub/${{ steps.fetch-vars.outputs.REPO_NAME }}
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ env.DOCKERHUB_PWD }}
+          buildargs: BUILD_TYPE
           dockerfile: Dockerfile
-          tags: "${{ env.REPO_VERSION }}"
+          tags: "${{ steps.fetch-docker-vars.outputs.REPO_VERSION }}"
 
       # Also publish build output as zip archive
       - uses: actions/upload-artifact@v2
@@ -112,7 +116,7 @@ jobs:
 
       # Build
       - name: Client build
-        uses: webbertakken/unity-builder@v2
+        uses: game-ci/unity-builder@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -120,11 +124,11 @@ jobs:
         with:
           buildMethod: Build.ClientBuild
           targetPlatform: StandaloneWindows64
-          unityVersion: 2019.4.24f1
+          unityVersion: 2019.4.25f1
 
       # Test edit and play mode
       - name: Run tests
-        uses: webbertakken/unity-test-runner@v2
+        uses: game-ci/unity-test-runner@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
