@@ -20,14 +20,14 @@ namespace ubv.ui.client
         [SerializeField] private PlayerInLobby m_playerOne;
         [SerializeField] private PlayerInLobby m_playerTwo;
         [SerializeField] private PlayerInLobby m_playerThree;
+        private PlayerInLobby[] m_playersInLobby;
 
         private UserInfo m_activeUser;
+        private CharacterData m_activeUserCharacter;
         private bool activeUserDisplayed = false;
 
         private SocialServicesController m_socialServices;
 
-        private Dictionary<int, PlayerInLobby> m_playerTextsObjects;
-        
         private List<CharacterData> m_characters;
         private Dictionary<int, UserInfo> m_users;
 
@@ -35,7 +35,7 @@ namespace ubv.ui.client
         {
             m_characters = new List<CharacterData>();
             m_users = new Dictionary<int, UserInfo>();
-            m_playerTextsObjects = new Dictionary<int, PlayerInLobby>();
+            m_playersInLobby = new PlayerInLobby[] { m_playerOne, m_playerTwo, m_playerThree };
         }
 
         protected override void Start()
@@ -45,64 +45,49 @@ namespace ubv.ui.client
             m_lobby.ClientListUpdate.AddListener(UpdatePlayers);
             m_activeUser = m_lobby.GetActiveUser();
 
-            m_playerOne.RemovePlayer();
-            m_playerTwo.RemovePlayer();
-            m_playerThree.RemovePlayer();
+            m_playerOne.HidePlayer();
+            m_playerTwo.HidePlayer();
+            m_playerThree.HidePlayer();
         }
 
         protected override void Update()
         {
             base.Update();
 
-            if(Time.frameCount % 69 == 0)
+            if (Time.frameCount % 69 == 0)
             {
-                foreach (CharacterData character in m_characters)
+                RefreshUsersInLobby();
+            }
+        }
+
+        private void RefreshUsersInLobby()
+        {
+            if (!activeUserDisplayed)
+            {
+                m_mainPlayer.ShowPlayer(m_activeUser, m_activeUserCharacter);
+                activeUserDisplayed = true;
+            }
+
+            for (int i = 0; i < m_playersInLobby.Length; i++)
+            {
+                if (i < m_characters.Count)
                 {
+                    CharacterData character = m_characters[i];
                     int playerIntID = character.PlayerID.GetHashCode();
-                    if (m_users.ContainsKey(playerIntID))
+                    UserInfo user = m_users[playerIntID];
+                    if (user != null)
                     {
-                        if(playerIntID == m_activeUser.ID.GetHashCode() && !activeUserDisplayed)
-                        {
-                            Debug.Log("Adding active character/user id to lobby " + character.Name + ", " + character.PlayerID);
-                            m_mainPlayer.AddPlayer(m_users[playerIntID], character);
-                            activeUserDisplayed = true;
-                        }
-                        else if (!m_playerTextsObjects.ContainsKey(playerIntID) && playerIntID != m_activeUser.ID.GetHashCode())
-                        {
-                            Debug.Log("Adding character/user id to lobby " + character.Name + ", " + character.PlayerID);
-                            int playerCountInLobby = m_playerTextsObjects.Count;
-
-                            switch (playerCountInLobby)
-                            {
-                                case 0:
-                                    m_playerTextsObjects[playerIntID] = m_playerOne;
-                                    break;
-                                case 1:
-                                    m_playerTextsObjects[playerIntID] = m_playerTwo;
-                                    break;
-                                default:
-                                    m_playerTextsObjects[playerIntID] = m_playerThree;
-                                    break;
-                            }
-                            m_playerTextsObjects[playerIntID].AddPlayer(m_users[playerIntID], character);
-                        }
+                        m_playersInLobby[i].ShowPlayer(user, character);
                     }
-                }
-
-                List<int> toRemove = new List<int>();
-                foreach(int id in m_playerTextsObjects.Keys)
-                {
-                    if (!m_users.ContainsKey(id))
+                    else if(m_playersInLobby[i].IsVisible())
                     {
-                        Debug.Log("Removing user from text gameobjects" + id);
-                        toRemove.Add(id);
+                        m_playersInLobby[i].HidePlayer();
                     }
+                    
                 }
-
-                foreach(int id in toRemove)
+                else if (m_playersInLobby[i].IsVisible())
                 {
-                    m_playerTextsObjects[id].RemovePlayer();
-                    m_playerTextsObjects.Remove(id);
+                    m_playersInLobby[i].HidePlayer();
                 }
             }
         }
@@ -116,12 +101,23 @@ namespace ubv.ui.client
                 foreach (CharacterData character in m_characters)
                 {
                     int playerIntID = character.PlayerID.GetHashCode();
-                    playerIntIDs.Add(playerIntID);
+                    if (playerIntID == m_activeUser.ID.GetHashCode())
+                    {
+                        m_activeUserCharacter = character;
+                    }
+                    else
+                    {
+                        playerIntIDs.Add(playerIntID);
+                    }
+
                     if (!m_users.ContainsKey(playerIntID))
                     {
+                        
                         m_socialServices.GetUserInfo(character.PlayerID, OnGetUserInfo);
                     }
                 }
+
+                m_characters.Remove(m_activeUserCharacter);
 
                 List<int> toRemove = new List<int>();
                 foreach (int id in m_users.Keys)
@@ -156,12 +152,13 @@ namespace ubv.ui.client
 
         public void ToggleReady()
         {
+            m_activeUser.Ready = !m_activeUser.Ready;
             string statusText = "NOT READY";
-            if (!m_activeUser.Ready)
+            if (m_activeUser.Ready)
             {
                 statusText = "READY";
             }
-            m_activeUser.Ready = !m_activeUser.Ready;
+      
             m_mainPlayer.SetStatus(statusText);
         } 
     }

@@ -19,31 +19,45 @@ namespace ubv.ui.client
         [SerializeField] private TextMeshProUGUI m_status;
         [SerializeField] private Transform m_placeholder;
 
-        public void AddPlayer(UserInfo user, CharacterData character)
+        private bool m_isVisible = false;
+
+        public void ShowPlayer(UserInfo user, CharacterData character)
         {
             m_character.text = character.Name;
             m_username.text = user.UserName;
-            m_status.text = "NOT READY";
+            string statusText = "NOT READY";
+            if (user.Ready)
+            {
+                statusText = "READY";
+            }
+            m_status.text = statusText;
 
             m_playerInfo.gameObject.SetActive(true);
             if(m_placeholder)
             {
                 m_placeholder.gameObject.SetActive(false);
             }
+            m_isVisible = true;
         }
 
-        public void RemovePlayer()
+        public void HidePlayer()
         {
             m_playerInfo.gameObject.SetActive(false);
             if (m_placeholder)
             {
                 m_placeholder.gameObject.SetActive(true);
             }
+            m_isVisible = false;
         }
 
         public void SetStatus(string status)
         {
             m_status.text = status; 
+        }
+
+        public bool IsVisible()
+        {
+            return m_isVisible;
         }
     }
 }
