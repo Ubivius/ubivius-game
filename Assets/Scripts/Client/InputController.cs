@@ -23,6 +23,7 @@ namespace ubv
 
             private Vector2 m_move = Vector2.zero;
             private bool m_IsSprinting = false;
+            private bool m_interact = false;
 
             private void Awake()
             {
@@ -40,6 +41,9 @@ namespace ubv
 
                 m_controls.Gameplay.Sprint.performed += context => SetSprinting(true);
                 m_controls.Gameplay.Sprint.canceled += context => SetSprinting(false);
+
+                m_controls.Gameplay.Interact.performed += context => Interact(true);
+                m_controls.Gameplay.Interact.canceled += context => Interact(false);
             }
 
             // Start is called before the first frame update
@@ -58,11 +62,17 @@ namespace ubv
                 m_IsSprinting = isSprinting;
             }
 
+            private void Interact(bool interact)
+            {
+                m_interact = interact;
+            }
+
             // Update is called once per frame
             void Update()
             {
                 m_currentInputFrame.Movement.Value = m_move;
                 m_currentInputFrame.Sprinting.Value = m_IsSprinting;
+                m_currentInputFrame.Interact.Value = m_interact;
             }
         
             static public common.data.InputFrame CurrentFrame()

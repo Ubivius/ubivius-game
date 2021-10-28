@@ -12,24 +12,27 @@ namespace ubv
             {
                 public serialization.types.Bool Sprinting;
                 public serialization.types.Vector2 Movement;
+                public serialization.types.Bool Interact;
                 public NetInfo Info;
 
                 public InputFrame()
                 {
                     Sprinting = new serialization.types.Bool(false);
                     Movement = new serialization.types.Vector2(Vector2.zero);
+                    Interact = new serialization.types.Bool(false);
                     Info = new NetInfo(0);
 
-                    InitSerializableMembers(Sprinting, Movement, Info);
+                    InitSerializableMembers(Sprinting, Movement, Interact, Info);
                 }
 
                 public InputFrame(bool sprinting, Vector2 movement, long time, int tick)
                 {
                     Sprinting = new serialization.types.Bool(sprinting);
                     Movement = new serialization.types.Vector2(movement);
+                    Interact = new serialization.types.Bool(false);
                     Info = new NetInfo(tick);
 
-                    InitSerializableMembers(Sprinting, Movement, Info);
+                    InitSerializableMembers(Sprinting, Movement, Interact, Info);
                 }
                 
 
@@ -37,6 +40,7 @@ namespace ubv
                 {
                     Movement.Value = Vector2.zero;
                     Sprinting.Value = false;
+                    Interact.Value = false;
                 }
                 
                 protected override ID.BYTE_TYPE SerializationID()
