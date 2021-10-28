@@ -351,6 +351,7 @@ namespace ubv.common.world.generationManager
                 if(nbrTry == c_mandatoryTry)
                 {
                     Debug.Log("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
                 }
                 return new Vector2Int(-1, -1);
             }
@@ -370,6 +371,7 @@ namespace ubv.common.world.generationManager
             if (nbrTry == c_mandatoryTry)
             {
                 Debug.Log("MAP CREATION ALERT : Was not able to fit in SECTION0 mandatory room, look your sizing");
+                throw new MapCreationException("MAP CREATION ALERT : Was not able to fit in SECTION0 mandatory room, look your sizing");
             }
             return new Vector2Int(-1, -1);
         }
@@ -383,6 +385,7 @@ namespace ubv.common.world.generationManager
                 if (nbrTry == c_mandatoryTry)
                 {
                     Debug.Log("MAP CREATION ALERT : TopLeft to small for mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : TopLeft to small for mandatory room, look your sizing");
                 }
                 return new Vector2Int(-1, -1);
             }
@@ -406,6 +409,7 @@ namespace ubv.common.world.generationManager
             else if (nbrTry == c_mandatoryTry)
             {
                 Debug.Log("MAP CREATION ALERT : Was not able to fit in TOPLEFT mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : Was not able to fit in TOPLEFT mandatory room, look your sizing");
             }
             return new Vector2Int(-1, -1);
         }
@@ -419,6 +423,7 @@ namespace ubv.common.world.generationManager
                 if (nbrTry == c_mandatoryTry)
                 {
                     Debug.Log("MAP CREATION ALERT : TopRight to small for mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : TopRight to small for mandatory room, look your sizing");
                 }
                 return new Vector2Int(-1, -1);
             }
@@ -442,6 +447,7 @@ namespace ubv.common.world.generationManager
             else if (nbrTry == c_mandatoryTry)
             {
                 Debug.Log("MAP CREATION ALERT : Was not able to fit in TOPRIGHT mandatory room, look your sizing");
+                throw new MapCreationException("MAP CREATION ALERT : Was not able to fit in TOPRIGHT mandatory room, look your sizing");
             }
             return new Vector2Int(-1, -1);
         }
@@ -455,6 +461,7 @@ namespace ubv.common.world.generationManager
                 if (nbrTry == c_mandatoryTry)
                 {
                     Debug.Log("MAP CREATION ALERT : BottomLeft to small for mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : BottomLeft to small for mandatory room, look your sizing");
                 }
                 return new Vector2Int(-1, -1);
             }
@@ -478,6 +485,7 @@ namespace ubv.common.world.generationManager
             else if (nbrTry == c_mandatoryTry)
             {
                 Debug.Log("MAP CREATION ALERT : Was not able to fit in BOTTOMLEFT mandatory room, look your sizing");
+                throw new MapCreationException("MAP CREATION ALERT : Was not able to fit in BOTTOMLEFT mandatory room, look your sizing");
             }
             return new Vector2Int(-1, -1);
         }
@@ -491,6 +499,7 @@ namespace ubv.common.world.generationManager
                 if (nbrTry == c_mandatoryTry)
                 {
                     Debug.Log("MAP CREATION ALERT : BottomRight to small for mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : BottomRight to small for mandatory room, look your sizing");
                 }
                 return new Vector2Int(-1, -1);
             }
@@ -514,6 +523,7 @@ namespace ubv.common.world.generationManager
             else if (nbrTry == c_mandatoryTry)
             {
                 Debug.Log("MAP CREATION ALERT : Was not able to fit in BOTTOMRIGHT mandatory room, look your sizing");
+                throw new MapCreationException("MAP CREATION ALERT : Was not able to fit in BOTTOMRIGHT mandatory room, look your sizing");
             }
             return new Vector2Int(-1, -1);
         }
