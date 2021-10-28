@@ -1,7 +1,12 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:Assets/Prefabs/Room/RoomSection0/ControlRoom.prefab.meta
+guid: d8c2d109e29323848806157f7d3ca808
+PrefabImporter:
+=======
 guid: 796bfa38845e56c4c88f480b10bd3b5c
 folderAsset: yes
 DefaultImporter:
+>>>>>>> master:Assets/Music.meta
   externalObjects: {}
   userData: 
   assetBundleName: 
