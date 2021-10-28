@@ -25,6 +25,7 @@ namespace ubv.client.logic
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, EnemyState> EnemyState { get; private set; }
         public Dictionary<int, Vector2> GoalPosition { get; private set; }
+        private Dictionary<int, EnemyPathFindingMovement> EnemyPathfindingMovement;
 
         private Dictionary<int, EnemyStateData> m_goalStates;
 
@@ -33,6 +34,7 @@ namespace ubv.client.logic
             m_goalStates = new Dictionary<int, EnemyStateData>();
             Bodies = new Dictionary<int, Rigidbody2D>();
             EnemyState = new Dictionary<int, EnemyState>();
+            EnemyPathfindingMovement = new Dictionary<int, EnemyPathFindingMovement>();
             GoalPosition = new Dictionary<int, Vector2>();
         }
 
@@ -93,8 +95,8 @@ namespace ubv.client.logic
                 {
                     Debug.Log("Instantiate enemy client");
                     GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy, new Vector3(0, 0, 0), Quaternion.identity);
-                    EnemyPathFindingMovement enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
-                    enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
+                    EnemyPathfindingMovement[enemy.GUID.Value] = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
+                    EnemyPathfindingMovement[enemy.GUID.Value].SetManager(m_pathfindingGridManager);
 
                     Bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
                     Bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
@@ -107,7 +109,10 @@ namespace ubv.client.logic
                 Bodies[enemy.GUID.Value].rotation = enemy.Rotation.Value;
 
                 GoalPosition[enemy.GUID.Value] = enemy.GoalPosition.Value;
-                
+                if (GoalPosition[enemy.GUID.Value] != null)
+                {
+                    EnemyPathfindingMovement[enemy.GUID.Value].MoveTo(GoalPosition[enemy.GUID.Value]);
+                }
 
                 EnemyState[enemy.GUID.Value] = enemy.EnemyState;
 
@@ -129,6 +134,7 @@ namespace ubv.client.logic
                 Destroy(Bodies[enemyKey]);
                 Bodies.Remove(enemyKey);
                 EnemyState.Remove(enemyKey);
+                EnemyPathfindingMovement.Remove(enemyKey);
                 GoalPosition.Remove(enemyKey);
                 m_goalStates.Remove(enemyKey);
             }
