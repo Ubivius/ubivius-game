@@ -23,12 +23,28 @@ namespace ubv.common
             }
         }
 
+        public class Vector2IntList : serialization.types.List<serialization.types.Int32>
+        {
+            public Vector2IntList(System.Collections.Generic.List<serialization.types.Int32> doorList) : base(doorList)
+            {
+
+            }
+
+            protected override ID.BYTE_TYPE SerializationID()
+            {
+                return ID.BYTE_TYPE.LIST_VECTOR2INT;
+            }
+        }
+
         private PlayerHashMap m_playerStates;
-        
+
+        private Vector2IntList m_openingDoorList;
+
         public WorldState() : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
-            InitSerializableMembers(m_playerStates);
+            m_openingDoorList = new Vector2IntList(new System.Collections.Generic.List<serialization.types.Int32>());
+            InitSerializableMembers(m_playerStates, m_openingDoorList);
         }
 
         public WorldState(System.Collections.Generic.List<common.data.PlayerState> playerStates) : base()
@@ -39,14 +55,17 @@ namespace ubv.common
                 dictStates.Add(state.GUID.Value, state);
             }
             m_playerStates = new PlayerHashMap(dictStates);
-            InitSerializableMembers(m_playerStates);
+            m_openingDoorList = new Vector2IntList(new System.Collections.Generic.List<serialization.types.Int32>());
+            InitSerializableMembers(m_playerStates, m_openingDoorList);
         }
 
         public WorldState(ref WorldState state) : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
             SetPlayers(state.m_playerStates.Value);
-            InitSerializableMembers(m_playerStates);
+            m_openingDoorList = new Vector2IntList(new System.Collections.Generic.List<serialization.types.Int32>());
+            SetOpeningDoor(state.m_openingDoorList.Value);
+            InitSerializableMembers(m_playerStates, m_openingDoorList);
         }
             
         protected override ID.BYTE_TYPE SerializationID()
@@ -71,6 +90,20 @@ namespace ubv.common
         public Dictionary<int, common.data.PlayerState> Players()
         {
             return m_playerStates.Value;
+        }
+
+        public Vector2IntList OpeningDoors()
+        {
+            return m_openingDoorList;
+        }
+
+        public void SetOpeningDoor(System.Collections.Generic.List<serialization.types.Int32> doors)
+        {
+            m_openingDoorList.Value.Clear();
+            foreach (serialization.types.Int32 door in doors)
+            {
+                m_openingDoorList.Value.Add(door);
+            }
         }
     }
 }

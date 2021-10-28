@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ubv.common.world.cellType;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Tilemaps;
@@ -42,7 +43,7 @@ namespace ubv.common.world
         [SerializeField] private Tilemap m_door;
         [SerializeField] private TileBase m_tileFloor;
         [SerializeField] private TileBase m_tileWall;
-        [SerializeField] private TileBase m_tiledoor;
+        [SerializeField] private TileBase m_tileDoor;
         [SerializeField] private int m_wallThickness;
 
         private Grid m_grid;
@@ -111,7 +112,7 @@ namespace ubv.common.world
             m_corridorsManager = new generationManager.CorridorsManager(m_worldGeneratorToCorridorsManager);
             m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
 
-            m_worldGeneratorToDoorManager = new dataStruct.WorldGeneratorToDoorManager(m_masterLogicGrid, m_floor, m_door, m_tileFloor, m_tiledoor, m_roomInMap);
+            m_worldGeneratorToDoorManager = new dataStruct.WorldGeneratorToDoorManager(m_masterLogicGrid, m_floor, m_door, m_tileFloor, m_tileDoor, m_roomInMap);
             m_doorManager = new generationManager.DoorManager(m_worldGeneratorToDoorManager);
             m_masterLogicGrid = m_doorManager.GenerateDoorGrid();
 
@@ -163,6 +164,84 @@ namespace ubv.common.world
             return pos;
         }
 
+        public List<T> FetchAll<T>() where T : LogicCell
+        {
+            List<T> list = new List<T>();
+            LogicGrid grid = GetMasterLogicGrid();
+            for (int x = 0; x < grid.Width; x++)
+            {
+                for (int y = 0; y < grid.Height; y++)
+                {
+                    if (grid.Grid[x, y] is T)
+                    {
+                        list.Add(grid.Grid[x, y] as T);
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        public Dictionary<T, Vector2Int> FetchAllWithPosition<T>() where T : LogicCell
+        {
+            Dictionary<T, Vector2Int> dictionary = new Dictionary<T, Vector2Int>();
+            LogicGrid grid = GetMasterLogicGrid();
+            for (int x = 0; x < grid.Width; x++)
+            {
+                for (int y = 0; y < grid.Height; y++)
+                {
+                    if (grid.Grid[x, y] is T)
+                    {
+                        dictionary.Add(grid.Grid[x, y] as T, new Vector2Int(x, y));
+                    }
+                }
+            }
+
+            return dictionary;
+        }
+
+        public List<DoorCell> FetchDoor(DoorType type)
+        {
+            List<DoorCell> list = new List<DoorCell>();
+            LogicGrid grid = GetMasterLogicGrid();
+            for (int x = 0; x < grid.Width; x++)
+            {
+                for (int y = 0; y < grid.Height; y++)
+                {
+                    if (grid.Grid[x, y] is DoorCell)
+                    {
+                        DoorCell tmp = grid.Grid[x, y] as DoorCell;
+                        if (tmp.DoorType == type)
+                        {
+                            list.Add(tmp);
+                        }                        
+                    }
+                }
+            }
+            return list;
+        }
+
+        public Dictionary<DoorCell, Vector2Int> FetchDoorWithPosition(DoorType type)
+        {
+            Dictionary<DoorCell, Vector2Int> dictionary = new Dictionary<DoorCell, Vector2Int>();
+            LogicGrid grid = GetMasterLogicGrid();
+            for (int x = 0; x < grid.Width; x++)
+            {
+                for (int y = 0; y < grid.Height; y++)
+                {
+                    if (grid.Grid[x, y] is DoorCell)
+                    {
+                        DoorCell tmp = grid.Grid[x, y] as DoorCell;
+                        if (tmp.DoorType == type)
+                        {
+                            dictionary.Add(tmp, new Vector2Int(x, y));
+                        }
+                    }
+                }
+            }
+            return dictionary;
+        }
+
         public cellType.CellInfo[,] GetCellInfoArray()
         {
             return m_masterLogicGrid.GetCellInfo();
@@ -176,6 +255,11 @@ namespace ubv.common.world
         public override void Init()
         {
             GenerateWorld();
+        }
+
+        public Tilemap GetDoorTilemap()
+        {
+            return m_door;
         }
     }
 }
