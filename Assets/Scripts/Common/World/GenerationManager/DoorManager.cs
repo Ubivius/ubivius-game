@@ -40,6 +40,7 @@ namespace ubv.common.world.generationManager
                 if (!GenerateDoorForRoom(room))
                 {
                     Debug.Log("MAP CREATION ALERT : Some room does not have any door");
+                    throw new MapCreationException("MAP CREATION ALERT : Some room does not have any door");
                 }
             }
             foreach (RoomInfo room in m_roomInMap)
@@ -561,3 +562,4 @@ namespace ubv.common.world.generationManager
         }
     }
 }
+
