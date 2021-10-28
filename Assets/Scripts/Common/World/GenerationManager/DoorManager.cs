@@ -116,14 +116,15 @@ namespace ubv.common.world.generationManager
             return 0;
         }
 
+
         private void AddDoorNorth(Vector2Int doorPosition)
         {
-            m_masterLogicGrid.Grid[doorPosition.x - 1, doorPosition.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[doorPosition.x,     doorPosition.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[doorPosition.x + 1, doorPosition.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_door.SetTile(new Vector3Int(doorPosition.x - 1, doorPosition.y, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(doorPosition.x,     doorPosition.y, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(doorPosition.x + 1, doorPosition.y, 0), m_tileDoor);
+            m_masterLogicGrid.Grid[doorPosition.x - 1, doorPosition.y] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[doorPosition.x,     doorPosition.y] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[doorPosition.x + 1, doorPosition.y] = new world.cellType.FloorCell();
+            m_floor.SetTile(new Vector3Int(doorPosition.x - 1, doorPosition.y, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(doorPosition.x,     doorPosition.y, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(doorPosition.x + 1, doorPosition.y, 0), m_tileFloor);
             for (int i = 1; i < c_upperLookRange; i++)
             {   
                 m_masterLogicGrid.Grid[doorPosition.x - 1, doorPosition.y + i] = new world.cellType.FloorCell();
@@ -153,15 +154,15 @@ namespace ubv.common.world.generationManager
 
         private void CompleteNorthDoor(Vector2Int wallOrigin, int i)
         {
-            m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[wallOrigin.x + i, wallOrigin.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[wallOrigin.x + i + 1, wallOrigin.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
+            m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[wallOrigin.x + i,     wallOrigin.y] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[wallOrigin.x + i + 1, wallOrigin.y] = new world.cellType.FloorCell();
             m_floor.SetTile(new Vector3Int(wallOrigin.x + i - 1, wallOrigin.y, 0), null);
             m_floor.SetTile(new Vector3Int(wallOrigin.x + i, wallOrigin.y, 0), null);
             m_floor.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y, 0), null);
-            m_door.SetTile(new Vector3Int(wallOrigin.x + i - 1, wallOrigin.y, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(wallOrigin.x + i, wallOrigin.y, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y, 0), m_tileDoor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x + i - 1, wallOrigin.y, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x + i, wallOrigin.y, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y, 0), m_tileFloor);
         }
 
         private int GenerateDoorEast(RoomInfo room)
@@ -203,12 +204,12 @@ namespace ubv.common.world.generationManager
 
         private void AddDoorEast(Vector2Int doorPosition)
         {
-            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y    ] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y + 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_door.SetTile(new Vector3Int(doorPosition.x, doorPosition.y - 1, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(doorPosition.x, doorPosition.y,     0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(doorPosition.x, doorPosition.y + 1, 0), m_tileDoor);
+            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y - 1] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y    ] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y + 1] = new world.cellType.FloorCell();
+            m_floor.SetTile(new Vector3Int(doorPosition.x, doorPosition.y - 1, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(doorPosition.x, doorPosition.y,     0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(doorPosition.x, doorPosition.y + 1, 0), m_tileFloor);
             for (int i = 1; i < c_upperLookRange; i++)
             {
                 m_masterLogicGrid.Grid[doorPosition.x + i, doorPosition.y - 1] = new world.cellType.FloorCell();
@@ -238,15 +239,15 @@ namespace ubv.common.world.generationManager
 
         private void CompleteEastDoor(Vector2Int wallOrigin, int i)
         {
-            m_masterLogicGrid.Grid[wallOrigin.x, wallOrigin.y + i - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[wallOrigin.x, wallOrigin.y + i] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[wallOrigin.x, wallOrigin.y + i + 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
+            m_masterLogicGrid.Grid[wallOrigin.x, wallOrigin.y + i - 1] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[wallOrigin.x, wallOrigin.y + i    ] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[wallOrigin.x, wallOrigin.y + i + 1] = new world.cellType.FloorCell();
             m_floor.SetTile(new Vector3Int(wallOrigin.x, wallOrigin.y + i - 1, 0), null);
             m_floor.SetTile(new Vector3Int(wallOrigin.x, wallOrigin.y + i, 0), null);
             m_floor.SetTile(new Vector3Int(wallOrigin.x, wallOrigin.y + i + 1, 0), null);
-            m_door.SetTile(new Vector3Int(wallOrigin.x, wallOrigin.y + i - 1, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(wallOrigin.x, wallOrigin.y + i, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(wallOrigin.x, wallOrigin.y + i + 1, 0), m_tileDoor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x, wallOrigin.y + i - 1, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x, wallOrigin.y + i, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x, wallOrigin.y + i + 1, 0), m_tileFloor);
         }
 
         private int GenerateDoorSouth(RoomInfo room)
@@ -288,12 +289,12 @@ namespace ubv.common.world.generationManager
 
         private void AddDoorSouth(Vector2Int doorPosition)
         {
-            m_masterLogicGrid.Grid[doorPosition.x - 1, doorPosition.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[doorPosition.x,     doorPosition.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[doorPosition.x + 1, doorPosition.y] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_door.SetTile(new Vector3Int(doorPosition.x - 1, doorPosition.y, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(doorPosition.x,     doorPosition.y, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(doorPosition.x + 1, doorPosition.y, 0), m_tileDoor);
+            m_masterLogicGrid.Grid[doorPosition.x - 1, doorPosition.y] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[doorPosition.x,     doorPosition.y] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[doorPosition.x + 1, doorPosition.y] = new world.cellType.FloorCell();
+            m_floor.SetTile(new Vector3Int(doorPosition.x - 1, doorPosition.y, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(doorPosition.x,     doorPosition.y, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(doorPosition.x + 1, doorPosition.y, 0), m_tileFloor);
             for (int i = 1; i < c_upperLookRange; i++)
             {
                 m_masterLogicGrid.Grid[doorPosition.x - 1, doorPosition.y - i] = new world.cellType.FloorCell();
@@ -323,15 +324,15 @@ namespace ubv.common.world.generationManager
 
         private void CompleteSouthDoor(Vector2Int wallOrigin, int i)
         {
-            m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[wallOrigin.x + i,     wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[wallOrigin.x + i + 1, wallOrigin.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
+            m_masterLogicGrid.Grid[wallOrigin.x + i - 1, wallOrigin.y - 1] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[wallOrigin.x + i,     wallOrigin.y - 1] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[wallOrigin.x + i + 1, wallOrigin.y - 1] = new world.cellType.FloorCell();
             m_floor.SetTile(new Vector3Int(wallOrigin.x + i - 1, wallOrigin.y - 1, 0), null);
             m_floor.SetTile(new Vector3Int(wallOrigin.x + i,     wallOrigin.y - 1, 0), null);
             m_floor.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y - 1, 0), null);
-            m_door.SetTile(new Vector3Int(wallOrigin.x + i - 1, wallOrigin.y - 1, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(wallOrigin.x + i,     wallOrigin.y - 1, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y - 1, 0), m_tileDoor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x + i - 1, wallOrigin.y - 1, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x + i,     wallOrigin.y - 1, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x + i + 1, wallOrigin.y - 1, 0), m_tileFloor);
         }
 
         private int GenerateDoorWest(RoomInfo room)
@@ -373,12 +374,12 @@ namespace ubv.common.world.generationManager
 
         private void AddDoorWest(Vector2Int doorPosition)
         {
-            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y    ] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y + 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_door.SetTile(new Vector3Int(doorPosition.x, doorPosition.y - 1, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(doorPosition.x, doorPosition.y,     0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(doorPosition.x, doorPosition.y + 1, 0), m_tileDoor);
+            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y - 1] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y    ] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[doorPosition.x, doorPosition.y + 1] = new world.cellType.FloorCell();
+            m_floor.SetTile(new Vector3Int(doorPosition.x, doorPosition.y - 1, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(doorPosition.x, doorPosition.y,     0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(doorPosition.x, doorPosition.y + 1, 0), m_tileFloor);
             for (int i = 1; i < c_upperLookRange; i++)
             {
                 m_masterLogicGrid.Grid[doorPosition.x - i, doorPosition.y - 1] = new world.cellType.FloorCell();
@@ -408,15 +409,15 @@ namespace ubv.common.world.generationManager
 
         private void CompleteWestDoor(Vector2Int wallOrigin, int i)
         {
-            m_masterLogicGrid.Grid[wallOrigin.x - 1, wallOrigin.y + i - 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[wallOrigin.x - 1, wallOrigin.y + i] = new world.cellType.DoorCell(cellType.DoorType.Standard);
-            m_masterLogicGrid.Grid[wallOrigin.x - 1, wallOrigin.y + i + 1] = new world.cellType.DoorCell(cellType.DoorType.Standard);
+            m_masterLogicGrid.Grid[wallOrigin.x - 1, wallOrigin.y + i - 1] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[wallOrigin.x - 1, wallOrigin.y + i    ] = new world.cellType.FloorCell();
+            m_masterLogicGrid.Grid[wallOrigin.x - 1, wallOrigin.y + i + 1] = new world.cellType.FloorCell();
             m_floor.SetTile(new Vector3Int(wallOrigin.x - 1, wallOrigin.y + i - 1, 0), null);
             m_floor.SetTile(new Vector3Int(wallOrigin.x - 1, wallOrigin.y + i, 0), null);
             m_floor.SetTile(new Vector3Int(wallOrigin.x - 1, wallOrigin.y + i + 1, 0), null);
-            m_door.SetTile(new Vector3Int(wallOrigin.x - 1, wallOrigin.y + i - 1, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(wallOrigin.x - 1, wallOrigin.y + i, 0), m_tileDoor);
-            m_door.SetTile(new Vector3Int(wallOrigin.x - 1, wallOrigin.y + i + 1, 0), m_tileDoor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x - 1, wallOrigin.y + i - 1, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x - 1, wallOrigin.y + i, 0), m_tileFloor);
+            m_floor.SetTile(new Vector3Int(wallOrigin.x - 1, wallOrigin.y + i + 1, 0), m_tileFloor);
         }
 
         private void AddSectionDoorNorth()
@@ -526,9 +527,9 @@ namespace ubv.common.world.generationManager
                     m_masterLogicGrid.Grid[x - 1, y] = new world.cellType.DoorCell(type);
                     m_masterLogicGrid.Grid[x,     y] = new world.cellType.DoorCell(type);
                     m_masterLogicGrid.Grid[x + 1, y] = new world.cellType.DoorCell(type);
-                    m_floor.SetTile(new Vector3Int(x - 1, y, 0), null); // Remove tile
-                    m_floor.SetTile(new Vector3Int(x,     y, 0), null); // Remove tile
-                    m_floor.SetTile(new Vector3Int(x + 1, y, 0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x - 1, y, 0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x,     y, 0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x + 1, y, 0), null); // Remove tile
                     m_door.SetTile(new Vector3Int(x - 1, y, 0), m_tileDoor);
                     m_door.SetTile(new Vector3Int(x,     y, 0), m_tileDoor);
                     m_door.SetTile(new Vector3Int(x + 1, y, 0), m_tileDoor);
@@ -548,9 +549,9 @@ namespace ubv.common.world.generationManager
                     m_masterLogicGrid.Grid[x, y - 1] = new world.cellType.DoorCell(type);
                     m_masterLogicGrid.Grid[x, y    ] = new world.cellType.DoorCell(type);
                     m_masterLogicGrid.Grid[x, y + 1] = new world.cellType.DoorCell(type);
-                    m_floor.SetTile(new Vector3Int(x, y - 1, 0), null); // Remove tile
-                    m_floor.SetTile(new Vector3Int(x, y,     0), null); // Remove tile
-                    m_floor.SetTile(new Vector3Int(x, y + 1, 0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x, y - 1, 0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x, y,     0), null); // Remove tile
+                    //m_floor.SetTile(new Vector3Int(x, y + 1, 0), null); // Remove tile
                     m_door.SetTile(new Vector3Int(x, y - 1, 0), m_tileDoor);
                     m_door.SetTile(new Vector3Int(x, y,     0), m_tileDoor);
                     m_door.SetTile(new Vector3Int(x, y + 1, 0), m_tileDoor);

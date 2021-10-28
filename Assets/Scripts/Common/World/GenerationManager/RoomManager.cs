@@ -126,6 +126,12 @@ namespace ubv.common.world.generationManager
                     );
                 AddRoomToSection0(myRoom, false);
             }
+
+            foreach (RoomInfo room in m_mandatoryRoomPoolBottomLeft)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(room, positionUnusedRoom, Quaternion.identity, m_grid.transform);
+                AddRoomToBottomLeft(myRoom, true);
+            }
             for (int i = 0; i < m_numberRandomRoomBottomLeft; i++)
             {
                 RoomInfo myRoom = GameObject.Instantiate(
@@ -135,6 +141,12 @@ namespace ubv.common.world.generationManager
                     m_grid.transform
                     );
                 AddRoomToBottomLeft(myRoom, false);
+            }
+
+            foreach (RoomInfo room in m_mandatoryRoomPoolTopLeft)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(room, positionUnusedRoom, Quaternion.identity, m_grid.transform);
+                AddRoomToTopLeft(myRoom, true);
             }
             for (int i = 0; i < m_numberRandomRoomTopLeft; i++)
             {
@@ -146,6 +158,12 @@ namespace ubv.common.world.generationManager
                     );
                 AddRoomToTopLeft(myRoom, false);
             }
+
+            foreach (RoomInfo room in m_mandatoryRoomPoolTopRight)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(room, positionUnusedRoom, Quaternion.identity, m_grid.transform);
+                AddRoomToTopRight(myRoom, true);
+            }
             for (int i = 0; i < m_numberRandomRoomTopRight; i++)
             {
                 RoomInfo myRoom = GameObject.Instantiate(
@@ -155,6 +173,12 @@ namespace ubv.common.world.generationManager
                     m_grid.transform
                     );
                 AddRoomToTopRight(myRoom, false);
+            }
+
+            foreach (RoomInfo room in m_mandatoryRoomPoolBottomRight)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(room, positionUnusedRoom, Quaternion.identity, m_grid.transform);
+                AddRoomToBottomRight(myRoom, true);
             }
             for (int i = 0; i < m_numberRandomRoomBottomRight; i++)
             {
