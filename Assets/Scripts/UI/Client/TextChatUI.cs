@@ -41,9 +41,11 @@ namespace ubv.ui.client
         [SerializeField] private Color m_privateColor;
         [SerializeField] private Color m_defaultColor;
         [SerializeField] private Color m_ErrorColor;
-
-        private string m_playerName;
-        private Queue<Tuple<string, string, System.DateTime>> m_newPrivateMessagesQueue;
+        
+        // user, text
+        private Queue<Tuple<string, string, DateTime>> m_newPrivateMessagesQueue;
+        private Queue<Tuple<string, string, DateTime>> m_newGeneralMessagesQueue;
+        private Queue<string> m_errorMessageQueue;
 
         private const string m_friendRegex = @"^(\/w|\/W)\s\""([a-zA-Z0-9 _]+)\""\s(.+)";
         private const string m_invalidRegex = @"^(\/\S+)";
@@ -54,7 +56,9 @@ namespace ubv.ui.client
 
         private void Awake()
         {
-            m_newPrivateMessagesQueue = new Queue<Tuple<string, string, System.DateTime>>();
+            m_newPrivateMessagesQueue = new Queue<Tuple<string, string, DateTime>>();
+            m_newGeneralMessagesQueue = new Queue<Tuple<string, string, DateTime>>();
+            m_errorMessageQueue = new Queue<string>();
             m_socialServices = ClientSyncState.SocialServices;
         }
 
@@ -68,7 +72,7 @@ namespace ubv.ui.client
             m_rectTransform = transform.GetComponent<RectTransform>();
             m_scrollbar.value = 0;
             
-            m_socialServices.OnNewMessageFrom += OnNewMessageFrom;
+            m_socialServices.OnNewMessageFrom += OnNewPrivateMessageFrom;
         }
 
         void Update() {
@@ -92,7 +96,17 @@ namespace ubv.ui.client
             while(m_newPrivateMessagesQueue.Count > 0)
             {
                 Tuple<string, string, DateTime> msg = m_newPrivateMessagesQueue.Dequeue();
-                PrintPrivateMessage(msg.Item1, m_playerName, msg.Item2);
+                PrintPrivateMessage(msg.Item1, "you", msg.Item2, msg.Item3);
+            }
+            while (m_newGeneralMessagesQueue.Count > 0)
+            {
+                Tuple<string, string, DateTime> msg = m_newGeneralMessagesQueue.Dequeue();
+                PrintGeneralMessage(msg.Item1, msg.Item2, msg.Item3);
+            }
+            while (m_errorMessageQueue.Count > 0)
+            {
+                string msg = m_errorMessageQueue.Dequeue();
+                PrintError(msg, DateTime.Now);
             }
         }
 
@@ -173,21 +187,26 @@ namespace ubv.ui.client
                 Match t_matchFriend = Regex.Match(m_messageInputField.text, m_friendRegex);
                 Match t_matchInvalidCommand = Regex.Match(m_messageInputField.text, m_invalidRegex);
 
-                if (t_matchFriend.Success) {
-                    PrintPrivateMessage(m_playerName, t_matchFriend.Groups[2].Value, t_matchFriend.Groups[3].Value);
-
+                if (t_matchFriend.Success)
+                {
                     m_socialServices.GetFriendIDFromName(t_matchFriend.Groups[2].Value, (string id) =>
                     {
-                        m_socialServices.SendMessageTo(id, t_matchFriend.Groups[3].Value);
+                        m_socialServices.SendMessageToUser(id, t_matchFriend.Groups[3].Value, (bool success, string message) => {
+                            if (!success) m_errorMessageQueue.Enqueue(message);
+                        });
+                    }, () => 
+                    {
+                        m_errorMessageQueue.Enqueue($"Friend { t_matchFriend.Groups[2].Value } not found");
                     });
                 }
                 else if (t_matchInvalidCommand.Success) {
                     PrintInvalidMessage(t_matchInvalidCommand.Groups[0].Value);
                 }
-                else {
-                    PrintGeneralMessage(m_playerName, m_messageInputField.text);
-
-                    m_socialServices.SendMessageTo(t_matchFriend.Groups[2].Value, m_messageInputField.text);
+                else
+                {
+                    m_socialServices.SendMessageToCurrentGameChat(t_matchFriend.Groups[3].Value, (bool success, string message) => {
+                        if(!success) m_errorMessageQueue.Enqueue(message);
+                    });
                 }
 
                 m_messageInputField.text = "";
@@ -195,34 +214,39 @@ namespace ubv.ui.client
             }
         }
 
-        private void OnNewMessageFrom(string id, MessageInfo msg)
+        private void OnNewPrivateMessageFrom(string id, MessageInfo msg)
         {
             m_socialServices.GetUserInfo(id, (UserInfo info) => {
                 m_newPrivateMessagesQueue.Enqueue(new Tuple<string, string, DateTime>(info.UserName, msg.Text, msg.CreatedOn));
             });
         }
 
-        private void PrintPrivateMessage(string a_sender, string a_receiver, string a_message) {
+        private void PrintPrivateMessage(string a_sender, string a_receiver, string a_message, DateTime timestamp) {
             GameObject t_newMessage = Instantiate(m_messagePrefab, m_messagesBox.transform);
             t_newMessage.name = $"Private Message - {a_sender}";
             t_newMessage.GetComponent<Text>().text =
-                $"[{DateTime.Now.Hour}:{DateTime.Now.Minute}] {a_sender} -> {a_receiver} : {a_message}";
+                $"[{timestamp.Hour}:{timestamp.Minute}] {a_sender} -> {a_receiver} : {a_message}";
             t_newMessage.GetComponent<Text>().color = m_privateColor;
         }
 
-        private void PrintGeneralMessage(string a_sender, string a_message) {
+        private void PrintGeneralMessage(string a_sender, string a_message, DateTime timestamp) {
             GameObject t_newMessage = Instantiate(m_messagePrefab, m_messagesBox.transform);
             t_newMessage.name = $"Message - {a_sender}";
             t_newMessage.GetComponent<Text>().text =
-                $"[{DateTime.Now.Hour}:{DateTime.Now.Minute}] {a_sender} : {a_message}";
+                $"[{timestamp.Hour}:{timestamp.Minute}] {a_sender} : {a_message}";
             t_newMessage.GetComponent<Text>().color = m_defaultColor;
         }
 
         private void PrintInvalidMessage(string a_invalidCommand) {
+            PrintError($"The command { a_invalidCommand } isn't valid.", DateTime.Now);
+        }
+
+        private void PrintError(string errorMessage, DateTime timestamp)
+        {
             GameObject t_newMessage = Instantiate(m_messagePrefab, m_messagesBox.transform);
             t_newMessage.name = $"Error Message";
             t_newMessage.GetComponent<Text>().text =
-                $"[{DateTime.Now.Hour}:{DateTime.Now.Minute}] The command {a_invalidCommand} isn't valid.";
+                $"[{timestamp.Hour}:{timestamp.Minute}] { errorMessage }.";
             t_newMessage.GetComponent<Text>().color = m_ErrorColor;
         }
     }

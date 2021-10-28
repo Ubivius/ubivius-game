@@ -19,6 +19,7 @@ namespace ubv.microservices
         private FriendsListService m_friendsList;
         
         public UnityAction<string> OnAuthentication;
+        // sender, Message
         public UnityAction<string, MessageInfo> OnNewMessageFrom;
         public UnityAction<string> OnNewInviteFrom;
 
@@ -46,6 +47,7 @@ namespace ubv.microservices
                     m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
                     m_textChat.OnNewMessageFrom += (string id, MessageInfo msg) => {
+                        
                         OnNewMessageFrom(id, msg);
                     };
                     m_friendsList.OnNewFriendInvite += OnNewInviteFrom;
@@ -68,7 +70,7 @@ namespace ubv.microservices
             });
         }
 
-        public void GetFriendIDFromName(string friendName, UnityAction<string> OnGetFriendID)
+        public void GetFriendIDFromName(string friendName, UnityAction<string> OnGetFriendID, UnityAction OnFailure = default)
         {
             if (m_userNameIDs.ContainsKey(friendName))
             {
@@ -90,31 +92,70 @@ namespace ubv.microservices
                 }
             }
 
+            int allFriends = 0;
             m_friendsList.GetAllFriendsIDs(CurrentUser.ID, (HashSet<string> friendsIDs) => {
+                
                 foreach (string id in friendsIDs)
                 {
                     GetUserInfo(id, (UserInfo info) =>
                     {
-                        if (info.UserName.Equals(friendName))
+                        if (!m_cachedUsers.ContainsKey(id))
+                        {
+                            m_cachedUsers.Add(id, info);
+                        }
+
+                        if (!m_userNameIDs.ContainsKey(m_cachedUsers[id].UserName))
+                        {
+                            m_userNameIDs.Add(m_cachedUsers[id].UserName, id);
+                        }
+
+                        if (m_cachedUsers[id].UserName.Equals(friendName))
                         {
                             OnGetFriendID(id);
+                            return;
+                        }
+
+                        if(++allFriends >= friendsIDs.Count)
+                        {
+                            OnFailure?.Invoke();
                         }
                     });
                 }
             });
         }
 
-        public void SendMessageTo(string otherUserID, string message)
+        public void SendMessageToCurrentGameChat(string message, UnityAction<bool, string> OnResult = default)
         {
+            if (true) // if (on a pas encore de general chat) (va être avec dispatcher)
+            {
+                OnResult?.Invoke(false, "Cannot send to game chat - you are not in a game yet");
+                return;
+            }
+            SendMessageToConversation("placeholder-general-chat", message, OnResult);
+        }
+
+        public void SendMessageToConversation(string conversationID, string message, UnityAction<bool, string> OnResult = default)
+        {
+            m_textChat.SendMessageToConversation(CurrentUser.ID, conversationID, message, OnResult);
+        }
+
+        public void SendMessageToUser(string otherUserID, string message, UnityAction<bool, string> OnResult = default)
+        {
+            if (otherUserID.Equals(CurrentUser.ID))
+            {
+                OnResult?.Invoke(false, "Cannot send a message to yourself");
+                return;
+            }
+
             if (m_cachedUserConversations.ContainsKey(otherUserID))
             {
-                m_textChat.SendMessageToConversation(CurrentUser.ID, m_cachedUserConversations[otherUserID], message);
+                m_textChat.SendMessageToConversation(CurrentUser.ID, m_cachedUserConversations[otherUserID], message, OnResult);
             }
             else
             {
                 m_friendsList.GetConversationIDWith(CurrentUser.ID, otherUserID, (string conversationID) => {
                     m_cachedUserConversations.Add(otherUserID, conversationID);
-                    m_textChat.SendMessageToConversation(CurrentUser.ID, m_cachedUserConversations[otherUserID], message);
+                    m_textChat.SendMessageToConversation(CurrentUser.ID, m_cachedUserConversations[otherUserID], message, OnResult);
                 });
             }
         }
