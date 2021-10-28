@@ -569,6 +569,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
             return asset.controlSchemes[m_AllcontrolschemeSchemeIndex];
         }
     }
+    
     public interface IGameplayActions
     {
         void OnMove(InputAction.CallbackContext context);
