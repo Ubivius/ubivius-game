@@ -74,6 +74,12 @@ namespace ubv.microservices
         {
             this.Request(new GetAllAchievementsRequest((Achievement[] achievements) =>
             {
+                if (achievements.Length == 0)
+                {
+                    Debug.Log("No achievements were retrieved.");
+                    return;
+                }
+
                 foreach(Achievement achievement in achievements)
                 {
                     Debug.Log("Achievement ID: " + achievement.Id);
