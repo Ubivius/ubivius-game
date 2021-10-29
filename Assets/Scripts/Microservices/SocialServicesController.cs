@@ -19,19 +19,21 @@ namespace ubv.microservices
         private FriendsListService m_friendsList;
         
         public UnityAction<string> OnAuthentication;
-        // sender, Message
-        public UnityAction<string, MessageInfo> OnNewMessageFrom;
+        // sender, receiver, Message
+        public UnityAction<string, string, MessageInfo> OnNewMessage;
         public UnityAction<string> OnNewInviteFrom;
 
         private Dictionary<string, UserInfo> m_cachedUsers;
         private Dictionary<string, string> m_userNameIDs;
         private Dictionary<string, string> m_cachedUserConversations;
+        private Dictionary<string, string> m_cachedConversationUsers;
 
         private void Awake()
         {
             m_cachedUsers = new Dictionary<string, UserInfo>();
             m_userNameIDs = new Dictionary<string, string>();
             m_cachedUserConversations = new Dictionary<string, string>();
+            m_cachedConversationUsers = new Dictionary<string, string>();
             CurrentUser = null;
         }
 
@@ -46,9 +48,26 @@ namespace ubv.microservices
                     m_textChat.IsFetcherActive = true;
                     m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
-                    m_textChat.OnNewMessageFrom += (string id, MessageInfo msg) => {
-                        
-                        OnNewMessageFrom(id, msg);
+                    m_textChat.OnNewMessageInConversation += (string conversationID, MessageInfo msg) => {
+                        if (!msg.UserID.Equals(CurrentUser.ID))
+                        {
+                            OnNewMessage(msg.UserID, CurrentUser.ID, msg);
+                        }
+                        else
+                        {
+                            if (m_cachedConversationUsers.ContainsKey(conversationID))
+                            {
+                                OnNewMessage(CurrentUser.ID, m_cachedConversationUsers[conversationID], msg);
+                            }
+                            else
+                            {
+                                GetUserIDFromConversation(conversationID, (string friendID) => 
+                                {
+                                    m_cachedConversationUsers[conversationID] = friendID;
+                                    OnNewMessage(CurrentUser.ID, m_cachedConversationUsers[conversationID], msg);
+                                });
+                            }
+                        }
                     };
                     m_friendsList.OnNewFriendInvite += OnNewInviteFrom;
 
@@ -59,17 +78,20 @@ namespace ubv.microservices
 
         private void FetchAllPrivateConversations()
         {
-            m_friendsList.GetAllFriendsIDs(CurrentUser.ID, (HashSet<string> friends) => {
+            m_friendsList.GetAllFriends(CurrentUser.ID, (HashSet<RelationInfo> friends) => {
 
-                foreach (string id in friends)
+                foreach (RelationInfo info in friends)
                 {
-                    m_friendsList.GetConversationIDWith(CurrentUser.ID, id, (string conversation) => {
+                    m_cachedConversationUsers[info.ConversationID] = info.FriendUserID;
+                    m_cachedUserConversations[info.FriendUserID] = info.ConversationID;
+
+                    m_friendsList.GetConversationIDWith(CurrentUser.ID, info.FriendUserID, (string conversation) => {
                         m_textChat.AddConversationToCache(conversation);
                     });
                 }
             });
         }
-
+        
         public void GetFriendIDFromName(string friendName, UnityAction<string> OnGetFriendID, UnityAction OnFailure = default)
         {
             if (m_userNameIDs.ContainsKey(friendName))
@@ -146,18 +168,50 @@ namespace ubv.microservices
                 OnResult?.Invoke(false, "Cannot send a message to yourself");
                 return;
             }
-
-            if (m_cachedUserConversations.ContainsKey(otherUserID))
+            
+            GetConversationIDWith(otherUserID, (convID) =>
             {
                 m_textChat.SendMessageToConversation(CurrentUser.ID, m_cachedUserConversations[otherUserID], message, OnResult);
-            }
-            else
+            });
+        }
+
+        private void GetConversationIDWith(string otherUserID, UnityAction<string> OnGetConversation)
+        {
+            if (m_cachedUserConversations.ContainsKey(otherUserID))
             {
-                m_friendsList.GetConversationIDWith(CurrentUser.ID, otherUserID, (string conversationID) => {
-                    m_cachedUserConversations.Add(otherUserID, conversationID);
-                    m_textChat.SendMessageToConversation(CurrentUser.ID, m_cachedUserConversations[otherUserID], message, OnResult);
-                });
+                m_cachedConversationUsers[m_cachedUserConversations[otherUserID]] = otherUserID;
+                OnGetConversation(m_cachedUserConversations[otherUserID]);
+                return;
             }
+
+            m_friendsList.GetConversationIDWith(CurrentUser.ID, otherUserID, (string conversationID) => {
+                m_cachedUserConversations.Add(otherUserID, conversationID);
+                m_cachedConversationUsers.Add(conversationID, otherUserID);
+                OnGetConversation(conversationID);
+            });
+        }
+
+        private void GetUserIDFromConversation(string conversationID, UnityAction<string> OnGetUserID)
+        {
+            if (m_cachedConversationUsers.ContainsKey(conversationID))
+            {
+                OnGetUserID(m_cachedConversationUsers[conversationID]);
+                return;
+            }
+            
+            m_friendsList.GetAllFriends(CurrentUser.ID, (HashSet<RelationInfo> friends) => {
+
+                foreach (RelationInfo info in friends)
+                {
+                    m_cachedConversationUsers[info.ConversationID] = info.FriendUserID;
+                    m_cachedUserConversations[info.FriendUserID] = info.ConversationID;
+                    if(info.ConversationID == conversationID)
+                    {
+                        OnGetUserID(info.FriendUserID);
+                        return;
+                    }
+                }
+            });
         }
         
         public void GetUserInfo(string userID, OnGetInfo callback)

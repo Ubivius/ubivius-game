@@ -43,7 +43,7 @@ namespace ubv.ui.client
         [SerializeField] private Color m_ErrorColor;
         
         // user, text
-        private Queue<Tuple<string, string, DateTime>> m_newPrivateMessagesQueue;
+        private Queue<Tuple<string, string, string, DateTime>> m_newPrivateMessagesQueue;
         private Queue<Tuple<string, string, DateTime>> m_newGeneralMessagesQueue;
         private Queue<string> m_errorMessageQueue;
 
@@ -56,7 +56,7 @@ namespace ubv.ui.client
 
         private void Awake()
         {
-            m_newPrivateMessagesQueue = new Queue<Tuple<string, string, DateTime>>();
+            m_newPrivateMessagesQueue = new Queue<Tuple<string, string, string, DateTime>>();
             m_newGeneralMessagesQueue = new Queue<Tuple<string, string, DateTime>>();
             m_errorMessageQueue = new Queue<string>();
             m_socialServices = ClientSyncState.SocialServices;
@@ -72,7 +72,7 @@ namespace ubv.ui.client
             m_rectTransform = transform.GetComponent<RectTransform>();
             m_scrollbar.value = 0;
             
-            m_socialServices.OnNewMessageFrom += OnNewPrivateMessageFrom;
+            m_socialServices.OnNewMessage += OnNewPrivateMessageFrom;
         }
 
         void Update() {
@@ -95,8 +95,8 @@ namespace ubv.ui.client
 
             while(m_newPrivateMessagesQueue.Count > 0)
             {
-                Tuple<string, string, DateTime> msg = m_newPrivateMessagesQueue.Dequeue();
-                PrintPrivateMessage(msg.Item1, "you", msg.Item2, msg.Item3);
+                Tuple<string, string, string, DateTime> msg = m_newPrivateMessagesQueue.Dequeue();
+                PrintPrivateMessage(msg.Item1, msg.Item2, msg.Item3, msg.Item4);
             }
             while (m_newGeneralMessagesQueue.Count > 0)
             {
@@ -214,10 +214,12 @@ namespace ubv.ui.client
             }
         }
 
-        private void OnNewPrivateMessageFrom(string id, MessageInfo msg)
+        private void OnNewPrivateMessageFrom(string senderID, string receiverID, MessageInfo msg)
         {
-            m_socialServices.GetUserInfo(id, (UserInfo info) => {
-                m_newPrivateMessagesQueue.Enqueue(new Tuple<string, string, DateTime>(info.UserName, msg.Text, msg.CreatedOn));
+            m_socialServices.GetUserInfo(senderID, (UserInfo sender) => {
+                m_socialServices.GetUserInfo(receiverID, (UserInfo receiver) => {
+                    m_newPrivateMessagesQueue.Enqueue(new Tuple<string, string, string, DateTime>(sender.UserName, receiver.UserName, msg.Text, msg.CreatedOn));
+                });
             });
         }
 

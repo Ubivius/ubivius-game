@@ -47,7 +47,15 @@ namespace ubv.microservices
         {
             this.Request(new GetRelationsFromUserRequest(userID, (RelationInfo[] relations) => 
             {
-                OnGetFriendIDs(GetAllConfirmedFriends(relations));
+                OnGetFriendIDs(GetAllConfirmedFriendIDs(relations));
+            }));
+        }
+
+        public void GetAllFriends(string userID, UnityAction<HashSet<RelationInfo>> OnGetFriends)
+        {
+            this.Request(new GetRelationsFromUserRequest(userID, (RelationInfo[] relations) =>
+            {
+                OnGetFriends(GetAllConfirmedFriends(relations));
             }));
         }
 
@@ -132,7 +140,7 @@ namespace ubv.microservices
             }));
         }
 
-        private HashSet<string> GetAllConfirmedFriends(RelationInfo[] relations)
+        private HashSet<string> GetAllConfirmedFriendIDs(RelationInfo[] relations)
         {
             HashSet<string> friends = new HashSet<string>();
             foreach(RelationInfo relation in relations)
@@ -140,6 +148,19 @@ namespace ubv.microservices
                 if (relation.RelationType == RelationInfo.RelationshipType.Friend)
                 {
                     friends.Add(relation.FriendUserID);
+                }
+            }
+            return friends;
+        }
+
+        private HashSet<RelationInfo> GetAllConfirmedFriends(RelationInfo[] relations)
+        {
+            HashSet<RelationInfo> friends = new HashSet<RelationInfo>();
+            foreach (RelationInfo relation in relations)
+            {
+                if (relation.RelationType == RelationInfo.RelationshipType.Friend)
+                {
+                    friends.Add(relation);
                 }
             }
             return friends;

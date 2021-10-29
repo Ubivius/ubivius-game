@@ -17,8 +17,8 @@ namespace ubv.microservices
         private int m_activeRequestCount;
 
         public bool IsFetcherActive;
-        // userID, msgInfo
-        public UnityAction<string, MessageInfo> OnNewMessageFrom;
+        // conversationID, msgInfo
+        public UnityAction<string, MessageInfo> OnNewMessageInConversation;
 
         private void Awake()
         {
@@ -100,7 +100,7 @@ namespace ubv.microservices
                     m_cachedConversations[conversationID].Add(msg.MessageID, msg);
                     if (callUpdateCallback)
                     {
-                        OnNewMessageFrom.Invoke(msg.UserID, msg);
+                        OnNewMessageInConversation.Invoke(conversationID, msg);
                     }
                 }
             }
