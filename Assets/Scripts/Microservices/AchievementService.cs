@@ -60,39 +60,5 @@ namespace ubv.microservices
                 originalRequest.Callback.Invoke(achievements);
             }
         }
-
-#if UNITY_EDITOR
-        [SerializeField]
-        private UserService m_users;
-
-        public void Start()
-        {
-            TestWithGodefroy();
-        }
-
-        public void TestWithGodefroy()
-        {
-            //this.Request(new GetAllAchievementsRequest((Achievement[] achievements) =>
-            //a14c65bf-8fa8-47d5-81ff-0c0f1f379aaf
-            //c718197b-3dda-402c-afb7-0076148961e1
-            this.Request(new GetSingleAchievementRequest("c718197b-3dda-402c-afb7-0076148961e1", (Achievement[] achievements) =>
-            {
-                if (achievements.Length == 0)
-                {
-                    Debug.Log("No achievements were retrieved.");
-                    return;
-                }
-
-                foreach(Achievement achievement in achievements)
-                {
-                    Debug.Log("Achievement ID: " + achievement.Id);
-                    Debug.Log("  Name: " + achievement.Name);
-                    Debug.Log("  Condition: " + achievement.Condition);
-                    Debug.Log("  Description: " + achievement.Description);
-                    Debug.Log("  SpriteID: " + achievement.SpriteID);
-                }
-            }));
-        }
-#endif // UNITY_EDITOR
     }
 }
