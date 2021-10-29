@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using Assets.Scripts.Pathfinding;
+using System.Collections;
 using System.Collections.Generic;
 using ubv.common.world.cellType;
+using ubv.server.logic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Tilemaps;
@@ -11,6 +13,7 @@ namespace ubv.common.world
     public class WorldGenerator : ServerInitializer
     {
         [SerializeField] private Vector2Int m_boundariesMap;
+        [SerializeField] private PathfindingGridManager m_pathfinder;
 
         // Section0
         [SerializeField] private List<RoomInfo> m_randomRoomPoolSection0;
@@ -68,9 +71,15 @@ namespace ubv.common.world
 
         private List<Vector2Int> m_playerSpawnPos;
 
+        private bool m_mapIsValid;
+        private int m_mapGenerationAttempt;
+
         private void Awake()
         {
             m_grid = GetComponent<Grid>();
+
+            m_mapIsValid = false;
+            m_mapGenerationAttempt = 0;
 
             m_worldGeneratorToRoomManager = new dataStruct.WorldGeneratorToRoomManager(
                 m_boundariesMap,
@@ -103,34 +112,65 @@ namespace ubv.common.world
 
         public void GenerateWorld()
         {
-            m_roomManager = new generationManager.RoomManager(m_worldGeneratorToRoomManager);
-            m_masterLogicGrid = m_roomManager.GenerateRoomGrid();
-            m_roomInMap = m_roomManager.GetRoomInMap();
+            while (!m_mapIsValid)
+            {
+                try
+                {
+                    m_roomManager = new generationManager.RoomManager(m_worldGeneratorToRoomManager);
+                    m_masterLogicGrid = m_roomManager.GenerateRoomGrid();
+                    m_roomInMap = m_roomManager.GetRoomInMap();
 
-            m_worldGeneratorToCorridorsManager = new dataStruct.WorldGeneratorToCorridorsManager(m_masterLogicGrid, m_floor, m_tileFloor, m_wallThickness);
+                    m_worldGeneratorToCorridorsManager = new dataStruct.WorldGeneratorToCorridorsManager(m_masterLogicGrid, m_floor, m_tileFloor, m_wallThickness);
 
-            m_corridorsManager = new generationManager.CorridorsManager(m_worldGeneratorToCorridorsManager);
-            m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
+                    m_corridorsManager = new generationManager.CorridorsManager(m_worldGeneratorToCorridorsManager);
+                    m_masterLogicGrid = m_corridorsManager.GenerateCorridorsGrid();
 
-            m_worldGeneratorToDoorManager = new dataStruct.WorldGeneratorToDoorManager(m_masterLogicGrid, m_floor, m_door, m_tileFloor, m_tileDoor, m_roomInMap);
-            m_doorManager = new generationManager.DoorManager(m_worldGeneratorToDoorManager);
-            m_masterLogicGrid = m_doorManager.GenerateDoorGrid();
+                    m_worldGeneratorToDoorManager = new dataStruct.WorldGeneratorToDoorManager(m_masterLogicGrid, m_floor, m_door, m_tileFloor, m_tileDoor, m_roomInMap);
+                    m_doorManager = new generationManager.DoorManager(m_worldGeneratorToDoorManager);
+                    m_masterLogicGrid = m_doorManager.GenerateDoorGrid();
 
-            m_worldGeneratorToDeadEndManager = new dataStruct.WorldGeneratorToDeadEndManager(m_masterLogicGrid, m_floor, m_door, m_corridorsManager.GetEnds());
-            m_DeadEndManager = new generationManager.DeadEndManager(m_worldGeneratorToDeadEndManager);
-            m_masterLogicGrid = m_DeadEndManager.GenerateDeadEndGrid();
+                    m_worldGeneratorToDeadEndManager = new dataStruct.WorldGeneratorToDeadEndManager(m_masterLogicGrid, m_floor, m_door, m_corridorsManager.GetEnds());
+                    m_DeadEndManager = new generationManager.DeadEndManager(m_worldGeneratorToDeadEndManager);
+                    m_masterLogicGrid = m_DeadEndManager.GenerateDeadEndGrid();
 
-            m_wolrdGeneratorToWallManager = new dataStruct.WolrdGeneratorToWallManager(m_masterLogicGrid, m_wall, m_tileWall);
-            m_wallManager = new generationManager.WallManager(m_wolrdGeneratorToWallManager);
-            m_masterLogicGrid = m_wallManager.GenerateWallGrid();
+                    m_wolrdGeneratorToWallManager = new dataStruct.WolrdGeneratorToWallManager(m_masterLogicGrid, m_wall, m_tileWall);
+                    m_wallManager = new generationManager.WallManager(m_wolrdGeneratorToWallManager);
+                    m_masterLogicGrid = m_wallManager.GenerateWallGrid();
 
-            m_floor.RefreshAllTiles();
-            m_door.RefreshAllTiles();
-            m_wall.RefreshAllTiles();
+                    m_floor.RefreshAllTiles();
+                    m_door.RefreshAllTiles();
+                    m_wall.RefreshAllTiles();
 
-            SetPlayerSpawnPosList();
+                    SetPlayerSpawnPosList();
 
-            OnWorldGenerated?.Invoke();
+                    m_mapIsValid = true;
+
+                    OnWorldGenerated?.Invoke();
+
+
+                    Vector2 centralPos = GetCentralPiecePos();
+                    SetPlayerSpawnPosList();
+                    foreach (Vector2Int spawn in m_playerSpawnPos)
+                    {
+                        PathRoute route = m_pathfinder.GetPathRoute(spawn, centralPos);
+                        if (route.pathVectorList.Count < 1)
+                        {
+                            throw new MapCreationException("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
+                        }
+                    }
+
+                    //m_pathfinder
+                }
+                catch (MapCreationException)
+                {
+                    if (m_mapGenerationAttempt > 200)
+                    {
+                        m_boundariesMap = new Vector2Int(m_boundariesMap.x + 50, m_boundariesMap.y + 50);
+                    }
+                    m_mapGenerationAttempt++;
+                }
+            }            
+            
         }
         
         public void GenerateWithOneRoom() // For test only 
@@ -154,6 +194,23 @@ namespace ubv.common.world
                     }
                 }
             }
+        }
+
+        private Vector2 GetCentralPiecePos()
+        {
+            int width = m_masterLogicGrid.Width;
+            int height = m_masterLogicGrid.Height;
+            for (int x = 0; x < m_masterLogicGrid.Width; x++) // On ne veut pas regarder en dehors du tableau
+            {
+                for (int y = 0; y < m_masterLogicGrid.Height; y++)
+                {
+                    if (m_masterLogicGrid.Grid[x, y].GetCellType() == cellType.CellInfo.CellType.CELL_FINALBUTTON)
+                    {
+                        return new Vector2(x, y - 1);
+                    }
+                }
+            }
+            return new Vector2(0, 0);
         }
 
         public Vector2Int GetPlayerSpawnPos()
@@ -262,5 +319,18 @@ namespace ubv.common.world
             return m_door;
         }
     }
+
+
+    [System.Serializable]
+    public class MapCreationException : System.Exception
+    {
+        public MapCreationException() { }
+        public MapCreationException(string message) : base(message) { }
+        public MapCreationException(string message, System.Exception inner) : base(message, inner) { }
+        protected MapCreationException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
 }
 
