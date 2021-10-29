@@ -72,7 +72,10 @@ namespace ubv.microservices
 
         public void TestWithGodefroy()
         {
-            this.Request(new GetAllAchievementsRequest((Achievement[] achievements) =>
+            //this.Request(new GetAllAchievementsRequest((Achievement[] achievements) =>
+            //a14c65bf-8fa8-47d5-81ff-0c0f1f379aaf
+            //c718197b-3dda-402c-afb7-0076148961e1
+            this.Request(new GetSingleAchievementRequest("c718197b-3dda-402c-afb7-0076148961e1", (Achievement[] achievements) =>
             {
                 if (achievements.Length == 0)
                 {
