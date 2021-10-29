@@ -1,10 +1,6 @@
 fileFormatVersion: 2
-<<<<<<< HEAD:Assets/Prefabs/Room/NorthWest.meta
 guid: 32d3472ae6b94be45908ba5a2ef0e74b
 folderAsset: yes
-=======
-guid: 0c128e3d101cf8b4f86b104489afacdf
->>>>>>> master:Assets/Scenes/Client/ClientCharacterSelect.unity.meta
 DefaultImporter:
   externalObjects: {}
   userData: 

@@ -1,9 +1,5 @@
 fileFormatVersion: 2
-<<<<<<< HEAD:Assets/Prefabs/Room/NorthEast.meta
 guid: 59eecde3cd5b22d4b85c745067f65677
-=======
-guid: f3dd78acd57c230449332e225f2e5e32
->>>>>>> master:Assets/Scenes/Server.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
