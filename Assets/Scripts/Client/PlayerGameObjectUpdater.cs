@@ -15,7 +15,7 @@ namespace ubv.client.logic
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerAnimator m_playerAnimator;
-
+        [SerializeField] private FieldOfViewGameObjectUpdater m_fieldOfViewGameObjectUpdater;
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, common.gameplay.PlayerController> PlayerControllers { get; private set; }
         public Dictionary<int, PlayerAnimator> PlayerAnimators { get; private set; }
@@ -120,6 +120,7 @@ namespace ubv.client.logic
                 m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
+            common.logic.PlayerFieldOfView.Execute(ref m_localPlayerBody, m_fieldOfViewGameObjectUpdater, input, deltaTime);
         }
 
         public override void UpdateWorldFromState(WorldState state)
