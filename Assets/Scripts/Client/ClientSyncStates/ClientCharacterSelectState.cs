@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using static ubv.microservices.CharacterDataService;
 using ubv.microservices;
+using ubv.ui.client;
 
 namespace ubv.client.logic
 {
