@@ -62,6 +62,11 @@ namespace ubv.client.logic
             }
         }
 
+        public UserInfo GetActiveUser()
+        {
+            return UserInfo;
+        }
+
         private void OnDisable()
         {
             if (!m_isPaused)
@@ -69,6 +74,11 @@ namespace ubv.client.logic
                 m_isPaused = true;
                 StatePause();
             }
+        }
+
+        public void Back()
+        {
+            ClientStateManager.Instance.PopState();
         }
     }
 }

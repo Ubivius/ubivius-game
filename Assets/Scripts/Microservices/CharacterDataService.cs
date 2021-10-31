@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace ubv.microservices
 {
     public class CharacterDataService : Microservice<GetCharacterRequest, 
-        PostMicroserviceRequest, PutMicroserviceRequest, DeleteMicroserviceRequest>
+        PostCharacterRequest, PutMicroserviceRequest, DeleteCharacterRequest>
     {
         public class CharacterData
         {
@@ -24,7 +24,7 @@ namespace ubv.microservices
             }
         }
         [System.Serializable]
-        private struct JSONCharacterData
+        public struct JSONCharacterData
         {
             public string id;
             public string user_id;
@@ -53,6 +53,16 @@ namespace ubv.microservices
                 characters[0] = new CharacterData(jsonData.name, jsonData.id, jsonData.user_id);
                 originalRequest.Callback.Invoke(characters);
             }
+        }
+
+        protected override void OnPostResponse(string JSON, PostCharacterRequest originalRequest)
+        {
+            originalRequest.Callback?.Invoke();
+        }
+
+        protected override void OnDeleteResponse(string JSON, DeleteCharacterRequest originalRequest)
+        {
+            originalRequest.Callback?.Invoke();
         }
 
         protected override void MockGet(GetCharacterRequest request)

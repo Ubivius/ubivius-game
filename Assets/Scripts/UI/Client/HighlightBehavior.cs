@@ -31,14 +31,16 @@ namespace ubv.ui.client
 
         public void OnSelect(BaseEventData eventData)
         {
-            m_text.color = hoverColor;
+            if(m_text)
+                m_text.color = hoverColor;
         }
 
 
         public void OnDeselect(BaseEventData eventData)
         {
             m_selectable.OnPointerExit(null);
-            m_text.color = normalColor;
+            if(m_text)
+                m_text.color = normalColor;
         }
     }
 }
