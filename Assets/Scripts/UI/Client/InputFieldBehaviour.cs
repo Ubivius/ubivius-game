@@ -5,85 +5,87 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InputFieldBehaviour : TMP_InputField, ISelectHandler
+namespace ubv.ui.client
 {
-    private EventSystem system;
-    private PlayerControls m_controls;
-
-    protected override void Awake()
+    public class InputFieldBehaviour : TMP_InputField, ISelectHandler
     {
-        system = EventSystem.current;
-        m_controls = new PlayerControls();
-        m_controls.Menu.Up.performed += context => NavigateUp();
-        m_controls.Menu.Down.performed += context => NavigateDown();
-        m_controls.Menu.Left.performed += context => NavigateLeft();
-        m_controls.Menu.Right.performed += context => NavigateRight();
-    }
+        private EventSystem system;
+        private PlayerControls m_controls;
 
-    private void NavigateUp()
-    {
-        if (system.currentSelectedGameObject.gameObject == gameObject)
+        protected override void Awake()
         {
-            Selectable next = FindSelectableOnUp();
-            if (next != null)
+            system = EventSystem.current;
+            m_controls = new PlayerControls();
+            m_controls.Menu.Up.performed += context => NavigateUp();
+            m_controls.Menu.Down.performed += context => NavigateDown();
+            m_controls.Menu.Left.performed += context => NavigateLeft();
+            m_controls.Menu.Right.performed += context => NavigateRight();
+        }
+
+        private void NavigateUp()
+        {
+            if (system.currentSelectedGameObject.gameObject == gameObject)
             {
-                StartCoroutine(SelectAfterFrame(next));
+                Selectable next = FindSelectableOnUp();
+                if (next != null)
+                {
+                    StartCoroutine(SelectAfterFrame(next));
+                }
             }
         }
-    }
 
-    private void NavigateDown()
-    {
-        if (system.currentSelectedGameObject.gameObject == gameObject)
+        private void NavigateDown()
         {
-            Selectable next = FindSelectableOnDown();
-            if (next != null)
+            if (system.currentSelectedGameObject.gameObject == gameObject)
             {
-                StartCoroutine(SelectAfterFrame(next));
+                Selectable next = FindSelectableOnDown();
+                if (next != null)
+                {
+                    StartCoroutine(SelectAfterFrame(next));
+                }
             }
         }
-    }
 
-    private void NavigateLeft()
-    {
-        if (system.currentSelectedGameObject.gameObject == gameObject)
+        private void NavigateLeft()
         {
-            Selectable next = FindSelectableOnLeft();
-            if (next != null)
+            if (system.currentSelectedGameObject.gameObject == gameObject)
             {
-                StartCoroutine(SelectAfterFrame(next));
+                Selectable next = FindSelectableOnLeft();
+                if (next != null)
+                {
+                    StartCoroutine(SelectAfterFrame(next));
+                }
             }
         }
-    }
 
-    private void NavigateRight()
-    {
-        if (system.currentSelectedGameObject.gameObject == gameObject)
+        private void NavigateRight()
         {
-            Selectable next = FindSelectableOnRight();
-            if (next != null)
+            if (system.currentSelectedGameObject.gameObject == gameObject)
             {
-                StartCoroutine(SelectAfterFrame(next));
+                Selectable next = FindSelectableOnRight();
+                if (next != null)
+                {
+                    StartCoroutine(SelectAfterFrame(next));
+                }
             }
         }
-    }
 
-    private IEnumerator SelectAfterFrame(Selectable next)
-    {
-        yield return new WaitForSeconds(0.1f);
-        next.Select();
-    }
+        private IEnumerator SelectAfterFrame(Selectable next)
+        {
+            yield return new WaitForSeconds(0.1f);
+            next.Select();
+        }
 
-    protected override void OnEnable()
-    {
-        base.OnEnable();
-        m_controls.Menu.Enable();
-    }
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            m_controls.Menu.Enable();
+        }
 
-    protected override void OnDisable()
-    {
-        base.OnDisable();
-        m_controls.Menu.Disable();
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            m_controls.Menu.Disable();
+        }
     }
-
 }

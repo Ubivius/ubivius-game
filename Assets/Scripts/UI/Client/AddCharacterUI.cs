@@ -4,63 +4,66 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class AddCharacterUI : MonoBehaviour
+namespace ubv.ui.client
 {
-
-    [SerializeField] private ubv.client.logic.ClientCharacterSelectState m_initState;
-    [SerializeField] private TMP_InputField m_characterNameToAdd;
-    [SerializeField] private TextMeshProUGUI m_errorText;
-    private bool m_canCloseModal = false;
-    private EventSystem system;
-
-    private void Awake()
+    public class AddCharacterUI : MonoBehaviour
     {
-        system = EventSystem.current;
-    }
 
-    private void Update()
-    {
-        if (m_canCloseModal)
+        [SerializeField] private ubv.client.logic.ClientCharacterSelectState m_initState;
+        [SerializeField] private TMP_InputField m_characterNameToAdd;
+        [SerializeField] private TextMeshProUGUI m_errorText;
+        private bool m_canCloseModal = false;
+        private EventSystem system;
+
+        private void Awake()
+        {
+            system = EventSystem.current;
+        }
+
+        private void Update()
+        {
+            if (m_canCloseModal)
+            {
+                m_canCloseModal = false;
+                CloseAddCharacterModal();
+            }
+        }
+
+        public void OpenAddCharacterModal()
         {
             m_canCloseModal = false;
-            CloseAddCharacterModal();
+            gameObject.SetActive(true);
+            m_characterNameToAdd.Select();
+            ResetText();
         }
-    }
 
-    public void OpenAddCharacterModal()
-    {
-        m_canCloseModal = false;
-        gameObject.SetActive(true);
-        m_characterNameToAdd.Select();
-        ResetText();
-    }
+        public void CloseAddCharacterModal()
+        {
+            gameObject.SetActive(false);
+            system.SetSelectedGameObject(null);
+        }
 
-    public void CloseAddCharacterModal()
-    {
-        gameObject.SetActive(false);
-        system.SetSelectedGameObject(null);
-    }
+        public void AddCharacter()
+        {
+            string characterNameToAdd = m_characterNameToAdd.text;
+            m_initState.AddCharacter(characterNameToAdd);
+        }
 
-    public void AddCharacter()
-    {
-        string characterNameToAdd = m_characterNameToAdd.text;
-        m_initState.AddCharacter(characterNameToAdd);   
-    }
+        public void ResetText()
+        {
+            m_characterNameToAdd.text = null;
+            m_errorText.text = null;
+        }
 
-    public void ResetText()
-    {
-        m_characterNameToAdd.text = null;
-        m_errorText.text = null;
-    }
+        public void SetError(string error)
+        {
+            m_errorText.text = error;
+        }
 
-    public void SetError(string error)
-    {
-        m_errorText.text = error;
-    }
+        public void SetCanCloseModal(bool canCloseModal)
+        {
+            m_canCloseModal = canCloseModal;
+        }
 
-    public void SetCanCloseModal(bool canCloseModal)
-    {
-        m_canCloseModal = canCloseModal;
     }
-
 }
