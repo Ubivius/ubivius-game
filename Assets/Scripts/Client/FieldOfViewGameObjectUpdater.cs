@@ -27,15 +27,6 @@ public class FieldOfViewGameObjectUpdater : ClientStateUpdater
         m_viewDistance = 10f;//FOV lenght
     }
 
-    private void Start()
-    {
-        m_mesh = new Mesh();
-        GetComponent<MeshFilter>().mesh = m_mesh;
-        m_origin = Vector3.zero;
-        m_fov = 90f; //FOV angle
-        m_viewDistance = 10f;//FOV lenght
-    }
-
     private void LateUpdate()
     {
         int rayCount = 1000; //more rays = cpu expensive 
