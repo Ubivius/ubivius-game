@@ -1036,6 +1036,16 @@ PrefabInstance:
       propertyPath: SocialServices
       value: 
       objectReference: {fileID: 1877816071}
+    - target: {fileID: 4058432572729070908, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_timerOffset
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4058432572729070908, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_conversationFetchInterval
+      value: 0.3
+      objectReference: {fileID: 0}
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: AutoReconnect
@@ -1075,6 +1085,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_serviceEndpoint
       value: http://auth.anon.dev.ubivius.tk
+      objectReference: {fileID: 0}
+    - target: {fileID: 6443474415815815136, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_timerOffset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6443474415815815136, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_conversationFetchInterval
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -1160,12 +1180,12 @@ PrefabInstance:
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverTCPAddress
-      value: 172.105.110.175
+      value: 127.0.0.1
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverUDPAddress
-      value: 172.105.110.175
+      value: 127.0.0.1
       objectReference: {fileID: 0}
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
