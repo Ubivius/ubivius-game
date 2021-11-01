@@ -46,7 +46,7 @@ namespace ubv.ui.client
         public void AddCharacter()
         {
             string characterNameToAdd = m_characterNameToAdd.text;
-            m_initState.AddCharacter(characterNameToAdd);
+            //AddCharacter
         }
 
         public void ResetText()
