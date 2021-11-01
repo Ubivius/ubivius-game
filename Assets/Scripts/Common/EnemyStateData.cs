@@ -22,7 +22,7 @@ namespace ubv
                 public serialization.types.Vector2 Position;
                 public serialization.types.Vector2 GoalPosition;
                 public serialization.types.Float Rotation;
-                //public ubv.server.logic.ai.EnemyState EnemyState;
+                //public serialization.types.List<Vector2> zascfs; //je veux crisser une liste
 
                 public EnemyStateInfo EnemyStateInfo;
                 public EnemyState EnemyState;
@@ -46,9 +46,9 @@ namespace ubv
                     Position = new serialization.types.Vector2(Vector2.zero);
                     Rotation = new serialization.types.Float(0);
                     GUID = new serialization.types.Int32(0);
-                    EnemyStateInfo = new EnemyStateInfo();
+                    GoalPosition = new serialization.types.Vector2(Vector2.zero);
 
-                    InitSerializableMembers(Position, Rotation, GUID);
+                    InitSerializableMembers(Position, Rotation, GUID, GoalPosition);
                 }
 
                 public EnemyStateData(int enemyID) : base()
@@ -56,8 +56,9 @@ namespace ubv
                     Position = new serialization.types.Vector2(Vector2.zero);
                     Rotation = new serialization.types.Float(0);
                     GUID = new serialization.types.Int32(enemyID);
+                    GoalPosition = new serialization.types.Vector2(Vector2.zero);
 
-                    InitSerializableMembers(Position, Rotation, GUID);
+                    InitSerializableMembers(Position, Rotation, GUID, GoalPosition);
                 }
 
                 public EnemyStateData(EnemyStateData enemy) : base()
@@ -65,8 +66,9 @@ namespace ubv
                     Position = new serialization.types.Vector2(Vector2.zero);
                     Rotation = new serialization.types.Float(enemy.Rotation.Value);
                     GUID = new serialization.types.Int32(enemy.GUID.Value);
+                    GoalPosition = new serialization.types.Vector2(Vector2.zero);
 
-                    InitSerializableMembers(Position, Rotation, GUID);
+                    InitSerializableMembers(Position, Rotation, GUID, GoalPosition);
                 }
 
                 /*public EnemyState EnemyStateFromBytes()

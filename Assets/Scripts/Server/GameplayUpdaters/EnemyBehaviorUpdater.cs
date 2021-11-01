@@ -116,6 +116,7 @@ namespace ubv.server.logic
 
                     if (m_goalPositions[id] != null && m_goalPositions[id][1] != null)
                     {
+                        //enemyStateData.GoalPositions.value m'a essayer de crisser une liste
                         enemyStateData.GoalPosition.Value = m_goalPositions[id][1];
                     }
 
