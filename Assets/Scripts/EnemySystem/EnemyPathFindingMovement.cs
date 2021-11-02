@@ -144,6 +144,12 @@ public class EnemyPathFindingMovement : MonoBehaviour
 
     public void SetPathVectorLists(List<Vector2> pathVectorList)
     {
+        m_currentPathIndex = 0;
         m_pathVectorList = pathVectorList;
+    }
+
+    public Vector2 GetNextPostion()
+    {
+        return m_pathVectorList[m_currentPathIndex];
     }
 }

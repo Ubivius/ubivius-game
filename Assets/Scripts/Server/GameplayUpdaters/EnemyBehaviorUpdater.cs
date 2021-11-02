@@ -23,6 +23,8 @@ namespace ubv.server.logic
         private Dictionary<int, List<Vector2>> m_goalPositions;
         private Dictionary<int, EnemyPathFindingMovement> m_enemyPathFindingMovement;
 
+        private Dictionary<int, Vector2> m_goalPosition;
+
         private int id;
         public override void Setup()
         {
@@ -32,6 +34,7 @@ namespace ubv.server.logic
             m_enemyStatesData = new Dictionary<int, EnemyStateData>();
             m_enemyPathFindingMovement = new Dictionary<int, EnemyPathFindingMovement>();
             m_goalPositions = new Dictionary<int, List<Vector2>>();
+            m_goalPosition = new Dictionary<int, Vector2>();
         }
 
         public override void InitWorld(WorldState state)
@@ -63,6 +66,7 @@ namespace ubv.server.logic
             foreach (int id in client.Enemies().Keys) //ici ca chie
             {
                 m_goalPositions[id] = m_enemyPathFindingMovement[id].GetPathVectorList();
+                m_goalPosition[id] = m_enemyPathFindingMovement[id].GetNextPostion();
 
                 Rigidbody2D body = m_bodies[id];
                 EnemyStateData enemy = m_enemyStatesData[id];
@@ -72,9 +76,11 @@ namespace ubv.server.logic
                 enemy.Rotation.Value = body.rotation;
                 enemy.EnemyState = m_states[id];
 
-                if(m_goalPositions[id] != null)
+                enemy.GoalPosition.Value = m_goalPosition[id];
+
+                if (m_goalPositions[id] != null)
                 {
-                    enemy.GoalPosition.Value = m_goalPositions[id][1];
+                    //enemy.GoalPosition.Value = m_goalPositions[id][1];
 
                     List<common.serialization.types.Vector2> positionsList = new List<common.serialization.types.Vector2>();
                     int iterator = 0;
@@ -116,6 +122,7 @@ namespace ubv.server.logic
                     body.name = "Server enemy " + id.ToString();
 
                     m_enemyPathFindingMovement.Add(id, enemyPathFindingMovement);
+                    m_goalPosition.Add(id, enemyPathFindingMovement.GetNextPostion());
                     m_goalPositions.Add(id, enemyPathFindingMovement.GetPathVectorList());
                     m_states.Add(id, enemyStateMachine.CurrentEnemyState);
                     m_bodies.Add(id, body);
@@ -126,7 +133,7 @@ namespace ubv.server.logic
 
                     if (m_goalPositions[id] != null)
                     {
-                        enemyStateData.GoalPosition.Value = m_goalPositions[id][1];
+                        //enemyStateData.GoalPosition.Value = m_goalPositions[id][1];
 
                         List<common.serialization.types.Vector2> positionsList = new List<common.serialization.types.Vector2>();
                         int iterator = 0;
@@ -139,6 +146,7 @@ namespace ubv.server.logic
                         enemyStateData.GoalPositions.Value = positionsList;
                     }
 
+                    enemyStateData.GoalPosition.Value = m_goalPosition[id];
                     enemyStateData.EnemyState = m_states[id];
 
                     m_enemyStatesData.Add(id, enemyStateData);

@@ -120,10 +120,12 @@ namespace ubv.client.logic
                 Bodies[enemy.GUID.Value].rotation = enemy.Rotation.Value;
 
                 GoalPosition[enemy.GUID.Value] = enemy.GoalPosition.Value;
-                //if (GoalPosition[enemy.GUID.Value] != null)
-                //{
-                //    EnemyPathfindingMovement[enemy.GUID.Value].MoveTo(GoalPosition[enemy.GUID.Value]);
-                //}
+                if (GoalPosition[enemy.GUID.Value] != null)
+                {
+                    List<Vector2> position = new List<Vector2>();
+                    position.Add(GoalPosition[enemy.GUID.Value]);
+                    EnemyPathfindingMovement[enemy.GUID.Value].SetPathVectorLists(position);
+                }
 
                 List<Vector2> positionsList = new List<Vector2>();
                 foreach (common.serialization.types.Vector2 position in enemy.GoalPositions.Value)
@@ -131,7 +133,7 @@ namespace ubv.client.logic
                     positionsList.Add(position.Value);
                 }
                 GoalPositions[enemy.GUID.Value] = positionsList;
-                EnemyPathfindingMovement[enemy.GUID.Value].SetPathVectorLists(GoalPositions[enemy.GUID.Value]);
+                //EnemyPathfindingMovement[enemy.GUID.Value].SetPathVectorLists(GoalPositions[enemy.GUID.Value]);
 
 
                 EnemyState[enemy.GUID.Value] = enemy.EnemyState;
