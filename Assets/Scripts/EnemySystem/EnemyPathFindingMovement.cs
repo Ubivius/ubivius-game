@@ -141,4 +141,9 @@ public class EnemyPathFindingMovement : MonoBehaviour
             return false;
         }
     }
+
+    public void SetPathVectorLists(List<Vector2> pathVectorList)
+    {
+        m_pathVectorList = pathVectorList;
+    }
 }

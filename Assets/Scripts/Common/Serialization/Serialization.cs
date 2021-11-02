@@ -37,6 +37,7 @@ namespace ubv.common.serialization
             LIST_STRING,
             HASHMAP_INT_PLAYERSTATE,
             HASHMAP_INT_ENEMYSTATEDATA,
+            LIST_VECTOR2_ENEMYGOALPOSITIONS,
             LIST_INPUTFRAME,
             LOGIC_CELL_INFO,
             ARRAY2D_CELLINFO,

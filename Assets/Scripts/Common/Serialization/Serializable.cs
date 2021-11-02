@@ -369,6 +369,10 @@ namespace ubv.common.serialization
 
         public class Vector2 : Serialized<UnityEngine.Vector2>
         {
+            public Vector2() : base(UnityEngine.Vector2.zero)
+            {
+            }
+
             public Vector2(UnityEngine.Vector2 value) : base(value)
             {
             }

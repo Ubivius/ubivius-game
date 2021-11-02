@@ -72,9 +72,19 @@ namespace ubv.server.logic
                 enemy.Rotation.Value = body.rotation;
                 enemy.EnemyState = m_states[id];
 
-                if(m_goalPositions[id] != null && m_goalPositions[id][1] != null)
+                if(m_goalPositions[id] != null)
                 {
                     enemy.GoalPosition.Value = m_goalPositions[id][1];
+
+                    List<common.serialization.types.Vector2> positionsList = new List<common.serialization.types.Vector2>();
+                    int iterator = 0;
+                    foreach (Vector2 positions in m_goalPositions[id])
+                    {
+                        positionsList.Add(new common.serialization.types.Vector2());
+                        positionsList[iterator].Value = positions;
+                        iterator++;
+                    }
+                    enemy.GoalPositions.Value = positionsList;
                 }
             }
         }
@@ -114,10 +124,19 @@ namespace ubv.server.logic
 
                     enemyStateData.Position.Value = m_bodies[id].position;
 
-                    if (m_goalPositions[id] != null && m_goalPositions[id][1] != null)
+                    if (m_goalPositions[id] != null)
                     {
-                        //enemyStateData.GoalPositions.value m'a essayer de crisser une liste
                         enemyStateData.GoalPosition.Value = m_goalPositions[id][1];
+
+                        List<common.serialization.types.Vector2> positionsList = new List<common.serialization.types.Vector2>();
+                        int iterator = 0;
+                        foreach(Vector2 positions in m_goalPositions[id])
+                        {
+                            positionsList.Add(new common.serialization.types.Vector2());
+                            positionsList[iterator].Value = positions;
+                            iterator++;
+                        }
+                        enemyStateData.GoalPositions.Value = positionsList;
                     }
 
                     enemyStateData.EnemyState = m_states[id];

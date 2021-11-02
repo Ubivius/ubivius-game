@@ -25,6 +25,8 @@ namespace ubv.client.logic
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, EnemyState> EnemyState { get; private set; }
         public Dictionary<int, Vector2> GoalPosition { get; private set; }
+        public Dictionary<int, List<Vector2>> GoalPositions { get; private set; }
+
         private Dictionary<int, EnemyPathFindingMovement> EnemyPathfindingMovement;
 
         private Dictionary<int, EnemyStateData> m_goalStates;
@@ -36,6 +38,7 @@ namespace ubv.client.logic
             EnemyState = new Dictionary<int, EnemyState>();
             EnemyPathfindingMovement = new Dictionary<int, EnemyPathFindingMovement>();
             GoalPosition = new Dictionary<int, Vector2>();
+            GoalPositions = new Dictionary<int, List<Vector2>>();
         }
 
         public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
@@ -72,6 +75,14 @@ namespace ubv.client.logic
                 enemy.Rotation.Value = m_goalStates[enemy.GUID.Value].Rotation.Value;
                 enemy.EnemyState = m_goalStates[enemy.GUID.Value].EnemyState;
                 enemy.GoalPosition = m_goalStates[enemy.GUID.Value].GoalPosition;
+                enemy.GoalPositions = m_goalStates[enemy.GUID.Value].GoalPositions;
+
+                //int iterator = 0;
+                //foreach(common.serialization.types.Vector2 position in m_goalStates[enemy.GUID.Value].GoalPositions.Value)
+                //{
+                //    enemy.GoalPositions[iterator].Value = position.Value;
+                //    iterator++;
+                //}
             }
         }
 
@@ -109,10 +120,19 @@ namespace ubv.client.logic
                 Bodies[enemy.GUID.Value].rotation = enemy.Rotation.Value;
 
                 GoalPosition[enemy.GUID.Value] = enemy.GoalPosition.Value;
-                if (GoalPosition[enemy.GUID.Value] != null)
+                //if (GoalPosition[enemy.GUID.Value] != null)
+                //{
+                //    EnemyPathfindingMovement[enemy.GUID.Value].MoveTo(GoalPosition[enemy.GUID.Value]);
+                //}
+
+                List<Vector2> positionsList = new List<Vector2>();
+                foreach (common.serialization.types.Vector2 position in enemy.GoalPositions.Value)
                 {
-                    EnemyPathfindingMovement[enemy.GUID.Value].MoveTo(GoalPosition[enemy.GUID.Value]);
+                    positionsList.Add(position.Value);
                 }
+                GoalPositions[enemy.GUID.Value] = positionsList;
+                EnemyPathfindingMovement[enemy.GUID.Value].SetPathVectorLists(GoalPositions[enemy.GUID.Value]);
+
 
                 EnemyState[enemy.GUID.Value] = enemy.EnemyState;
 
@@ -136,6 +156,7 @@ namespace ubv.client.logic
                 EnemyState.Remove(enemyKey);
                 EnemyPathfindingMovement.Remove(enemyKey);
                 GoalPosition.Remove(enemyKey);
+                GoalPositions.Remove(enemyKey);
                 m_goalStates.Remove(enemyKey);
             }
         }

@@ -2,6 +2,7 @@
 using System.Collections;
 using ubv.common.serialization;
 using ubv.server.logic.ai;
+using System.Collections.Generic;
 
 namespace ubv
 {
@@ -22,6 +23,8 @@ namespace ubv
                 public serialization.types.Vector2 Position;
                 public serialization.types.Vector2 GoalPosition;
                 public serialization.types.Float Rotation;
+
+                public serialization.types.List<serialization.types.Vector2> GoalPositions;
                 //public serialization.types.List<Vector2> zascfs; //je veux crisser une liste
 
                 public EnemyStateInfo EnemyStateInfo;
@@ -47,6 +50,7 @@ namespace ubv
                     Rotation = new serialization.types.Float(0);
                     GUID = new serialization.types.Int32(0);
                     GoalPosition = new serialization.types.Vector2(Vector2.zero);
+                    GoalPositions = new EnemyGoalPositions(new List<serialization.types.Vector2>());
 
                     InitSerializableMembers(Position, Rotation, GUID, GoalPosition);
                 }
@@ -57,6 +61,7 @@ namespace ubv
                     Rotation = new serialization.types.Float(0);
                     GUID = new serialization.types.Int32(enemyID);
                     GoalPosition = new serialization.types.Vector2(Vector2.zero);
+                    GoalPositions = new EnemyGoalPositions(new List<serialization.types.Vector2>());
 
                     InitSerializableMembers(Position, Rotation, GUID, GoalPosition);
                 }
@@ -67,6 +72,7 @@ namespace ubv
                     Rotation = new serialization.types.Float(enemy.Rotation.Value);
                     GUID = new serialization.types.Int32(enemy.GUID.Value);
                     GoalPosition = new serialization.types.Vector2(Vector2.zero);
+                    GoalPositions = new EnemyGoalPositions(new List<serialization.types.Vector2>());
 
                     InitSerializableMembers(Position, Rotation, GUID, GoalPosition);
                 }
@@ -100,6 +106,17 @@ namespace ubv
                     return ID.BYTE_TYPE.ENEMY_STATE_DATA;
                 }
 
+            }
+
+            public class EnemyGoalPositions : serialization.types.List<serialization.types.Vector2>
+            {
+                public EnemyGoalPositions(System.Collections.Generic.List<serialization.types.Vector2> goalPositions) : base(goalPositions)
+                { }
+
+                protected override ID.BYTE_TYPE SerializationID()
+                {
+                    return ID.BYTE_TYPE.LIST_VECTOR2_ENEMYGOALPOSITIONS;
+                }
             }
         }
     }
