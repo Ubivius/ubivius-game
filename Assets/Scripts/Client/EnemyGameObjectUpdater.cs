@@ -14,7 +14,7 @@ namespace ubv.client.logic
     /// Instantiate enemies and moves them according to their enemy states
     /// </summary>
     public class EnemyGameObjectUpdater : ClientStateUpdater
-    {   //
+    {
         [SerializeField] private float m_lerpTime = 0.2f;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private EnemySettings m_enemySettings;
