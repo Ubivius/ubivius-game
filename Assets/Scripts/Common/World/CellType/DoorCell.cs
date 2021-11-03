@@ -17,7 +17,8 @@ namespace ubv.common.world.cellType
         Section0_NorthEast,
         Section0_SouthEast,
         Section0_SouthWest,
-        Section0_NorthWest
+        Section0_NorthWest,
+        FinalDoor
     }
 
     public class DoorCell : LogicCell
@@ -32,7 +33,14 @@ namespace ubv.common.world.cellType
 
             InitSerializableMembers(m_IsClosed, m_doorType);
 
-            IsWalkable = true;
+            if (doorType == DoorType.Standard)
+            {
+                IsWalkable = true;
+            }
+            else
+            {
+                IsWalkable = false;
+            }            
             DoorType = doorType;
         }
 

@@ -30,7 +30,10 @@ namespace ubv.microservices
         private void Fetch()
         {
             if (!IsFetcherActive)
+            {
+                m_invitesFetcher.ReadyForNewFetch();
                 return;
+            }
 
              this.Request(new GetInvitesForUserRequest(DefaultUser, OnGetNewInvites));
         }
@@ -38,6 +41,22 @@ namespace ubv.microservices
         public void SendInviteTo(string userID)
         {
             this.Request(new PostInviteRequest(DefaultUser, userID));
+        }
+
+        public void GetAllFriendsIDs(string userID, UnityAction<HashSet<string>> OnGetFriendIDs)
+        {
+            this.Request(new GetRelationsFromUserRequest(userID, (RelationInfo[] relations) => 
+            {
+                OnGetFriendIDs(GetAllConfirmedFriendIDs(relations));
+            }));
+        }
+
+        public void GetAllFriends(string userID, UnityAction<HashSet<RelationInfo>> OnGetFriends)
+        {
+            this.Request(new GetRelationsFromUserRequest(userID, (RelationInfo[] relations) =>
+            {
+                OnGetFriends(GetAllConfirmedFriends(relations));
+            }));
         }
 
         private void OnGetNewInvites(RelationInfo[] infos)
@@ -51,7 +70,9 @@ namespace ubv.microservices
                     m_currentPendingIncomingInvites.Add(friend);
                 }
             }
+            m_invitesFetcher.ReadyForNewFetch();
         }
+
         protected override void OnPostResponse(string JSON, PostInviteRequest originalRequest)
         {
             originalRequest.Callback?.Invoke();
@@ -74,8 +95,13 @@ namespace ubv.microservices
             RelationInfo[] relations = new RelationInfo[relationsResponse.Length];
             for (int i = 0; i < relationsResponse.Length; i++)
             {
+                // we don't know who we are in the relationship 
+                JSONFriendInfo otherUser = originalRequest.UserID.Equals(relationsResponse[i].user_1.user_id) ? 
+                    relationsResponse[i].user_2 : 
+                    relationsResponse[i].user_1;
+
                 RelationInfo.RelationshipType relationshipType;
-                switch (relationsResponse[i].user_2.relationship_type)
+                switch (otherUser.relationship_type)
                 {
                     case "Friend":
                         relationshipType = RelationInfo.RelationshipType.Friend;
@@ -93,13 +119,13 @@ namespace ubv.microservices
                         relationshipType = RelationInfo.RelationshipType.None;
                         break;
                 }
-                relations[i] = new RelationInfo(relationsResponse[i].id, relationsResponse[i].user_2.user_id, relationshipType, relationsResponse[i].conversation_id);
+                relations[i] = new RelationInfo(relationsResponse[i].id, otherUser.user_id, relationshipType, relationsResponse[i].conversation_id);
             }
 
             originalRequest.Callback.Invoke(relations);
         }
 
-        public void GetConversationWith(string currentUserID, string otherUserID, UnityAction<string> OnGetConversation)
+        public void GetConversationIDWith(string currentUserID, string otherUserID, UnityAction<string> OnGetConversation)
         {
             this.Request(new GetRelationsFromUserRequest(currentUserID, (RelationInfo[] infos) => {
                 foreach(RelationInfo info in infos)
@@ -114,7 +140,7 @@ namespace ubv.microservices
             }));
         }
 
-        private HashSet<string> GetAllConfirmedFriends(RelationInfo[] relations)
+        private HashSet<string> GetAllConfirmedFriendIDs(RelationInfo[] relations)
         {
             HashSet<string> friends = new HashSet<string>();
             foreach(RelationInfo relation in relations)
@@ -122,6 +148,19 @@ namespace ubv.microservices
                 if (relation.RelationType == RelationInfo.RelationshipType.Friend)
                 {
                     friends.Add(relation.FriendUserID);
+                }
+            }
+            return friends;
+        }
+
+        private HashSet<RelationInfo> GetAllConfirmedFriends(RelationInfo[] relations)
+        {
+            HashSet<RelationInfo> friends = new HashSet<RelationInfo>();
+            foreach (RelationInfo relation in relations)
+            {
+                if (relation.RelationType == RelationInfo.RelationshipType.Friend)
+                {
+                    friends.Add(relation);
                 }
             }
             return friends;
