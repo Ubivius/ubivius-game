@@ -9,7 +9,7 @@ using UnityEngine;
  * */
 public class EnemyPathFindingMovement : MonoBehaviour
 {
-    [SerializeField] private const float SPEED = 5f;
+    [SerializeField] private float SPEED = 5f;
     [SerializeField] private Transform m_player;
 
     private PathfindingGridManager m_pathfindingGridManager;
@@ -22,10 +22,11 @@ public class EnemyPathFindingMovement : MonoBehaviour
 
     private void Awake()
     {
+        m_currentPathIndex = 0;
         m_enemyMain = GetComponent<EnemyMain>();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         HandleMovement();
         m_enemyMain.EnemyRigidbody2D.velocity = m_moveDir * SPEED;
@@ -150,6 +151,16 @@ public class EnemyPathFindingMovement : MonoBehaviour
 
     public Vector2 GetNextPostion()
     {
+        if (m_pathVectorList == null || m_currentPathIndex > m_pathVectorList.Count)
+        {
+            return default;
+        }
+
         return m_pathVectorList[m_currentPathIndex];
+    }
+
+    public float GetSpeed()
+    {
+        return SPEED;
     }
 }

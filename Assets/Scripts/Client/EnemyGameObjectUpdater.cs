@@ -25,8 +25,6 @@ namespace ubv.client.logic
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, EnemyState> EnemyState { get; private set; }
         public Dictionary<int, Vector2> GoalPosition { get; private set; }
-        public Dictionary<int, List<Vector2>> GoalPositions { get; private set; }
-
         private Dictionary<int, EnemyPathFindingMovement> EnemyPathfindingMovement;
 
         private Dictionary<int, EnemyStateData> m_goalStates;
@@ -38,7 +36,6 @@ namespace ubv.client.logic
             EnemyState = new Dictionary<int, EnemyState>();
             EnemyPathfindingMovement = new Dictionary<int, EnemyPathFindingMovement>();
             GoalPosition = new Dictionary<int, Vector2>();
-            GoalPositions = new Dictionary<int, List<Vector2>>();
         }
 
         public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
@@ -56,7 +53,7 @@ namespace ubv.client.logic
             {
                 err = ((enemyStateData.Position.Value - localState.Enemies()[enemyStateData.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
                      && (enemyStateData.EnemyState != localState.Enemies()[enemyStateData.GUID.Value].EnemyState)
-                     && (enemyStateData.GoalPosition.Value != localState.Enemies()[enemyStateData.GUID.Value].GoalPosition.Value);
+                     && ((enemyStateData.GoalPosition.Value - localState.Enemies()[enemyStateData.GUID.Value].GoalPosition.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance);
 
                 if (err)
                 {
@@ -75,14 +72,6 @@ namespace ubv.client.logic
                 enemy.Rotation.Value = m_goalStates[enemy.GUID.Value].Rotation.Value;
                 enemy.EnemyState = m_goalStates[enemy.GUID.Value].EnemyState;
                 enemy.GoalPosition = m_goalStates[enemy.GUID.Value].GoalPosition;
-                enemy.GoalPositions = m_goalStates[enemy.GUID.Value].GoalPositions;
-
-                //int iterator = 0;
-                //foreach(common.serialization.types.Vector2 position in m_goalStates[enemy.GUID.Value].GoalPositions.Value)
-                //{
-                //    enemy.GoalPositions[iterator].Value = position.Value;
-                //    iterator++;
-                //}
             }
         }
 
@@ -92,19 +81,20 @@ namespace ubv.client.logic
             foreach (EnemyStateData enemy in m_goalStates.Values)
             {
                 LerpTowardGoalState(enemy, m_timeSinceLastGoal);
+                common.logic.EnemyMovement.Execute(Bodies[enemy.GUID.Value], GoalPosition[enemy.GUID.Value], EnemyPathfindingMovement[enemy.GUID.Value].GetSpeed());
             }
+
+            
         }
 
         public override void UpdateWorldFromState(WorldState remoteState)
         {
             m_timeSinceLastGoal = 0;
 
-            Debug.Log("nb of enemy in remote:"+remoteState.Enemies().Count.ToString());
             foreach (EnemyStateData enemy in remoteState.Enemies().Values)
             {
                 if (!Bodies.ContainsKey(enemy.GUID.Value))
                 {
-                    Debug.Log("Instantiate enemy client");
                     GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy, new Vector3(0, 0, 0), Quaternion.identity);
                     EnemyPathfindingMovement[enemy.GUID.Value] = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
                     EnemyPathfindingMovement[enemy.GUID.Value].SetManager(m_pathfindingGridManager);
@@ -113,29 +103,10 @@ namespace ubv.client.logic
                     Bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
                 }
 
-                Debug.Log("INputtt Outputtttttt position avant changement" + enemy.Position.Value);
-                Debug.Log("enemy Positionnnnnnnnnnnnnnnnnnnnnnn" + enemy.Position.Value);
-
                 Bodies[enemy.GUID.Value].position = enemy.Position.Value;
                 Bodies[enemy.GUID.Value].rotation = enemy.Rotation.Value;
 
                 GoalPosition[enemy.GUID.Value] = enemy.GoalPosition.Value;
-                if (GoalPosition[enemy.GUID.Value] != null)
-                {
-                    List<Vector2> position = new List<Vector2>();
-                    position.Add(GoalPosition[enemy.GUID.Value]);
-                    EnemyPathfindingMovement[enemy.GUID.Value].SetPathVectorLists(position);
-                }
-
-                List<Vector2> positionsList = new List<Vector2>();
-                foreach (common.serialization.types.Vector2 position in enemy.GoalPositions.Value)
-                {
-                    positionsList.Add(position.Value);
-                }
-                GoalPositions[enemy.GUID.Value] = positionsList;
-                //EnemyPathfindingMovement[enemy.GUID.Value].SetPathVectorLists(GoalPositions[enemy.GUID.Value]);
-
-
                 EnemyState[enemy.GUID.Value] = enemy.EnemyState;
 
                 m_goalStates[enemy.GUID.Value] = enemy;
@@ -158,7 +129,6 @@ namespace ubv.client.logic
                 EnemyState.Remove(enemyKey);
                 EnemyPathfindingMovement.Remove(enemyKey);
                 GoalPosition.Remove(enemyKey);
-                GoalPositions.Remove(enemyKey);
                 m_goalStates.Remove(enemyKey);
             }
         }
@@ -169,27 +139,27 @@ namespace ubv.client.logic
 
         private void LerpTowardGoalState(EnemyStateData enemy, float time)
         {
-            Bodies[enemy.GUID.Value].position = Vector2.Lerp(Bodies[enemy.GUID.Value].position, m_goalStates[enemy.GUID.Value].Position.Value, time / m_lerpTime);
-            if ((Bodies[enemy.GUID.Value].position - m_goalStates[enemy.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
-            {
-                Bodies[enemy.GUID.Value].position = m_goalStates[enemy.GUID.Value].Position.Value;
-            }
+            //Bodies[enemy.GUID.Value].position = Vector2.Lerp(Bodies[enemy.GUID.Value].position, m_goalStates[enemy.GUID.Value].Position.Value, time / m_lerpTime);
+            //if ((Bodies[enemy.GUID.Value].position - m_goalStates[enemy.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
+            //{
+            //    Bodies[enemy.GUID.Value].position = m_goalStates[enemy.GUID.Value].Position.Value;
+            //}
 
-            Bodies[enemy.GUID.Value].rotation = Mathf.Lerp(Bodies[enemy.GUID.Value].rotation, m_goalStates[enemy.GUID.Value].Rotation.Value, time / m_lerpTime);
-            if (Bodies[enemy.GUID.Value].rotation - m_goalStates[enemy.GUID.Value].Rotation.Value < 0.01f)
-            {
-                Bodies[enemy.GUID.Value].rotation = m_goalStates[enemy.GUID.Value].Rotation.Value;
-            }
+            //Bodies[enemy.GUID.Value].rotation = Mathf.Lerp(Bodies[enemy.GUID.Value].rotation, m_goalStates[enemy.GUID.Value].Rotation.Value, time / m_lerpTime);
+            //if (Bodies[enemy.GUID.Value].rotation - m_goalStates[enemy.GUID.Value].Rotation.Value < 0.01f)
+            //{
+            //    Bodies[enemy.GUID.Value].rotation = m_goalStates[enemy.GUID.Value].Rotation.Value;
+            //}
 
-            if (EnemyState[enemy.GUID.Value] != m_goalStates[enemy.GUID.Value].EnemyState)
-            {
-                EnemyState[enemy.GUID.Value] = m_goalStates[enemy.GUID.Value].EnemyState;
-            }
+            //if (EnemyState[enemy.GUID.Value] != m_goalStates[enemy.GUID.Value].EnemyState)
+            //{
+            //    EnemyState[enemy.GUID.Value] = m_goalStates[enemy.GUID.Value].EnemyState;
+            //}
 
-            if (GoalPosition[enemy.GUID.Value] != m_goalStates[enemy.GUID.Value].GoalPosition.Value)
-            {
-                GoalPosition[enemy.GUID.Value] = m_goalStates[enemy.GUID.Value].GoalPosition.Value;
-            }
+            //if (GoalPosition[enemy.GUID.Value] != m_goalStates[enemy.GUID.Value].GoalPosition.Value)
+            //{
+            //    GoalPosition[enemy.GUID.Value] = m_goalStates[enemy.GUID.Value].GoalPosition.Value;
+            //}
         }
     }
 }
