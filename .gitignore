@@ -77,3 +77,6 @@ ClassDiagram1.png
 
 # For ReadTheDocs build results
 */_build
+
+# Local builds
+[Bb]uild/*

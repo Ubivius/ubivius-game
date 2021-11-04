@@ -1,24 +1,33 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using static ubv.microservices.CharacterDataService;
 using ubv.microservices;
+using UnityEngine.SceneManagement;
 
 namespace ubv.ui.client
 {
-    public class ClientLobbyUI : MonoBehaviour
+    public class ClientLobbyUI : TabBehaviour
     {
         protected readonly object m_UILock = new object();
         protected readonly object m_userLock = new object();
 
-        [SerializeField] private Transform m_playerListParent;
         [SerializeField] private ubv.client.logic.ClientSyncLobby m_lobby;
-        [SerializeField] private TextMeshProUGUI m_defaultPlayerNameItem;
+
+        [SerializeField] private PlayerInLobby m_mainPlayer;
+        [SerializeField] private PlayerInLobby m_playerOne;
+        [SerializeField] private PlayerInLobby m_playerTwo;
+        [SerializeField] private PlayerInLobby m_playerThree;
+        private PlayerInLobby[] m_playersInLobby;
+
+        private UserInfo m_activeUser;
+        private CharacterData m_activeUserCharacter;
+        private bool activeUserDisplayed = false;
+
         private SocialServicesController m_socialServices;
 
-        private Dictionary<int, TextMeshProUGUI> m_playerTextsObjects;
-        
         private List<CharacterData> m_characters;
         private Dictionary<int, UserInfo> m_users;
 
@@ -26,49 +35,59 @@ namespace ubv.ui.client
         {
             m_characters = new List<CharacterData>();
             m_users = new Dictionary<int, UserInfo>();
-            m_playerTextsObjects = new Dictionary<int, TextMeshProUGUI>();
+            m_playersInLobby = new PlayerInLobby[] { m_playerOne, m_playerTwo, m_playerThree };
         }
 
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             m_socialServices = ubv.client.logic.ClientNetworkingManager.Instance.SocialServices;
             m_lobby.ClientListUpdate.AddListener(UpdatePlayers);
+            m_activeUser = m_lobby.GetActiveUser();
+
+            m_playerOne.HidePlayer();
+            m_playerTwo.HidePlayer();
+            m_playerThree.HidePlayer();
         }
 
-        private void Update()
+        protected override void Update()
         {
-            if(Time.frameCount % 69 == 0)
+            base.Update();
+
+            if (Time.frameCount % 69 == 0)
             {
-                foreach (CharacterData character in m_characters)
+                RefreshUsersInLobby();
+            }
+        }
+
+        private void RefreshUsersInLobby()
+        {
+            if (!activeUserDisplayed)
+            {
+                m_mainPlayer.ShowPlayer(m_activeUser, m_activeUserCharacter);
+                activeUserDisplayed = true;
+            }
+
+            for (int i = 0; i < m_playersInLobby.Length; i++)
+            {
+                if (i < m_characters.Count)
                 {
+                    CharacterData character = m_characters[i];
                     int playerIntID = character.PlayerID.GetHashCode();
-                    if (m_users.ContainsKey(playerIntID))
+                    UserInfo user = m_users[playerIntID];
+                    if (user != null)
                     {
-                        if (!m_playerTextsObjects.ContainsKey(playerIntID))
-                        {
-                            Debug.Log("Adding character/user id to text list " + character.Name + ", " + character.PlayerID);
-                            TextMeshProUGUI playerItem = GameObject.Instantiate(m_defaultPlayerNameItem, m_playerListParent);
-                            m_playerTextsObjects[playerIntID] = playerItem;
-                        }
-
-                        m_playerTextsObjects[playerIntID].text = character.Name + "(" + m_users[playerIntID].UserName + ")";
+                        m_playersInLobby[i].ShowPlayer(user, character);
                     }
-                }
-
-                List<int> toRemove = new List<int>();
-                foreach(int id in m_playerTextsObjects.Keys)
-                {
-                    if (!m_users.ContainsKey(id))
+                    else if(m_playersInLobby[i].IsVisible())
                     {
-                        Debug.Log("Removing user from text gameobjects" + id);
-                        Destroy(m_playerTextsObjects[id].gameObject);
-                        toRemove.Add(id);
+                        m_playersInLobby[i].HidePlayer();
                     }
+                    
                 }
-
-                foreach(int id in toRemove)
+                else if (m_playersInLobby[i].IsVisible())
                 {
-                    m_playerTextsObjects.Remove(id);
+                    m_playersInLobby[i].HidePlayer();
                 }
             }
         }
@@ -82,12 +101,23 @@ namespace ubv.ui.client
                 foreach (CharacterData character in m_characters)
                 {
                     int playerIntID = character.PlayerID.GetHashCode();
-                    playerIntIDs.Add(playerIntID);
+                    if (playerIntID == m_activeUser.ID.GetHashCode())
+                    {
+                        m_activeUserCharacter = character;
+                    }
+                    else
+                    {
+                        playerIntIDs.Add(playerIntID);
+                    }
+
                     if (!m_users.ContainsKey(playerIntID))
                     {
+                        
                         m_socialServices.GetUserInfo(character.PlayerID, OnGetUserInfo);
                     }
                 }
+
+                m_characters.Remove(m_activeUserCharacter);
 
                 List<int> toRemove = new List<int>();
                 foreach (int id in m_users.Keys)
@@ -114,5 +144,22 @@ namespace ubv.ui.client
                 m_users[info.ID.GetHashCode()] = info;
             }
         }
+
+        public void Back()
+        {
+            //Go to game search scene
+        }
+
+        public void ToggleReady()
+        {
+            m_activeUser.Ready = !m_activeUser.Ready;
+            string statusText = "NOT READY";
+            if (m_activeUser.Ready)
+            {
+                statusText = "READY";
+            }
+      
+            m_mainPlayer.SetStatus(statusText);
+        } 
     }
 }
