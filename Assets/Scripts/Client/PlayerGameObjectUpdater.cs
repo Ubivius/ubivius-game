@@ -114,10 +114,13 @@ namespace ubv.client.logic
             {
                 if (player.GUID.Value != m_playerGUID)
                 {
+                    Rigidbody2D rb = Bodies[player.GUID.Value];
                     LerpTowardGoalState(player, m_timeSinceLastGoal);
                     m_sprintActions[player.GUID.Value].Invoke(player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING));
+                    common.logic.PlayerFieldOfView.Execute(ref rb, m_fieldOfViewGameObjectUpdater);
                 }
                 m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
+                
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
             common.logic.PlayerFieldOfView.Execute(ref m_localPlayerBody, m_fieldOfViewGameObjectUpdater);
