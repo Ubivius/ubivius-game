@@ -120,7 +120,7 @@ namespace ubv.client.logic
                 m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             }
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
-            common.logic.PlayerFieldOfView.Execute(ref m_localPlayerBody, m_fieldOfViewGameObjectUpdater, input, deltaTime);
+            common.logic.PlayerFieldOfView.Execute(ref m_localPlayerBody, m_fieldOfViewGameObjectUpdater);
         }
 
         public override void UpdateWorldFromState(WorldState state)

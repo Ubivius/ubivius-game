@@ -7041,8 +7041,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldOfView: {fileID: 2121369550}
-  moveSpeed: 5
-  rb: {fileID: 1615438438}
   cam: {fileID: 519420031}
 --- !u!50 &1615438438
 Rigidbody2D:
@@ -8055,6 +8053,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4959638626407963624, guid: ad57810173cbb904e8f863fff847315c,
+        type: 3}
+      propertyPath: m_MotionVectors
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4959638626407963627, guid: ad57810173cbb904e8f863fff847315c,
         type: 3}
       propertyPath: m_RootOrder

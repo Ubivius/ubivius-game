@@ -11,17 +11,12 @@ namespace ubv
 
             public class PlayerFieldOfView : MonoBehaviour
             {
-                static public void Execute(ref Rigidbody2D rigidbody, FieldOfViewGameObjectUpdater fieldOfView, common.data.InputFrame input, float deltaTime)
+                static public void Execute(ref Rigidbody2D rigidbody, FieldOfViewGameObjectUpdater fieldOfView)
                 {
-                    Vector2 movement;
-                    movement.x = Input.GetAxisRaw("Horizontal");
-                    movement.y = Input.GetAxisRaw("Vertical");
-
                     Vector2 mousePos = fieldOfView.cam.ScreenToWorldPoint(Input.mousePosition);
-
                     Vector3 lookDir = mousePos - rigidbody.position;
                     float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg - 90f;
-                    rigidbody.rotation = angle;
+                    //rigidbody.rotation = angle;
 
                     //field of view
                     fieldOfView.SetAimDirection(lookDir);
