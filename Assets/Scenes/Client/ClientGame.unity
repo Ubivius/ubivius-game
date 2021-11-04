@@ -575,10 +575,10 @@ MonoBehaviour:
   m_interactable: {fileID: 304581782}
   m_playerSpawn: {fileID: 1320442776}
   m_defaultFloorTile: {fileID: 11400000, guid: 2dcd60d668d7a654680b9f70a5d1e0e2, type: 2}
-  m_defaultDoorTile: {fileID: 11400000, guid: a7794f009c907584aab8cfc65dded64e, type: 2}
+  m_defaultDoorTile: {fileID: 11400000, guid: 80d28b64781f8174bb0a70be99f2800a, type: 2}
   m_defaultInteractableTile: {fileID: 11400000, guid: 1aed2b5887a4f1c44ac6371433201ec4,
     type: 2}
-  m_defaultPlayerSpawnTile: {fileID: 11400000, guid: d7869141ffc6bc243a3d1b336d7727c6,
+  m_defaultPlayerSpawnTile: {fileID: 11400000, guid: 7990e8cbb69c7744ebd140e6186861bd,
     type: 2}
   m_defaultWallTile: {fileID: 11400000, guid: 0b208920ff8bb524080a81287703f61a, type: 2}
   m_wallCenterTile: {fileID: 11400000, guid: a90cccc336c8a4d408fb7cbca63234f2, type: 2}
@@ -1607,17 +1607,17 @@ PrefabInstance:
     - target: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
         type: 3}
       propertyPath: m_BackGroundColor.b
-      value: 0.79215693
+      value: 0.3647059
       objectReference: {fileID: 0}
     - target: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
         type: 3}
       propertyPath: m_BackGroundColor.g
-      value: 0.44705886
+      value: 0.12941177
       objectReference: {fileID: 0}
     - target: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
         type: 3}
       propertyPath: m_BackGroundColor.r
-      value: 0.10196079
+      value: 0.09411766
       objectReference: {fileID: 0}
     - target: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
         type: 3}
