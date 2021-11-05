@@ -223,6 +223,7 @@ namespace ubv.tcp.client
 #if DEBUG_LOG
             Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal);
 #endif // DEBUG_LOG
+            m_activeEndpoint = false;
         }
 
         public void Reconnect()
@@ -343,6 +344,7 @@ namespace ubv.tcp.client
                 }
             }
             Debug.Log("State at client sending thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal);
+            m_activeEndpoint = false;
         }
 
         private void OnDestroy()
@@ -397,6 +399,12 @@ namespace ubv.tcp.client
 
             Thread thread = new Thread(new ThreadStart(CommThread));
             thread.Start();
+        }
+
+        public void Disconnect()
+        {
+            m_tryToReconnect = false;
+            m_exitSignal = true;
         }
         
 

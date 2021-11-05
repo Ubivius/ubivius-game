@@ -91,6 +91,7 @@ namespace ubv.server
             {
                 m_pendingPlayers.Remove(playerID);
                 m_connectedPlayers.Remove(playerID);
+                UDPServer.RemoveClient(playerID);
             }
             OnPlayerDisconnect.Invoke(playerID);
         }

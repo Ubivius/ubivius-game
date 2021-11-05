@@ -15,6 +15,7 @@ namespace ubv.client.logic
             SUBSTATE_WAITING_FOR_REJOIN_CONFIRM,
             SUBSTATE_GOING_TO_LOBBY,
             SUBSTATE_GOING_TO_GAME,
+            SUBSTATE_GOING_BACK,
             SUBSTATE_TRANSITION,
         }
 
@@ -27,11 +28,14 @@ namespace ubv.client.logic
         [SerializeField] private float m_TCPTimeout = 10.0f;
         private float m_TCPTimeoutTimer;
 
+        [SerializeField] private float m_UDPTimeout = 10.0f;
+        private float m_UDPTimeoutTimer;
+
         [SerializeField] private float m_dispatcherTimeout = 10.0f;
         private float m_dispatcherTimeoutTimer;
 
         [SerializeField] private float m_UDPPingTimerIntervalMS = 500f;
-        private float m_UPDPingTimer;
+        private float m_UDPPingTimer;
 
         private byte[] m_identificationMessageBytes;
         
@@ -86,12 +90,22 @@ namespace ubv.client.logic
                 case SubState.SUBSTATE_WAITING_FOR_UDP:
                     if (m_TCPClient.IsConnected())
                     {
-                        m_UDPPingTimerIntervalMS += Time.deltaTime;
-                        if (m_UPDPingTimer > m_UDPPingTimerIntervalMS / 1000f)
+                        m_UDPPingTimer += Time.deltaTime;
+                        if (m_UDPPingTimer > m_UDPPingTimerIntervalMS / 1000f)
                         {
-                            m_UPDPingTimer = 0;
+                            m_UDPPingTimer = 0;
                             SendUDPIdentificationPing();
                         }
+                    }
+
+                    m_UDPTimeoutTimer += Time.deltaTime;
+                    if (m_UDPTimeoutTimer > m_UDPTimeout)
+                    {
+#if DEBUG_LOG
+                        Debug.Log("Cannot connect to UDP Server");
+#endif // DEBUG_LOG
+                        data.ClientCacheData.SaveCache(false);
+                        GoBackToPreviousState();
                     }
                     break;
                 case SubState.SUBSTATE_GOING_TO_LOBBY:
@@ -99,6 +113,9 @@ namespace ubv.client.logic
                     break;
                 case SubState.SUBSTATE_GOING_TO_GAME:
                     GoToGame();
+                    break;
+                case SubState.SUBSTATE_GOING_BACK:
+                    GoBackToPreviousState();
                     break;
                 case SubState.SUBSTATE_WAITING_FOR_REJOIN_CONFIRM:
                     m_rejoinDemandTimer += Time.deltaTime;
@@ -108,6 +125,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                         Debug.Log("Old server game cannot be found.");
 #endif // DEBUG_LOG
+                        data.ClientCacheData.SaveCache(false);
                         GoBackToPreviousState();
                     }
                     break;
@@ -165,6 +183,7 @@ namespace ubv.client.logic
 
         private void GoBackToPreviousState()
         {
+            m_TCPClient.Disconnect();
             m_currentSubState = SubState.SUBSTATE_TRANSITION;
             ClientStateManager.Instance.PopState();
         }
@@ -174,7 +193,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Disconnected from server");
 #endif // DEBUG_LOG
-            ClientStateManager.Instance.PopState();
+            m_currentSubState = SubState.SUBSTATE_GOING_BACK;
         }
 
         public void OnSuccessfulTCPConnect()
@@ -201,7 +220,6 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
                     m_currentSubState = SubState.SUBSTATE_WAITING_FOR_UDP;
                     m_UDPClient.SetTargetServer(data.LoadingData.ServerInfo.Value.server_udp_ip, data.LoadingData.ServerInfo.Value.udp_port);
-                    SendUDPIdentificationPing();
                 }
             }
             else if (m_currentSubState == SubState.SUBSTATE_WAITING_FOR_UDP)

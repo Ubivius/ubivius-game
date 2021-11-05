@@ -46,7 +46,7 @@ namespace ubv.server.logic
             }
         }
 
-        private void SetPathNodesFromLogicGrid(LogicGrid logicGrid)
+        public void SetPathNodesFromLogicGrid(LogicGrid logicGrid)
         {
             Debug.Log("SetPathNodesFromLogicGrid");
             m_cellToNodes = new Dictionary<common.world.cellType.LogicCell, PathNode>();

@@ -9,6 +9,7 @@ namespace ubv.microservices
         public readonly string UserName;
         public readonly string Email;
         public readonly string DateOfBirth;
+        public bool Ready = false;
 
         public UserInfo(string id, string userName, string email, string dateOfBirth)
         {
