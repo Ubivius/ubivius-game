@@ -43,17 +43,17 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""interactions"": """"
                 },
                 {
-                    ""name"": ""Interact"",
+                    ""name"": ""Shoot"",
                     ""type"": ""Button"",
-                    ""id"": ""cd3b6463-2026-4b99-a1cd-f3384d043169"",
+                    ""id"": ""b1ed926d-7e0e-438b-83ba-da0818ae466a"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
                 },
                 {
-                    ""name"": ""Shoot"",
+                    ""name"": ""Interact"",
                     ""type"": ""Button"",
-                    ""id"": ""b1ed926d-7e0e-438b-83ba-da0818ae466a"",
+                    ""id"": ""cd3b6463-2026-4b99-a1cd-f3384d043169"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
@@ -161,28 +161,6 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""6a912b13-0026-4aa2-84f3-80067b4f1a2a"",
-                    ""path"": ""<Keyboard>/e"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Interact"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""d3499d8a-2d3c-490f-9c02-397d0b90fb99"",
-                    ""path"": ""<Gamepad>/buttonEast"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Interact"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""83a0baf7-ca47-44cd-9f30-268c7c494b5b"",
                     ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
@@ -200,6 +178,28 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""processors"": """",
                     ""groups"": ""ControlScheme"",
                     ""action"": ""Shoot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6a912b13-0026-4aa2-84f3-80067b4f1a2a"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d3499d8a-2d3c-490f-9c02-397d0b90fb99"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -524,24 +524,6 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         }
     }
     public GameplayActions @Gameplay => new GameplayActions(this);
-    private int m_AllControlSchemesSchemeIndex = -1;
-    public InputControlScheme AllControlSchemesScheme
-    {
-        get
-        {
-            if (m_AllControlSchemesSchemeIndex == -1) m_AllControlSchemesSchemeIndex = asset.FindControlSchemeIndex("All Control Schemes");
-            return asset.controlSchemes[m_AllControlSchemesSchemeIndex];
-        }
-    }
-    private int m_AllschemeSchemeIndex = -1;
-    public InputControlScheme AllschemeScheme
-    {
-        get
-        {
-            if (m_AllschemeSchemeIndex == -1) m_AllschemeSchemeIndex = asset.FindControlSchemeIndex("All scheme");
-            return asset.controlSchemes[m_AllschemeSchemeIndex];
-        }
-    }
 
     // Menu
     private readonly InputActionMap m_Menu;
@@ -599,22 +581,22 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         }
     }
     public MenuActions @Menu => new MenuActions(this);
-    private int m_AllcontrolschemeSchemeIndex = -1;
-    public InputControlScheme AllcontrolschemeScheme
+    private int m_AllControlSchemesSchemeIndex = -1;
+    public InputControlScheme AllControlSchemesScheme
     {
         get
         {
-            if (m_AllcontrolschemeSchemeIndex == -1) m_AllcontrolschemeSchemeIndex = asset.FindControlSchemeIndex("All control scheme");
-            return asset.controlSchemes[m_AllcontrolschemeSchemeIndex];
+            if (m_AllControlSchemesSchemeIndex == -1) m_AllControlSchemesSchemeIndex = asset.FindControlSchemeIndex("All Control Schemes");
+            return asset.controlSchemes[m_AllControlSchemesSchemeIndex];
         }
     }
-    private int m_ControlSchemeSchemeIndex = -1;
-    public InputControlScheme ControlSchemeScheme
+    private int m_AllschemeSchemeIndex = -1;
+    public InputControlScheme AllschemeScheme
     {
         get
         {
-            if (m_ControlSchemeSchemeIndex == -1) m_ControlSchemeSchemeIndex = asset.FindControlSchemeIndex("ControlScheme");
-            return asset.controlSchemes[m_ControlSchemeSchemeIndex];
+            if (m_AllschemeSchemeIndex == -1) m_AllschemeSchemeIndex = asset.FindControlSchemeIndex("All scheme");
+            return asset.controlSchemes[m_AllschemeSchemeIndex];
         }
     }
     public interface IGameplayActions

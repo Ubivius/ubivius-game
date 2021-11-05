@@ -671,7 +671,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1877816070}
-  m_RootOrder: 11
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1651257020
 MonoBehaviour:
@@ -689,7 +689,6 @@ MonoBehaviour:
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1877816073}
   m_serviceEndpoint: http://achievements.dev.ubivius.tk/
-  m_users: {fileID: 1877816074}
 --- !u!1 &1787012365
 GameObject:
   m_ObjectHideFlags: 0
