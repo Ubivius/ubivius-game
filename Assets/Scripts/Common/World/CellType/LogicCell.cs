@@ -7,6 +7,15 @@ using ubv.common.serialization;
 
 namespace ubv.common.world.cellType
 {
+    public enum Section
+    {
+        NorthEast,
+        SouthEast,
+        SouthWest,
+        NorthWest,
+        None
+    }
+
     public class CellInfo : serialization.Serializable
     {
         public enum CellType
@@ -16,8 +25,11 @@ namespace ubv.common.world.cellType
             CELL_BUTTON,
             CELL_FLOOR,
             CELL_PLAYERSPAWN,
+            CELL_SECTIONBUTTON,
+            CELL_SECTIONDOORBUTTON,
+            CELL_FINALBUTTON,
             CELL_NONE
-        }
+        }       
 
         private serialization.types.Byte m_cellType;
         private serialization.types.ByteArray m_logicCellBytes;
@@ -70,6 +82,15 @@ namespace ubv.common.world.cellType
                     break;
                 case CellType.CELL_PLAYERSPAWN:
                     cell = CreateFromBytes<PlayerSpawnCell>(m_logicCellBytes.Value.ArraySegment());
+                    break;
+                case CellType.CELL_SECTIONBUTTON:
+                    cell = CreateFromBytes<SectionButton>(m_logicCellBytes.Value.ArraySegment());
+                    break;
+                case CellType.CELL_SECTIONDOORBUTTON:
+                    cell = CreateFromBytes<SectionDoorButtonCell>(m_logicCellBytes.Value.ArraySegment());
+                    break;
+                case CellType.CELL_FINALBUTTON:
+                    cell = CreateFromBytes<FinalButtonCell>(m_logicCellBytes.Value.ArraySegment());
                     break;
                 case CellType.CELL_NONE:
                     break;

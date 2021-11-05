@@ -28,6 +28,7 @@ namespace ubv
 
             private Vector2 m_move = Vector2.zero;
             private bool m_IsSprinting = false;
+            private bool m_interact = false;
             private bool m_IsShooting = false;
 
             private void Awake()
@@ -49,6 +50,9 @@ namespace ubv
                 m_controls.Gameplay.Sprint.performed += context => SetSprinting(true);
                 m_controls.Gameplay.Sprint.canceled += context => SetSprinting(false);
 
+                m_controls.Gameplay.Interact.performed += context => Interact(true);
+                m_controls.Gameplay.Interact.canceled += context => Interact(false);
+
                 m_controls.Gameplay.Shoot.performed += context => SetShooting(true);
                 m_controls.Gameplay.Shoot.canceled += context => SetShooting(false);
             }
@@ -69,6 +73,11 @@ namespace ubv
                 m_IsSprinting = isSprinting;
             }
 
+            private void Interact(bool interact)
+            {
+                m_interact = interact;
+            }
+
             private void SetShooting(bool isShooting)
             {
                 m_IsShooting = isShooting;
@@ -79,6 +88,7 @@ namespace ubv
             {
                 m_currentInputFrame.Movement.Value = m_move;
                 m_currentInputFrame.Sprinting.Value = m_IsSprinting;
+                m_currentInputFrame.Interact.Value = m_interact;
 
                 m_currentInputFrame.Shooting.Value = m_IsShooting;
 

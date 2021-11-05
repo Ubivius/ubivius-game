@@ -158,7 +158,7 @@ MonoBehaviour:
   m_defaultRTTEstimate: 0.08
   m_updaters:
   - {fileID: 554541790}
-  - {fileID: 969313555}
+  - {fileID: 352309656}
   m_packetLossChance: 0.01
 --- !u!4 &134844666
 Transform:
@@ -204,6 +204,7 @@ GameObject:
   - component: {fileID: 304581785}
   - component: {fileID: 304581782}
   - component: {fileID: 304581783}
+  - component: {fileID: 304581784}
   m_Layer: 0
   m_Name: Interactable
   m_TagString: Untagged
@@ -296,6 +297,22 @@ TilemapRenderer:
   m_Mode: 0
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
+--- !u!19719996 &304581784
+TilemapCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 304581781}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_MaximumTileChangeCount: 1000
+  m_ExtrusionFactor: 0.00001
 --- !u!4 &304581785
 Transform:
   m_ObjectHideFlags: 0
@@ -309,6 +326,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 624650639}
   m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &352309655
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 352309657}
+  - component: {fileID: 352309656}
+  m_Layer: 0
+  m_Name: DoorUpdater
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &352309656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 352309655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94c80349b475de54d8f6fdcb816eae02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_tileDoor: {fileID: 1549189266}
+  m_world: {fileID: 624650640}
+--- !u!4 &352309657
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 352309655}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 482350417}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &376912848
 GameObject:
@@ -384,6 +446,7 @@ Transform:
   m_Children:
   - {fileID: 969313554}
   - {fileID: 554541789}
+  - {fileID: 352309657}
   m_Father: {fileID: 134844666}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -641,6 +704,15 @@ MonoBehaviour:
     type: 2}
   m_defaultPlayerSpawnTile: {fileID: 11400000, guid: d7869141ffc6bc243a3d1b336d7727c6,
     type: 2}
+  FinalDoor: []
+  DoorNorth: []
+  DoorEast: []
+  DoorSouth: []
+  DoorWest: []
+  DoorSection0NorthEast: []
+  DoorSection0SouthEast: []
+  DoorSection0SouthWest: []
+  DoorSection0NorthWest: []
 --- !u!1001 &805576473
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -652,16 +724,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123813941880248, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_Padding.m_Top
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123813941880248, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_Padding.m_Bottom
-      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1524123814079555450, guid: bcad3073013bf7e40b03e1cb10780a39,
         type: 3}
@@ -772,51 +834,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_ErrorColor.a
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_ErrorColor.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_ErrorColor.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_ErrorColor.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_defaultColor.b
-      value: 0.43867922
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_defaultColor.g
-      value: 0.78305614
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814079555453, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_defaultColor.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814586921725, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1524123814586921725, guid: bcad3073013bf7e40b03e1cb10780a39,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: -17
       objectReference: {fileID: 0}
     - target: {fileID: 1524123815419339147, guid: bcad3073013bf7e40b03e1cb10780a39,
         type: 3}
@@ -1328,6 +1345,7 @@ GameObject:
   - component: {fileID: 1549189263}
   - component: {fileID: 1549189266}
   - component: {fileID: 1549189264}
+  - component: {fileID: 1549189265}
   m_Layer: 0
   m_Name: Doors
   m_TagString: Untagged
@@ -1396,6 +1414,22 @@ TilemapRenderer:
   m_Mode: 0
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
+--- !u!19719996 &1549189265
+TilemapCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1549189262}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_MaximumTileChangeCount: 1000
+  m_ExtrusionFactor: 0.00001
 --- !u!1839735485 &1549189266
 Tilemap:
   m_ObjectHideFlags: 0

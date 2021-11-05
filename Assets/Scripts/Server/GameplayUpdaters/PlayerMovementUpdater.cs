@@ -77,5 +77,11 @@ namespace ubv.server.logic
         {
             return m_playersGameObjects;
         }
+
+        public void SetPlayerPosition(PlayerState player, Vector2Int pos)
+        {
+            m_bodies[player.GUID.Value].position = pos;
+            player.Position.Value = m_bodies[player.GUID.Value].position;
+        }
     }
 }
