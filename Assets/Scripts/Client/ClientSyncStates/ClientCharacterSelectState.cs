@@ -32,7 +32,7 @@ namespace ubv.client.logic
         {
             m_cachedCharacters = null;
             m_joiningGame = false;
-            CharacterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedFromService));
+            CharacterService.Request(new GetCharactersFromUserRequest(CurrentUser.StringID, OnCharactersFetchedFromService));
         }
         
         private void OnCharactersFetchedFromService(CharacterData[] characters)
@@ -77,12 +77,12 @@ namespace ubv.client.logic
         public void AddCharacter(string characterName)
         {
             m_addCharacterUI.SetError(null);
-            CharacterService.Request(new PostCharacterRequest(UserInfo.ID, characterName, OnCharacterAdd));
+            CharacterService.Request(new PostCharacterRequest(CurrentUser.StringID, characterName, OnCharacterAdd));
         }
 
         private void OnCharacterAdd()
         {
-            CharacterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedAfterCharacterAdd));
+            CharacterService.Request(new GetCharactersFromUserRequest(CurrentUser.StringID, OnCharactersFetchedAfterCharacterAdd));
         }
 
         private void OnCharactersFetchedAfterCharacterAdd(CharacterData[] characters)
@@ -100,7 +100,7 @@ namespace ubv.client.logic
 
         private void OnCharacterDelete()
         {
-            CharacterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedAfterDelete));
+            CharacterService.Request(new GetCharactersFromUserRequest(CurrentUser.StringID, OnCharactersFetchedAfterDelete));
         }
 
         private void OnCharactersFetchedAfterDelete(CharacterData[] characters)

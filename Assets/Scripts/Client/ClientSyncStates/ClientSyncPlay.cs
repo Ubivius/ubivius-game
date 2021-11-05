@@ -16,7 +16,7 @@ namespace ubv.client.logic
     /// <summary>
     /// Represents the state of the server during the game
     /// </summary>
-    public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
+    public class ClientSyncPlay : ClientSyncState
     {
         private enum SubState
         {
@@ -59,7 +59,7 @@ namespace ubv.client.logic
 
         private SubState m_currentSubState;
         
-        private bool ConnectedToServer { get { return m_TCPClient.IsConnected(); } }
+        private bool ConnectedToServer { get { return m_server.IsConnected(); } }
         
         public UnityAction OnInitializationDone;
 
@@ -93,9 +93,7 @@ namespace ubv.client.logic
         }
 
         private void Init(ServerInitMessage serverInit)
-        {
-            data.ClientCacheData.SaveCache(true);
-            
+        {   
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
@@ -111,16 +109,13 @@ namespace ubv.client.logic
 
             foreach (ClientStateUpdater updater in m_updaters)
             {
-                updater.Init(m_clientStateBuffer[0], PlayerID.Value);
+                updater.Init(m_clientStateBuffer[0], CurrentUser.ID);
             }
-
-            m_UDPClient.Subscribe(this);
-            m_TCPClient.Subscribe(this);
-
+            
             UpdateClockOffset(LatencyFromRTT(m_meanRTT));
 
             ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage();
-            m_TCPClient.Send(worldLoaded.GetBytes());
+            m_server.TCPSend(worldLoaded.GetBytes());
 
             OnInitializationDone?.Invoke();
         }
@@ -285,7 +280,7 @@ namespace ubv.client.logic
         private void ManageRTTCheck(int tick)
         {
             m_packetSendTimeStamps[tick] = DateTime.UtcNow.Ticks;
-            m_UDPClient.Send(new RTTMessage(m_packetSendTimeStamps[tick], tick).GetBytes(), PlayerID.Value);
+            m_server.UDPSend(new RTTMessage(m_packetSendTimeStamps[tick], tick).GetBytes());
         }
 
         public void ReceivePacket(UDPToolkit.Packet packet)
@@ -347,21 +342,21 @@ namespace ubv.client.logic
 
             InputMessage inputMessage = new InputMessage();
 
-            inputMessage.PlayerID.Value = PlayerID.Value;
+            inputMessage.PlayerID.Value = CurrentUser.ID;
             inputMessage.InputFrames.Value = frames;
 
 #if NETWORK_SIMULATE
             if (UnityEngine.Random.Range(0f, 1f) > m_packetLossChance)
             {
                 //Debug.Log("CLIENT Sending ticks " + (m_lastReceivedRemoteTick  + 1) + " to " + m_localTick);
-                m_UDPClient.Send(inputMessage.GetBytes(), PlayerID.Value);
+                m_server.UDPSend(inputMessage.GetBytes());
             }
             else
             {
                 Debug.Log("SIMULATING PACKET LOSS");
             }
 #else
-            m_udpClient.Send(inputMessage.GetBytes(), PlayerID.Value);
+            m_server.UDPSend(inputMessage.GetBytes(), PlayerID.Value);
 #endif //NETWORK_SIMULATE       
                     
         }
@@ -439,7 +434,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Successful connection to server.");
 #endif // DEBUG_LOG
-            m_TCPClient.Send(new IdentificationMessage().GetBytes());
+            m_server.TCPSend(new IdentificationMessage().GetBytes());
         }
 
         public void ReceivePacket(TCPToolkit.Packet packet)

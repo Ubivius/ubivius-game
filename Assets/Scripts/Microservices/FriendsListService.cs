@@ -199,7 +199,7 @@ namespace ubv.microservices
                 {
                     m_users.Request(new GetUserInfoRequest(id, (UserInfo userInfo) =>
                     {
-                        Debug.Log("ID:" + userInfo.ID);
+                        Debug.Log("ID:" + userInfo.StringID);
                         Debug.Log(userInfo.UserName + "'s friends :");
                     }));
                     

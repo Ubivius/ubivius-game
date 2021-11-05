@@ -55,7 +55,7 @@ namespace ubv.client.logic
         public void SendReadyToServer()
         {
             ClientReadyMessage clientReadyMessage = new ClientReadyMessage();
-            m_TCPClient.Send(clientReadyMessage.GetBytes());
+            m_server.TCPSend(clientReadyMessage.GetBytes());
         }
         
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
@@ -151,8 +151,7 @@ namespace ubv.client.logic
             m_activeCharacterID = data.LoadingData.ActiveCharacterID;
             m_awaitedInitMessage = null;
             m_clientCharacters?.Clear();
-            m_TCPClient.Subscribe(this);
-            m_TCPClient.Send(new OnLobbyEnteredMessage(m_activeCharacterID).GetBytes());
+            m_server.TCPSend(new OnLobbyEnteredMessage(m_activeCharacterID).GetBytes());
         }
         
         public void OnDisconnect()
@@ -171,12 +170,10 @@ namespace ubv.client.logic
         
         protected override void StateUnload()
         {
-            m_TCPClient.Unsubscribe(this);
         }
 
         protected override void StatePause()
         {
-            m_TCPClient.Unsubscribe(this);
         }
 
         protected override void StateResume()

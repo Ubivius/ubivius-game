@@ -58,8 +58,8 @@ namespace ubv.client.logic
         {
             if (playerIDString != null)
             {
-                PlayerID = playerIDString.GetHashCode();
-                UserInfo = SocialServices.CurrentUser;
+                CurrentUser = SocialServices.CurrentUser;
+                m_server.SetPlayerID(CurrentUser.ID);
                 m_readyToGoToMenu = true;
             }
             else

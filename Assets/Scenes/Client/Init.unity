@@ -688,8 +688,7 @@ MonoBehaviour:
   m_mock: 0
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1877816073}
-  m_serviceEndpoint: http://achievements.dev.ubivius.tk/
-  m_users: {fileID: 1877816074}
+  m_serviceEndpoint: http://achievements.dev.ubivius.tk
 --- !u!1 &1787012365
 GameObject:
   m_ObjectHideFlags: 0
@@ -979,6 +978,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1118717364}
     m_Modifications:
+    - target: {fileID: 1124455532151190757, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1424532028110512240, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 1584834600499235231, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_TCPClient
@@ -1069,6 +1078,16 @@ PrefabInstance:
       propertyPath: m_serverAddress
       value: 192.168.0.141
       objectReference: {fileID: 0}
+    - target: {fileID: 1584834601242082870, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834601926501234, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2629458355001083077, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: User
@@ -1084,6 +1103,16 @@ PrefabInstance:
       propertyPath: SocialServices
       value: 
       objectReference: {fileID: 1877816071}
+    - target: {fileID: 2833739906713535996, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2971893872073089457, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 4058432572729070908, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_timerOffset
@@ -1093,6 +1122,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_conversationFetchInterval
       value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4120744887446643272, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -1114,6 +1148,11 @@ PrefabInstance:
       propertyPath: m_connectionKeepAliveIntervalMS
       value: 1000
       objectReference: {fileID: 0}
+    - target: {fileID: 5980181654224121731, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_mock
@@ -1133,6 +1172,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_serviceEndpoint
       value: http://auth.anon.dev.ubivius.tk
+      objectReference: {fileID: 0}
+    - target: {fileID: 6292887063064703510, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 6443474415815815136, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -1228,12 +1272,17 @@ PrefabInstance:
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverTCPAddress
-      value: 192.168.88.209
+      value: 127.0.0.1
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverUDPAddress
-      value: 192.168.88.209
+      value: 127.0.0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7676663511256152388, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -1259,6 +1308,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_serviceEndpoint
       value: http://user.dev.ubivius.tk
+      objectReference: {fileID: 0}
+    - target: {fileID: 8156371440444099849, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 8253229592228528839, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -1290,6 +1344,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: TCPClient
+      objectReference: {fileID: 0}
+    - target: {fileID: 9190401287086597186, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6337505888355199336, guid: c732e1b58c017874bbf5da45531902cf, type: 3}

@@ -1,18 +1,22 @@
 ﻿using System.Threading;
 using ubv.common.data;
+using ubv.microservices;
 using UnityEngine;
 using static ubv.microservices.DispatcherMicroservice;
 
 namespace ubv.client.logic
 {
-    public class ClientGameSearch : ClientSyncState, tcp.client.ITCPClientReceiver
+    /// <summary>
+    /// Represents the transition state between character select and
+    /// game. Goes to a game lobby OR rejoins a current game.
+    /// </summary>
+    public class ClientGameSearch : ClientSyncState
     {
         private enum SubState
         {
             SUBSTATE_WAITING_FOR_SERVER_INFO,
-            SUBSTATE_WAITING_FOR_TCP,
-            SUBSTATE_WAITING_FOR_UDP,
-            SUBSTATE_WAITING_FOR_REJOIN_CONFIRM,
+            SUBSTATE_WAITING_FOR_SERVER_CONNECTION,
+            SUBSTATE_WAITING_FOR_SERVER_STATUS,
             SUBSTATE_GOING_TO_LOBBY,
             SUBSTATE_GOING_TO_GAME,
             SUBSTATE_GOING_BACK,
@@ -21,44 +25,25 @@ namespace ubv.client.logic
 
         [SerializeField] private string m_clientGameScene;
         [SerializeField] private string m_clientLobbyScene;
-
-        [SerializeField] private float m_rejoinDemandTime = 10.0f;
-        private float m_rejoinDemandTimer;
-
-        [SerializeField] private float m_TCPTimeout = 10.0f;
-        private float m_TCPTimeoutTimer;
-
-        [SerializeField] private float m_UDPTimeout = 10.0f;
-        private float m_UDPTimeoutTimer;
-
+        
+        
         [SerializeField] private float m_dispatcherTimeout = 10.0f;
         private float m_dispatcherTimeoutTimer;
-
-        [SerializeField] private float m_UDPPingTimerIntervalMS = 500f;
-        private float m_UDPPingTimer;
-
-        private byte[] m_identificationMessageBytes;
         
         private SubState m_currentSubState;
         
         protected override void StateLoad()
         {
-            m_rejoinDemandTimer = 0;
-            m_TCPTimeoutTimer = 0;
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_INFO;
 
 #if DEBUG_LOG
             Debug.Log("Initializing client state [init]");
 #endif // DEBUG_LOG
-
-            m_identificationMessageBytes = new IdentificationMessage().GetBytes();
         }
 
         private void Start()
         {
-            m_TCPClient.SetPlayerID(PlayerID.Value);
-            m_TCPClient.Subscribe(this);
-            SendConnectionRequestToServer();
+            RequestServerInfo();
         }
 
         public override void StateUpdate()
@@ -72,41 +57,11 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                         Debug.Log("Server info cannot be found.");
 #endif // DEBUG_LOG
-                        data.ClientCacheData.SaveCache(false);
+                        data.ClientCacheData.SaveCache(string.Empty);
                         GoBackToPreviousState();
                     }
                     break;
-                case SubState.SUBSTATE_WAITING_FOR_TCP:
-                    m_TCPTimeoutTimer += Time.deltaTime;
-                    if(m_TCPTimeoutTimer > m_TCPTimeout)
-                    {
-#if DEBUG_LOG
-                        Debug.Log("Cannot connect to TCP Server");
-#endif // DEBUG_LOG
-                        data.ClientCacheData.SaveCache(false);
-                        GoBackToPreviousState();
-                    }
-                    break;
-                case SubState.SUBSTATE_WAITING_FOR_UDP:
-                    if (m_TCPClient.IsConnected())
-                    {
-                        m_UDPPingTimer += Time.deltaTime;
-                        if (m_UDPPingTimer > m_UDPPingTimerIntervalMS / 1000f)
-                        {
-                            m_UDPPingTimer = 0;
-                            SendUDPIdentificationPing();
-                        }
-                    }
-
-                    m_UDPTimeoutTimer += Time.deltaTime;
-                    if (m_UDPTimeoutTimer > m_UDPTimeout)
-                    {
-#if DEBUG_LOG
-                        Debug.Log("Cannot connect to UDP Server");
-#endif // DEBUG_LOG
-                        data.ClientCacheData.SaveCache(false);
-                        GoBackToPreviousState();
-                    }
+                case SubState.SUBSTATE_WAITING_FOR_SERVER_CONNECTION:
                     break;
                 case SubState.SUBSTATE_GOING_TO_LOBBY:
                     GoToLobby();
@@ -117,56 +72,40 @@ namespace ubv.client.logic
                 case SubState.SUBSTATE_GOING_BACK:
                     GoBackToPreviousState();
                     break;
-                case SubState.SUBSTATE_WAITING_FOR_REJOIN_CONFIRM:
-                    m_rejoinDemandTimer += Time.deltaTime;
-                    if(m_rejoinDemandTimer >= m_rejoinDemandTime)
-                    {
-                        // show a message meaning the game hasn't been found
-#if DEBUG_LOG
-                        Debug.Log("Old server game cannot be found.");
-#endif // DEBUG_LOG
-                        data.ClientCacheData.SaveCache(false);
-                        GoBackToPreviousState();
-                    }
+                case SubState.SUBSTATE_WAITING_FOR_SERVER_STATUS:
                     break;
                 default:
                     break;
             }
         }
 
-        public void SendConnectionRequestToServer()
+        public void RequestServerInfo()
         {
 #if DEBUG_LOG
-            Debug.Log("Sending connection request to dispatcher...");
+            Debug.Log("Sending server info request to dispatcher...");
 #endif // DEBUG_LOG
 
-            DispatcherService.RequestServerInfo(PlayerID.Value, OnServerInfoReceived);
-        }
-
-        private void OnServerInfoReceived(ServerInfo? info)
-        {
-            data.LoadingData.ServerInfo = info;
-            EstablishConnectionToServer();
-        }
-
-        private void EstablishConnectionToServer()
-        {
-            if (!m_TCPClient.IsConnected())
+            if (!data.LoadingData.GameID.Equals(string.Empty))
             {
-#if DEBUG_LOG
-                Debug.Log("Trying to establish TCP connection to game server...");
-#endif // DEBUG_LOG
-
-                m_currentSubState = SubState.SUBSTATE_WAITING_FOR_TCP;
-                m_TCPClient.Connect(data.LoadingData.ServerInfo.Value.server_tcp_ip, data.LoadingData.ServerInfo.Value.tcp_port);
+                DispatcherService.RequestServerInfo(data.LoadingData.GameID, OnServerInfoReceived);
             }
-#if DEBUG_LOG
             else
             {
-                m_currentSubState = SubState.SUBSTATE_WAITING_FOR_UDP;
-                Debug.Log("Already connected to game server via TCP.");
+                DispatcherService.RequestServerInfo(data.LoadingData.GameID, OnServerInfoReceived);
             }
-#endif // DEBUG_LOG
+        }
+
+        private void OnServerInfoReceived(ServerInfo info)
+        {
+            data.LoadingData.GameID = info.GameID;
+            EstablishConnectionToServer(info);
+        }
+
+        private void EstablishConnectionToServer(ServerInfo info)
+        {
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_CONNECTION;
+            m_server.OnSuccessfulConnect += OnSuccessfulConnect;
+            m_server.Connect(info);
         }
 
         private void GoToLobby()
@@ -183,67 +122,33 @@ namespace ubv.client.logic
 
         private void GoBackToPreviousState()
         {
-            m_TCPClient.Disconnect();
             m_currentSubState = SubState.SUBSTATE_TRANSITION;
             ClientStateManager.Instance.PopState();
         }
 
-        public void OnDisconnect()
+        private void OnSuccessfulConnect()
+        {
+            m_server.OnSuccessfulConnect -= OnSuccessfulConnect;
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_STATUS;
+        }
+
+        private void OnFailureToConnect()
+        {
+            data.ClientCacheData.SaveCache(string.Empty);
+            m_currentSubState = SubState.SUBSTATE_GOING_BACK;
+        }
+
+        private void OnDisconnect()
         {
 #if DEBUG_LOG
             Debug.Log("Disconnected from server");
 #endif // DEBUG_LOG
             m_currentSubState = SubState.SUBSTATE_GOING_BACK;
         }
-
-        public void OnSuccessfulTCPConnect()
-        {
-#if DEBUG_LOG
-            Debug.Log("Successful TCP connection to server.");
-#endif // DEBUG_LOG
-        }
-
-        private void SendUDPIdentificationPing()
-        {
-            m_UDPClient.Send(m_identificationMessageBytes, PlayerID.Value);
-        }
-
+        
         public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
-            if (m_currentSubState == SubState.SUBSTATE_WAITING_FOR_TCP)
-            {
-                ServerSuccessfulTCPConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulTCPConnectMessage>(packet.Data.ArraySegment());
-                if (serverSuccessPing != null)
-                {
-#if DEBUG_LOG
-                    Debug.Log("Received TCP connection confirmation (via TCP).");
-#endif // DEBUG_LOG
-                    m_currentSubState = SubState.SUBSTATE_WAITING_FOR_UDP;
-                    m_UDPClient.SetTargetServer(data.LoadingData.ServerInfo.Value.server_udp_ip, data.LoadingData.ServerInfo.Value.udp_port);
-                }
-            }
-            else if (m_currentSubState == SubState.SUBSTATE_WAITING_FOR_UDP)
-            {
-                ServerSuccessfulUDPConnectMessage serverSuccessPing = common.serialization.IConvertible.CreateFromBytes<ServerSuccessfulUDPConnectMessage>(packet.Data.ArraySegment());
-                if (serverSuccessPing != null)
-                {
-#if DEBUG_LOG
-                    Debug.Log("Received UDP connection confirmation (via TCP).");
-#endif // DEBUG_LOG
-
-                    if (data.LoadingData.IsTryingToRejoinGame)
-                    {
-                        m_TCPClient.Send(new ServerRejoinGameDemand().GetBytes());
-                        m_currentSubState = SubState.SUBSTATE_WAITING_FOR_REJOIN_CONFIRM;
-                        m_rejoinDemandTimer = 0;
-                    }
-                    else
-                    {
-                        m_currentSubState = SubState.SUBSTATE_GOING_TO_LOBBY;
-                    }
-                }
-            }
-            else if(m_currentSubState == SubState.SUBSTATE_WAITING_FOR_REJOIN_CONFIRM)
+            if(m_currentSubState == SubState.SUBSTATE_WAITING_FOR_SERVER_STATUS)
             {
                 Thread deserializeWorldThread = new Thread(() =>
                 {
@@ -272,18 +177,15 @@ namespace ubv.client.logic
 
         protected override void StateUnload()
         {
-            m_TCPClient.Unsubscribe(this);
-            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_TCP;
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_INFO;
         }
 
         protected override void StatePause()
         {
-            m_TCPClient.Unsubscribe(this);
         }
 
         protected override void StateResume()
         {
-            m_TCPClient.Subscribe(this);
         }
     }
 }

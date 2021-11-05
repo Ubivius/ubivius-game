@@ -44,27 +44,27 @@ namespace ubv.microservices
                 m_users.Request(new GetUserInfoRequest(userID, (UserInfo info) =>
                 {
                     CurrentUser = info;
-                    m_friendsList.DefaultUser = CurrentUser.ID;
+                    m_friendsList.DefaultUser = CurrentUser.StringID;
                     m_textChat.IsFetcherActive = true;
                     m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
                     m_textChat.OnNewMessageInConversation += (string conversationID, MessageInfo msg) => {
-                        if (!msg.UserID.Equals(CurrentUser.ID))
+                        if (!msg.UserID.Equals(CurrentUser.StringID))
                         {
-                            OnNewMessage(msg.UserID, CurrentUser.ID, msg);
+                            OnNewMessage(msg.UserID, CurrentUser.StringID, msg);
                         }
                         else
                         {
                             if (m_cachedConversationUsers.ContainsKey(conversationID))
                             {
-                                OnNewMessage(CurrentUser.ID, m_cachedConversationUsers[conversationID], msg);
+                                OnNewMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
                             }
                             else
                             {
                                 GetUserIDFromConversation(conversationID, (string friendID) => 
                                 {
                                     m_cachedConversationUsers[conversationID] = friendID;
-                                    OnNewMessage(CurrentUser.ID, m_cachedConversationUsers[conversationID], msg);
+                                    OnNewMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
                                 });
                             }
                         }
@@ -78,14 +78,14 @@ namespace ubv.microservices
 
         private void FetchAllPrivateConversations()
         {
-            m_friendsList.GetAllFriends(CurrentUser.ID, (HashSet<RelationInfo> friends) => {
+            m_friendsList.GetAllFriends(CurrentUser.StringID, (HashSet<RelationInfo> friends) => {
 
                 foreach (RelationInfo info in friends)
                 {
                     m_cachedConversationUsers[info.ConversationID] = info.FriendUserID;
                     m_cachedUserConversations[info.FriendUserID] = info.ConversationID;
 
-                    m_friendsList.GetConversationIDWith(CurrentUser.ID, info.FriendUserID, (string conversation) => {
+                    m_friendsList.GetConversationIDWith(CurrentUser.StringID, info.FriendUserID, (string conversation) => {
                         m_textChat.AddConversationToCache(conversation);
                     });
                 }
@@ -115,7 +115,7 @@ namespace ubv.microservices
             }
 
             int allFriends = 0;
-            m_friendsList.GetAllFriendsIDs(CurrentUser.ID, (HashSet<string> friendsIDs) => {
+            m_friendsList.GetAllFriendsIDs(CurrentUser.StringID, (HashSet<string> friendsIDs) => {
                 
                 foreach (string id in friendsIDs)
                 {
@@ -158,12 +158,12 @@ namespace ubv.microservices
 
         public void SendMessageToConversation(string conversationID, string message, UnityAction<bool, string> OnResult = default)
         {
-            m_textChat.SendMessageToConversation(CurrentUser.ID, conversationID, message, OnResult);
+            m_textChat.SendMessageToConversation(CurrentUser.StringID, conversationID, message, OnResult);
         }
 
         public void SendMessageToUser(string otherUserID, string message, UnityAction<bool, string> OnResult = default)
         {
-            if (otherUserID.Equals(CurrentUser.ID))
+            if (otherUserID.Equals(CurrentUser.StringID))
             {
                 OnResult?.Invoke(false, "Cannot send a message to yourself");
                 return;
@@ -171,7 +171,7 @@ namespace ubv.microservices
             
             GetConversationIDWith(otherUserID, (convID) =>
             {
-                m_textChat.SendMessageToConversation(CurrentUser.ID, m_cachedUserConversations[otherUserID], message, OnResult);
+                m_textChat.SendMessageToConversation(CurrentUser.StringID, m_cachedUserConversations[otherUserID], message, OnResult);
             });
         }
 
@@ -184,7 +184,7 @@ namespace ubv.microservices
                 return;
             }
 
-            m_friendsList.GetConversationIDWith(CurrentUser.ID, otherUserID, (string conversationID) => {
+            m_friendsList.GetConversationIDWith(CurrentUser.StringID, otherUserID, (string conversationID) => {
                 m_cachedUserConversations.Add(otherUserID, conversationID);
                 m_cachedConversationUsers.Add(conversationID, otherUserID);
                 OnGetConversation(conversationID);
@@ -199,7 +199,7 @@ namespace ubv.microservices
                 return;
             }
             
-            m_friendsList.GetAllFriends(CurrentUser.ID, (HashSet<RelationInfo> friends) => {
+            m_friendsList.GetAllFriends(CurrentUser.StringID, (HashSet<RelationInfo> friends) => {
 
                 foreach (RelationInfo info in friends)
                 {

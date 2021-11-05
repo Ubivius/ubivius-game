@@ -101,7 +101,7 @@ namespace ubv.ui.client
                 foreach (CharacterData character in m_characters)
                 {
                     int playerIntID = character.PlayerID.GetHashCode();
-                    if (playerIntID == m_activeUser.ID.GetHashCode())
+                    if (playerIntID == m_activeUser.StringID.GetHashCode())
                     {
                         m_activeUserCharacter = character;
                     }
@@ -141,7 +141,7 @@ namespace ubv.ui.client
             lock (m_userLock)
             {
                 Debug.Log("Got user info in UI from " + info.UserName);
-                m_users[info.ID.GetHashCode()] = info;
+                m_users[info.StringID.GetHashCode()] = info;
             }
         }
 

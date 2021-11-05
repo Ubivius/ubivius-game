@@ -16,3 +16,7 @@ MonoBehaviour:
   UserName: murphy
   CharacterID: murphy-character-id
   CharacterName: mock-simpson
+  ServerTCPAddress: 127.0.0.1
+  ServerUDPAddress: 127.0.0.1
+  ServerTCPPort: 9150
+  ServerUDPPort: 9151
