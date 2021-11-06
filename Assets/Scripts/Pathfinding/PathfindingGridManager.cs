@@ -25,7 +25,7 @@ namespace ubv.server.logic
 
         public UnityAction OnPathFindingManagerGenerated;
 
-        private void Start()
+        private void OnEnable()
         {
             Debug.Log("Manager Started");
             m_worldGenerator.OnWorldGenerated += OnWorldGenerated;            

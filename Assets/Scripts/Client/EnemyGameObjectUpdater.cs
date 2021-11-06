@@ -18,7 +18,6 @@ namespace ubv.client.logic
         [SerializeField] private float m_lerpTime = 0.2f;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private EnemySettings m_enemySettings;
-        [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
 
         private float m_timeSinceLastGoal;
 
@@ -97,7 +96,7 @@ namespace ubv.client.logic
                 {
                     GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.SimpleEnemy, new Vector3(0, 0, 0), Quaternion.identity);
                     EnemyPathfindingMovement[enemy.GUID.Value] = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
-                    EnemyPathfindingMovement[enemy.GUID.Value].SetManager(m_pathfindingGridManager);
+                    //EnemyPathfindingMovement[enemy.GUID.Value].SetManager(m_pathfindingGridManager);
 
                     Bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
                     Bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();

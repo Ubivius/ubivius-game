@@ -158,6 +158,7 @@ MonoBehaviour:
   m_updaters:
   - {fileID: 554541790}
   - {fileID: 352309656}
+  - {fileID: 748845329}
   m_packetLossChance: 0.01
 --- !u!4 &134844666
 Transform:
@@ -388,6 +389,7 @@ Transform:
   m_Children:
   - {fileID: 554541789}
   - {fileID: 352309657}
+  - {fileID: 748845328}
   m_Father: {fileID: 134844666}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -654,6 +656,52 @@ MonoBehaviour:
   DoorSection0SouthEast: []
   DoorSection0SouthWest: []
   DoorSection0NorthWest: []
+--- !u!1 &748845327
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 748845328}
+  - component: {fileID: 748845329}
+  m_Layer: 0
+  m_Name: EnemyGameObjects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &748845328
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 748845327}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 482350417}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &748845329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 748845327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae0b2c2a6df97a7488b7af77c0811dd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_lerpTime: 0.2
+  m_correctionTolerance: 0.01
+  m_enemySettings: {fileID: 11400000, guid: f879c9996d7fac746a7b9ecc8da43704, type: 2}
 --- !u!1001 &805576473
 PrefabInstance:
   m_ObjectHideFlags: 0

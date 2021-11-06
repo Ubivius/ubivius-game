@@ -689,7 +689,6 @@ MonoBehaviour:
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1877816073}
   m_serviceEndpoint: http://achievements.dev.ubivius.tk/
-  m_users: {fileID: 1877816074}
 --- !u!1 &1787012365
 GameObject:
   m_ObjectHideFlags: 0
@@ -1228,12 +1227,12 @@ PrefabInstance:
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverTCPAddress
-      value: 192.168.88.209
+      value: 127.0.0.1
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverUDPAddress
-      value: 192.168.88.209
+      value: 127.0.0.1
       objectReference: {fileID: 0}
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
