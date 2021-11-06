@@ -640,7 +640,7 @@ MonoBehaviour:
   m_playerSpawn: {fileID: 1320442776}
   m_defaultFloorTile: {fileID: 11400000, guid: 2dcd60d668d7a654680b9f70a5d1e0e2, type: 2}
   m_defaultDoorTile: {fileID: 11400000, guid: 80d28b64781f8174bb0a70be99f2800a, type: 2}
-  m_defaultInteractableTile: {fileID: 11400000, guid: 1aed2b5887a4f1c44ac6371433201ec4,
+  m_defaultInteractableTile: {fileID: 11400000, guid: 63f95df79b16f3d44a73a1d1bb9d3046,
     type: 2}
   m_defaultPlayerSpawnTile: {fileID: 11400000, guid: 7990e8cbb69c7744ebd140e6186861bd,
     type: 2}
