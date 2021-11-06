@@ -2064,6 +2064,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_clientGameSearch: ClientGameSearch
   m_clientCharacterSelect: ClientCharacterSelect
+  m_eventSystem: {fileID: 686921232}
 --- !u!4 &2070749476
 Transform:
   m_ObjectHideFlags: 0

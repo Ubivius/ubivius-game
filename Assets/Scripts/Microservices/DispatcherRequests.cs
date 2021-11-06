@@ -26,12 +26,12 @@ namespace ubv.microservices
     public class GetServerInfoRequest : GetMicroserviceRequest
     {
         public readonly string GameID;
-        public readonly UnityAction<ServerInfo> Callback;
+        public readonly UnityAction<ServerInfo> SuccessCallback;
 
-        public GetServerInfoRequest(string gameID, UnityAction<ServerInfo> callback)
+        public GetServerInfoRequest(string gameID, UnityAction<ServerInfo> callback, UnityAction<string> failCallback) : base(failCallback)
         {
             GameID = gameID;
-            Callback = callback;
+            SuccessCallback = callback;
         }
 
         public override string URL()
@@ -42,11 +42,11 @@ namespace ubv.microservices
 
     public class PostServerRequest : PostMicroserviceRequest
     {
-        public readonly UnityAction<ServerInfo> Callback;
+        public readonly UnityAction<ServerInfo> Success;
 
-        public PostServerRequest(UnityAction<ServerInfo> callback)
+        public PostServerRequest(UnityAction<ServerInfo> success, UnityAction<string> fail) : base(fail)
         {
-            Callback = callback;
+            Success = success;
         }
 
         public override string JSONString()

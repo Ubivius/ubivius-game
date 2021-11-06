@@ -53,13 +53,15 @@ namespace ubv.client
         public UnityAction<UDPToolkit.Packet> OnUDPReceive;
         public UnityAction<TCPToolkit.Packet> OnTCPReceive;
 
-        private void Awake()
+        private void Start()
         {
             m_currentSubState = SubState.SUBSTATE_IDLE;
             m_cachedServerInfo = null;
             m_identificationMessageBytes = new IdentificationMessage().GetBytes();
             m_TCPClient.Subscribe(this);
             m_UDPClient.Subscribe(this);
+            m_TCPTimeoutTimer = 0;
+            m_UDPTimeoutTimer = 0;
         }
 
         // Update is called once per frame
@@ -76,8 +78,9 @@ namespace ubv.client
 #if DEBUG_LOG
                         Debug.Log("Cannot connect to TCP Server");
 #endif // DEBUG_LOG
-                        data.ClientCacheData.SaveCache(string.Empty);
-                        OnFailureToConnect();
+                        OnFailureToConnect?.Invoke();
+                        m_currentSubState = SubState.SUBSTATE_IDLE;
+                        m_TCPTimeoutTimer = 0;
                     }
                     break;
                 case SubState.SUBSTATE_WAITING_FOR_UDP:
@@ -97,8 +100,9 @@ namespace ubv.client
 #if DEBUG_LOG
                         Debug.Log("Cannot connect to UDP Server");
 #endif // DEBUG_LOG
-                        data.ClientCacheData.SaveCache(string.Empty);
-                        OnFailureToConnect();
+                        OnFailureToConnect?.Invoke();
+                        m_currentSubState = SubState.SUBSTATE_IDLE;
+                        m_UDPTimeoutTimer = 0;
                     }
                     break;
             }
@@ -159,7 +163,7 @@ namespace ubv.client
             }
             else if (m_currentSubState == SubState.SUBSTATE_CONNECTED)
             {
-                OnTCPReceive(packet);
+                OnTCPReceive?.Invoke(packet);
             }
         }
 
@@ -167,7 +171,7 @@ namespace ubv.client
         {
             if (m_currentSubState == SubState.SUBSTATE_CONNECTED)
             {
-                OnUDPReceive(packet);
+                OnUDPReceive?.Invoke(packet);
             }
         }
         

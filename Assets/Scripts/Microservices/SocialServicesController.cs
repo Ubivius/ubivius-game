@@ -37,7 +37,7 @@ namespace ubv.microservices
             CurrentUser = null;
         }
 
-        public void Authenticate(string user, string password)
+        public void Authenticate(string user, string password, UnityAction<string> OnFail = default)
         {
             m_auth.Request(new PostAuthenticationRequest(user, password, (string userID) =>
             {
@@ -73,7 +73,8 @@ namespace ubv.microservices
 
                     FetchAllPrivateConversations();
                 }));
-            }));
+            },
+            OnFail));
         }
 
         private void FetchAllPrivateConversations()
@@ -146,32 +147,32 @@ namespace ubv.microservices
             });
         }
 
-        public void SendMessageToCurrentGameChat(string message, UnityAction<bool, string> OnResult = default)
+        public void SendMessageToCurrentGameChat(string message, UnityAction success = default, UnityAction<string> fail = default)
         {
             if (true) // if (on a pas encore de general chat) (va être avec dispatcher)
             {
-                OnResult?.Invoke(false, "Cannot send to game chat - you are not in a game yet");
+                fail?.Invoke("Cannot send to game chat - you are not in a game yet");
                 return;
             }
-            SendMessageToConversation("placeholder-general-chat", message, OnResult);
+            SendMessageToConversation("placeholder-general-chat", message, success, fail);
         }
 
-        public void SendMessageToConversation(string conversationID, string message, UnityAction<bool, string> OnResult = default)
+        public void SendMessageToConversation(string conversationID, string message, UnityAction successCallback = default, UnityAction<string> failCallback = default)
         {
-            m_textChat.SendMessageToConversation(CurrentUser.StringID, conversationID, message, OnResult);
+            m_textChat.SendMessageToConversation(CurrentUser.StringID, conversationID, message, successCallback, failCallback);
         }
 
-        public void SendMessageToUser(string otherUserID, string message, UnityAction<bool, string> OnResult = default)
+        public void SendMessageToUser(string otherUserID, string message, UnityAction success = default, UnityAction<string> fail = default)
         {
             if (otherUserID.Equals(CurrentUser.StringID))
             {
-                OnResult?.Invoke(false, "Cannot send a message to yourself");
+                fail?.Invoke("Cannot send a message to yourself");
                 return;
             }
             
             GetConversationIDWith(otherUserID, (convID) =>
             {
-                m_textChat.SendMessageToConversation(CurrentUser.StringID, m_cachedUserConversations[otherUserID], message, OnResult);
+                m_textChat.SendMessageToConversation(CurrentUser.StringID, m_cachedUserConversations[otherUserID], message, success, fail);
             });
         }
 

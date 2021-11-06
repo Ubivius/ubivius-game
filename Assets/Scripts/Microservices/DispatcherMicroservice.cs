@@ -11,14 +11,14 @@ namespace ubv.microservices
     public class DispatcherMicroservice : Microservice<GetServerInfoRequest,
         PostServerRequest, PutMicroserviceRequest, DeleteMicroserviceRequest>
     {
-        public void RequestServerInfo(string gameID, UnityAction<ServerInfo> onServerInfo)
+        public void RequestServerInfo(string gameID, UnityAction<ServerInfo> onServerInfo, UnityAction<string> onFail)
         {
-            this.Request(new GetServerInfoRequest(gameID, onServerInfo));
+            this.Request(new GetServerInfoRequest(gameID, onServerInfo, onFail));
         }
 
-        public void RequestNewServer(UnityAction<ServerInfo> onServerInfo)
+        public void RequestNewServer(UnityAction<ServerInfo> onServerInfo, UnityAction<string> onFail)
         {
-            this.Request(new PostServerRequest(onServerInfo));
+            this.Request(new PostServerRequest(onServerInfo, onFail));
         }
 
         [System.Serializable]
@@ -35,7 +35,7 @@ namespace ubv.microservices
             JSONServerInfo jsonInfo = JsonUtility.FromJson<JSONServerInfo>(JSON);
             ServerInfo serverInfo = new ServerInfo(jsonInfo.game_id, jsonInfo.server_ip, jsonInfo.server_ip, jsonInfo.tcp_port, jsonInfo.udp_port);
 
-            originalRequest.Callback.Invoke(serverInfo);
+            originalRequest.SuccessCallback.Invoke(serverInfo);
         }
 
         protected override void OnPostResponse(string JSON, PostServerRequest originalRequest)
@@ -43,7 +43,7 @@ namespace ubv.microservices
             JSONServerInfo jsonInfo = JsonUtility.FromJson<JSONServerInfo>(JSON);
             ServerInfo serverInfo = new ServerInfo(jsonInfo.game_id, jsonInfo.server_ip, jsonInfo.server_ip, jsonInfo.tcp_port, jsonInfo.udp_port);
 
-            originalRequest.Callback?.Invoke(serverInfo);
+            originalRequest.Success?.Invoke(serverInfo);
         }
 
         protected override void MockGet(GetServerInfoRequest request)
@@ -56,11 +56,11 @@ namespace ubv.microservices
                     m_mockData.ServerTCPPort,
                     m_mockData.ServerUDPPort);
 
-                request.Callback?.Invoke(serverInfo);
+                request.SuccessCallback?.Invoke(serverInfo);
             }
             else
             {
-                request.Callback?.Invoke(null);
+                request.SuccessCallback?.Invoke(null);
             }
         }
 
@@ -73,7 +73,7 @@ namespace ubv.microservices
                 m_mockData.ServerTCPPort,
                 m_mockData.ServerUDPPort);
 
-            request.Callback?.Invoke(serverInfo);
+            request.Success?.Invoke(serverInfo);
         }
     }
 }

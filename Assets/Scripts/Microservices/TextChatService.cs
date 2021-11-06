@@ -141,17 +141,12 @@ namespace ubv.microservices
 
         protected override void OnPostResponse(string JSON, PostTextChatRequest originalRequest)
         {
-            originalRequest.Callback?.Invoke(true, string.Empty);
+            originalRequest.Callback?.Invoke();
         }
 
-        protected override void OnBadPostResponse(PostTextChatRequest originalRequest, string reason)
+        public void SendMessageToConversation(string currentUserID, string conversationID, string text, UnityAction successCallback = default, UnityAction<string> failCallback = default)
         {
-            originalRequest.Callback?.Invoke(false, reason);
-        }
-
-        public void SendMessageToConversation(string currentUserID, string conversationID, string text, UnityAction<bool, string> callback = default)
-        {
-            this.Request(new PostTextChatRequest(currentUserID, conversationID, text, callback));
+            this.Request(new PostTextChatRequest(currentUserID, conversationID, text, successCallback, failCallback));
         }
 
 #if UNITY_EDITOR
@@ -185,7 +180,11 @@ namespace ubv.microservices
                         }
                     }));
                 //}));
-            }));
+            },
+            (string err) => {
+                Debug.LogError(err);
+            }
+            ));
 
         }
 

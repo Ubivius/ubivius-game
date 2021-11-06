@@ -17,6 +17,7 @@ namespace ubv.client.logic
             SUBSTATE_WAITING_FOR_SERVER_INFO,
             SUBSTATE_WAITING_FOR_SERVER_CONNECTION,
             SUBSTATE_WAITING_FOR_SERVER_STATUS,
+            SUBSTATE_WAITING_FOR_REJOIN,
             SUBSTATE_GOING_TO_LOBBY,
             SUBSTATE_GOING_TO_GAME,
             SUBSTATE_GOING_BACK,
@@ -31,6 +32,7 @@ namespace ubv.client.logic
         private float m_dispatcherTimeoutTimer;
         
         private SubState m_currentSubState;
+        private bool m_subscribed;
         
         protected override void StateLoad()
         {
@@ -39,9 +41,35 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Initializing client state [init]");
 #endif // DEBUG_LOG
+            m_subscribed = false;
+            SubscribeToServer();
         }
 
-        private void Start()
+        private void SubscribeToServer()
+        {
+            if (!m_subscribed)
+            {
+                m_server.OnSuccessfulConnect += OnSuccessfulConnect;
+                m_server.OnServerDisconnect += OnDisconnect;
+                m_server.OnFailureToConnect += OnFailureToConnect;
+                m_server.OnTCPReceive += Receive;
+                m_subscribed = true;
+            }
+        }
+
+        private void UnsubscribeFromServer()
+        {
+            if (m_subscribed)
+            {
+                m_server.OnSuccessfulConnect -= OnSuccessfulConnect;
+                m_server.OnServerDisconnect -= OnDisconnect;
+                m_server.OnFailureToConnect -= OnFailureToConnect;
+                m_server.OnTCPReceive -= Receive;
+                m_subscribed = false;
+            }
+        }
+
+        public override void OnStart()
         {
             RequestServerInfo();
         }
@@ -62,6 +90,8 @@ namespace ubv.client.logic
                     }
                     break;
                 case SubState.SUBSTATE_WAITING_FOR_SERVER_CONNECTION:
+                    break;
+                case SubState.SUBSTATE_WAITING_FOR_REJOIN:
                     break;
                 case SubState.SUBSTATE_GOING_TO_LOBBY:
                     GoToLobby();
@@ -85,14 +115,23 @@ namespace ubv.client.logic
             Debug.Log("Sending server info request to dispatcher...");
 #endif // DEBUG_LOG
 
-            if (!data.LoadingData.GameID.Equals(string.Empty))
+            if (!string.IsNullOrEmpty(data.LoadingData.GameID))
             {
-                DispatcherService.RequestServerInfo(data.LoadingData.GameID, OnServerInfoReceived);
+                DispatcherService.RequestServerInfo(data.LoadingData.GameID, OnServerInfoReceived, OnDispatcherFail);
             }
             else
             {
-                DispatcherService.RequestServerInfo(data.LoadingData.GameID, OnServerInfoReceived);
+                DispatcherService.RequestNewServer(OnServerInfoReceived, OnDispatcherFail);
             }
+        }
+
+        private void OnDispatcherFail(string message)
+        {
+#if DEBUG_LOG
+            Debug.LogWarning("Could not get server info: " + message);
+#endif // DEBUG_LOG
+
+            OnFailureToConnect();
         }
 
         private void OnServerInfoReceived(ServerInfo info)
@@ -104,10 +143,85 @@ namespace ubv.client.logic
         private void EstablishConnectionToServer(ServerInfo info)
         {
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_CONNECTION;
-            m_server.OnSuccessfulConnect += OnSuccessfulConnect;
             m_server.Connect(info);
         }
+        
+        private void OnSuccessfulConnect()
+        {
+            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_STATUS;
+            m_server.TCPSend(new ServerStatusMessage(CurrentUser.ID).GetBytes());
+        }
 
+        private void OnFailureToConnect()
+        {
+            data.ClientCacheData.SaveCache(string.Empty);
+            m_currentSubState = SubState.SUBSTATE_GOING_BACK;
+        }
+
+        private void OnDisconnect()
+        {
+#if DEBUG_LOG
+            Debug.Log("Disconnected from server");
+#endif // DEBUG_LOG
+            m_currentSubState = SubState.SUBSTATE_GOING_BACK;
+        }
+        
+        private void Receive(tcp.TCPToolkit.Packet packet)
+        {
+            if(m_currentSubState == SubState.SUBSTATE_WAITING_FOR_SERVER_STATUS)
+            {
+                ServerStatusMessage status = common.serialization.IConvertible.CreateFromBytes<ServerStatusMessage>(packet.Data.ArraySegment());
+                if(status != null)
+                {
+                    if (!status.PlayerID.Value.Equals(CurrentUser.ID))
+                    {
+#if DEBUG_LOG
+                        Debug.LogError("Mismatch between server status message requests");
+#endif // DEBUG_LOG
+                        return;
+                    }
+
+                    if (status.IsInServer.Value && status.GameStatus.Value == (uint)ServerStatusMessage.ServerStatus.STATUS_GAME)
+                    {
+                        m_currentSubState = SubState.SUBSTATE_WAITING_FOR_REJOIN;
+                        m_server.TCPSend(new ServerRejoinGameDemand().GetBytes());
+                        return;
+                    }
+
+                    if (status.AcceptsNewPlayers.Value && status.GameStatus.Value == (uint)ServerStatusMessage.ServerStatus.STATUS_LOBBY)
+                    {
+                        m_currentSubState = SubState.SUBSTATE_GOING_TO_LOBBY;
+                        return;
+                    }
+
+#if DEBUG_LOG
+                    Debug.LogError("Could not join game server.");
+#endif // DEBUG_LOG
+
+                    OnFailureToConnect();
+                    return;
+                }
+            }
+            else if (m_currentSubState == SubState.SUBSTATE_WAITING_FOR_REJOIN)
+            {
+                Thread deserializeWorldThread = new Thread(() =>
+                {
+                    ServerInitMessage init = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data.ArraySegment());
+                    if (init != null)
+                    {
+#if DEBUG_LOG
+                        Debug.Log("Player is in server game. Going to game.");
+#endif
+
+                        data.LoadingData.ServerInit = init;
+                        m_currentSubState = SubState.SUBSTATE_GOING_TO_GAME;
+                        return;
+                    }
+                });
+                deserializeWorldThread.Start();
+            }
+        }
+        
         private void GoToLobby()
         {
             m_currentSubState = SubState.SUBSTATE_TRANSITION;
@@ -126,66 +240,20 @@ namespace ubv.client.logic
             ClientStateManager.Instance.PopState();
         }
 
-        private void OnSuccessfulConnect()
-        {
-            m_server.OnSuccessfulConnect -= OnSuccessfulConnect;
-            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_STATUS;
-        }
-
-        private void OnFailureToConnect()
-        {
-            data.ClientCacheData.SaveCache(string.Empty);
-            m_currentSubState = SubState.SUBSTATE_GOING_BACK;
-        }
-
-        private void OnDisconnect()
-        {
-#if DEBUG_LOG
-            Debug.Log("Disconnected from server");
-#endif // DEBUG_LOG
-            m_currentSubState = SubState.SUBSTATE_GOING_BACK;
-        }
-        
-        public void ReceivePacket(tcp.TCPToolkit.Packet packet)
-        {
-            if(m_currentSubState == SubState.SUBSTATE_WAITING_FOR_SERVER_STATUS)
-            {
-                Thread deserializeWorldThread = new Thread(() =>
-                {
-#if DEBUG_LOG
-                    System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-                    watch.Start();
-#endif // DEBUG_LOG
-                    ServerInitMessage init = common.serialization.IConvertible.CreateFromBytes<ServerInitMessage>(packet.Data.ArraySegment());
-#if DEBUG_LOG
-                    watch.Stop();
-#endif //DEBUG_LOG
-                    if (init != null)
-                    {
-#if DEBUG_LOG
-                        Debug.Log("Player is in server game. Going to game.");
-#endif
-
-                        data.LoadingData.ServerInit = init;
-                        m_currentSubState = SubState.SUBSTATE_GOING_TO_GAME;
-                        return;
-                    }
-                });
-                deserializeWorldThread.Start();
-            }
-        }
-
         protected override void StateUnload()
         {
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_INFO;
+            UnsubscribeFromServer();
         }
 
         protected override void StatePause()
         {
+            UnsubscribeFromServer();
         }
 
         protected override void StateResume()
         {
+            SubscribeToServer();
         }
     }
 }

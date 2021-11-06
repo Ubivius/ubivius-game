@@ -213,7 +213,11 @@ namespace ubv.microservices
                     }
                 }
                 ));
-            }));
+            }, 
+            (string err) => {
+                Debug.LogError(err);
+            }
+            ));
         }
 #endif // UNITY_EDITOR
     }

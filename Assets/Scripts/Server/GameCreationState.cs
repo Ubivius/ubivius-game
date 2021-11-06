@@ -24,7 +24,7 @@ namespace ubv.server.logic
         {
             SUBSTATE_WAITING_FOR_PLAYERS = 0,
             SUBSTATE_WAITING_FOR_WORLD_LOADED,
-            SUBSTATE_WAITING_FOR_PLAY,
+            SUBSTATE_GOING_TO_PLAY,
         }
 
         private SubState m_currentSubState;
@@ -109,7 +109,7 @@ namespace ubv.server.logic
                             m_serverConnection.TCPServer.Send(message.GetBytes(), id);
                         }
 
-                        m_currentSubState = SubState.SUBSTATE_WAITING_FOR_PLAY;
+                        m_currentSubState = SubState.SUBSTATE_GOING_TO_PLAY;
                         
                         m_gameplayState.Init(m_clientCharacters.Keys);
                         ChangeState(m_gameplayState);
@@ -139,6 +139,17 @@ namespace ubv.server.logic
 
         protected override void OnTCPReceiveFrom (TCPToolkit.Packet packet, int playerID)
         {
+            ServerStatusMessage status = Serializable.CreateFromBytes<ServerStatusMessage>(packet.Data.ArraySegment());
+            if (status != null)
+            {
+                status.PlayerID.Value = playerID;
+                status.IsInServer.Value = m_clientCharacters.ContainsKey(playerID);
+                status.GameStatus.Value = (uint)ServerStatusMessage.ServerStatus.STATUS_LOBBY;
+                status.AcceptsNewPlayers.Value = m_currentSubState == SubState.SUBSTATE_WAITING_FOR_PLAYERS;
+                m_serverConnection.TCPServer.Send(status.GetBytes(), playerID);
+                return;
+            }
+
             OnLobbyEnteredMessage lobbyEnter = Serializable.CreateFromBytes<OnLobbyEnteredMessage>(packet.Data.ArraySegment());
             if (lobbyEnter != null)
             {

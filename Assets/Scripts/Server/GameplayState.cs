@@ -179,6 +179,17 @@ namespace ubv.server.logic
 
         protected override void OnTCPReceiveFrom(TCPToolkit.Packet packet, int playerID)
         {
+            ServerStatusMessage status = Serializable.CreateFromBytes<ServerStatusMessage>(packet.Data.ArraySegment());
+            if (status != null)
+            {
+                status.PlayerID.Value = playerID;
+                status.IsInServer.Value = m_connectedClients.ContainsKey(playerID);
+                status.GameStatus.Value = (uint)ServerStatusMessage.ServerStatus.STATUS_LOBBY;
+                status.AcceptsNewPlayers.Value = false;
+                m_serverConnection.TCPServer.Send(status.GetBytes(), playerID);
+                return;
+            }
+
             ServerRejoinGameDemand confirmation = common.serialization.IConvertible.CreateFromBytes<ServerRejoinGameDemand>(packet.Data.ArraySegment());
             if (confirmation != null)
             {
