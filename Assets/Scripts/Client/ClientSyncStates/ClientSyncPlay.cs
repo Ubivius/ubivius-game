@@ -111,8 +111,6 @@ namespace ubv.client.logic
 
             foreach (ClientStateUpdater updater in m_updaters)
             {
-                Debug.Log(m_updaters.ToArray().Length);
-                Debug.Log("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                 updater.Init(m_clientStateBuffer[0], PlayerID.Value);
             }
 
