@@ -485,24 +485,6 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         }
     }
     public GameplayActions @Gameplay => new GameplayActions(this);
-    private int m_AllControlSchemesSchemeIndex = -1;
-    public InputControlScheme AllControlSchemesScheme
-    {
-        get
-        {
-            if (m_AllControlSchemesSchemeIndex == -1) m_AllControlSchemesSchemeIndex = asset.FindControlSchemeIndex("All Control Schemes");
-            return asset.controlSchemes[m_AllControlSchemesSchemeIndex];
-        }
-    }
-    private int m_AllschemeSchemeIndex = -1;
-    public InputControlScheme AllschemeScheme
-    {
-        get
-        {
-            if (m_AllschemeSchemeIndex == -1) m_AllschemeSchemeIndex = asset.FindControlSchemeIndex("All scheme");
-            return asset.controlSchemes[m_AllschemeSchemeIndex];
-        }
-    }
 
     // Menu
     private readonly InputActionMap m_Menu;
@@ -560,13 +542,22 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         }
     }
     public MenuActions @Menu => new MenuActions(this);
-    private int m_AllcontrolschemeSchemeIndex = -1;
-    public InputControlScheme AllcontrolschemeScheme
+    private int m_AllControlSchemesSchemeIndex = -1;
+    public InputControlScheme AllControlSchemesScheme
     {
         get
         {
-            if (m_AllcontrolschemeSchemeIndex == -1) m_AllcontrolschemeSchemeIndex = asset.FindControlSchemeIndex("All control scheme");
-            return asset.controlSchemes[m_AllcontrolschemeSchemeIndex];
+            if (m_AllControlSchemesSchemeIndex == -1) m_AllControlSchemesSchemeIndex = asset.FindControlSchemeIndex("All Control Schemes");
+            return asset.controlSchemes[m_AllControlSchemesSchemeIndex];
+        }
+    }
+    private int m_AllschemeSchemeIndex = -1;
+    public InputControlScheme AllschemeScheme
+    {
+        get
+        {
+            if (m_AllschemeSchemeIndex == -1) m_AllschemeSchemeIndex = asset.FindControlSchemeIndex("All scheme");
+            return asset.controlSchemes[m_AllschemeSchemeIndex];
         }
     }
     public interface IGameplayActions
