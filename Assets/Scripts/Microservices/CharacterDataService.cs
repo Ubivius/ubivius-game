@@ -4,6 +4,7 @@ using ubv.http.client;
 using System.Net.Http;
 using System.Net;
 using System.Collections.Generic;
+using UnityEngine.Events;
 
 namespace ubv.microservices
 {
@@ -30,7 +31,47 @@ namespace ubv.microservices
             public string user_id;
             public string name;
         }
-        
+
+
+        private Dictionary<string, CharacterData> m_cachedCharacters;
+        private Dictionary<string, List<CharacterData>> m_cachedUserCharacters;
+ 
+        private void Awake()
+        {
+            m_cachedCharacters = new Dictionary<string, CharacterData>();
+            m_cachedUserCharacters = new Dictionary<string, List<CharacterData>>();
+        }
+
+        public void GetCharacter(string characterID, UnityAction<CharacterData> OnGetCharacter)
+        {
+            if (m_cachedCharacters.ContainsKey(characterID))
+            {
+                OnGetCharacter?.Invoke(m_cachedCharacters[characterID]);
+                return;
+            }
+
+            this.Request(new GetSingleCharacterRequest(characterID, (CharacterData[] characters) =>
+            {
+                m_cachedCharacters.Add(characterID, characters[0]);
+                OnGetCharacter?.Invoke(m_cachedCharacters[characterID]);
+            }));
+        }
+
+        public void GetCharactersFromUser(string userID, UnityAction<List<CharacterData>> OnGetCharacters)
+        {
+            if (m_cachedUserCharacters.ContainsKey(userID))
+            {
+                OnGetCharacters?.Invoke(m_cachedUserCharacters[userID]);
+                return;
+            }
+
+            this.Request(new GetCharactersFromUserRequest(userID, (CharacterData[] characters) =>
+            {
+                m_cachedUserCharacters.Add(userID, new List<CharacterData>(characters));
+                OnGetCharacters?.Invoke(m_cachedUserCharacters[userID]);
+            }));
+        }
+
         protected override void OnGetResponse(string JSON, GetCharacterRequest originalRequest)
         {
             if (originalRequest is GetCharactersFromUserRequest)

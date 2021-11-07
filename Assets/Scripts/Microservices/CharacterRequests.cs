@@ -4,15 +4,14 @@ using UnityEngine.Events;
 
 namespace ubv.microservices
 {
-    public delegate void OnGetCharacters(CharacterDataService.CharacterData[] characters);
     public delegate void OnPostCharacter();
     public delegate void OnDeleteCharacter();
 
     public abstract class GetCharacterRequest : GetMicroserviceRequest
     {
-        public readonly OnGetCharacters Callback;
+        public readonly UnityAction<CharacterDataService.CharacterData[]> Callback;
 
-        public GetCharacterRequest(OnGetCharacters callback)
+        public GetCharacterRequest(UnityAction<CharacterDataService.CharacterData[]> callback)
         {
             Callback = callback;
         }
@@ -26,7 +25,7 @@ namespace ubv.microservices
     public class GetSingleCharacterRequest : GetCharacterRequest
     {
         private readonly string m_url;
-        public GetSingleCharacterRequest(string CharacterID, OnGetCharacters callback) : base(callback)
+        public GetSingleCharacterRequest(string CharacterID, UnityAction<CharacterDataService.CharacterData[]> callback) : base(callback)
         {
             this.m_url = CharacterID;
         }
@@ -41,7 +40,7 @@ namespace ubv.microservices
     {
         private readonly string m_url;
 
-        public GetCharactersFromUserRequest(string PlayerID, OnGetCharacters callback) : base(callback)
+        public GetCharactersFromUserRequest(string PlayerID, UnityAction<CharacterDataService.CharacterData[]> callback) : base(callback)
         {
             this.m_url = PlayerID;
         }

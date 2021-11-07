@@ -150,6 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd061c09ef56aae4aad8621ac5bd44f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_menuScene: ClientMenu
   m_physicsScene: ClientGame
   m_clockOffsetCorrectionIncrement: 0.05
   m_offsetErrorTolerance: 1

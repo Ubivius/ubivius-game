@@ -12,7 +12,7 @@ namespace ubv.ui.client
 {
     public class ClientCharacterSelectUI : TabBehaviour
     {
-        [SerializeField] private ubv.client.logic.ClientCharacterSelectState m_initState;
+        [SerializeField] private ubv.client.logic.ClientCharacterSelectState m_characterSelectState;
         [SerializeField] private Button m_searchButton;
         [SerializeField] private AddCharacterUI m_addCharacterForm;
         [SerializeField] private TextMeshProUGUI m_characterName;
@@ -36,8 +36,8 @@ namespace ubv.ui.client
 
             if (Time.frameCount % 69 == 0)
             {
-                m_characterName.text = m_initState.GetActiveCharacter()?.Name;
-                SetSelectionDotColor(m_initState.GetCharacterCount());
+                m_characterName.text = m_characterSelectState.GetActiveCharacter()?.Name;
+                SetSelectionDotColor(m_characterSelectState.GetCharacterCount());
                 if (system.currentSelectedGameObject == null)
                 {
                     m_searchButton.Select();
@@ -47,32 +47,32 @@ namespace ubv.ui.client
 
         public void NextCharacter()
         {
-            string characterName = m_initState.NextCharacter();
+            string characterName = m_characterSelectState.NextCharacter();
             if (characterName != null)
             {
                 m_characterName.text = characterName;
-                SetSelectionDotColor(m_initState.GetCharacterCount());
+                SetSelectionDotColor(m_characterSelectState.GetCharacterCount());
             }  
         }
 
         public void PreviousCharacter()
         {
-            string characterName = m_initState.PreviousCharacter();
+            string characterName = m_characterSelectState.PreviousCharacter();
             if (characterName != null)
             {
                 m_characterName.text = characterName;
-                SetSelectionDotColor(m_initState.GetCharacterCount());
+                SetSelectionDotColor(m_characterSelectState.GetCharacterCount());
             }
         }
 
         public void DeleteActiveCharacter()
         {
-            m_initState.DeleteActiveCharacter();
+            m_characterSelectState.DeleteActiveCharacter();
         }
 
         public void Back()
         {
-            m_initState.Back();
+            m_characterSelectState.GoBackToPreviousState();
         }
 
         private void SetSelectionDotColor(CharacterCount characterCount)

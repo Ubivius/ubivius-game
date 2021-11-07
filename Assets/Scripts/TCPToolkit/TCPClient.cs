@@ -85,6 +85,7 @@ namespace ubv.tcp.client
                 catch (SocketException ex)
                 {
                     Debug.Log(ex.Message);
+                    return;
                 }
 
                 if (!m_client.Connected)
@@ -161,10 +162,11 @@ namespace ubv.tcp.client
                 {
                     Debug.Log(ex.Message);
                     m_activeEndpoint = false;
-                    return;
+                    stream.Close();
+                    break;
                 }
                 
-                if (totalBytesReadBeforePacket > 0)
+                if (totalBytesReadBeforePacket > 0 && m_activeEndpoint)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes.SubArray(0, totalBytesReadBeforePacket));
                     while (packet != null)
@@ -195,21 +197,11 @@ namespace ubv.tcp.client
                         }
                     }
                 }
-
-                try
-                {
-                    Task.Delay(50, new CancellationToken(m_exitSignal || !m_activeEndpoint)).Wait();
-                }
-                catch (AggregateException ex)
-                {
-#if DEBUG_LOG
-                    Debug.Log(ex.Message);
-#endif // DEBUG_LOG
-                }
             }
 #if DEBUG_LOG
             Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal);
 #endif // DEBUG_LOG
+            m_requestToSendEvent.Set();
             m_activeEndpoint = false;
         }
 
@@ -272,14 +264,15 @@ namespace ubv.tcp.client
                 // write to stream (send to client)
                 lock (m_lock)
                 {
-                    while (m_dataToSend.Count > 0)
+                    while (m_dataToSend.Count > 0 && m_activeEndpoint)
                     {
                         if(m_playerID == null)
                         {
 #if DEBUG_LOG
                             Debug.Log("Player ID is not set. Cannot send to server.");
-                            return;
 #endif // DEBUG_LOG
+                            m_activeEndpoint = false;
+                            break;
                         }
 
                         byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend.Dequeue(), m_playerID.Value).RawBytes;
@@ -291,7 +284,8 @@ namespace ubv.tcp.client
                         {
                             Debug.Log(ex.Message);
                             m_activeEndpoint = false;
-                            return;
+                            stream.Close();
+                            break;
                         }
                     }
                 }

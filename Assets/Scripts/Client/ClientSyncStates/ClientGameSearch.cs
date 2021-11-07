@@ -137,6 +137,7 @@ namespace ubv.client.logic
         private void OnServerInfoReceived(ServerInfo info)
         {
             data.LoadingData.GameID = info.GameID;
+            data.ClientCacheData.SaveCache(info.GameID);
             EstablishConnectionToServer(info);
         }
 
@@ -178,6 +179,26 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                         Debug.LogError("Mismatch between server status message requests");
 #endif // DEBUG_LOG
+                        return;
+                    }
+
+                    if (status.IsInServer.Value 
+                        && string.IsNullOrEmpty(data.LoadingData.ActiveCharacterID)
+                        && !string.IsNullOrEmpty(status.CharacterID.Value))
+                    {
+                        data.LoadingData.ActiveCharacterID = status.CharacterID.Value;
+                    }
+
+                    if (status.IsInServer.Value
+                        && string.IsNullOrEmpty(data.LoadingData.ActiveCharacterID)
+                        && string.IsNullOrEmpty(status.CharacterID.Value))
+                    {
+#if DEBUG_LOG
+                        Debug.LogWarning("Player has no character. Back to menu.");
+#endif // DEBUG_LOG
+                        data.ClientCacheData.SaveCache(string.Empty);
+                        data.LoadingData.GameID = string.Empty;
+                        m_currentSubState = SubState.SUBSTATE_GOING_BACK;
                         return;
                     }
 

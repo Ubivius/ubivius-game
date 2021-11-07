@@ -108,10 +108,14 @@ namespace ubv.client
             }
         }
 
+        public void Disconnect()
+        {
+            m_TCPClient.Disconnect();
+        }
 
         public void OnDisconnect()
         {
-            OnServerDisconnect();
+            OnServerDisconnect?.Invoke();
             m_currentSubState = SubState.SUBSTATE_IDLE;
         }
 
@@ -195,6 +199,12 @@ namespace ubv.client
 
         public void Connect(microservices.ServerInfo info)
         {
+            if(m_currentSubState == SubState.SUBSTATE_CONNECTED)
+            {
+                OnSuccessfulConnect?.Invoke();
+                return;
+            }
+
             if(m_currentSubState != SubState.SUBSTATE_RECONNECTING && m_currentSubState != SubState.SUBSTATE_IDLE)
             {
                 return;

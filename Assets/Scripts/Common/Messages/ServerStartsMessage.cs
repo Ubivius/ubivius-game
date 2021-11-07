@@ -17,6 +17,7 @@ namespace ubv.common.data
         public serialization.types.Bool IsInServer;
         public serialization.types.Bool AcceptsNewPlayers;
         public serialization.types.Uint32 GameStatus;
+        public serialization.types.String CharacterID;
 
         public ServerStatusMessage(int playerID, bool inGame = false, bool acceptsNewPlayers = false, ServerStatus status = ServerStatus.STATUS_CLOSED)
         {
@@ -24,7 +25,8 @@ namespace ubv.common.data
             IsInServer = new serialization.types.Bool(inGame);
             GameStatus = new serialization.types.Uint32((uint)status);
             AcceptsNewPlayers = new serialization.types.Bool(acceptsNewPlayers);
-            InitSerializableMembers(PlayerID, IsInServer, AcceptsNewPlayers, GameStatus);
+            CharacterID = new serialization.types.String(string.Empty);
+            InitSerializableMembers(PlayerID, IsInServer, AcceptsNewPlayers, GameStatus, CharacterID);
         }
 
         public ServerStatusMessage()
@@ -33,7 +35,8 @@ namespace ubv.common.data
             IsInServer = new serialization.types.Bool(false);
             AcceptsNewPlayers = new serialization.types.Bool(false);
             GameStatus = new serialization.types.Uint32((uint)ServerStatus.STATUS_CLOSED);
-            InitSerializableMembers(PlayerID, IsInServer, AcceptsNewPlayers, GameStatus);
+            CharacterID = new serialization.types.String(string.Empty);
+            InitSerializableMembers(PlayerID, IsInServer, AcceptsNewPlayers, GameStatus, CharacterID);
         }
 
         protected override ID.BYTE_TYPE SerializationID()

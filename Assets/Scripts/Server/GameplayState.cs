@@ -186,6 +186,7 @@ namespace ubv.server.logic
                 status.IsInServer.Value = m_connectedClients.ContainsKey(playerID);
                 status.GameStatus.Value = (uint)ServerStatusMessage.ServerStatus.STATUS_LOBBY;
                 status.AcceptsNewPlayers.Value = false;
+                status.CharacterID.Value = m_clientCharacters.ContainsKey(playerID) ? m_clientCharacters[playerID].Value : string.Empty;
                 m_serverConnection.TCPServer.Send(status.GetBytes(), playerID);
                 return;
             }

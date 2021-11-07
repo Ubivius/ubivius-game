@@ -70,10 +70,5 @@ namespace ubv.client.logic
                 StatePause();
             }
         }
-
-        public void Back()
-        {
-            ClientStateManager.Instance.PopState();
-        }
     }
 }

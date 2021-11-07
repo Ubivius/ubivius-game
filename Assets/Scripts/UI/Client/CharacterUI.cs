@@ -20,7 +20,10 @@ namespace ubv.ui.client
 
         private void Update()
         {
-            transform.position = TargetPlayerTransform.position + Vector3.up * (0.5f);
+            if (TargetPlayerTransform != null)
+            {
+                transform.position = TargetPlayerTransform.position + Vector3.up * (0.5f);
+            }
         }
     }
 }
