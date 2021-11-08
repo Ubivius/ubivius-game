@@ -1,61 +1,27 @@
 ﻿using UnityEngine;
-using static ubv.microservices.CharacterDataService;
 using ubv.microservices;
 using ubv.ui.client;
+using TMPro;
 
 namespace ubv.client.logic
 {
-    /// <summary>
-    /// Represents the client state after he's logged in, and before he finds a lobby
-    /// </summary>
     public class ClientMyCharactersState : ClientSyncState
     {
-        private CharacterData[] m_cachedCharacters;
+        [SerializeField] private CharacterPickerUI m_characterPickerUI;
         [SerializeField] private AddCharacterUI m_addCharacterUI;
-        private int m_selectedCharacterIndex = 0;
-        private bool m_joiningGame;
 
-        public struct CharacterCount
+        protected override void Awake()
         {
-            public int selected;
-            public int total;
-
-            public CharacterCount(int selected, int total)
-            {
-                this.selected = selected;
-                this.total = total;
-            }
+            base.Awake();
+            m_canBack = true; 
         }
 
         protected override void StateLoad()
         {
-            m_cachedCharacters = null;
-            m_joiningGame = false;
-            CharacterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedFromService));
-        }
-
-        private void OnCharactersFetchedFromService(CharacterData[] characters)
-        {
-            m_cachedCharacters = characters;
-            SetActiveCharacter(m_cachedCharacters[m_selectedCharacterIndex].ID);
-        }
-
-        public void SetActiveCharacter(string characterID)
-        {
-            data.LoadingData.ActiveCharacterID = characterID;
         }
 
         public override void StateUpdate()
         {
-        }
-
-        public CharacterData GetActiveCharacter()
-        {
-            if (m_cachedCharacters != null)
-            {
-                return m_cachedCharacters[m_selectedCharacterIndex];
-            }
-            return null;
         }
 
         public void AddCharacter(string characterName)
@@ -66,38 +32,22 @@ namespace ubv.client.logic
 
         private void OnCharacterAdd()
         {
-            CharacterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedAfterCharacterAdd));
-        }
-
-        private void OnCharactersFetchedAfterCharacterAdd(CharacterData[] characters)
-        {
-            m_cachedCharacters = characters;
-            m_selectedCharacterIndex = m_cachedCharacters.Length - 1;
-            SetActiveCharacter(m_cachedCharacters[m_selectedCharacterIndex].ID);
+            m_characterPickerUI.RefreshCharacters(true);
             m_addCharacterUI.SetCanCloseModal(true);
         }
 
         public void DeleteActiveCharacter()
         {
-            CharacterService.Request(new DeleteCharacterRequest(m_cachedCharacters[m_selectedCharacterIndex].ID, OnCharacterDelete));
+            CharacterService.Request(new DeleteCharacterRequest(m_characterPickerUI.GetActiveCharacter().ID, OnCharacterDelete));
         }
 
         private void OnCharacterDelete()
         {
-            CharacterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedAfterDelete));
-        }
-
-        private void OnCharactersFetchedAfterDelete(CharacterData[] characters)
-        {
-            m_cachedCharacters = characters;
-            if (m_selectedCharacterIndex >= m_cachedCharacters.Length)
-                m_selectedCharacterIndex = m_cachedCharacters.Length - 1;
-            SetActiveCharacter(m_cachedCharacters[m_selectedCharacterIndex].ID);
+            m_characterPickerUI.RefreshCharacters();
         }
 
         protected override void StateUnload()
         {
-            m_joiningGame = false;
         }
 
         protected override void StatePause()

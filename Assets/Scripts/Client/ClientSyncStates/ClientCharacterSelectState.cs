@@ -11,12 +11,15 @@ namespace ubv.client.logic
     public class ClientCharacterSelectState : ClientSyncState
     {
         [SerializeField] private string m_clientGameSearch;
-        [SerializeField] private AddCharacterUI m_addCharacterUI;
-        private bool m_joiningGame;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            m_canBack = true;
+        }
 
         protected override void StateLoad()
         {
-            m_joiningGame = false;
         }
 
         public override void StateUpdate()
@@ -25,13 +28,11 @@ namespace ubv.client.logic
         
         public void GoToJoinGame()
         {
-            m_joiningGame = true;
             ClientStateManager.Instance.PushScene(m_clientGameSearch);
         }
 
         protected override void StateUnload()
         {
-            m_joiningGame = false;
         }
 
         protected override void StatePause()

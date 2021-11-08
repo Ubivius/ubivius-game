@@ -210,6 +210,14 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Back"",
+                    ""type"": ""Value"",
+                    ""id"": ""21a3b2b6-14ad-471e-b056-b513496450b6"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -322,6 +330,28 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""action"": ""Right"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""17ee4a23-c5e9-4da6-b1d5-84c3b6f91d71"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Back"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c848d498-3ad0-4a0d-bc2b-5529a0d32a7c"",
+                    ""path"": ""<DualShockGamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Back"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -383,6 +413,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         m_Menu_Up = m_Menu.FindAction("Up", throwIfNotFound: true);
         m_Menu_Left = m_Menu.FindAction("Left", throwIfNotFound: true);
         m_Menu_Right = m_Menu.FindAction("Right", throwIfNotFound: true);
+        m_Menu_Back = m_Menu.FindAction("Back", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -485,24 +516,6 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         }
     }
     public GameplayActions @Gameplay => new GameplayActions(this);
-    private int m_AllControlSchemesSchemeIndex = -1;
-    public InputControlScheme AllControlSchemesScheme
-    {
-        get
-        {
-            if (m_AllControlSchemesSchemeIndex == -1) m_AllControlSchemesSchemeIndex = asset.FindControlSchemeIndex("All Control Schemes");
-            return asset.controlSchemes[m_AllControlSchemesSchemeIndex];
-        }
-    }
-    private int m_AllschemeSchemeIndex = -1;
-    public InputControlScheme AllschemeScheme
-    {
-        get
-        {
-            if (m_AllschemeSchemeIndex == -1) m_AllschemeSchemeIndex = asset.FindControlSchemeIndex("All scheme");
-            return asset.controlSchemes[m_AllschemeSchemeIndex];
-        }
-    }
 
     // Menu
     private readonly InputActionMap m_Menu;
@@ -511,6 +524,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
     private readonly InputAction m_Menu_Up;
     private readonly InputAction m_Menu_Left;
     private readonly InputAction m_Menu_Right;
+    private readonly InputAction m_Menu_Back;
     public struct MenuActions
     {
         private @PlayerControls m_Wrapper;
@@ -519,6 +533,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         public InputAction @Up => m_Wrapper.m_Menu_Up;
         public InputAction @Left => m_Wrapper.m_Menu_Left;
         public InputAction @Right => m_Wrapper.m_Menu_Right;
+        public InputAction @Back => m_Wrapper.m_Menu_Back;
         public InputActionMap Get() { return m_Wrapper.m_Menu; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -540,6 +555,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Right.started -= m_Wrapper.m_MenuActionsCallbackInterface.OnRight;
                 @Right.performed -= m_Wrapper.m_MenuActionsCallbackInterface.OnRight;
                 @Right.canceled -= m_Wrapper.m_MenuActionsCallbackInterface.OnRight;
+                @Back.started -= m_Wrapper.m_MenuActionsCallbackInterface.OnBack;
+                @Back.performed -= m_Wrapper.m_MenuActionsCallbackInterface.OnBack;
+                @Back.canceled -= m_Wrapper.m_MenuActionsCallbackInterface.OnBack;
             }
             m_Wrapper.m_MenuActionsCallbackInterface = instance;
             if (instance != null)
@@ -556,17 +574,29 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Right.started += instance.OnRight;
                 @Right.performed += instance.OnRight;
                 @Right.canceled += instance.OnRight;
+                @Back.started += instance.OnBack;
+                @Back.performed += instance.OnBack;
+                @Back.canceled += instance.OnBack;
             }
         }
     }
     public MenuActions @Menu => new MenuActions(this);
-    private int m_AllcontrolschemeSchemeIndex = -1;
-    public InputControlScheme AllcontrolschemeScheme
+    private int m_AllControlSchemesSchemeIndex = -1;
+    public InputControlScheme AllControlSchemesScheme
     {
         get
         {
-            if (m_AllcontrolschemeSchemeIndex == -1) m_AllcontrolschemeSchemeIndex = asset.FindControlSchemeIndex("All control scheme");
-            return asset.controlSchemes[m_AllcontrolschemeSchemeIndex];
+            if (m_AllControlSchemesSchemeIndex == -1) m_AllControlSchemesSchemeIndex = asset.FindControlSchemeIndex("All Control Schemes");
+            return asset.controlSchemes[m_AllControlSchemesSchemeIndex];
+        }
+    }
+    private int m_AllschemeSchemeIndex = -1;
+    public InputControlScheme AllschemeScheme
+    {
+        get
+        {
+            if (m_AllschemeSchemeIndex == -1) m_AllschemeSchemeIndex = asset.FindControlSchemeIndex("All scheme");
+            return asset.controlSchemes[m_AllschemeSchemeIndex];
         }
     }
     public interface IGameplayActions
@@ -582,5 +612,6 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         void OnUp(InputAction.CallbackContext context);
         void OnLeft(InputAction.CallbackContext context);
         void OnRight(InputAction.CallbackContext context);
+        void OnBack(InputAction.CallbackContext context);
     }
 }
