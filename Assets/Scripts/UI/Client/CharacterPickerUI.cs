@@ -27,7 +27,7 @@ namespace ubv.ui.client
 
         [SerializeField] private bool m_onlyAlive;
 
-
+        private PlayerControls m_controls;
         private CharacterData[] m_cachedCharacters = {};
         private int m_selectedCharacterIndex = 0;
         private List<Image> m_characterCountDot;
@@ -36,6 +36,10 @@ namespace ubv.ui.client
 
         private void Awake()
         {
+            m_controls = new PlayerControls();
+            m_controls.Menu.LeftTrigger.canceled += context => PreviousCharacter();
+            m_controls.Menu.RightTrigger.canceled += context => NextCharacter();
+            m_controls.Menu.Enable();
             m_characterCountDot = new List<Image> { m_defaultCountDotItem };
             m_characterServices = ClientSyncState.CharacterService;
             m_socialServices = ClientSyncState.SocialServices;
