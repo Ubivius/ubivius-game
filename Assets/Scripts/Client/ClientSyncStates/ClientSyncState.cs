@@ -15,7 +15,10 @@ namespace ubv.client.logic
         static public SocialServicesController SocialServices;
         static public CharacterDataService CharacterService;
 
+        private PlayerControls m_controls;
+
         private bool m_isPaused;
+        protected bool m_canBack = false;
 
         static public void InitDependencies()
         {
@@ -29,9 +32,11 @@ namespace ubv.client.logic
 
         protected readonly object m_lock = new object();
 
-        private void Awake()
+        protected virtual void Awake()
         {
             m_isPaused = false;
+            m_controls = new PlayerControls();
+            m_controls.Menu.Back.canceled += context => Back();
             ClientStateManager.Instance.AddStateToManager(gameObject.scene.name, this);
             StateLoad();
         }
@@ -55,6 +60,7 @@ namespace ubv.client.logic
 
         private void OnEnable()
         {
+            m_controls.Menu.Enable();
             ClientStateManager.Instance.SetCurrentState(this);
             if (m_isPaused)
             {
@@ -69,6 +75,7 @@ namespace ubv.client.logic
 
         private void OnDisable()
         {
+            m_controls.Menu.Disable();
             if (!m_isPaused)
             {
                 m_isPaused = true;
@@ -78,7 +85,15 @@ namespace ubv.client.logic
 
         public void Back()
         {
-            ClientStateManager.Instance.PopState();
+            if (m_canBack) 
+            { 
+                ClientStateManager.Instance.PopState();
+            }
+        }
+
+        public void SetCanBack(bool canBack)
+        {
+            m_canBack = canBack;
         }
     }
 }

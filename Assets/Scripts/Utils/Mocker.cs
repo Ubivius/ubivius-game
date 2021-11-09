@@ -11,6 +11,9 @@ namespace ubv.utils
         public string UserName;
         public string CharacterID;
         public string CharacterName;
-        
+        public bool Alive;
+        public int GamesPlayed;
+        public int EnemiesKilled;
+        public int GamesWon;
     }
 }
