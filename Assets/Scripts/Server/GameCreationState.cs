@@ -117,7 +117,7 @@ namespace ubv.server.logic
 
                         m_currentSubState = SubState.SUBSTATE_GOING_TO_PLAY;
                         
-                        m_gameplayState.Init(m_clientCharacters.Keys);
+                        m_gameplayState.Init(m_clientCharacters);
                         ChangeState(m_gameplayState);
                     }
                     break;

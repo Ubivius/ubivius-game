@@ -85,11 +85,25 @@ namespace ubv.tcp.client
                 catch (SocketException ex)
                 {
                     Debug.Log(ex.Message);
+                    m_iteratingTroughReceivers = true;
+                    foreach (ITCPClientReceiver receiver in m_receivers)
+                    {
+                        receiver.OnFailureToConnect();
+                    }
+                    m_iteratingTroughReceivers = false;
                     return;
                 }
 
                 if (!m_client.Connected)
-                        return;
+                {
+                    m_iteratingTroughReceivers = true;
+                    foreach (ITCPClientReceiver receiver in m_receivers)
+                    {
+                        receiver.OnFailureToConnect();
+                    }
+                    m_iteratingTroughReceivers = false;
+                    return;
+                }
 
                 m_iteratingTroughReceivers = true;
                 foreach (ITCPClientReceiver receiver in m_receivers)

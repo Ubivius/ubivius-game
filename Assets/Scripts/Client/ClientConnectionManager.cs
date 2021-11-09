@@ -4,6 +4,7 @@ using ubv.tcp;
 using ubv.udp;
 using UnityEngine.Events;
 using ubv.common.data;
+using ubv.tcp.client;
 
 namespace ubv.client
 {
@@ -245,6 +246,11 @@ namespace ubv.client
         private void SendUDPIdentificationPing()
         {
             m_UDPClient.Send(m_identificationMessageBytes, m_playerID.Value);
+        }
+
+        void ITCPClientReceiver.OnFailureToConnect()
+        {
+            OnFailureToConnect?.Invoke();
         }
     }
 }
