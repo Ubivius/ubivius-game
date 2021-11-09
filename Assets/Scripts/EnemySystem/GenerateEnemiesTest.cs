@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ubv.common.world;
 using ubv.server.logic;
+using ubv.server.logic.ai;
 using UnityEngine;
 
 namespace ubv.logic
