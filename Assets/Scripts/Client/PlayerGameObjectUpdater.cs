@@ -102,6 +102,7 @@ namespace ubv.client.logic
                     player.Rotation.Value = Bodies[player.GUID.Value].rotation;
                     player.Velocity.Value = Bodies[player.GUID.Value].velocity;
                 }
+                player.States.Set((int)PlayerStateEnum.IS_SPRINTING, m_isSprinting[player.GUID.Value]);
             }
         }
 

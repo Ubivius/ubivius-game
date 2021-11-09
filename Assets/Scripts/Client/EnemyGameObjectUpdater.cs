@@ -79,7 +79,6 @@ namespace ubv.client.logic
             m_timeSinceLastGoal += deltaTime;
             foreach (EnemyStateData enemy in m_goalStates.Values)
             {
-                LerpTowardGoalState(enemy, m_timeSinceLastGoal);
                 common.logic.EnemyMovement.Execute(Bodies[enemy.GUID.Value], GoalPosition[enemy.GUID.Value], EnemyPathfindingMovement[enemy.GUID.Value].GetSpeed());
             }
 
@@ -133,31 +132,6 @@ namespace ubv.client.logic
 
         public override void FixedStateUpdate(float deltaTime)
         {
-        }
-
-        private void LerpTowardGoalState(EnemyStateData enemy, float time)
-        {
-            //Bodies[enemy.GUID.Value].position = Vector2.Lerp(Bodies[enemy.GUID.Value].position, m_goalStates[enemy.GUID.Value].Position.Value, time / m_lerpTime);
-            //if ((Bodies[enemy.GUID.Value].position - m_goalStates[enemy.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
-            //{
-            //    Bodies[enemy.GUID.Value].position = m_goalStates[enemy.GUID.Value].Position.Value;
-            //}
-
-            //Bodies[enemy.GUID.Value].rotation = Mathf.Lerp(Bodies[enemy.GUID.Value].rotation, m_goalStates[enemy.GUID.Value].Rotation.Value, time / m_lerpTime);
-            //if (Bodies[enemy.GUID.Value].rotation - m_goalStates[enemy.GUID.Value].Rotation.Value < 0.01f)
-            //{
-            //    Bodies[enemy.GUID.Value].rotation = m_goalStates[enemy.GUID.Value].Rotation.Value;
-            //}
-
-            //if (EnemyState[enemy.GUID.Value] != m_goalStates[enemy.GUID.Value].EnemyState)
-            //{
-            //    EnemyState[enemy.GUID.Value] = m_goalStates[enemy.GUID.Value].EnemyState;
-            //}
-
-            //if (GoalPosition[enemy.GUID.Value] != m_goalStates[enemy.GUID.Value].GoalPosition.Value)
-            //{
-            //    GoalPosition[enemy.GUID.Value] = m_goalStates[enemy.GUID.Value].GoalPosition.Value;
-            //}
         }
     }
 }

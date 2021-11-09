@@ -46,7 +46,6 @@ namespace ubv.server.logic
 
         public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
         {
-            // movement
         }
 
         public override void UpdateWorld(WorldState client)
