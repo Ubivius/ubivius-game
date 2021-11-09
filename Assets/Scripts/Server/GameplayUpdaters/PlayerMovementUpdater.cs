@@ -63,11 +63,9 @@ namespace ubv.server.logic
                 Rigidbody2D body = m_bodies[id];
                 PlayerState player = m_playerStates[id];
                 player.Position.Value = body.position;
-                player.Rotation.Value = body.rotation;
                 player.Velocity.Value = body.velocity;
                 player.States.Set(0, m_isSprinting[id]);
             }
-           
         }
 
         public void SetPlayerPosition(PlayerState player, Vector2Int pos)

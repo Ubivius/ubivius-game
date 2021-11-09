@@ -20,6 +20,10 @@ namespace ubv.utils
             return ID.BYTE_TYPE.BITSET;
         }
         
+        public bool IsDifferent(Bitset bitset)
+        {
+            return m_statesBitSet.Value == bitset.m_statesBitSet.Value;
+        }
 
         public bool IsTrue(int bitIndex)
         {

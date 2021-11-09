@@ -11,7 +11,9 @@ namespace ubv.client.logic
     /// </summary>
     public class PlayerGameObjectUpdater :  ClientStateUpdater
     {
-        [SerializeField] private float m_lerpTime = 0.2f;
+        [SerializeField]
+        private float m_velocityLerpTime = 0.3f;
+        [SerializeField] private float m_positionLerpTime = 0.2f;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerAnimator m_playerAnimator;
@@ -29,7 +31,7 @@ namespace ubv.client.logic
         private Dictionary<int, PlayerState> m_goalStates;
 
         public UnityAction OnInitialized;
-        UnityAction<bool> m_sprintAction;
+        private UnityAction<bool> m_sprintAction;
         private Dictionary<int, UnityAction<bool>> m_sprintActions;
 
         
@@ -76,8 +78,7 @@ namespace ubv.client.logic
             // check correction on goalStates au lieu du current position TODO
             foreach(PlayerState player in remoteState.Players().Values)
             {
-                err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance;
-                if (err)
+                if (m_goalStates[player.GUID.Value].IsDifferent(player, m_correctionTolerance))
                 {
                     //Debug.Log("Needing correction");
                     return true;
@@ -93,13 +94,11 @@ namespace ubv.client.logic
                 if (player.GUID.Value != m_playerGUID)
                 {
                     player.Position.Value = m_goalStates[player.GUID.Value].Position.Value; 
-                    player.Rotation.Value = m_goalStates[player.GUID.Value].Rotation.Value;
                     player.Velocity.Value = m_goalStates[player.GUID.Value].Velocity.Value;
                 }
                 else
                 {
                     player.Position.Value = Bodies[player.GUID.Value].position;
-                    player.Rotation.Value = Bodies[player.GUID.Value].rotation;
                     player.Velocity.Value = Bodies[player.GUID.Value].velocity;
                 }
                 player.States.Set((int)PlayerStateEnum.IS_SPRINTING, m_isSprinting[player.GUID.Value]);
@@ -114,7 +113,7 @@ namespace ubv.client.logic
             {
                 if (player.GUID.Value != m_playerGUID)
                 {
-                    LerpTowardGoalState(player, m_timeSinceLastGoal);
+                    LerpTowardsState(player, m_timeSinceLastGoal);
                     m_sprintActions[player.GUID.Value].Invoke(player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING));
                 }
                 m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
@@ -130,13 +129,13 @@ namespace ubv.client.logic
                 //Bodies[player.GUID.Value].position = player.Position.Value;
                 m_goalStates[player.GUID.Value] = player;
 
-                if (player.GUID.Value == m_playerGUID)
+                /*if (player.GUID.Value == m_playerGUID)
                 {
                     Bodies[player.GUID.Value].position = player.Position.Value;
-                    Bodies[player.GUID.Value].rotation = player.Rotation.Value;
                     Bodies[player.GUID.Value].velocity = player.Velocity.Value;
-                }
+                }*/
 
+                // mettre dans l'interpolation ?
                 m_isSprinting[player.GUID.Value] = player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING);
             }
         }
@@ -146,25 +145,35 @@ namespace ubv.client.logic
 
         }
 
-        private void LerpTowardGoalState(PlayerState player, float time)
+        private void LerpTowardsState(PlayerState player, float timeSinceLastGoal)
         {
-            Bodies[player.GUID.Value].velocity = Vector2.Lerp(Bodies[player.GUID.Value].velocity, m_goalStates[player.GUID.Value].Velocity.Value, time / m_lerpTime);
+            Vector2 goalVel, currentVel, newVel;
+            goalVel = m_goalStates[player.GUID.Value].Velocity.Value;
+            currentVel = Bodies[player.GUID.Value].velocity;
+
+            float progression = timeSinceLastGoal / m_velocityLerpTime;
+            if(progression < 1)
+            {
+                newVel = Vector2.Lerp(currentVel, goalVel, timeSinceLastGoal / m_velocityLerpTime);
+            }
+            else
+            {
+                newVel = goalVel;
+            }
+
+            Bodies[player.GUID.Value].velocity = newVel;
+
+            /*Bodies[player.GUID.Value].velocity = Vector2.Lerp(Bodies[player.GUID.Value].velocity, m_goalStates[player.GUID.Value].Velocity.Value, time / m_positionLerpTime);
             if ((Bodies[player.GUID.Value].velocity - m_goalStates[player.GUID.Value].Velocity.Value).sqrMagnitude < 0.01f)
             {
                 Bodies[player.GUID.Value].velocity = m_goalStates[player.GUID.Value].Velocity.Value;
             }
 
-            Bodies[player.GUID.Value].position = Vector2.Lerp(Bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, time / m_lerpTime);
+            Bodies[player.GUID.Value].position = Vector2.Lerp(Bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, time / m_positionLerpTime);
             if ((Bodies[player.GUID.Value].position - m_goalStates[player.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
             {
                 Bodies[player.GUID.Value].position = m_goalStates[player.GUID.Value].Position.Value;
-            }
-
-            Bodies[player.GUID.Value].rotation = Mathf.Lerp(Bodies[player.GUID.Value].rotation, m_goalStates[player.GUID.Value].Rotation.Value, time / m_lerpTime);
-            if (Bodies[player.GUID.Value].rotation - m_goalStates[player.GUID.Value].Rotation.Value < 0.01f)
-            {
-                Bodies[player.GUID.Value].rotation = m_goalStates[player.GUID.Value].Rotation.Value;
-            }
+            }*/
         }
 
         public Transform GetLocalPlayerTransform()

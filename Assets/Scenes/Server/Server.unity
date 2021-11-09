@@ -699,7 +699,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 802da27c55ee1034dba8bca9ead5ea62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_snapshotTicks: 8
+  m_snapshotTicks: 2
   m_physicsSceneName: Server
   m_updaters:
   - {fileID: 1470650681}
