@@ -52,6 +52,21 @@ namespace ubv.microservices
         }
     }
 
+    public class GetCharactersAliveFromUserRequest : GetCharacterRequest
+    {
+        private readonly string m_url;
+
+        public GetCharactersAliveFromUserRequest(string PlayerID, OnGetCharacters callback) : base(callback)
+        {
+            this.m_url = PlayerID;
+        }
+
+        public override string URL()
+        {
+            return "characters/alive/user/" + m_url;
+        }
+    }
+
     public class PostCharacterRequest : PostMicroserviceRequest
     {
         private readonly string m_userID;
