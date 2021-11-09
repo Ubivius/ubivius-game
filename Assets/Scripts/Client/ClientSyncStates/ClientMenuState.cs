@@ -10,6 +10,7 @@ namespace ubv.client
     {
         [SerializeField] private string m_clientGameSearch;
         [SerializeField] private string m_clientCharacterSelect;
+        [SerializeField] private string m_clientMyCharatcers;
         [SerializeField] private EventSystem m_eventSystem;
         
         public override void OnStart()
@@ -38,6 +39,11 @@ namespace ubv.client
         public void GoToPlay()
         {
             ClientStateManager.Instance.PushScene(m_clientCharacterSelect);
+        }
+
+        public void GoToMyCharacters()
+        {
+            ClientStateManager.Instance.PushScene(m_clientMyCharatcers);
         }
 
         protected override void StateLoad()

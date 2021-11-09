@@ -16,7 +16,9 @@ namespace ubv.utils
         public string ServerUDPAddress;
         public int ServerTCPPort;
         public int ServerUDPPort;
-
-
+        public bool Alive;
+        public int GamesPlayed;
+        public int EnemiesKilled;
+        public int GamesWon;
     }
 }

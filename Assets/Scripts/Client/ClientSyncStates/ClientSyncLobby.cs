@@ -42,7 +42,13 @@ namespace ubv.client.logic
         private SubState m_currentSubState;
 
         public float LoadPercentage { get; private set; }
-        
+
+        protected override void Awake()
+        {
+            base.Awake();
+            m_canBack = true;
+        }
+
         protected override void StateLoad()
         {
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_WORLD;
