@@ -20,6 +20,7 @@ namespace ubv.ui.client
         [SerializeField] private PlayerInLobby m_playerOne;
         [SerializeField] private PlayerInLobby m_playerTwo;
         [SerializeField] private PlayerInLobby m_playerThree;
+        [SerializeField] private int m_refreshRateUsers = 37;
         private PlayerInLobby[] m_playersInLobby;
 
         private UserInfo m_activeUser;
@@ -54,7 +55,7 @@ namespace ubv.ui.client
         {
             base.Update();
 
-            if (Time.frameCount % 37 == 0)
+            if (Time.frameCount % m_refreshRateUsers == 0)
             {
                 RefreshUsersInLobby();
             }

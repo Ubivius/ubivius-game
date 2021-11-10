@@ -21,7 +21,7 @@ namespace ubv.server.logic
 
         private bool m_setUpDone = false;
 
-        private void Start()
+        private void Awake()
         {
             m_worldGenerator.OnWorldGenerated += OnWorldGenerated;            
         }
