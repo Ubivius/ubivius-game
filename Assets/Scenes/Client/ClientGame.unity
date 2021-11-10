@@ -159,6 +159,7 @@ MonoBehaviour:
   m_updaters:
   - {fileID: 554541790}
   - {fileID: 352309656}
+  - {fileID: 969313555}
   m_packetLossChance: 0.01
 --- !u!4 &134844666
 Transform:
