@@ -27,7 +27,7 @@ namespace ubv.client.logic
         public void AddCharacter(string characterName)
         {
             m_addCharacterUI.SetError(null);
-            CharacterService.Request(new PostCharacterRequest(UserInfo.ID, characterName, OnCharacterAdd));
+            CharacterService.Request(new PostCharacterRequest(CurrentUser.StringID, characterName, OnCharacterAdd));
         }
 
         private void OnCharacterAdd()

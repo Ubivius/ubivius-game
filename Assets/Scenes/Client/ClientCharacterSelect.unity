@@ -2605,7 +2605,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b305fb6c3a4b4a24e83541f4c0afcdf1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_initState: {fileID: 308034831}
+  m_characterSelectState: {fileID: 308034831}
   m_searchButton: {fileID: 387229854}
   m_createButton: {fileID: 33054542}
   m_joinButton: {fileID: 1136137055}
