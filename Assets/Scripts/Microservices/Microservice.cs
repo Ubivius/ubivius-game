@@ -96,11 +96,6 @@ namespace ubv.microservices
         protected virtual void OnDeleteResponse(string JSON, DelReq originalRequest) { }
         protected virtual void OnPutResponse(string JSON, PutReq originalRequest) { }
 
-        protected virtual void OnBadGetResponse(GetReq originalRequest, string reason) { }
-        protected virtual void OnBadPostResponse(PostReq originalRequest, string reason) { }
-        protected virtual void OnBadDeleteResponse(DelReq originalRequest, string reason) { }
-        protected virtual void OnBadPutResponse(PutReq originalRequest, string reason) { }
-
         private void OnGetResponse(HttpResponseMessage message, GetReq request)
         {
             if (message.IsSuccessStatusCode)
@@ -113,7 +108,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("GET Request was not successful");
 #endif // DEBUG_LOG
-                OnBadGetResponse(request, message.ReasonPhrase);
+                request.FailureCallback?.Invoke(message.ReasonPhrase);
             }
         }
 
@@ -129,7 +124,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("POST Request " + request.URL() + " was not successful: " + message.ReasonPhrase);
 #endif // DEBUG_LOG
-                OnBadPostResponse(request, message.ReasonPhrase);
+                request.FailureCallback?.Invoke(message.ReasonPhrase);
             }
         }
 
@@ -145,7 +140,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("PUT Request was not successful");
 #endif // DEBUG_LOG
-                OnBadPutResponse(request, message.ReasonPhrase);
+                request.FailureCallback?.Invoke(message.ReasonPhrase);
             }
         }
 
@@ -161,7 +156,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("DELETE Request was not successful");
 #endif // DEBUG_LOG
-                OnBadDeleteResponse(request, message.ReasonPhrase);
+                request.FailureCallback?.Invoke(message.ReasonPhrase);
             }
         }
     }

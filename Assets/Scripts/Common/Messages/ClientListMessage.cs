@@ -6,19 +6,19 @@ using ubv.common.serialization.types;
 
 namespace ubv.common.data
 {
+    public class StringHashMap : HashMap<String>
+    {
+        public StringHashMap(Dictionary<int, String> strings) : base(strings)
+        { }
+
+        protected override ID.BYTE_TYPE SerializationID()
+        {
+            return ID.BYTE_TYPE.HASHMAP_INT_STRING;
+        }
+    }
+
     public class CharacterListMessage : serialization.Serializable
     {
-        public class StringHashMap : HashMap<String>
-        {
-            public StringHashMap(Dictionary<int, String> players) : base(players)
-            { }
-
-            protected override ID.BYTE_TYPE SerializationID()
-            {
-                return ID.BYTE_TYPE.HASHMAP_INT_STRING;
-            }
-        }
-        
         public StringHashMap PlayerCharacters { get; protected set; }
 
         public CharacterListMessage()

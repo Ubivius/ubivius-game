@@ -92,6 +92,18 @@ namespace ubv.client.logic
         {
             StartCoroutine(UnloadSceneCoroutine(m_sceneStack.Pop()));
         }
+
+        public bool BackToScene(string scene)
+        {
+            // vérifie si la scene existe dans le stack de scènes
+            // si oui, unload le stack jusqu'à elle
+            if (m_sceneStack.Contains(scene))
+            {
+                StartCoroutine(UnloadScenesUntilCoroutine(scene));
+                return true;
+            }
+            return false;
+        }
         
         private IEnumerator LoadSceneCoroutine(string sceneToLoad)
         {
@@ -104,9 +116,9 @@ namespace ubv.client.logic
                 yield return null;
             }
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneToLoad));
-            m_loadingScreen.gameObject.SetActive(false);
             m_sceneStates[sceneToLoad].gameObject.SetActive(true);
             m_sceneStates[sceneToLoad].OnStart();
+            m_loadingScreen.gameObject.SetActive(false);
         }
 
         private IEnumerator UnloadSceneCoroutine(string sceneToUnload)
@@ -120,8 +132,26 @@ namespace ubv.client.logic
                 yield return null;
             }
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_sceneStack.Peek()));
-            m_loadingScreen.gameObject.SetActive(false);
             m_sceneStates[m_sceneStack.Peek()].gameObject.SetActive(true);
+            m_loadingScreen.gameObject.SetActive(false);
+        }
+
+        private IEnumerator UnloadScenesUntilCoroutine(string sceneToReach)
+        {
+            m_loadingScreen.gameObject.SetActive(true);
+            while (!m_sceneStack.Peek().Equals(sceneToReach))
+            {
+                AsyncOperation unload = SceneManager.UnloadSceneAsync(m_sceneStack.Pop());
+                unload.allowSceneActivation = true;
+                while (!unload.isDone)
+                {
+                    m_loadingScreen.SetPercentage(unload.progress);
+                    yield return null;
+                }
+            }
+            SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_sceneStack.Peek()));
+            m_sceneStates[m_sceneStack.Peek()].gameObject.SetActive(true);
+            m_loadingScreen.gameObject.SetActive(false);
         }
     }
 }
