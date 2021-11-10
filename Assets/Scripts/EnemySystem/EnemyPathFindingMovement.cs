@@ -153,9 +153,9 @@ namespace ubv.server.logic.ai
 
         public Vector2 GetNextPostion()
         {
-            if (m_pathVectorList == null || m_currentPathIndex > m_pathVectorList.Count)
+            if (m_pathVectorList == null || m_currentPathIndex >= m_pathVectorList.Count)
             {
-                return default;
+                return GetPosition();
             }
 
             return m_pathVectorList[m_currentPathIndex];
