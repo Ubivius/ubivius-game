@@ -118,8 +118,8 @@ namespace ubv.client.logic
                     LerpTowardsState(player, m_timeSinceLastGoal);
                     m_sprintActions[player.GUID.Value].Invoke(player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING));
                 }
-                m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             }
+            m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
         }
 
@@ -128,17 +128,18 @@ namespace ubv.client.logic
             m_timeSinceLastGoal = 0;
             foreach (PlayerState player in state.Players().Values)
             {
-                //Bodies[player.GUID.Value].position = player.Position.Value;
-                m_goalStates[player.GUID.Value] = player;
+                int id = player.GUID.Value;
+                m_goalStates[id] = player;
 
-                /*if (player.GUID.Value == m_playerGUID)
+                Vector2 currentPos = Bodies[id].position;
+                Vector2 goalPos = m_goalStates[id].Position.Value;
+
+                if ((goalPos - currentPos).sqrMagnitude > m_maxPositionError * m_maxPositionError)
                 {
-                    Bodies[player.GUID.Value].position = player.Position.Value;
-                    Bodies[player.GUID.Value].velocity = player.Velocity.Value;
-                }*/
-
-                // mettre dans l'interpolation ?
-                m_isSprinting[player.GUID.Value] = player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING);
+                    currentPos = goalPos;
+                    Bodies[id].position = currentPos;
+                }
+                m_isSprinting[id] = player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING);
             }
         }
 
@@ -155,19 +156,19 @@ namespace ubv.client.logic
             int id = player.GUID.Value;
             Vector2 currentPos = Bodies[id].position;
             Vector2 goalPos = m_goalStates[id].Position.Value;
-
-            if ((goalPos - currentPos).sqrMagnitude > m_maxPositionError * m_maxPositionError)
-            {
-                currentPos = goalPos;
-                Bodies[id].position = currentPos;
-            }
-
             Vector2 velocity = m_goalStates[id].Velocity.Value;
             Vector2 delta = goalPos - currentPos;
             if (delta.sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
             {
-                velocity += delta;
-                velocity = common.logic.PlayerMovement.GetVelocity(velocity, m_isSprinting[id], PlayerControllers[id].GetStats());
+                float progression = timeSinceLastGoal / m_positionLerpTime;
+                if (progression > 1)
+                {
+                    Bodies[id].position = goalPos;
+                }
+                else
+                {
+                    Bodies[id].position = Vector2.Lerp(currentPos, goalPos, progression);
+                }
             }
 
             Bodies[id].velocity = velocity;

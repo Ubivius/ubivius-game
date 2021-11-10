@@ -21,12 +21,10 @@ namespace ubv
             /// </summary>
             public class PlayerState : serialization.Serializable
             {
-                // send this over network
                 public utils.Bitset States;
                 public serialization.types.Vector2 Velocity;
                 public serialization.types.Vector2 Position;
-
-                // TODO : not send this via network because not likely to be changed
+                
                 public serialization.types.Int32 GUID;
 
                 public PlayerState() : base()
@@ -66,12 +64,14 @@ namespace ubv
 
                 public bool IsDifferent(PlayerState other, float errorTolerance = 0.1f)
                 {
-                    if ((other.Position.Value - Position.Value).sqrMagnitude > 0.1f * 0.1f)
+                    if (other == this) return false;
+
+                    if ((other.Position.Value - Position.Value).sqrMagnitude > errorTolerance * errorTolerance)
                     {
                         return true;
                     }
 
-                    if ((other.Velocity.Value - Velocity.Value).sqrMagnitude > 0.1f * 0.1f)
+                    if ((other.Velocity.Value - Velocity.Value).sqrMagnitude > errorTolerance * errorTolerance)
                     {
                         return true;
                     }
