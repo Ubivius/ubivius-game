@@ -24,14 +24,15 @@ namespace ubv.server.logic
         {
             SUBSTATE_WAITING_FOR_PLAYERS = 0,
             SUBSTATE_WAITING_FOR_WORLD_LOADED,
-            SUBSTATE_WAITING_FOR_PLAY,
+            SUBSTATE_GOING_TO_PLAY,
         }
 
         private SubState m_currentSubState;
 
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
 
-        private Dictionary<int, common.serialization.types.String> m_clientCharacters; 
+        private Dictionary<int, common.serialization.types.String> m_clientCharacters;
+        private HashSet<int> m_activeClients;
 
         private HashSet<int> m_readyClients;
         private HashSet<int> m_worldLoadedClients;
@@ -54,6 +55,7 @@ namespace ubv.server.logic
 
         public void Init()
         {
+            m_activeClients = new HashSet<int>();
             m_clientCharacters = new Dictionary<int, common.serialization.types.String>();
 
             m_readyClients = new HashSet<int>();
@@ -67,12 +69,12 @@ namespace ubv.server.logic
         
         private bool EveryoneIsReady()
         {
-            return m_readyClients.Count > 0 && (m_readyClients.Count == m_clientCharacters.Count);
+            return m_readyClients.Count > 0 && (m_readyClients.Count == m_activeClients.Count);
         }
 
         private bool EveryoneHasWorld()
         {
-            return m_worldLoadedClients.Count > 0 && m_worldLoadedClients.Count == m_clientCharacters.Count;
+            return m_worldLoadedClients.Count > 0 && m_worldLoadedClients.Count == m_activeClients.Count;
         }
 
         protected override void StateUpdate()
@@ -80,13 +82,17 @@ namespace ubv.server.logic
             switch (m_currentSubState)
             {
                 case SubState.SUBSTATE_WAITING_FOR_PLAYERS:
+                    if(Time.frameCount % 69 == 0)
+                    {
+                        BroadcastPlayerList();
+                    }
                     if (EveryoneIsReady())
                     {
                         common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
 
                         CachedServerInit = new ServerInitMessage(m_clientCharacters, cellInfoArray);
 
-                        foreach (int id in m_clientCharacters.Keys)
+                        foreach (int id in m_activeClients)
                         {
                             m_serverConnection.TCPServer.Send(CachedServerInit.GetBytes(), id);
                         }
@@ -104,14 +110,14 @@ namespace ubv.server.logic
 #if DEBUG_LOG
                         Debug.Log("Starting game.");
 #endif // DEBUG_LOG
-                        foreach (int id in m_clientCharacters.Keys)
+                        foreach (int id in m_activeClients)
                         {
                             m_serverConnection.TCPServer.Send(message.GetBytes(), id);
                         }
 
-                        m_currentSubState = SubState.SUBSTATE_WAITING_FOR_PLAY;
+                        m_currentSubState = SubState.SUBSTATE_GOING_TO_PLAY;
                         
-                        m_gameplayState.Init(m_clientCharacters.Keys);
+                        m_gameplayState.Init(m_clientCharacters);
                         ChangeState(m_gameplayState);
                     }
                     break;
@@ -119,26 +125,41 @@ namespace ubv.server.logic
                     break;
             }
         }
-        
-        private void AddNewPlayer(int playerID)
-        {
-            m_clientCharacters[playerID] = new common.serialization.types.String();
-        }
 
         private void BroadcastPlayerList()
         {
-            byte[] bytes = new CharacterListMessage(m_clientCharacters).GetBytes();
-            foreach (int id in m_clientCharacters.Keys)
+            byte[] bytes = new CharacterListMessage(GetActiveCharacters()).GetBytes();
+            foreach (int id in m_activeClients)
             {
-#if DEBUG_LOG
-                Debug.Log("Broadcasting character " + m_clientCharacters[id].Value + " (from player " + id + ")");
-#endif // DEBUG_LOG
                 m_serverConnection.TCPServer.Send(bytes, id);
             }
         }
 
+        private Dictionary<int, common.serialization.types.String> GetActiveCharacters()
+        {
+            Dictionary<int, common.serialization.types.String> activeCharacters = new Dictionary<int, common.serialization.types.String>();
+            foreach (int id in m_activeClients)
+            {
+                activeCharacters.Add(id, m_clientCharacters[id]);
+            }
+            return activeCharacters;
+
+        }
+
         protected override void OnTCPReceiveFrom (TCPToolkit.Packet packet, int playerID)
         {
+            ServerStatusMessage status = Serializable.CreateFromBytes<ServerStatusMessage>(packet.Data.ArraySegment());
+            if (status != null)
+            {
+                status.PlayerID.Value = playerID;
+                status.IsInServer.Value = m_clientCharacters.ContainsKey(playerID);
+                status.GameStatus.Value = (uint)ServerStatusMessage.ServerStatus.STATUS_LOBBY;
+                status.AcceptsNewPlayers.Value = m_currentSubState == SubState.SUBSTATE_WAITING_FOR_PLAYERS && m_activeClients.Count < 4;
+                status.CharacterID.Value = m_clientCharacters.ContainsKey(playerID) ? m_clientCharacters[playerID].Value : string.Empty;
+                m_serverConnection.TCPServer.Send(status.GetBytes(), playerID);
+                return;
+            }
+
             OnLobbyEnteredMessage lobbyEnter = Serializable.CreateFromBytes<OnLobbyEnteredMessage>(packet.Data.ArraySegment());
             if (lobbyEnter != null)
             {
@@ -146,11 +167,22 @@ namespace ubv.server.logic
                 {
                     if (m_clientCharacters.ContainsKey(playerID))
                     {
+                        if (!string.IsNullOrEmpty(lobbyEnter.CharacterID.Value))
+                        {
 #if DEBUG_LOG
-                        Debug.Log("Adding character " + lobbyEnter.CharacterID.Value + " to player " + playerID);
+                            Debug.Log("Adding character " + lobbyEnter.CharacterID.Value + " to player " + playerID);
 #endif // DEBUG_LOG
-                        m_clientCharacters[playerID] = lobbyEnter.CharacterID;
-                        BroadcastPlayerList();
+                            m_clientCharacters[playerID] = lobbyEnter.CharacterID;
+                            m_activeClients.Add(playerID);
+                            BroadcastPlayerList();
+                        }
+                        else
+                        {
+#if DEBUG_LOG
+                            Debug.Log("Player " + playerID + " has no character. Refusing.");
+#endif // DEBUG_LOG
+                            RemovePlayerFromLobby(playerID);
+                        }
                     }
                 }
                 return;
@@ -186,7 +218,7 @@ namespace ubv.server.logic
 #if DEBUG_LOG
                     Debug.Log("New player just connected to server: " + playerID);
 #endif // DEBUG_LOG
-                    AddNewPlayer(playerID);
+                    m_clientCharacters[playerID] = new common.serialization.types.String(string.Empty);
                 }
             }
         }
@@ -204,7 +236,7 @@ namespace ubv.server.logic
         {
             lock (m_lock)
             {
-                m_clientCharacters.Remove(playerID);
+                m_activeClients.Remove(playerID);
                 m_readyClients.Remove(playerID);
                 m_worldLoadedClients.Remove(playerID);
             }

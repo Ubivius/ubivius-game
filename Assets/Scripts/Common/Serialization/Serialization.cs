@@ -65,7 +65,8 @@ namespace ubv.common.serialization
             LIST_VECTOR2INT,
             SERVER_SUCCESSFUL_UDP_CONNECT_MESSAGE,
             CLIENT_CACHE_DATA,
-            SERVER_REJOIN_GAME_DEMAND
+            SERVER_REJOIN_GAME_DEMAND,
+            SERVER_STATUS_MESSAGE
         }
     }
 }

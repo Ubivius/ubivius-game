@@ -1,52 +1,33 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace ubv.ui.client
 {
-    public class AddCharacterUI : MonoBehaviour
+    public class AddCharacterUI : ModalUI
     {
-
-        [SerializeField] private ubv.client.logic.ClientCharacterSelectState m_initState;
+        [SerializeField] private ubv.client.logic.ClientMyCharactersState m_myCharactersState;
         [SerializeField] private TMP_InputField m_characterNameToAdd;
         [SerializeField] private TextMeshProUGUI m_errorText;
-        private bool m_canCloseModal = false;
-        private EventSystem system;
 
-        private void Awake()
+        protected override void Update()
         {
-            system = EventSystem.current;
-        }
-
-        private void Update()
-        {
-            if (m_canCloseModal)
+            base.Update();
+            if (Input.GetKeyDown(KeyCode.Return) && m_characterNameToAdd.text != null)
             {
-                m_canCloseModal = false;
-                CloseAddCharacterModal();
+                AddCharacter();
             }
         }
 
-        public void OpenAddCharacterModal()
+        public override void OpenModal()
         {
-            m_canCloseModal = false;
-            gameObject.SetActive(true);
-            m_characterNameToAdd.Select();
+            base.OpenModal();
             ResetText();
-        }
-
-        public void CloseAddCharacterModal()
-        {
-            gameObject.SetActive(false);
-            system.SetSelectedGameObject(null);
         }
 
         public void AddCharacter()
         {
             string characterNameToAdd = m_characterNameToAdd.text;
-            m_initState.AddCharacter(characterNameToAdd);
+            m_myCharactersState.AddCharacter(characterNameToAdd);
         }
 
         public void ResetText()
@@ -59,11 +40,5 @@ namespace ubv.ui.client
         {
             m_errorText.text = error;
         }
-
-        public void SetCanCloseModal(bool canCloseModal)
-        {
-            m_canCloseModal = canCloseModal;
-        }
-
     }
 }
