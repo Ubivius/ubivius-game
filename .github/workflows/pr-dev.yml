@@ -86,7 +86,7 @@ jobs:
           password: ${{ env.DOCKERHUB_PWD }}
           buildargs: BUILD_TYPE
           dockerfile: Dockerfile
-          tags: ${{ env.REPO_VERSION }}
+          tags: "${{ steps.fetch-docker-vars.outputs.REPO_VERSION }}"
 
       # Also publish build output as zip archive
       - uses: actions/upload-artifact@v2
