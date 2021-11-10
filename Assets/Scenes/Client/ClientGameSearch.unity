@@ -448,7 +448,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1626429281}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.0014637134}
+  m_LocalPosition: {x: 0, y: 0, z: -0.0014645136}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 484138961}
@@ -456,8 +456,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.000021098647, y: 0}
-  m_SizeDelta: {x: 1518.8623, y: 294.71884}
+  m_AnchoredPosition: {x: 0.000018271967, y: 0}
+  m_SizeDelta: {x: 1518.8623, y: 124.09909}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1626429283
 MonoBehaviour:
@@ -478,7 +478,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: EN ATTENTE D'UNE PARTIE...
+  m_text: WAITING for game...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1f72f55333840024c8fd7b11d5854785, type: 2}
   m_sharedMaterial: {fileID: 5553815467431512546, guid: 1f72f55333840024c8fd7b11d5854785,
@@ -514,7 +514,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
+  m_VerticalAlignment: 1024
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -595,7 +595,6 @@ MonoBehaviour:
   m_clientLobbyScene: ClientLobby
   m_rejoinDemandTime: 10
   m_TCPTimeout: 10
-  m_UDPTimeout: 10
   m_dispatcherTimeout: 10
   m_UDPPingTimerIntervalMS: 500
 --- !u!4 &1961776197

@@ -5,8 +5,7 @@ namespace ubv.microservices
 {
     public class UserInfo
     {
-        public readonly int ID;
-        public readonly string StringID;
+        public readonly string ID;
         public readonly string UserName;
         public readonly string Email;
         public readonly string DateOfBirth;
@@ -14,8 +13,7 @@ namespace ubv.microservices
 
         public UserInfo(string id, string userName, string email, string dateOfBirth)
         {
-            ID = id.GetHashCode();
-            StringID = id;
+            ID = id;
             UserName = userName;
             Email = email;
             DateOfBirth = dateOfBirth;

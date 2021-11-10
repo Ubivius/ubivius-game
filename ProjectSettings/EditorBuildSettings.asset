@@ -32,9 +32,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Client/ClientCharacterSelect.unity
     guid: 1608b600107905b4b8341003784d7faf
-  - enabled: 1
-    path: Assets/Scenes/Client/ClientMyCharacters.unity
-    guid: 2ef865aebd5e9df4c8667eb784ac8612
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: d88c0c3ed6c35a74290494c7afc3d357,
       type: 2}

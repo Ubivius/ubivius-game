@@ -20,12 +20,11 @@ namespace ubv.ui.client
         [SerializeField] private PlayerInLobby m_playerOne;
         [SerializeField] private PlayerInLobby m_playerTwo;
         [SerializeField] private PlayerInLobby m_playerThree;
-        [SerializeField] private int m_refreshRateUsers = 37;
         private PlayerInLobby[] m_playersInLobby;
 
         private UserInfo m_activeUser;
         private CharacterData m_activeUserCharacter;
-        private bool m_activeUserDisplayed = false;
+        private bool activeUserDisplayed = false;
 
         private SocialServicesController m_socialServices;
 
@@ -43,8 +42,8 @@ namespace ubv.ui.client
         {
             base.Start();
             m_socialServices = ubv.client.logic.ClientNetworkingManager.Instance.SocialServices;
+            m_lobby.ClientListUpdate.AddListener(UpdatePlayers);
             m_activeUser = m_lobby.GetActiveUser();
-            m_lobby.OnClientListUpdate += UpdatePlayers;
 
             m_playerOne.HidePlayer();
             m_playerTwo.HidePlayer();
@@ -55,7 +54,7 @@ namespace ubv.ui.client
         {
             base.Update();
 
-            if (Time.frameCount % m_refreshRateUsers == 0)
+            if (Time.frameCount % 69 == 0)
             {
                 RefreshUsersInLobby();
             }
@@ -63,10 +62,10 @@ namespace ubv.ui.client
 
         private void RefreshUsersInLobby()
         {
-            if (!m_activeUserDisplayed && m_activeUser != null && m_activeUserCharacter != null)
+            if (!activeUserDisplayed)
             {
                 m_mainPlayer.ShowPlayer(m_activeUser, m_activeUserCharacter);
-                m_activeUserDisplayed = true;
+                activeUserDisplayed = true;
             }
 
             for (int i = 0; i < m_playersInLobby.Length; i++)
@@ -76,7 +75,7 @@ namespace ubv.ui.client
                     CharacterData character = m_characters[i];
                     int playerIntID = character.PlayerID.GetHashCode();
                     UserInfo user = m_users[playerIntID];
-                    if (user != null && character != null)
+                    if (user != null)
                     {
                         m_playersInLobby[i].ShowPlayer(user, character);
                     }
@@ -102,7 +101,7 @@ namespace ubv.ui.client
                 foreach (CharacterData character in m_characters)
                 {
                     int playerIntID = character.PlayerID.GetHashCode();
-                    if (playerIntID == m_activeUser.ID)
+                    if (playerIntID == m_activeUser.ID.GetHashCode())
                     {
                         m_activeUserCharacter = character;
                     }
@@ -142,14 +141,13 @@ namespace ubv.ui.client
             lock (m_userLock)
             {
                 Debug.Log("Got user info in UI from " + info.UserName);
-                m_users[info.ID] = info;
+                m_users[info.ID.GetHashCode()] = info;
             }
         }
 
         public void Back()
         {
             //Go to game search scene
-            m_lobby.BackToCharacterSelect();
         }
 
         public void ToggleReady()

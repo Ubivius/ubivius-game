@@ -269,11 +269,11 @@ namespace ubv.tcp.server
                     lock (m_lock)
                     {
                         m_activeEndpoints[source] = false;
-                        break;
                     }
+                    return;
                 }
                 
-                if (totalBytesReadBeforePacket > 0 && m_activeEndpoints[source])
+                if (totalBytesReadBeforePacket > 0)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
                     while (packet != null)
@@ -314,6 +314,17 @@ namespace ubv.tcp.server
                             packet = null;
                         }
                     }
+                }
+
+                try
+                {
+                    Task.Delay(50, new CancellationToken(m_exitSignal || !m_activeEndpoints[source])).Wait();
+                }
+                catch (AggregateException ex)
+                {
+#if DEBUG_LOG
+                    Debug.Log(ex.Message);
+#endif // DEBUG_LOG
                 }
             }
         }

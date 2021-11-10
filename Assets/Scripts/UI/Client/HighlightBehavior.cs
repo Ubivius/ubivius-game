@@ -13,7 +13,6 @@ namespace ubv.ui.client
         private Selectable m_selectable;
         [SerializeField] Color normalColor;
         [SerializeField] Color hoverColor;
-        [SerializeField] Color disableColor;
 
         private void Awake()
         {
@@ -33,33 +32,15 @@ namespace ubv.ui.client
         public void OnSelect(BaseEventData eventData)
         {
             if(m_text)
-            {
-                if(m_selectable.interactable)
-                {
-                    m_text.color = hoverColor;
-                }
-                else
-                {
-                    m_text.color = disableColor;
-                }    
-            }    
+                m_text.color = hoverColor;
         }
 
 
         public void OnDeselect(BaseEventData eventData)
         {
             m_selectable.OnPointerExit(null);
-            if (m_text)
-            {
-                if (m_selectable.interactable)
-                {
-                    m_text.color = normalColor;
-                }
-                else
-                {
-                    m_text.color = disableColor;
-                }
-            }
+            if(m_text)
+                m_text.color = normalColor;
         }
     }
 }

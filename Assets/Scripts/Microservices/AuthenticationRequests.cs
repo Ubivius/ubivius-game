@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using UnityEngine.Events;
 
 namespace ubv.microservices
 {
@@ -16,13 +15,13 @@ namespace ubv.microservices
     {
         public readonly string User;
         public readonly string Pass;
-        public readonly OnLogin Success;
+        public readonly OnLogin Callback;
 
-        public PostAuthenticationRequest(string User, string Pass, OnLogin callback, UnityAction<string> fail) : base(fail)
+        public PostAuthenticationRequest(string User, string Pass, OnLogin callback)
         {
             this.User = User;
             this.Pass = Pass;
-            Success = callback;
+            Callback = callback;
         }
 
         public override string JSONString()

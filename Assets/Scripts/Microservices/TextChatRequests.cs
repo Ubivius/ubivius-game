@@ -89,14 +89,14 @@ namespace ubv.microservices
         private readonly string m_conversationID;
         private readonly string m_text;
 
-        public readonly UnityAction Callback;
+        public readonly UnityAction<bool, string> Callback;
 
-        public PostTextChatRequest(string userID, string conversationID, string text, UnityAction successCallback, UnityAction<string> failCallback) : base(failCallback)
+        public PostTextChatRequest(string userID, string conversationID, string text, UnityAction<bool, string> callback)
         {
             m_userID = userID;
             m_conversationID = conversationID;
             m_text = text;
-            Callback = successCallback;
+            Callback = callback;
         }
 
         public override string JSONString()

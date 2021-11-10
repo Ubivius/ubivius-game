@@ -15,6 +15,10 @@ namespace ubv.tcp.client
     /// </summary>
     public class TCPClient : MonoBehaviour
     {
+        public bool AutoReconnect;
+
+        private bool m_tryToReconnect;
+
         protected readonly object m_lock = new object();
 
         private string m_serverAddress;
@@ -29,7 +33,8 @@ namespace ubv.tcp.client
         private List<ITCPClientReceiver> m_receiversAwaitingSubscription;
         private List<ITCPClientReceiver> m_receiversAwaitingUnsubscription;
         private bool m_iteratingTroughReceivers;
-        
+
+
         // Un gros buffer c'est le fun, on est pas très limités en taille
         private const int DATA_BUFFER_SIZE = 1024 * 1024 * 4;
         // pour workaround le unix shit
@@ -38,6 +43,9 @@ namespace ubv.tcp.client
 
         private volatile bool m_activeEndpoint;
         [SerializeField] int m_connectionTimeoutInMS = 5000;
+        
+        [SerializeField] private float m_reconnectTryIntervalMS = 2000;
+        private float m_reconnectTryTimer;
         
         [SerializeField] private float m_connectionKeepAliveIntervalMS = 250;
         private byte[] m_keepAlivePacketBytes;
@@ -55,6 +63,7 @@ namespace ubv.tcp.client
             m_exitSignal = false;
             m_dataToSend = new Queue<byte[]>();
             m_activeEndpoint = false;
+            m_tryToReconnect = false;
 
             m_iteratingTroughReceivers = false;
 
@@ -85,25 +94,10 @@ namespace ubv.tcp.client
                 catch (SocketException ex)
                 {
                     Debug.Log(ex.Message);
-                    m_iteratingTroughReceivers = true;
-                    foreach (ITCPClientReceiver receiver in m_receivers)
-                    {
-                        receiver.OnFailureToConnect();
-                    }
-                    m_iteratingTroughReceivers = false;
-                    return;
                 }
 
                 if (!m_client.Connected)
-                {
-                    m_iteratingTroughReceivers = true;
-                    foreach (ITCPClientReceiver receiver in m_receivers)
-                    {
-                        receiver.OnFailureToConnect();
-                    }
-                    m_iteratingTroughReceivers = false;
-                    return;
-                }
+                        return;
 
                 m_iteratingTroughReceivers = true;
                 foreach (ITCPClientReceiver receiver in m_receivers)
@@ -111,6 +105,10 @@ namespace ubv.tcp.client
                     receiver.OnSuccessfulTCPConnect();
                 }
                 m_iteratingTroughReceivers = false;
+                m_tryToReconnect = true;
+#if DEBUG_LOG
+                Debug.Log("Connected to server.");
+#endif // DEBUG_LOG
 
                 using (NetworkStream stream = m_client.GetStream())
                 {
@@ -176,11 +174,10 @@ namespace ubv.tcp.client
                 {
                     Debug.Log(ex.Message);
                     m_activeEndpoint = false;
-                    stream.Close();
-                    break;
+                    return;
                 }
                 
-                if (totalBytesReadBeforePacket > 0 && m_activeEndpoint)
+                if (totalBytesReadBeforePacket > 0)
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes.SubArray(0, totalBytesReadBeforePacket));
                     while (packet != null)
@@ -211,14 +208,57 @@ namespace ubv.tcp.client
                         }
                     }
                 }
+
+                try
+                {
+                    Task.Delay(50, new CancellationToken(m_exitSignal || !m_activeEndpoint)).Wait();
+                }
+                catch (AggregateException ex)
+                {
+#if DEBUG_LOG
+                    Debug.Log(ex.Message);
+#endif // DEBUG_LOG
+                }
             }
 #if DEBUG_LOG
             Debug.Log("State at client receiving thread exit : Active endpoint ? " + m_activeEndpoint.ToString() + ", Exit signal ?" + m_exitSignal);
 #endif // DEBUG_LOG
-            m_requestToSendEvent.Set();
             m_activeEndpoint = false;
         }
 
+        public void Reconnect()
+        {
+#if DEBUG_LOG
+            Debug.Log("Trying to reconnect...");
+#endif // DEBUG_LOG
+
+            if(m_serverAddress == null || m_serverPort == 0)
+            {
+#if DEBUG_LOG
+                Debug.Log("No previous connection has been made.");
+#endif // DEBUG_LOG
+            }
+            else
+            {
+                Connect(m_serverAddress, m_serverPort);
+            }
+        }
+
+        private void ReconnectCheck()
+        {
+            if (!m_activeEndpoint && AutoReconnect && m_tryToReconnect)
+            {
+                m_reconnectTryTimer += Time.deltaTime;
+                if (m_reconnectTryTimer * 1000 > m_reconnectTryIntervalMS)
+                {
+#if DEBUG_LOG
+                    Debug.Log("Trying to reconnect to server...");
+#endif //DEBUG_LOG
+                    Reconnect();
+                    m_reconnectTryTimer = 0;
+                }
+            }
+        }
 
         private void UpdateSubscriptions()
         {
@@ -249,6 +289,7 @@ namespace ubv.tcp.client
 
         private void Update()
         {
+            ReconnectCheck();
             UpdateSubscriptions();
             ConnectionKeepAlive();
         }
@@ -278,15 +319,14 @@ namespace ubv.tcp.client
                 // write to stream (send to client)
                 lock (m_lock)
                 {
-                    while (m_dataToSend.Count > 0 && m_activeEndpoint)
+                    while (m_dataToSend.Count > 0)
                     {
                         if(m_playerID == null)
                         {
 #if DEBUG_LOG
                             Debug.Log("Player ID is not set. Cannot send to server.");
+                            return;
 #endif // DEBUG_LOG
-                            m_activeEndpoint = false;
-                            break;
                         }
 
                         byte[] bytesToWrite = tcp.TCPToolkit.Packet.DataToPacket(m_dataToSend.Dequeue(), m_playerID.Value).RawBytes;
@@ -298,8 +338,7 @@ namespace ubv.tcp.client
                         {
                             Debug.Log(ex.Message);
                             m_activeEndpoint = false;
-                            stream.Close();
-                            break;
+                            return;
                         }
                     }
                 }
@@ -364,9 +403,11 @@ namespace ubv.tcp.client
 
         public void Disconnect()
         {
+            m_tryToReconnect = false;
             m_exitSignal = true;
         }
         
+
         public bool IsConnected()
         {
             return m_activeEndpoint;

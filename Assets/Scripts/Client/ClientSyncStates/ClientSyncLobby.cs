@@ -15,7 +15,9 @@ using System.Threading;
 
 namespace ubv.client.logic
 {
-    public class ClientSyncLobby : ClientSyncState
+    public class ClientListUpdateEvent : UnityEvent<List<CharacterData>>  { }
+
+    public class ClientSyncLobby : ClientSyncState, tcp.client.ITCPClientReceiver
     {
         private enum SubState
         {
@@ -24,9 +26,7 @@ namespace ubv.client.logic
             SUBSTATE_LEAVING_LOBBY,
             SUBSTATE_TRANSITION
         }
-
-        [SerializeField] private string m_menuScene;
-        [SerializeField] private string m_characterSelectScene;
+        
         [SerializeField] private string m_clientPlayScene;
 
         private Flag m_serverSignal;
@@ -35,37 +35,30 @@ namespace ubv.client.logic
 
         private ServerInitMessage m_awaitedInitMessage;
 
-        public UnityAction<List<CharacterData>> OnClientListUpdate;
+        public ClientListUpdateEvent ClientListUpdate { get; private set; }
 
         private string m_activeCharacterID;
 
         private SubState m_currentSubState;
 
         public float LoadPercentage { get; private set; }
-
-        protected override void Awake()
-        {
-            base.Awake();
-            m_canBack = true;
-        }
-
+        
         protected override void StateLoad()
         {
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_WORLD;
+            ClientListUpdate = new ClientListUpdateEvent();
             LoadPercentage = 0;
             m_clientCharacters = new Dictionary<int, CharacterData>();
-            m_server.OnTCPReceive += Receive;
-            m_server.OnServerDisconnect += OnDisconnect;
             Init();
         }
         
         public void SendReadyToServer()
         {
             ClientReadyMessage clientReadyMessage = new ClientReadyMessage();
-            m_server.TCPSend(clientReadyMessage.GetBytes());
+            m_TCPClient.Send(clientReadyMessage.GetBytes());
         }
         
-        private void Receive(tcp.TCPToolkit.Packet packet)
+        public void ReceivePacket(tcp.TCPToolkit.Packet packet)
         {
             if (m_currentSubState == SubState.SUBSTATE_WAITING_FOR_WORLD)
             {
@@ -80,19 +73,15 @@ namespace ubv.client.logic
                         Debug.Log("Fetching character " + id.Value + " from microservice");
                         // fetch character data from microservice
                         string strID = id.Value;
-                        CharacterService.GetCharacter(strID, (CharacterData character) =>
+                        CharacterService.Request(new GetSingleCharacterRequest(strID, (CharacterData[] characters) =>
                         {
                             lock (m_lock)
                             {
-                                Debug.Log("Got character from " + character.PlayerID + " : " + character.Name);
-                                m_clientCharacters[character.PlayerID.GetHashCode()] = character;
-                                if (character.PlayerID.Equals(CurrentUser.StringID))
-                                {
-                                    data.LoadingData.ActiveCharacterID = character.ID;
-                                }
-                                OnClientListUpdate?.Invoke(new List<CharacterData>(m_clientCharacters.Values));
+                                Debug.Log("Got character from " + characters[0].PlayerID + " : " + characters[0].Name);
+                                m_clientCharacters[characters[0].PlayerID.GetHashCode()] = characters[0];
+                                ClientListUpdate.Invoke(new List<CharacterData>(m_clientCharacters.Values));
                             }
-                        });
+                        }));
                     }
                     return;
                 }
@@ -142,7 +131,7 @@ namespace ubv.client.logic
                     GoToGame();
                     break;
                 case SubState.SUBSTATE_LEAVING_LOBBY:
-                    BackToCharacterSelect();
+                    GoBackToPreviousState();
                     break;
                 case SubState.SUBSTATE_TRANSITION:
                     break;
@@ -160,21 +149,13 @@ namespace ubv.client.logic
         private void Init()
         {
             m_activeCharacterID = data.LoadingData.ActiveCharacterID;
-            if (!string.IsNullOrEmpty(m_activeCharacterID))
-            {
-                m_awaitedInitMessage = null;
-                m_clientCharacters?.Clear();
-                m_server.TCPSend(new OnLobbyEnteredMessage(m_activeCharacterID).GetBytes());
-            }
-            else
-            {
-#if DEBUG_LOG
-                Debug.Log("No active character. Leaving lobby.");
-#endif // DEBUG_LOG
-            }
+            m_awaitedInitMessage = null;
+            m_clientCharacters?.Clear();
+            m_TCPClient.Subscribe(this);
+            m_TCPClient.Send(new OnLobbyEnteredMessage(m_activeCharacterID).GetBytes());
         }
         
-        private void OnDisconnect()
+        public void OnDisconnect()
         {
 #if DEBUG_LOG
             Debug.Log("Lobby : lost connection to game server. Leaving lobby.");
@@ -182,31 +163,27 @@ namespace ubv.client.logic
             m_currentSubState = SubState.SUBSTATE_LEAVING_LOBBY;
         }
 
-        public void BackToCharacterSelect()
+        private void GoBackToPreviousState()
         {
             m_currentSubState = SubState.SUBSTATE_TRANSITION;
-            if (!ClientStateManager.Instance.BackToScene(m_characterSelectScene))
-            {
-                ClientStateManager.Instance.BackToScene(m_menuScene);
-            }
+            ClientStateManager.Instance.PopState();
         }
         
         protected override void StateUnload()
         {
-            m_server.OnTCPReceive -= Receive;
-            m_server.OnServerDisconnect -= OnDisconnect;
+            m_TCPClient.Unsubscribe(this);
         }
 
         protected override void StatePause()
         {
-            m_server.OnTCPReceive -= Receive;
-            m_server.OnServerDisconnect -= OnDisconnect;
+            m_TCPClient.Unsubscribe(this);
         }
 
         protected override void StateResume()
         {
-            m_server.OnTCPReceive += Receive;
-            m_server.OnServerDisconnect += OnDisconnect;
+            ClientStateManager.Instance.PopState();
         }
+
+        public void OnSuccessfulTCPConnect() { }
     }   
 }

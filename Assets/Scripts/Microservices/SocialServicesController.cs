@@ -37,34 +37,34 @@ namespace ubv.microservices
             CurrentUser = null;
         }
 
-        public void Authenticate(string user, string password, UnityAction<string> OnFail = default)
+        public void Authenticate(string user, string password)
         {
             m_auth.Request(new PostAuthenticationRequest(user, password, (string userID) =>
             {
                 m_users.Request(new GetUserInfoRequest(userID, (UserInfo info) =>
                 {
                     CurrentUser = info;
-                    m_friendsList.DefaultUser = CurrentUser.StringID;
+                    m_friendsList.DefaultUser = CurrentUser.ID;
                     m_textChat.IsFetcherActive = true;
                     m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
                     m_textChat.OnNewMessageInConversation += (string conversationID, MessageInfo msg) => {
-                        if (!msg.UserID.Equals(CurrentUser.StringID))
+                        if (!msg.UserID.Equals(CurrentUser.ID))
                         {
-                            OnNewMessage(msg.UserID, CurrentUser.StringID, msg);
+                            OnNewMessage(msg.UserID, CurrentUser.ID, msg);
                         }
                         else
                         {
                             if (m_cachedConversationUsers.ContainsKey(conversationID))
                             {
-                                OnNewMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
+                                OnNewMessage(CurrentUser.ID, m_cachedConversationUsers[conversationID], msg);
                             }
                             else
                             {
                                 GetUserIDFromConversation(conversationID, (string friendID) => 
                                 {
                                     m_cachedConversationUsers[conversationID] = friendID;
-                                    OnNewMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
+                                    OnNewMessage(CurrentUser.ID, m_cachedConversationUsers[conversationID], msg);
                                 });
                             }
                         }
@@ -73,20 +73,19 @@ namespace ubv.microservices
 
                     FetchAllPrivateConversations();
                 }));
-            },
-            OnFail));
+            }));
         }
 
         private void FetchAllPrivateConversations()
         {
-            m_friendsList.GetAllFriends(CurrentUser.StringID, (HashSet<RelationInfo> friends) => {
+            m_friendsList.GetAllFriends(CurrentUser.ID, (HashSet<RelationInfo> friends) => {
 
                 foreach (RelationInfo info in friends)
                 {
                     m_cachedConversationUsers[info.ConversationID] = info.FriendUserID;
                     m_cachedUserConversations[info.FriendUserID] = info.ConversationID;
 
-                    m_friendsList.GetConversationIDWith(CurrentUser.StringID, info.FriendUserID, (string conversation) => {
+                    m_friendsList.GetConversationIDWith(CurrentUser.ID, info.FriendUserID, (string conversation) => {
                         m_textChat.AddConversationToCache(conversation);
                     });
                 }
@@ -116,7 +115,7 @@ namespace ubv.microservices
             }
 
             int allFriends = 0;
-            m_friendsList.GetAllFriendsIDs(CurrentUser.StringID, (HashSet<string> friendsIDs) => {
+            m_friendsList.GetAllFriendsIDs(CurrentUser.ID, (HashSet<string> friendsIDs) => {
                 
                 foreach (string id in friendsIDs)
                 {
@@ -147,32 +146,32 @@ namespace ubv.microservices
             });
         }
 
-        public void SendMessageToCurrentGameChat(string message, UnityAction success = default, UnityAction<string> fail = default)
+        public void SendMessageToCurrentGameChat(string message, UnityAction<bool, string> OnResult = default)
         {
             if (true) // if (on a pas encore de general chat) (va être avec dispatcher)
             {
-                fail?.Invoke("Cannot send to game chat - you are not in a game yet");
+                OnResult?.Invoke(false, "Cannot send to game chat - you are not in a game yet");
                 return;
             }
-            SendMessageToConversation("placeholder-general-chat", message, success, fail);
+            SendMessageToConversation("placeholder-general-chat", message, OnResult);
         }
 
-        public void SendMessageToConversation(string conversationID, string message, UnityAction successCallback = default, UnityAction<string> failCallback = default)
+        public void SendMessageToConversation(string conversationID, string message, UnityAction<bool, string> OnResult = default)
         {
-            m_textChat.SendMessageToConversation(CurrentUser.StringID, conversationID, message, successCallback, failCallback);
+            m_textChat.SendMessageToConversation(CurrentUser.ID, conversationID, message, OnResult);
         }
 
-        public void SendMessageToUser(string otherUserID, string message, UnityAction success = default, UnityAction<string> fail = default)
+        public void SendMessageToUser(string otherUserID, string message, UnityAction<bool, string> OnResult = default)
         {
-            if (otherUserID.Equals(CurrentUser.StringID))
+            if (otherUserID.Equals(CurrentUser.ID))
             {
-                fail?.Invoke("Cannot send a message to yourself");
+                OnResult?.Invoke(false, "Cannot send a message to yourself");
                 return;
             }
             
             GetConversationIDWith(otherUserID, (convID) =>
             {
-                m_textChat.SendMessageToConversation(CurrentUser.StringID, m_cachedUserConversations[otherUserID], message, success, fail);
+                m_textChat.SendMessageToConversation(CurrentUser.ID, m_cachedUserConversations[otherUserID], message, OnResult);
             });
         }
 
@@ -185,7 +184,7 @@ namespace ubv.microservices
                 return;
             }
 
-            m_friendsList.GetConversationIDWith(CurrentUser.StringID, otherUserID, (string conversationID) => {
+            m_friendsList.GetConversationIDWith(CurrentUser.ID, otherUserID, (string conversationID) => {
                 m_cachedUserConversations.Add(otherUserID, conversationID);
                 m_cachedConversationUsers.Add(conversationID, otherUserID);
                 OnGetConversation(conversationID);
@@ -200,7 +199,7 @@ namespace ubv.microservices
                 return;
             }
             
-            m_friendsList.GetAllFriends(CurrentUser.StringID, (HashSet<RelationInfo> friends) => {
+            m_friendsList.GetAllFriends(CurrentUser.ID, (HashSet<RelationInfo> friends) => {
 
                 foreach (RelationInfo info in friends)
                 {
