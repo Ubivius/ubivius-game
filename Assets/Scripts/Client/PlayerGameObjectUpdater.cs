@@ -13,6 +13,7 @@ namespace ubv.client.logic
     {
         [SerializeField]
         private float m_velocityLerpTime = 0.3f;
+        [SerializeField] private float m_maxPositionError = 1f;
         [SerializeField] private float m_positionLerpTime = 0.2f;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
@@ -78,7 +79,8 @@ namespace ubv.client.logic
             // check correction on goalStates au lieu du current position TODO
             foreach(PlayerState player in remoteState.Players().Values)
             {
-                if (m_goalStates[player.GUID.Value].IsDifferent(player, m_correctionTolerance))
+                PlayerState localPlayer = localState.Players()[player.GUID.Value];
+                if (localPlayer.IsDifferent(player, m_correctionTolerance))
                 {
                     //Debug.Log("Needing correction");
                     return true;
@@ -147,33 +149,28 @@ namespace ubv.client.logic
 
         private void LerpTowardsState(PlayerState player, float timeSinceLastGoal)
         {
-            Vector2 goalVel, currentVel, newVel;
-            goalVel = m_goalStates[player.GUID.Value].Velocity.Value;
-            currentVel = Bodies[player.GUID.Value].velocity;
+            // if position joueur est trop éloignée, snap
+            // else:
+            // pas de lerp sur la vitesse, mais on rajoute à la vitesse le déplacement vers la position voulue
+            int id = player.GUID.Value;
+            Vector2 currentPos = Bodies[id].position;
+            Vector2 goalPos = m_goalStates[id].Position.Value;
 
-            float progression = timeSinceLastGoal / m_velocityLerpTime;
-            if(progression < 1)
+            if ((goalPos - currentPos).sqrMagnitude > m_maxPositionError * m_maxPositionError)
             {
-                newVel = Vector2.Lerp(currentVel, goalVel, timeSinceLastGoal / m_velocityLerpTime);
-            }
-            else
-            {
-                newVel = goalVel;
-            }
-
-            Bodies[player.GUID.Value].velocity = newVel;
-
-            /*Bodies[player.GUID.Value].velocity = Vector2.Lerp(Bodies[player.GUID.Value].velocity, m_goalStates[player.GUID.Value].Velocity.Value, time / m_positionLerpTime);
-            if ((Bodies[player.GUID.Value].velocity - m_goalStates[player.GUID.Value].Velocity.Value).sqrMagnitude < 0.01f)
-            {
-                Bodies[player.GUID.Value].velocity = m_goalStates[player.GUID.Value].Velocity.Value;
+                currentPos = goalPos;
+                Bodies[id].position = currentPos;
             }
 
-            Bodies[player.GUID.Value].position = Vector2.Lerp(Bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, time / m_positionLerpTime);
-            if ((Bodies[player.GUID.Value].position - m_goalStates[player.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
+            Vector2 velocity = m_goalStates[id].Velocity.Value;
+            Vector2 delta = goalPos - currentPos;
+            if (delta.sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
             {
-                Bodies[player.GUID.Value].position = m_goalStates[player.GUID.Value].Position.Value;
-            }*/
+                velocity += delta;
+                velocity = common.logic.PlayerMovement.GetVelocity(velocity, m_isSprinting[id], PlayerControllers[id].GetStats());
+            }
+
+            Bodies[id].velocity = velocity;
         }
 
         public Transform GetLocalPlayerTransform()
