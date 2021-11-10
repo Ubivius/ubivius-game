@@ -46,7 +46,11 @@ namespace ubv.client.logic
 #endif // DEBUG_LOG
 
             
-            SocialServices.Authenticate(user, pass);
+            SocialServices.Authenticate(user, pass, (string message) => {
+#if DEBUG_LOG
+                Debug.LogError("Could not authenticate:" + message);
+#endif // DEBUG_LOG
+            });
         }
 
         private void GoToMenu()
@@ -58,8 +62,8 @@ namespace ubv.client.logic
         {
             if (playerIDString != null)
             {
-                PlayerID = playerIDString.GetHashCode();
-                UserInfo = SocialServices.CurrentUser;
+                CurrentUser = SocialServices.CurrentUser;
+                m_server.SetPlayerID(CurrentUser.ID);
                 m_readyToGoToMenu = true;
             }
             else

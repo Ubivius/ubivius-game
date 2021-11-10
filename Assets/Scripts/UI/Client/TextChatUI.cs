@@ -121,10 +121,12 @@ namespace ubv.ui.client
             var t_color = m_chatBox.GetComponent<Image>().color;
 
             if (m_textChatIsActive) {
+                InputSystem.DisableDevice(Keyboard.current);
                 t_color.a = 0.4f;
                 m_chatBox.GetComponent<Image>().color = t_color;
             }
             else {
+                InputSystem.EnableDevice(Keyboard.current);
                 t_color.a = 0f;
                 m_chatBox.GetComponent<Image>().color = t_color;
             }
@@ -191,8 +193,8 @@ namespace ubv.ui.client
                 {
                     m_socialServices.GetFriendIDFromName(t_matchFriend.Groups[2].Value, (string id) =>
                     {
-                        m_socialServices.SendMessageToUser(id, t_matchFriend.Groups[3].Value, (bool success, string message) => {
-                            if (!success) m_errorMessageQueue.Enqueue(message);
+                        m_socialServices.SendMessageToUser(id, t_matchFriend.Groups[3].Value, null, (string message) => {
+                            m_errorMessageQueue.Enqueue(message);
                         });
                     }, () => 
                     {
@@ -204,8 +206,8 @@ namespace ubv.ui.client
                 }
                 else
                 {
-                    m_socialServices.SendMessageToCurrentGameChat(t_matchFriend.Groups[3].Value, (bool success, string message) => {
-                        if(!success) m_errorMessageQueue.Enqueue(message);
+                    m_socialServices.SendMessageToCurrentGameChat(t_matchFriend.Groups[3].Value, null, (string message) => {
+                        m_errorMessageQueue.Enqueue(message);
                     });
                 }
 

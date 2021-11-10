@@ -86,3 +86,5 @@ Packages/Grpc.Core.Api.2.28.1/*
 
 # Builds
 [Bb]uild/*
+
+Packages/

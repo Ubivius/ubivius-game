@@ -22,7 +22,9 @@ namespace ubv.server.logic
                 
         private Dictionary<int, Dictionary<int, InputFrame>> m_clientInputBuffers;
         private Dictionary<int, InputFrame> m_currentInputFrames;
-        
+
+        private Dictionary<int, common.serialization.types.String> m_clientCharacters;
+
         [SerializeField] private uint m_snapshotTicks;
         [SerializeField] private string m_physicsSceneName;
 
@@ -39,12 +41,13 @@ namespace ubv.server.logic
             ServerState.m_gameplayState = this;
         }
 
-        public void Init(ICollection<int> clients)
+        public void Init(Dictionary<int, common.serialization.types.String> clientCharacters)
         {
+            m_clientCharacters = clientCharacters;
             m_tickAccumulator = 0;
             m_masterTick = 0;
             m_currentWorldState = new WorldState();
-            m_clients = new HashSet<int>(clients);
+            m_clients = new HashSet<int>(clientCharacters.Keys);
 
             m_currentInputFrames = new Dictionary<int, InputFrame>();
 
@@ -185,6 +188,18 @@ namespace ubv.server.logic
 
         protected override void OnTCPReceiveFrom(TCPToolkit.Packet packet, int playerID)
         {
+            ServerStatusMessage status = Serializable.CreateFromBytes<ServerStatusMessage>(packet.Data.ArraySegment());
+            if (status != null)
+            {
+                status.PlayerID.Value = playerID;
+                status.IsInServer.Value = m_connectedClients.ContainsKey(playerID);
+                status.GameStatus.Value = (uint)ServerStatusMessage.ServerStatus.STATUS_GAME;
+                status.AcceptsNewPlayers.Value = false;
+                status.CharacterID.Value = m_clientCharacters.ContainsKey(playerID) ? m_clientCharacters[playerID].Value : string.Empty;
+                m_serverConnection.TCPServer.Send(status.GetBytes(), playerID);
+                return;
+            }
+
             ServerRejoinGameDemand confirmation = common.serialization.IConvertible.CreateFromBytes<ServerRejoinGameDemand>(packet.Data.ArraySegment());
             if (confirmation != null)
             {
