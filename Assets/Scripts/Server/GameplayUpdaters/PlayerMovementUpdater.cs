@@ -28,10 +28,9 @@ namespace ubv.server.logic
 
         public override void InitWorld(WorldState state)
         {
-            PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
-
             foreach (int id in state.Players().Keys)
             {
+                PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
                 m_playersGameObjects.Add(id, playerGameObject);
                 Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
                 common.gameplay.PlayerController playerCtrl = playerGameObject.GetComponent<common.gameplay.PlayerController>();
