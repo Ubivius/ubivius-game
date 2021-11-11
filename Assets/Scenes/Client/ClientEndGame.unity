@@ -150,11 +150,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b98c4f5ef5b39e849a54dee8cc691ec6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_menuState: {fileID: 0}
-  m_playButton: {fileID: 0}
-  m_statsButton: {fileID: 0}
-  m_optionsButton: {fileID: 0}
-  m_quitButton: {fileID: 0}
+  m_EndGameState: {fileID: 0}
+  m_menuButton: {fileID: 0}
 --- !u!4 &237234098
 Transform:
   m_ObjectHideFlags: 0
@@ -649,8 +646,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: Back
+      - m_Target: {fileID: 1040387158}
+        m_MethodName: GoToMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1088,8 +1085,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22bbd87df7cd02944a9112a9dbcd91d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_clientGameSearch: 
-  m_clientCharacterSelect: 
+  m_clientGameMenu: ClientMenu
   m_eventSystem: {fileID: 0}
 --- !u!4 &1040387159
 Transform:

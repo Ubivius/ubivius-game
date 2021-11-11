@@ -11,31 +11,13 @@ namespace ubv.ui.client
     public class ClientEndGameUI : TabBehaviour
     {
         [SerializeField]
-        private ClientMenuState m_menuState;
+        private ClientEndGameState m_EndGameState;
 
-        [SerializeField] private Button m_playButton;
-        [SerializeField] private Button m_statsButton;
-        [SerializeField] private Button m_optionsButton;
-        [SerializeField] private Button m_quitButton;
+        [SerializeField] private Button m_menuButton;
 
-        public void Play()
+        public void Menu()
         {
-            m_menuState.GoToPlay();
-        }
-
-        public void Stats()
-        {
-            // to be implemented
-        }
-
-        public void Options()
-        {
-            // to be implemented
-        }
-
-        public void Quit()
-        {
-            Application.Quit();
+            m_EndGameState.GoToMenu();
         }
     }
 }

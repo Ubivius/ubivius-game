@@ -8,39 +8,18 @@ namespace ubv.client
 {
     public class ClientEndGameState : ClientSyncState
     {
-        [SerializeField] private string m_clientGameSearch;
-        [SerializeField] private string m_clientCharacterSelect;
+        [SerializeField] private string m_clientGameMenu;
         [SerializeField] private EventSystem m_eventSystem;
         
         public override void OnStart()
         {
-            data.ClientCacheData cache = data.ClientCacheData.LoadCache();
-            if (cache != null)
-            {
-                if ((DateTime.UtcNow - cache.LastUpdated).TotalSeconds > 1200)
-                {
-                    data.ClientCacheData.SaveCache(false);
-                }
-                else if (cache.WasInGame)
-                {
-                    data.LoadingData.IsTryingToRejoinGame = cache.WasInGame;
-                    // for now, auto rejoin
-                    RejoinGame();
-                }
-            }
+            
         }
 
-        public void RejoinGame()
-        {
-            if (data.LoadingData.IsTryingToRejoinGame)
-            {
-                ClientStateManager.Instance.PushScene(m_clientGameSearch);
-            }
-        }
 
-        public void GoToPlay()
+        public void GoToMenu()
         {
-            ClientStateManager.Instance.PushScene(m_clientCharacterSelect);
+            ClientStateManager.Instance.PushScene(m_clientGameMenu);
         }
 
         protected override void StateLoad()
