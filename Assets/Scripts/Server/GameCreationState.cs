@@ -65,6 +65,8 @@ namespace ubv.server.logic
             {
                 initializer.Init();
             }
+
+            Debug.Log("Testing server in cluster");
         }
         
         private bool EveryoneIsReady()
