@@ -84,10 +84,6 @@ namespace ubv.server.logic
             switch (m_currentSubState)
             {
                 case SubState.SUBSTATE_WAITING_FOR_PLAYERS:
-                    if(Time.frameCount % 69 == 0)
-                    {
-                        BroadcastPlayerList();
-                    }
                     if (EveryoneIsReady())
                     {
                         common.world.cellType.CellInfo[,] cellInfoArray = m_worldGenerator.GetCellInfoArray();
@@ -130,9 +126,11 @@ namespace ubv.server.logic
 
         private void BroadcastPlayerList()
         {
+            Debug.Log("Broadcasting player/character list");
             byte[] bytes = new CharacterListMessage(GetActiveCharacters()).GetBytes();
             foreach (int id in m_activeClients)
             {
+                Debug.Log("Sending to :" + id);
                 m_serverConnection.TCPServer.Send(bytes, id);
             }
         }
@@ -142,10 +140,10 @@ namespace ubv.server.logic
             Dictionary<int, common.serialization.types.String> activeCharacters = new Dictionary<int, common.serialization.types.String>();
             foreach (int id in m_activeClients)
             {
+                Debug.Log("Active character :" + m_clientCharacters[id]);
                 activeCharacters.Add(id, m_clientCharacters[id]);
             }
             return activeCharacters;
-
         }
 
         protected override void OnTCPReceiveFrom (TCPToolkit.Packet packet, int playerID)
@@ -153,6 +151,7 @@ namespace ubv.server.logic
             ServerStatusMessage status = Serializable.CreateFromBytes<ServerStatusMessage>(packet.Data.ArraySegment());
             if (status != null)
             {
+                Debug.Log("Received status request from " + playerID);
                 status.PlayerID.Value = playerID;
                 status.IsInServer.Value = m_clientCharacters.ContainsKey(playerID);
                 status.GameStatus.Value = (uint)ServerStatusMessage.ServerStatus.STATUS_LOBBY;
@@ -218,7 +217,7 @@ namespace ubv.server.logic
                 if (!m_clientCharacters.ContainsKey(playerID))
                 {
 #if DEBUG_LOG
-                    Debug.Log("New player just connected to server: " + playerID);
+                    Debug.Log("New player just connected to server: " + playerID + ". Awaiting his character");
 #endif // DEBUG_LOG
                     m_clientCharacters[playerID] = new common.serialization.types.String(string.Empty);
                 }
