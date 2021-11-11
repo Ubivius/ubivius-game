@@ -29,7 +29,7 @@ namespace ubv.tcp.server
         // Un gros buffer c'est le fun, on est pas très limités en taille
         private const int DATA_BUFFER_SIZE = 1024*1024*4;
         // pour workaround le unix shit
-        private const int MAX_BYTES_READ = 32768;
+        private const int MAX_BYTES_READ = 4096;
 
         protected List<Task> m_tcpClientTasks;
 
@@ -269,11 +269,11 @@ namespace ubv.tcp.server
                     lock (m_lock)
                     {
                         m_activeEndpoints[source] = false;
+                        break;
                     }
-                    return;
                 }
                 
-                if (totalBytesReadBeforePacket > 0)
+                if (totalBytesReadBeforePacket > 0 && m_activeEndpoints[source])
                 {
                     TCPToolkit.Packet packet = TCPToolkit.Packet.FirstPacketFromBytes(bytes);
                     while (packet != null)
@@ -314,17 +314,6 @@ namespace ubv.tcp.server
                             packet = null;
                         }
                     }
-                }
-
-                try
-                {
-                    Task.Delay(50, new CancellationToken(m_exitSignal || !m_activeEndpoints[source])).Wait();
-                }
-                catch (AggregateException ex)
-                {
-#if DEBUG_LOG
-                    Debug.Log(ex.Message);
-#endif // DEBUG_LOG
                 }
             }
         }

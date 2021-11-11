@@ -13,11 +13,12 @@ namespace ubv.client.logic
         public tcp.client.TCPClient TCPClient;
         public udp.client.UDPClient UDPClient;
         public http.client.HTTPClient HTTPClient;
-        public DispatcherMicroservice Dispatcher;
+        public ClientConnectionManager Server;
 
         [Header("Microservices")]
         public SocialServicesController SocialServices;
         public CharacterDataService CharacterData;
+        public DispatcherMicroservice Dispatcher;
 
         private void Awake()
         {
