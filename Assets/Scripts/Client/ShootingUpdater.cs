@@ -107,8 +107,11 @@ namespace ubv.client.logic
 
         public override void UpdateWorldFromState(WorldState state)
         {
-            m_isShooting[m_playerGUID] = state.Players()[m_playerGUID].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING);
-            m_shootingDirection[m_playerGUID] = state.Players()[m_playerGUID].ShootingDirection.Value;
+            foreach (PlayerState player in state.Players().Values)
+            {
+                m_isShooting[player.GUID.Value] = state.Players()[player.GUID.Value].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING);
+                m_shootingDirection[player.GUID.Value] = state.Players()[player.GUID.Value].ShootingDirection.Value;
+            }
         }
 
         public override void FixedStateUpdate(float deltaTime)
