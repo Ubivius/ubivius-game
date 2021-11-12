@@ -24,11 +24,17 @@ namespace ubv
                     }
 
                 }
-                static float m_lastShot = 0;
+
+                static private Dictionary<PlayerPrefab, float> m_playerLastShot = new Dictionary<PlayerPrefab, float>();
 
                 static public void Execute(PlayerPrefab player, PlayerShootingSettings playerShootingSettings, Vector2 aimDirection, float deltaTime)
                 {
-                    if (m_lastShot > playerShootingSettings.BulletDelay)
+                    if (!m_playerLastShot.ContainsKey(player))
+                    {
+                        m_playerLastShot.Add(player, 0);
+                    }
+
+                    if (m_playerLastShot[player] > playerShootingSettings.BulletDelay)
                     {
                         Vector3 shootingDirection = new Vector3(aimDirection.x, aimDirection.y, 0.0f);
                         RaycastHit2D hit = Physics2D.Raycast(player.transform.position, shootingDirection);
@@ -43,11 +49,11 @@ namespace ubv
                             Debug.DrawLine(player.transform.position, hit.point, Color.green, 0.25f);
                         }
 
-                        m_lastShot = 0;
+                        m_playerLastShot[player] = 0;
                     }
                     else
                     {
-                        m_lastShot += deltaTime;
+                        m_playerLastShot[player] += deltaTime;
                     }
                 }
             }

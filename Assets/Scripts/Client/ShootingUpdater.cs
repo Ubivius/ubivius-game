@@ -51,8 +51,6 @@ namespace ubv.client.logic
                 if (player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING) && !localState.Players()[playerId].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING)
                  || !player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING) && localState.Players()[playerId].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING))
                 {
-                    //Debug.Log("IS_SHOOTING -> Client: " + localState.Players()[playerId].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING)
-                    //        + ", Server: " + player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING));
                     return true;
                 }
                 else if (player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING))
@@ -62,8 +60,6 @@ namespace ubv.client.logic
                      && !(player.ShootingDirection.Value.y > localState.Players()[playerId].ShootingDirection.Value.y * (1 - m_correctionTolerance))
                      && !(player.ShootingDirection.Value.y < localState.Players()[playerId].ShootingDirection.Value.y * (1 + m_correctionTolerance)))
                     {
-                        //Debug.Log("SHOOTING_DIRECTION -> Client: (" + localState.Players()[player.GUID.Value].ShootingDirection.Value.x + ", " + localState.Players()[player.GUID.Value].ShootingDirection.Value.y
-                        //     + "), Server: (" + player.ShootingDirection.Value.x + ", " + player.ShootingDirection.Value.y + ")");
                         return true;
                     }
                 }                
