@@ -12,10 +12,7 @@ namespace ubv.client
         [SerializeField] private EventSystem m_eventSystem;
         
         public override void OnStart()
-        {
-            
-        }
-
+        { }
 
         public void GoToMenu()
         {
