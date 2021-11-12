@@ -113,7 +113,6 @@ namespace ubv.client.logic
         public override void FixedStateUpdate(float deltaTime)
         {
 
-
         }
     }
 }
