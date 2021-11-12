@@ -47,6 +47,7 @@ namespace ubv.server.testing
             }
         }
 
+#if UNITY_EDITOR
         public void BlockNode()
         {
             if (m_pathfindingGridManager.IsSetUpDone() == true)
@@ -62,6 +63,7 @@ namespace ubv.server.testing
                 m_pathfindingGridManager.OpenDoor(x, y);
             }
         }
+#endif // UNITY_EDITOR
 
         //pt pour le faire avec la sourie
         public static Vector3 GetMouseWorldPosition()

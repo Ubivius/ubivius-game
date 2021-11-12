@@ -25,9 +25,9 @@ namespace ubv.server.logic
 
         public UnityAction OnPathFindingManagerGenerated;
 
-        private void OnEnable()
+        private void Awake()
         {
-            Debug.Log("Manager Started");
+            Debug.Log("Pathfinding manager started");
             m_worldGenerator.OnWorldGenerated += OnWorldGenerated;            
         }
 
@@ -38,17 +38,13 @@ namespace ubv.server.logic
 
         private void OnWorldGenerated()
         {
-            Debug.Log("Leworld se genere");
             LogicGrid logicGrid = m_worldGenerator.GetMasterLogicGrid();
-            if (logicGrid != null)
-            {
-                this.SetPathNodesFromLogicGrid(logicGrid);
-            }
+            this.SetPathNodesFromLogicGrid(logicGrid);
         }
 
         public void SetPathNodesFromLogicGrid(LogicGrid logicGrid)
         {
-            Debug.Log("SetPathNodesFromLogicGrid");
+            Debug.Log("Set PathNodes From LogicGrid");
             m_cellToNodes = new Dictionary<common.world.cellType.LogicCell, PathNode>();
             m_logicGrid = logicGrid;
             m_pathNodes = new PathNode[m_logicGrid.Width, m_logicGrid.Height];
@@ -100,7 +96,8 @@ namespace ubv.server.logic
 
             return null;
         }
-        
+
+#if UNITY_EDITOR
         public void OpenDoor(int x, int y)
         {
             common.world.cellType.LogicCell cell = m_logicGrid.Grid[x, y];
@@ -124,6 +121,7 @@ namespace ubv.server.logic
                 }
             }
         }
+#endif // UNITY_EDITOR
 
         private void RemoveAllNeighbours(PathNode p)
         {
@@ -137,6 +135,8 @@ namespace ubv.server.logic
 
         private void AddAllWalkableNeighbours(PathNode p)
         {
+            // TODO MAYBE : fix aux enemies in walls serait de disable la navigation
+            // diagonale qui passe à coté d'un non-walkable
             if(!m_logicGrid.Grid[p.x, p.y].IsWalkable)
             {
                 return;
@@ -175,6 +175,7 @@ namespace ubv.server.logic
 
         public List<PathNode> GetPath(PathNode startNode, PathNode endNode)
         {
+            if (!IsSetUpDone()) return null;
             List<PathNode> path = m_pathfinding.FindPath(startNode, endNode);
             if (path == null) Debug.Log("No path found!");
             return path;
@@ -182,6 +183,7 @@ namespace ubv.server.logic
 
         public PathRoute GetPathRoute(Vector2 start, Vector2 end)
         {
+            if (!IsSetUpDone()) return null;
             PathNode startNode = this.GetNode(start.x, start.y);
             PathNode endNode = this.GetNode(end.x, end.y);
 

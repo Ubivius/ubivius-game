@@ -14,53 +14,46 @@ namespace ubv.server.logic
         [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
         [SerializeField] private int m_enemyCount;
 
-        private PathNode[,] m_pathNodes;
+        private PathNode[,] m_mapNodes;
 
-        private Dictionary<int, EnemyStateData> m_enemyStatesData;
+        private Dictionary<int, EnemyState> m_enemies;
 
         private Dictionary<int, Rigidbody2D> m_bodies;
-        private Dictionary<int, EnemyState> m_states;
-        private Dictionary<int, EnemyPathFindingMovement> m_enemyPathFindingMovement;
-        private Dictionary<int, Vector2> m_goalPosition;
+        private Dictionary<int, EnemyMovementUpdater> m_enemyMovementUpdaters;
 
-        private int id;
         public override void Setup()
         {
             m_bodies = new Dictionary<int, Rigidbody2D>();
-            m_states = new Dictionary<int, EnemyState>();
-            m_enemyStatesData = new Dictionary<int, EnemyStateData>();
-            m_enemyPathFindingMovement = new Dictionary<int, EnemyPathFindingMovement>();
-            m_goalPosition = new Dictionary<int, Vector2>();
+            m_enemies = new Dictionary<int, EnemyState>();
+            m_enemyMovementUpdaters = new Dictionary<int, EnemyMovementUpdater>();
         }
 
         public override void InitWorld(WorldState state)
         {
-            OnPathFindingManagerGenerated(state); 
-        }
-
-        private void OnPathFindingManagerGenerated(WorldState state)
-        {
-            m_pathNodes = m_pathfindingGridManager.GetPathNodeArray();
+            m_mapNodes = m_pathfindingGridManager.GetPathNodeArray();
             EnemySpawn(state);
         }
-
+        
         public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
         {
+            foreach(int id in m_enemies.Keys)
+            {
+                EnemyState enemy = m_enemies[id];
+                Rigidbody2D body = m_bodies[id];
+                
+                common.logic.EnemyMovement.Execute(body, m_enemyMovementUpdaters[id].GetMovementDirection(), m_enemySettings.Velocity);
+            }
         }
 
         public override void UpdateWorld(WorldState client)
         {
             foreach (int id in client.Enemies().Keys)
             {
-                m_goalPosition[id] = m_enemyPathFindingMovement[id].GetNextPostion();
-
                 Rigidbody2D body = m_bodies[id];
-                EnemyStateData enemy = m_enemyStatesData[id];
+                EnemyState enemy = m_enemies[id];
 
                 enemy.Position.Value = body.position;
-                enemy.Rotation.Value = body.rotation;
-                enemy.EnemyState = m_states[id];
-                enemy.GoalPosition.Value = m_goalPosition[id];
+                enemy.GoalPosition.Value = m_enemyMovementUpdaters[id].GetNextPostion();
             }
         }
 
@@ -71,36 +64,30 @@ namespace ubv.server.logic
             int yPos;
             while (i < m_enemyCount)
             {
-                xPos = Random.Range(0, m_pathNodes.GetLength(0) - 1);
-                yPos = Random.Range(0, m_pathNodes.GetLength(1) - 1);
+                xPos = Random.Range(0, m_mapNodes.GetLength(0) - 1);
+                yPos = Random.Range(0, m_mapNodes.GetLength(1) - 1);
 
                 if (m_pathfindingGridManager.GetNodeIfWalkable(xPos, yPos) != null)
                 {
-                    GameObject enemyGameObject = Instantiate(m_enemySettings.SimpleEnemy, new Vector3(xPos, yPos, 0), Quaternion.identity);
+                    GameObject enemyGameObject = Instantiate(m_enemySettings.EnemyPrefab, new Vector3(xPos, yPos, 0), Quaternion.identity);
                     Rigidbody2D body = enemyGameObject.GetComponent<Rigidbody2D>();
-                    EnemyPathFindingMovement enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyPathFindingMovement>();
-                    EnemyStateMachine enemyStateMachine = enemyGameObject.GetComponent<EnemyStateMachine>();
+                    EnemyMovementUpdater enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyMovementUpdater>();
 
-                    enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
+                    enemyPathFindingMovement.Init(m_pathfindingGridManager, enemyGameObject.transform);
 
-                    id = System.Guid.NewGuid().GetHashCode();
-
-                    body.position = enemyPathFindingMovement.GetPosition();
+                    int id = System.Guid.NewGuid().GetHashCode();
                     body.name = "Server enemy " + id.ToString();
 
-                    m_enemyPathFindingMovement.Add(id, enemyPathFindingMovement);
-                    m_goalPosition.Add(id, enemyPathFindingMovement.GetNextPostion());
-                    m_states.Add(id, enemyStateMachine.CurrentEnemyState);
                     m_bodies.Add(id, body);
+                    m_enemyMovementUpdaters.Add(id, enemyPathFindingMovement);
 
-                    EnemyStateData enemyStateData = new EnemyStateData(id);
+                    EnemyState enemyStateData = new EnemyState(id);
                     enemyStateData.Position.Value = m_bodies[id].position;
-                    enemyStateData.GoalPosition.Value = m_goalPosition[id];
-                    enemyStateData.EnemyState = m_states[id];
+                    enemyStateData.GoalPosition.Value = m_enemyMovementUpdaters[id].GetNextPostion();
 
-                    m_enemyStatesData.Add(id, enemyStateData);
+                    m_enemies.Add(id, enemyStateData);
                     state.AddEnemy(enemyStateData);
-                    i++;
+                    ++i;
                 }
             }
         }

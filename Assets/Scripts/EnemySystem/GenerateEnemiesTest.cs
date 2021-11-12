@@ -46,8 +46,8 @@ namespace ubv.logic
                     GameObject enemy = Instantiate(m_enemy, new Vector3(m_xPos, m_yPos, 0), Quaternion.identity);
                     Rigidbody2D body = enemy.GetComponent<Rigidbody2D>();
 
-                    EnemyPathFindingMovement enemyPathFindingMovement = enemy.GetComponent<EnemyPathFindingMovement>();
-                    enemyPathFindingMovement.SetManager(m_pathfindingGridManager);
+                    EnemyMovementUpdater enemyPathFindingMovement = enemy.GetComponent<EnemyMovementUpdater>();
+                    enemyPathFindingMovement.Init(m_pathfindingGridManager, enemy.transform);
                     yield return new WaitForSeconds(0.1f);
                     i++;
                 }

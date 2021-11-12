@@ -8,7 +8,7 @@ namespace ubv
         namespace logic
         {
             /// <summary>
-            /// Encapsulates player movement computation
+            /// Encapsulates enemy movement computation
             /// </summary>
             public class EnemyMovement
             {

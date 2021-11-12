@@ -67,7 +67,6 @@ namespace ubv.server.logic
                 player.Velocity.Value = body.velocity;
                 player.States.Set(0, m_isSprinting[id]);
             }
-           
         }
 
         public void SetPlayerPosition(PlayerState player, Vector2Int pos)
