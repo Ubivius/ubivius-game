@@ -21,20 +21,13 @@ namespace ubv.client.logic
 
         private float m_timeSinceLastGoal;
 
-        public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
-        public Dictionary<int, EnemyBehaviorState> EnemyState { get; private set; }
-        public Dictionary<int, Vector2> GoalPositions { get; private set; }
-        private Dictionary<int, EnemyMovementUpdater> EnemyPathfindingMovement;
-
+        private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, EnemyState> m_goalStates;
 
         public override void Init(WorldState clientState, int localID)
         {
             m_goalStates = new Dictionary<int, EnemyState>();
-            Bodies = new Dictionary<int, Rigidbody2D>();
-            EnemyState = new Dictionary<int, EnemyBehaviorState>();
-            EnemyPathfindingMovement = new Dictionary<int, EnemyMovementUpdater>();
-            GoalPositions = new Dictionary<int, Vector2>();
+            m_bodies = new Dictionary<int, Rigidbody2D>();
         }
 
         public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
@@ -59,7 +52,7 @@ namespace ubv.client.logic
         {
             foreach (EnemyState enemy in state.Enemies().Values)
             {
-                enemy.Position.Value = m_goalStates[enemy.GUID.Value].Position.Value;
+                enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
                 enemy.GoalPosition = m_goalStates[enemy.GUID.Value].GoalPosition;
             }
         }
@@ -69,7 +62,7 @@ namespace ubv.client.logic
             m_timeSinceLastGoal += deltaTime;
             foreach (EnemyState enemy in m_goalStates.Values)
             {
-                common.logic.EnemyMovement.Execute(Bodies[enemy.GUID.Value], GoalPositions[enemy.GUID.Value], m_enemySettings.Velocity);
+                common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], m_goalStates[enemy.GUID.Value].GoalPosition.Value, m_enemySettings.Velocity);
             }
         }
 
@@ -79,24 +72,29 @@ namespace ubv.client.logic
 
             foreach (EnemyState enemy in remoteState.Enemies().Values)
             {
-                if (!Bodies.ContainsKey(enemy.GUID.Value))
+                if (!m_bodies.ContainsKey(enemy.GUID.Value))
                 {
                     GameObject enemyGameObject = GameObject.Instantiate(m_enemySettings.EnemyPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-                    EnemyPathfindingMovement[enemy.GUID.Value] = enemyGameObject.GetComponent<EnemyMovementUpdater>();
 
-                    Bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
-                    Bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
+                    m_bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
+                    m_bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
                 }
-
-                Bodies[enemy.GUID.Value].position = enemy.Position.Value;
-                GoalPositions[enemy.GUID.Value] = enemy.GoalPosition.Value;
-
+                
+                if ((m_bodies[enemy.GUID.Value].position - enemy.Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
+                {
+                    m_bodies[enemy.GUID.Value].position = enemy.Position.Value;
+                }
+                else
+                {
+                    // lerp ?
+                }
+                 
                 m_goalStates[enemy.GUID.Value] = enemy;
             }
 
-            //Destroy enemy
+            // Destroy enemies that do not exist in server
             List<int> destroyElements = new List<int>();
-            foreach (int enemyKey in Bodies.Keys)
+            foreach (int enemyKey in m_bodies.Keys)
             {
                 if(!remoteState.Enemies().ContainsKey(enemyKey))
                 {
@@ -106,11 +104,8 @@ namespace ubv.client.logic
 
             foreach(int enemyKey in destroyElements)
             {
-                Destroy(Bodies[enemyKey]);
-                Bodies.Remove(enemyKey);
-                EnemyState.Remove(enemyKey);
-                EnemyPathfindingMovement.Remove(enemyKey);
-                GoalPositions.Remove(enemyKey);
+                Destroy(m_bodies[enemyKey]);
+                m_bodies.Remove(enemyKey);
                 m_goalStates.Remove(enemyKey);
             }
         }
