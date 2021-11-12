@@ -11,14 +11,14 @@ namespace ubv.client.data
     [System.Serializable]
     public class ClientCacheData
     {
-        public bool WasInGame;
+        public string LastGameID;
         public DateTime LastUpdated;
 
-        public static void SaveCache(bool wasInGame)
+        public static void SaveCache(string lastGameID)
         {
             ClientCacheData cache = new ClientCacheData
             {
-                WasInGame = wasInGame,
+                LastGameID = lastGameID,
                 LastUpdated = DateTime.UtcNow
             };
             io.ClientFileSaveManager.SaveFile(cache, "cache.ubv");

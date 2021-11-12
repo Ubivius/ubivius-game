@@ -11,6 +11,7 @@ namespace ubv.common.serialization
             INPUT_MESSAGE = 0x01,
             CLIENT_STATE = 0x02,
             PLAYER_STATE, // 0x03...
+            ENEMY_STATE_DATA,
             IDENTIFICATION_MESSAGE,
             SERVER_INIT_MESSAGE,
             LOGIC_CELL,
@@ -23,6 +24,11 @@ namespace ubv.common.serialization
             LOGIC_CELL_SECTIONDOORBUTTON,
             LOGIC_CELL_FINALBUTTON,
             LOGIC_GRID,
+            ENEMY_STATE,
+            ROAMING_STATE,
+            SEARCHING_STATE,
+            CHASING_STATE,
+            FIGHTING_STATE,
             INT32,
             FLOAT,
             UINT32,
@@ -35,9 +41,11 @@ namespace ubv.common.serialization
             LIST_INT32,
             LIST_STRING,
             HASHMAP_INT_PLAYERSTATE,
+            HASHMAP_INT_ENEMYSTATEDATA,
             LIST_INPUTFRAME,
             LOGIC_CELL_INFO,
             ARRAY2D_CELLINFO,
+            ENEMY_STATE_INFO,
             BYTEARRAY,
             BYTE,
             NULL,
@@ -57,7 +65,8 @@ namespace ubv.common.serialization
             LIST_VECTOR2INT,
             SERVER_SUCCESSFUL_UDP_CONNECT_MESSAGE,
             CLIENT_CACHE_DATA,
-            SERVER_REJOIN_GAME_DEMAND
+            SERVER_REJOIN_GAME_DEMAND,
+            SERVER_STATUS_MESSAGE
         }
     }
 }

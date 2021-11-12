@@ -8,5 +8,4 @@ namespace ubv.common
     {
         public GameObject PlayerPrefab;
     }
-    
 }

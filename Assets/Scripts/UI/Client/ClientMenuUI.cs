@@ -10,20 +10,19 @@ namespace ubv.ui.client
 {
     public class ClientMenuUI : TabBehaviour
     {
-        [SerializeField]
-        private ClientMenuState m_menuState;
-
-        [SerializeField] private Button m_playButton;
-        [SerializeField] private Button m_statsButton;
-        [SerializeField] private Button m_optionsButton;
-        [SerializeField] private Button m_quitButton;
+        [SerializeField] private ClientMenuState m_menuState;
 
         public void Play()
         {
             m_menuState.GoToPlay();
         }
 
-        public void Stats()
+        public void MyCharacters()
+        {
+            m_menuState.GoToMyCharacters();
+        }
+
+        public void Achievements()
         {
             // to be implemented
         }
