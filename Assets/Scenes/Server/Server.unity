@@ -705,6 +705,7 @@ MonoBehaviour:
   - {fileID: 1470650681}
   - {fileID: 380608787}
   - {fileID: 476838079}
+  - {fileID: 1751865050}
 --- !u!4 &1089558532
 Transform:
   m_ObjectHideFlags: 0
@@ -951,6 +952,7 @@ Transform:
   - {fileID: 1470650680}
   - {fileID: 380608786}
   - {fileID: 476838078}
+  - {fileID: 1751865049}
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1133,7 +1135,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_port: 9151
   m_maxConcurrentListeners: 6
-  m_connectionTimeoutInMS: 5000
+  m_connectionTimeoutInMS: 30000
   m_coonnectionKeepAliveTimerIntervalMS: 250
 --- !u!1 &1730964087
 GameObject:
@@ -1239,6 +1241,52 @@ MonoBehaviour:
   healthIntervalSecond: 5
   healthEnabled: 1
   logEnabled: 1
+--- !u!1 &1751865048
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1751865049}
+  - component: {fileID: 1751865050}
+  m_Layer: 0
+  m_Name: EnemyBehavior
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1751865049
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1751865048}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1440873415}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1751865050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1751865048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc75538b967bb964d831e27b26a69e00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_enemySettings: {fileID: 11400000, guid: 387cec5fcfcc1a6499b0d050382f46fd, type: 2}
+  m_pathfindingGridManager: {fileID: 1730964089}
+  m_enemyCount: 5
 --- !u!1001 &1802319657
 PrefabInstance:
   m_ObjectHideFlags: 0
