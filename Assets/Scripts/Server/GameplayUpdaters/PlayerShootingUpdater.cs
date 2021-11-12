@@ -47,7 +47,10 @@ namespace ubv.server.logic
                 m_isShooting[id] = frames[id].Shooting.Value;
                 m_shootingDirection[id] = frames[id].ShootingDirection.Value;
 
-                common.logic.PlayerShooting.Execute(m_playersGameObjects[id], m_playerShootingSettings, m_shootingDirection[id], deltaTime);
+                if (m_isShooting[id])
+                {
+                    common.logic.PlayerShooting.Execute(m_playersGameObjects[id], m_playerShootingSettings, m_shootingDirection[id], deltaTime);
+                }
             }
         }
 
