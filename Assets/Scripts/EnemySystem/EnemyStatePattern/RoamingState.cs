@@ -38,6 +38,7 @@ namespace ubv.server.logic.ai
 
             else if (!m_inMotion)
             {
+                Debug.Log("Roaming position : " + m_roamPosition.ToString());
                 m_enemyPathFindingMovement.SetTargetPosition(m_roamPosition);
                 m_inMotion = true;
             }

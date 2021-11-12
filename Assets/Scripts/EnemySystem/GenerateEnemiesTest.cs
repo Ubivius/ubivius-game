@@ -47,7 +47,6 @@ namespace ubv.logic
                     Rigidbody2D body = enemy.GetComponent<Rigidbody2D>();
 
                     EnemyMovementUpdater enemyPathFindingMovement = enemy.GetComponent<EnemyMovementUpdater>();
-                    enemyPathFindingMovement.Init(m_pathfindingGridManager, enemy.transform);
                     yield return new WaitForSeconds(0.1f);
                     i++;
                 }

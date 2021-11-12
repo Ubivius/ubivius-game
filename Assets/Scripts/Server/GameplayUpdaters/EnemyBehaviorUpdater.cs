@@ -41,7 +41,7 @@ namespace ubv.server.logic
                 EnemyState enemy = m_enemies[id];
                 Rigidbody2D body = m_bodies[id];
                 
-                common.logic.EnemyMovement.Execute(body, m_enemyMovementUpdaters[id].GetMovementDirection(), m_enemySettings.Velocity);
+                common.logic.EnemyMovement.Execute(body, m_enemyMovementUpdaters[id].GetNextPostion(), m_enemySettings.Velocity);
             }
         }
 
@@ -72,8 +72,7 @@ namespace ubv.server.logic
                     GameObject enemyGameObject = Instantiate(m_enemySettings.EnemyPrefab, new Vector3(xPos, yPos, 0), Quaternion.identity);
                     Rigidbody2D body = enemyGameObject.GetComponent<Rigidbody2D>();
                     EnemyMovementUpdater enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyMovementUpdater>();
-
-                    enemyPathFindingMovement.Init(m_pathfindingGridManager, enemyGameObject.transform);
+                    enemyPathFindingMovement.SetPathfinding(m_pathfindingGridManager);
 
                     int id = System.Guid.NewGuid().GetHashCode();
                     body.name = "Server enemy " + id.ToString();

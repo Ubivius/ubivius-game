@@ -75,7 +75,8 @@ PrefabInstance:
     - target: {fileID: 686873656258829074, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
         type: 3}
       propertyPath: m_Name
-      value: SimpleEnemy Variant CLient
+      value: SimpleEnemyVariantCLient
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 686873656258829071, guid: 0fc42a915c8c2e84b88bbc5e57441d03, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 0fc42a915c8c2e84b88bbc5e57441d03, type: 3}

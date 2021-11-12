@@ -10,17 +10,17 @@ namespace ubv.server.logic.ai
     {
         public EnemyBehaviorState CurrentEnemyState;
         //public Transform player;
-        private EnemyMovementUpdater m_pathfindingMovement;
+        private EnemyMovementUpdater m_movement;
 
         private void Awake()
         {
-            m_pathfindingMovement = GetComponent<EnemyMovementUpdater>();
-            CurrentEnemyState = new RoamingState(m_pathfindingMovement);
+            m_movement = GetComponent<EnemyMovementUpdater>();
         }
 
         // Use this for initialization
         void Start()
         {
+            CurrentEnemyState = new RoamingState(m_movement);
         }
 
         // Update is called once per frame

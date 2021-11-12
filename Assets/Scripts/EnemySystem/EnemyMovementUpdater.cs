@@ -10,31 +10,16 @@ namespace ubv.server.logic.ai
 {
     public class EnemyMovementUpdater : MonoBehaviour
     {
-        private PathfindingGridManager m_pathfindingGridManager;
+        [SerializeField]
+        private float m_reachedTargetDistance = 0.1f;
 
+        private PathfindingGridManager m_pathfindingGridManager;
         private List<Vector2> m_pathVectorList;
         private int m_currentPathIndex;
-        private float m_reachedTargetDistance = 0.1f;
-        
-        private Transform m_enemyTransform;
 
-        public void Init(PathfindingGridManager pathfindingGridManager, Transform transform, float reachTolerance = 0.1f)
+        private void Awake()
         {
             m_currentPathIndex = 0;
-            m_pathfindingGridManager = pathfindingGridManager;
-            m_reachedTargetDistance = reachTolerance;
-            m_enemyTransform = transform;
-        }
-        
-        public Vector2 GetMovementDirection()
-        {
-            Vector2 delta = GetNextPostion() - GetPosition();
-            if (ReachedPosition())
-            {
-                return Vector2.zero;
-            }
-
-            return delta.normalized;
         }
         
         private bool ReachedPosition()
@@ -49,6 +34,7 @@ namespace ubv.server.logic.ai
             {
                 if (ReachedPosition())
                 {
+                    transform.position = GetNextPostion();
                     m_currentPathIndex++;
                     if (m_currentPathIndex >= m_pathVectorList.Count)
                     {
@@ -71,7 +57,7 @@ namespace ubv.server.logic.ai
         
         public Vector2 GetPosition()
         {
-            return new Vector2(m_enemyTransform.position.x, m_enemyTransform.position.y);
+            return new Vector2(transform.position.x, transform.position.y);
         }
         
         public bool IsPositionWalkable(Vector2 worldPosition)
@@ -87,6 +73,11 @@ namespace ubv.server.logic.ai
             }
 
             return m_pathVectorList[m_currentPathIndex];
+        }
+
+        public void SetPathfinding(PathfindingGridManager pathfindingGridManager)
+        {
+            m_pathfindingGridManager = pathfindingGridManager;
         }
     }
 }
