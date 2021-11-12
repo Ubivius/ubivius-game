@@ -17,6 +17,8 @@ namespace ubv.server.logic
     {
         [SerializeField] private ubv.common.world.WorldGenerator m_world;
         [SerializeField] private PlayerMovementUpdater m_playerMovementUpdater;
+        [SerializeField] private GameplayState m_gamePlayState;
+
         SectionState m_sectionState;
         List<SectionDoorButtonCell> m_sectionDoorButtonCells;
 
@@ -127,6 +129,8 @@ namespace ubv.server.logic
         public void InteractFinalButton()
         {
             Debug.LogWarning("PARTIE FINI FINI FINI FINI FINI FINI FINI");
+
+            m_gamePlayState.EndGame();
 
             // Finir la partie
         }

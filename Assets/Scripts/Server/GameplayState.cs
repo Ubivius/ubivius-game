@@ -220,6 +220,12 @@ namespace ubv.server.logic
             }
         }
 
+        public void EndGame()
+        {
+            //m_endGameState.init(playerlist)
+            ChangeState(m_endGameState);
+        }
+
         protected override void OnPlayerConnect(int playerID)
         {
             if (m_connectedClients.ContainsKey(playerID))
