@@ -164,6 +164,7 @@ namespace ubv.client.logic
             {
                 m_awaitedInitMessage = null;
                 m_clientCharacters?.Clear();
+                Debug.Log("Entering lobby with character:" + m_activeCharacterID);
                 m_server.TCPSend(new OnLobbyEnteredMessage(m_activeCharacterID).GetBytes());
             }
             else
