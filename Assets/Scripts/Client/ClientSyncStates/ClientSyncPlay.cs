@@ -177,7 +177,7 @@ namespace ubv.client.logic
                     m_currentSubState = SubState.SUBSTATE_TRANSITION;
                     break;
                 case SubState.SUBSTATE_END:
-                    ClientStateManager.Instance.BackToScene(m_EndScene);
+                    ClientStateManager.Instance.PushScene(m_EndScene);
                     m_currentSubState = SubState.SUBSTATE_TRANSITION;
                     break;
                 default:

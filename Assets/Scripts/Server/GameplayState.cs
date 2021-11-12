@@ -222,7 +222,7 @@ namespace ubv.server.logic
 
         public void EndGame()
         {
-            //m_endGameState.init(playerlist)
+            m_endGameState.init(new List<int>(m_clients));
             ChangeState(m_endGameState);
         }
 

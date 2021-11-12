@@ -131,8 +131,6 @@ namespace ubv.server.logic
             Debug.LogWarning("PARTIE FINI FINI FINI FINI FINI FINI FINI");
 
             m_gamePlayState.EndGame();
-
-            // Finir la partie
         }
 
         private void OpeningDoor()

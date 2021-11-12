@@ -19,7 +19,7 @@ namespace ubv.client
 
         public void GoToMenu()
         {
-            ClientStateManager.Instance.PushScene(m_clientGameMenu);
+            ClientStateManager.Instance.BackToScene(m_clientGameMenu);
         }
 
         protected override void StateLoad()
