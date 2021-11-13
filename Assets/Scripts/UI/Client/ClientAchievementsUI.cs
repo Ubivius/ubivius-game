@@ -14,33 +14,18 @@ namespace ubv.ui.client
         [SerializeField] private GameObject m_achievementPrefab;
         [SerializeField] private GameObject m_content;
 
-        private List<Achievement> m_achievements;
-
-
-        private void Awake()
-        {
-            m_achievements = new List<Achievement>();
-        }
 
         protected override void Start()
         {
             base.Start();
 
-            GameObject test_achie = Instantiate(m_achievementPrefab, m_content.transform);
-            test_achie.GetComponent<Achievement>().InitializeAchievement("Get Good", "HAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHA You're slowly making it there!", "01/23/2021", null);
-            test_achie.GetComponent<Achievement>().Unlock();
-
-            GameObject test_achie2 = Instantiate(m_achievementPrefab, m_content.transform);
-            test_achie2.GetComponent<Achievement>().InitializeAchievement("You're so fking bad", "Read the title.", "02/23/1999", null);
-            test_achie2.GetComponent<Achievement>().Unlock();
-
-            GameObject test_achie3 = Instantiate(m_achievementPrefab, m_content.transform);
-            test_achie3.GetComponent<Achievement>().InitializeAchievement("Hehe", "test", "01/23/2069", null);
-        }
-
-        protected override void Update()
-        {
-            base.Update();
+            // EXAMPLE OF HOW TO ADD AN ACHIEVEMENT ON THE SCENE
+            // Instantiate the prefab
+            GameObject achievement_axample = Instantiate(m_achievementPrefab, m_content.transform);
+            // Add the info on the prefab
+            achievement_axample.GetComponent<Achievement>().InitializeAchievement("Example title", "HAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHA You're slowly making it there!", "01/23/2021");
+            // If the achievement is unlocked, call this method.
+            achievement_axample.GetComponent<Achievement>().Unlock();
         }
 
         public void Back()

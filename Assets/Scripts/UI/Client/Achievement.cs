@@ -52,12 +52,14 @@ namespace ubv.ui.client {
 
         public void Unlock() {
             m_button.interactable = true;
-            m_icon.color = Color.green;
+            var t_color = m_name.color;
+            t_color.a = 1f;
+            m_name.color = t_color;
+            m_date.color = t_color;
+            m_icon.color = t_color;
         }
 
-        public void InitializeAchievement(string a_name, string a_description, string a_date, Image a_newIcon) {
-            //m_icon = a_newIcon;
-            m_icon.color = Color.red;
+        public void InitializeAchievement(string a_name, string a_description, string a_date) {
             m_name.text = a_name;
             m_date.text = a_date;
             m_description.text = a_description;

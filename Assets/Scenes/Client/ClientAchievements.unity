@@ -358,6 +358,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   normalColor: {r: 0, g: 0, b: 0, a: 0.78431374}
   hoverColor: {r: 0, g: 0, b: 0, a: 1}
+  disableColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!222 &169884651
 CanvasRenderer:
   m_ObjectHideFlags: 0
