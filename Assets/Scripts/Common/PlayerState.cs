@@ -12,6 +12,7 @@ namespace ubv
             {
                 IS_SPRINTING = 0,
                 IS_INTERACTING = 1,
+                IS_SHOOTING = 2,
                 ///...
             }
             
@@ -26,6 +27,7 @@ namespace ubv
                 public serialization.types.Vector2 Velocity;
                 public serialization.types.Vector2 Position;
                 public serialization.types.Float Rotation;
+                public serialization.types.Vector2 ShootingDirection;
 
                 // TODO : not send this via network because not likely to be changed
                 public serialization.types.Int32 GUID;
@@ -35,10 +37,11 @@ namespace ubv
                     Position = new serialization.types.Vector2(Vector2.zero);
                     Velocity = new serialization.types.Vector2(Vector2.zero);
                     Rotation = new serialization.types.Float(0);
+                    ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(0);
                     States = new utils.Bitset();
 
-                    InitSerializableMembers(Position, Rotation, Velocity, GUID, States);
+                    InitSerializableMembers(Position, Velocity, Rotation, ShootingDirection, GUID, States);
                 }
 
                 public PlayerState(int playerID) : base()
@@ -46,10 +49,11 @@ namespace ubv
                     Position = new serialization.types.Vector2(Vector2.zero);
                     Velocity = new serialization.types.Vector2(Vector2.zero);
                     Rotation = new serialization.types.Float(0);
+                    ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(playerID);
                     States = new utils.Bitset();
 
-                    InitSerializableMembers(Position, Rotation, Velocity, GUID, States);
+                    InitSerializableMembers(Position, Velocity, Rotation, ShootingDirection, GUID, States);
                 }
 
                 public PlayerState(PlayerState player) : base()
@@ -57,10 +61,11 @@ namespace ubv
                     Position = new serialization.types.Vector2(Vector2.zero);
                     Velocity = new serialization.types.Vector2(Vector2.zero);
                     Rotation = new serialization.types.Float(player.Rotation.Value);
+                    ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(player.GUID.Value);
                     States = new utils.Bitset();
 
-                    InitSerializableMembers(Position, Rotation, Velocity, GUID, States);
+                    InitSerializableMembers(Position, Velocity, Rotation, ShootingDirection, GUID, States);
                 }
                 
                 protected override ID.BYTE_TYPE SerializationID()

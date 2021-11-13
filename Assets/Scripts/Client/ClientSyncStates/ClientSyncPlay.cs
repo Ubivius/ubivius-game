@@ -330,6 +330,8 @@ namespace ubv.client.logic
                 m_inputBuffer[bufferIndex].Movement.Value = m_lastInput.Movement.Value;
                 m_inputBuffer[bufferIndex].Sprinting.Value = m_lastInput.Sprinting.Value;
                 m_inputBuffer[bufferIndex].Interact.Value = m_lastInput.Interact.Value;
+                m_inputBuffer[bufferIndex].Shooting.Value = m_lastInput.Shooting.Value;
+                m_inputBuffer[bufferIndex].ShootingDirection.Value = m_lastInput.ShootingDirection.Value;
             }
             else
             {
