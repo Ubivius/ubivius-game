@@ -15,12 +15,9 @@ namespace ubv.client.logic
     /// </summary>
     public class EnemyGameObjectUpdater : ClientStateUpdater
     {
-        [SerializeField] private float m_lerpTime = 0.2f;
-        [SerializeField] private float m_correctionTolerance = 0.01f;
+        [SerializeField] private float m_correctionTolerance = 0.3f;
         [SerializeField] private EnemySettings m_enemySettings;
-
-        private float m_timeSinceLastGoal;
-
+        
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, EnemyState> m_goalStates;
 
@@ -39,7 +36,7 @@ namespace ubv.client.logic
             
             foreach (EnemyState enemy in remoteState.Enemies().Values)
             {
-                bool err = enemy.IsDifferent(localState.Enemies()[enemy.GUID.Value]);
+                bool err = enemy.IsDifferent(localState.Enemies()[enemy.GUID.Value], m_correctionTolerance);
                 if (err)
                 {
                     return true;
@@ -50,26 +47,42 @@ namespace ubv.client.logic
 
         public override void UpdateStateFromWorld(ref WorldState state)
         {
+            foreach(int id in m_goalStates.Keys)
+            {
+                if (!state.Enemies().ContainsKey(id))
+                {
+                    state.AddEnemy(new EnemyState(m_goalStates[id]));
+                }
+            }
+
+            List<int> toRemove = new List<int>();
             foreach (EnemyState enemy in state.Enemies().Values)
             {
                 enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
-                enemy.GoalPosition = m_goalStates[enemy.GUID.Value].GoalPosition;
+                enemy.Direction = m_goalStates[enemy.GUID.Value].Direction;
+
+                if(!m_goalStates.ContainsKey(enemy.GUID.Value))
+                {
+                    toRemove.Add(enemy.GUID.Value);
+                }
+            }
+            
+            foreach(int id in toRemove)
+            {
+                state.Enemies().Remove(id);
             }
         }
 
         public override void Step(InputFrame input, float deltaTime)
         {
-            m_timeSinceLastGoal += deltaTime;
             foreach (EnemyState enemy in m_goalStates.Values)
             {
-                common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], m_goalStates[enemy.GUID.Value].GoalPosition.Value, m_enemySettings.Velocity);
+                common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], enemy.Direction.Value, m_enemySettings.Velocity);
             }
         }
 
         public override void UpdateWorldFromState(WorldState remoteState)
         {
-            m_timeSinceLastGoal = 0;
-
             foreach (EnemyState enemy in remoteState.Enemies().Values)
             {
                 if (!m_bodies.ContainsKey(enemy.GUID.Value))
@@ -113,5 +126,7 @@ namespace ubv.client.logic
         public override void FixedStateUpdate(float deltaTime)
         {
         }
+        
+
     }
 }

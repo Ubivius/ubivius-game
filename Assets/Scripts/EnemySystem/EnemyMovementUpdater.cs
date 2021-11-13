@@ -22,9 +22,19 @@ namespace ubv.server.logic.ai
             m_currentPathIndex = 0;
         }
         
+        public Vector2 GetMovementDirection()
+        {
+            if (!ReachedPosition())
+            {
+                return (GetNextPosition() - GetPosition()).normalized;
+            }
+
+            return Vector2.zero;
+        }
+
         private bool ReachedPosition()
         {
-            Vector2 delta = GetNextPostion() - GetPosition();
+            Vector2 delta = GetNextPosition() - GetPosition();
             return (delta.sqrMagnitude < m_reachedTargetDistance * m_reachedTargetDistance);
         }
 
@@ -34,7 +44,7 @@ namespace ubv.server.logic.ai
             {
                 if (ReachedPosition())
                 {
-                    transform.position = GetNextPostion();
+                    transform.position = GetNextPosition();
                     m_currentPathIndex++;
                     if (m_currentPathIndex >= m_pathVectorList.Count)
                     {
@@ -65,7 +75,7 @@ namespace ubv.server.logic.ai
             return m_pathfindingGridManager.GetNodeIfWalkable(worldPosition.x, worldPosition.y) != null;
         }
 
-        public Vector2 GetNextPostion()
+        public Vector2 GetNextPosition()
         {
             if (m_pathVectorList == null || m_currentPathIndex >= m_pathVectorList.Count)
             {

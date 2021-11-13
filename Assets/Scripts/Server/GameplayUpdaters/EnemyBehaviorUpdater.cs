@@ -41,7 +41,7 @@ namespace ubv.server.logic
                 EnemyState enemy = m_enemies[id];
                 Rigidbody2D body = m_bodies[id];
                 
-                common.logic.EnemyMovement.Execute(body, m_enemyMovementUpdaters[id].GetNextPostion(), m_enemySettings.Velocity);
+                common.logic.EnemyMovement.Execute(body, m_enemyMovementUpdaters[id].GetMovementDirection(), m_enemySettings.Velocity);
             }
         }
 
@@ -53,7 +53,7 @@ namespace ubv.server.logic
                 EnemyState enemy = m_enemies[id];
 
                 enemy.Position.Value = body.position;
-                enemy.GoalPosition.Value = m_enemyMovementUpdaters[id].GetNextPostion();
+                enemy.Direction.Value = m_enemyMovementUpdaters[id].GetMovementDirection();
             }
         }
 
@@ -82,7 +82,7 @@ namespace ubv.server.logic
 
                     EnemyState enemyStateData = new EnemyState(id);
                     enemyStateData.Position.Value = m_bodies[id].position;
-                    enemyStateData.GoalPosition.Value = m_enemyMovementUpdaters[id].GetNextPostion();
+                    enemyStateData.Direction.Value = m_enemyMovementUpdaters[id].GetMovementDirection();
 
                     m_enemies.Add(id, enemyStateData);
                     state.AddEnemy(enemyStateData);

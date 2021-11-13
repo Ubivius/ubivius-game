@@ -12,9 +12,9 @@ namespace ubv
             /// </summary>
             public class EnemyMovement
             {
-                static public void Execute(Rigidbody2D rigidbody, Vector2 targetPosition, float speed)
+                static public void Execute(Rigidbody2D rigidbody, Vector2 direction, float speed)
                 {
-                    rigidbody.velocity = (targetPosition - rigidbody.position).normalized * speed;
+                    rigidbody.velocity = direction.normalized * speed;
                 }
             }
         }
