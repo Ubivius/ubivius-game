@@ -9,7 +9,7 @@ env:
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
   DOCKERHUB_PWD: ${{ secrets.DOCKERHUB_PWD }}
-  REPO_VERSION: 0.0.0-rc0
+  REPO_VERSION: main-rc0
   GITHUB_TOKEN: ${{ secrets.WORKFLOWS_TOKEN }}
 
 jobs:
@@ -86,7 +86,7 @@ jobs:
           password: ${{ env.DOCKERHUB_PWD }}
           buildargs: BUILD_TYPE
           dockerfile: Dockerfile
-          tags: "${{ env.REPO_VERSION }}"
+          tags: "${{ steps.fetch-vars.outputs.REPO_VERSION }}"
 
       # Also publish build output as zip archive
       - uses: actions/upload-artifact@v2
