@@ -151,6 +151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_menuScene: ClientMenu
+  m_EndScene: ClientEndGame
   m_physicsScene: ClientGame
   m_clockOffsetCorrectionIncrement: 0.05
   m_offsetErrorTolerance: 1

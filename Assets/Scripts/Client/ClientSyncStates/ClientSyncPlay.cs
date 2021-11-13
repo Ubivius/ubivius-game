@@ -24,10 +24,12 @@ namespace ubv.client.logic
             SUBSTATE_PLAY,
             SUBSTATE_OPTIONS,
             SUBSTATE_LEAVING,
-            SUBSTATE_TRANSITION
+            SUBSTATE_TRANSITION,
+            SUBSTATE_END
         }
 
         [SerializeField] private string m_menuScene;
+        [SerializeField] private string m_EndScene;
         [SerializeField] private string m_physicsScene;
         
         private int m_lastReceivedRemoteTick;
@@ -167,6 +169,10 @@ namespace ubv.client.logic
                     break;
                 case SubState.SUBSTATE_LEAVING:
                     ClientStateManager.Instance.BackToScene(m_menuScene);
+                    m_currentSubState = SubState.SUBSTATE_TRANSITION;
+                    break;
+                case SubState.SUBSTATE_END:
+                    ClientStateManager.Instance.PushScene(m_EndScene);
                     m_currentSubState = SubState.SUBSTATE_TRANSITION;
                     break;
                 default:
@@ -430,6 +436,15 @@ namespace ubv.client.logic
                 Debug.Log("Received server start message.");
 #endif // DEBUG_LOG
                 m_currentSubState = SubState.SUBSTATE_PLAY;
+                return;
+            }
+            ServerEndsMessage finish = common.serialization.IConvertible.CreateFromBytes<ServerEndsMessage>(packet.Data.ArraySegment());
+            if (finish != null)
+            {
+#if DEBUG_LOG
+                Debug.Log("Received server end message.");
+#endif // DEBUG_LOG
+                m_currentSubState = SubState.SUBSTATE_END;
                 return;
             }
         }
