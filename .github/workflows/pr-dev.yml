@@ -9,11 +9,7 @@ env:
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
   DOCKERHUB_PWD: ${{ secrets.DOCKERHUB_PWD }}
-<<<<<<< HEAD
   REPO_VERSION: dev-rc0
-=======
-  REPO_VERSION: dev
->>>>>>> dev
   GITHUB_TOKEN: ${{ secrets.WORKFLOWS_TOKEN }}
 
 jobs:
