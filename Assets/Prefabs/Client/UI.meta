@@ -1,7 +1,12 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:Assets/Prefabs/Default/Prototypes/SimpleEnemy.prefab.meta
+guid: bfa01e79507005f4bad7484cf2a478f1
+PrefabImporter:
+=======
 guid: 9f11c67adab89ef4e9c3a8592e93e2bb
 folderAsset: yes
 DefaultImporter:
+>>>>>>> master:Assets/Prefabs/Client/UI.meta
   externalObjects: {}
   userData: 
   assetBundleName: 

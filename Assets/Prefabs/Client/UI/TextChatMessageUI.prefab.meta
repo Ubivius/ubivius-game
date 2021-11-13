@@ -1,6 +1,12 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:Assets/Prefabs/Client/UI/TextChatMessageUI.prefab.meta
 guid: 9eb7326fd59aef84c80a7f24c9987e89
 PrefabImporter:
+=======
+guid: c0a157fbd3a491d4f9bffa203dea9a66
+folderAsset: yes
+DefaultImporter:
+>>>>>>> 88e9156 (WIP):Assets/Prefabs/Gameplay/Shooting.meta
   externalObjects: {}
   userData: 
   assetBundleName: 

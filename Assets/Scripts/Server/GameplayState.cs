@@ -120,10 +120,16 @@ namespace ubv.server.logic
                 {
                     updater.UpdateWorld(m_currentWorldState);
                 }
+
                 
                 m_masterTick++;
                 if (++m_tickAccumulator >= m_snapshotTicks)
                 {
+                    foreach (ServerGameplayStateUpdater updater in m_updaters)
+                    {
+                        updater.PrepareWorldStateBeforeSnapshot(m_currentWorldState);
+                    }
+
                     foreach (int id in m_clients)
                     {
                         if (m_connectedClients[id])
@@ -218,6 +224,12 @@ namespace ubv.server.logic
                 }
                 return;
             }
+        }
+
+        public void EndGame()
+        {
+            m_endGameState.Init(new List<int>(m_clients));
+            ChangeState(m_endGameState);
         }
 
         protected override void OnPlayerConnect(int playerID)

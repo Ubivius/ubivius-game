@@ -44,48 +44,48 @@ namespace ubv.microservices
             public int enemies_killed;
         }
         
-        private Dictionary<string, CharacterData> m_cachedCharacters;
-        private Dictionary<string, List<CharacterData>> m_cachedUserCharacters;
+        //private Dictionary<string, CharacterData> m_cachedCharacters;
+        //private Dictionary<string, List<CharacterData>> m_cachedUserCharacters;
         
         private void Awake()
         {
-            m_cachedCharacters = new Dictionary<string, CharacterData>();
-            m_cachedUserCharacters = new Dictionary<string, List<CharacterData>>();
+            //m_cachedCharacters = new Dictionary<string, CharacterData>();
+            //m_cachedUserCharacters = new Dictionary<string, List<CharacterData>>();
         }
 
-        private void ClearCache()
+        /*private void ClearCache()
         {
             m_cachedCharacters.Clear();
             m_cachedUserCharacters.Clear();
-        }
+        }*/
 
         public void GetCharacter(string characterID, UnityAction<CharacterData> OnGetCharacter)
         {
-            if (m_cachedCharacters.ContainsKey(characterID))
+            /*if (m_cachedCharacters.ContainsKey(characterID))
             {
                 OnGetCharacter?.Invoke(m_cachedCharacters[characterID]);
                 return;
-            }
+            }*/
 
             this.Request(new GetSingleCharacterRequest(characterID, (CharacterData[] characters) =>
             {
-                m_cachedCharacters.Add(characterID, characters[0]);
-                OnGetCharacter?.Invoke(m_cachedCharacters[characterID]);
+                //m_cachedCharacters.Add(characterID, characters[0]);
+                OnGetCharacter?.Invoke(characters[0]);
             }));
         }
 
         public void GetCharactersFromUser(string userID, UnityAction<List<CharacterData>> OnGetCharacters)
         {
-            if (m_cachedUserCharacters.ContainsKey(userID))
+            /*if (m_cachedUserCharacters.ContainsKey(userID))
             {
                 OnGetCharacters?.Invoke(m_cachedUserCharacters[userID]);
                 return;
-            }
+            }*/
 
             this.Request(new GetCharactersFromUserRequest(userID, (CharacterData[] characters) =>
             {
-                m_cachedUserCharacters.Add(userID, new List<CharacterData>(characters));
-                OnGetCharacters?.Invoke(m_cachedUserCharacters[userID]);
+                //m_cachedUserCharacters.Add(userID, new List<CharacterData>(characters));
+                OnGetCharacters?.Invoke(new List<CharacterData>(characters));
             }));
         }
 
@@ -129,13 +129,13 @@ namespace ubv.microservices
 
         protected override void OnPostResponse(string JSON, PostCharacterRequest originalRequest)
         {
-            ClearCache();
+            //ClearCache();
             originalRequest.Callback?.Invoke();
         }
 
         protected override void OnDeleteResponse(string JSON, DeleteCharacterRequest originalRequest)
         {
-            ClearCache();
+            //ClearCache();
             originalRequest.Callback?.Invoke();
         }
 

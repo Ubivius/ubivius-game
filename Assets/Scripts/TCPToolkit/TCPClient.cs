@@ -33,7 +33,7 @@ namespace ubv.tcp.client
         // Un gros buffer c'est le fun, on est pas très limités en taille
         private const int DATA_BUFFER_SIZE = 1024 * 1024 * 4;
         // pour workaround le unix shit
-        private const int MAX_BYTES_READ = 32768;
+        private const int MAX_BYTES_READ = 4096;
         private Queue<byte[]> m_dataToSend;
 
         private volatile bool m_activeEndpoint;
