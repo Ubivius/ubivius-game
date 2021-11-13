@@ -6,28 +6,22 @@ namespace Assets.Scripts.Pathfinding
 {
     public class PathRoute
     {
-        public List<PathNode> m_pathNodeList;
-        public List<Vector2> pathVectorList;
-
-        public PathRoute(List<PathNode> pathNodeList, List<Vector2> pathVectorList)
-        {
-            this.m_pathNodeList = pathNodeList;
-            this.pathVectorList = pathVectorList;
-        }
+        public List<PathNode> PathNodeList { get; private set; }
+        public List<Vector2> PathVectorList { get; private set; }
 
         public PathRoute(List<PathNode> pathNodeList, Vector3 worldOrigin, float nodeSize)
         {
-            this.m_pathNodeList = pathNodeList == null ? new List<PathNode>() : pathNodeList;
-            pathVectorList = new List<Vector2>();
-            foreach (PathNode pathNode in m_pathNodeList)
+            this.PathNodeList = pathNodeList ?? new List<PathNode>();
+            PathVectorList = new List<Vector2>();
+            foreach (PathNode pathNode in PathNodeList)
             {
-                pathVectorList.Add(pathNode.GetWorldVector(worldOrigin, nodeSize));
+                PathVectorList.Add(pathNode.GetWorldVector(worldOrigin, nodeSize));
             }
         }
 
         public void AddVector(Vector2 vector)
         {
-            pathVectorList.Add(vector);
+            PathVectorList.Add(vector);
         }
     }
 }

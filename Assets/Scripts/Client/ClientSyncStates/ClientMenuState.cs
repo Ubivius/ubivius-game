@@ -20,11 +20,11 @@ namespace ubv.client
             {
                 if ((DateTime.UtcNow - cache.LastUpdated).TotalSeconds > 1200)
                 {
-                    data.ClientCacheData.SaveCache(false);
+                    data.ClientCacheData.SaveCache(string.Empty);
                 }
-                else if (cache.WasInGame)
+                else if (!cache.LastGameID.Equals(string.Empty))
                 {
-                    data.LoadingData.IsTryingToRejoinGame = cache.WasInGame;
+                    data.LoadingData.GameID = cache.LastGameID;
                     // for now, auto rejoin
                     RejoinGame();
                 }
@@ -33,10 +33,7 @@ namespace ubv.client
 
         public void RejoinGame()
         {
-            if (data.LoadingData.IsTryingToRejoinGame)
-            {
-                ClientStateManager.Instance.PushScene(m_clientGameSearch);
-            }
+            ClientStateManager.Instance.PushScene(m_clientGameSearch);
         }
 
         public void GoToPlay()

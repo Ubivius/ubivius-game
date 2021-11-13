@@ -6,7 +6,7 @@ namespace ubv.ui.client
 {
     public class ClientCharacterSelectUI : TabBehaviour
     {
-        [SerializeField] private ubv.client.logic.ClientCharacterSelectState m_initState;
+        [SerializeField] private ubv.client.logic.ClientCharacterSelectState m_characterSelectState;
         [SerializeField] private Button m_searchButton;
         [SerializeField] private Button m_createButton;
         [SerializeField] private Button m_joinButton;
@@ -46,7 +46,7 @@ namespace ubv.ui.client
 
         public void Back()
         {
-            m_initState.Back();
+            m_characterSelectState.GoBackToPreviousState();
         }
     }
 }

@@ -78,5 +78,13 @@ ClassDiagram1.png
 # For ReadTheDocs build results
 */_build
 
-# Local builds
+# Google packages and stuff
+Packages/Google.Api.CommonProtos.2.0.0/*
+Packages/Google.Protobuf.3.11.4/*
+Packages/Grpc.Core.2.28.1/*
+Packages/Grpc.Core.Api.2.28.1/*
+
+# Builds
 [Bb]uild/*
+
+Packages/

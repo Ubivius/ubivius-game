@@ -6,11 +6,13 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace ubv.client.io
 {
-    public class ClientFileSaveManager
+    public static class ClientFileSaveManager
     {
+        static private readonly string m_dataPath = Application.persistentDataPath;
+
         static public void SaveFile(object obj, string filePath)
         {
-            string dest = Application.persistentDataPath + "/" + filePath;
+            string dest = m_dataPath + "/" + filePath;
             FileStream file;
 
             if (File.Exists(dest))
@@ -38,7 +40,7 @@ namespace ubv.client.io
             }
             else
             {
-                Debug.LogError("File not found");
+                Debug.LogWarning("Cache file not found");
                 return default;
             }
 

@@ -153,7 +153,7 @@ namespace ubv.common.world
                     foreach (Vector2Int spawn in m_playerSpawnPos)
                     {
                         PathRoute route = m_pathfinder.GetPathRoute(spawn, centralPos);
-                        if (route.pathVectorList.Count < 1)
+                        if (route.PathVectorList.Count < 1)
                         {
                             throw new MapCreationException("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
                         }

@@ -72,18 +72,23 @@ namespace ubv.ui.client
             m_selectLast = selectLast;
             if (m_onlyAlive)
             {
-                m_characterServices.Request(new GetCharactersAliveFromUserRequest(m_socialServices.CurrentUser.ID, OnCharactersFetchedFromService));
+                m_characterServices.Request(new GetCharactersAliveFromUserRequest(m_socialServices.CurrentUser.StringID, OnCharactersFetchedFromService));
             }
             else
             {
-                m_characterServices.Request(new GetCharactersFromUserRequest(m_socialServices.CurrentUser.ID, OnCharactersFetchedFromService));
+                m_characterServices.GetCharactersFromUser(m_socialServices.CurrentUser.StringID, OnCharactersFetchedFromService);
             }
             
         }
 
         private void OnCharactersFetchedFromService(CharacterData[] characters)
         {
-            m_cachedCharacters = characters;
+            OnCharactersFetchedFromService(new List<CharacterData>(characters));
+        }
+
+        private void OnCharactersFetchedFromService(List<CharacterData> characters)
+        {
+            m_cachedCharacters = characters.ToArray();
             if (m_awake)
             {
                 int index = Array.FindIndex(m_cachedCharacters, character => character.ID == ubv.client.data.LoadingData.ActiveCharacterID);

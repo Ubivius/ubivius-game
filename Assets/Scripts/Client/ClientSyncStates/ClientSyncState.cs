@@ -5,12 +5,9 @@ namespace ubv.client.logic
 {
     abstract public class ClientSyncState : MonoBehaviour
     {
-        static public int? PlayerID { get; protected set; }
-        static public UserInfo UserInfo { get; protected set; }
-        
-        static protected tcp.client.TCPClient m_TCPClient;
-        static protected udp.client.UDPClient m_UDPClient;
-        static protected http.client.HTTPClient m_HTTPClient;
+        static public UserInfo CurrentUser { get; protected set; }
+
+        static protected ClientConnectionManager m_server;
         static public DispatcherMicroservice DispatcherService;
         static public SocialServicesController SocialServices;
         static public CharacterDataService CharacterService;
@@ -22,9 +19,7 @@ namespace ubv.client.logic
 
         static public void InitDependencies()
         {
-            m_TCPClient = ClientNetworkingManager.Instance.TCPClient;
-            m_UDPClient = ClientNetworkingManager.Instance.UDPClient;
-            m_HTTPClient = ClientNetworkingManager.Instance.HTTPClient;
+            m_server = ClientNetworkingManager.Instance.Server;
             DispatcherService = ClientNetworkingManager.Instance.Dispatcher;
             SocialServices = ClientNetworkingManager.Instance.SocialServices;
             CharacterService = ClientNetworkingManager.Instance.CharacterData;
@@ -70,7 +65,7 @@ namespace ubv.client.logic
 
         public UserInfo GetActiveUser()
         {
-            return UserInfo;
+            return CurrentUser;
         }
 
         private void OnDisable()
