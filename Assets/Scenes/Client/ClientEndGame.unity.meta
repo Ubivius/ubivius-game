@@ -1,10 +1,7 @@
 fileFormatVersion: 2
-<<<<<<< HEAD:Assets/Scenes/Client/ClientEndGame.unity.meta
+Assets/Scenes/Client/ClientEndGame.unity.meta
 guid: edf02703cad720c4ca7c5a37fdc0acb6
-=======
-guid: b1ed9d9c10b44764e80cb4a0617cb674
 folderAsset: yes
->>>>>>> dev:Assets/Scripts/Common/Gameplay/Shooting.meta
 DefaultImporter:
   externalObjects: {}
   userData: 
