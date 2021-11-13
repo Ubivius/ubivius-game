@@ -11,10 +11,6 @@ namespace ubv.client.logic
     /// </summary>
     public class PlayerGameObjectUpdater : ClientStateUpdater
     {
-        [SerializeField]
-        private float m_velocityLerpTime = 0.3f;
-        [SerializeField] private float m_maxPositionError = 1f;
-        [SerializeField] private float m_positionLerpTime = 0.2f;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerAnimator m_playerAnimator;
