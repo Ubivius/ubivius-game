@@ -10,7 +10,7 @@ namespace ubv.server.logic
 {
     public class EndGameState : ServerState
     {
-        public void init(List<int> playerList)
+        public void Init(List<int> playerList)
         {
             foreach (int id in playerList)
             {
@@ -20,7 +20,7 @@ namespace ubv.server.logic
 
         protected override void StateStart() 
         {
-            //m_serverConnection.TCPServer.Send();
+            
         }
 
 
