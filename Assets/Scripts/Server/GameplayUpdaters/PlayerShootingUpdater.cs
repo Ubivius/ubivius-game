@@ -46,9 +46,7 @@ namespace ubv.server.logic
             {
                 m_isShooting[id] = frames[id].Shooting.Value;
                 m_shootingDirection[id] = frames[id].ShootingDirection.Value;
-
-                Debug.Log("fixed id: " + id + ", shooting: " + m_isShooting[id] + ", shootingDirection: " + m_shootingDirection[id]);
-
+                
                 if (m_isShooting[id])
                 {
                     common.logic.PlayerShooting.Execute(m_playersGameObjects[id], m_playerShootingSettings, m_shootingDirection[id], deltaTime);
@@ -75,8 +73,6 @@ namespace ubv.server.logic
         {
             foreach (int id in state.Players().Keys)
             {
-                Debug.Log("prepare id: " + id + ", shooting: " + m_isShooting[id] + ", shootingDirection: " + m_shootingDirection[id] + ", hasShotSinceLastSnapshot: " + m_playerHasShotSinceLastSnapshot[id]);
-
                 PlayerState player = state.Players()[id];
                 player.States.Set((int)PlayerStateEnum.IS_SHOOTING, m_playerHasShotSinceLastSnapshot[id]);
                 m_playerHasShotSinceLastSnapshot[id] = false;

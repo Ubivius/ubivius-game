@@ -743,7 +743,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 802da27c55ee1034dba8bca9ead5ea62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_snapshotTicks: 8
+  m_snapshotTicks: 2
   m_physicsSceneName: Server
   m_updaters:
   - {fileID: 1470650681}
@@ -1333,7 +1333,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enemySettings: {fileID: 11400000, guid: 387cec5fcfcc1a6499b0d050382f46fd, type: 2}
   m_pathfindingGridManager: {fileID: 1730964089}
-  m_enemyCount: 5
+  m_enemyCount: 10
 --- !u!1001 &1802319657
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -72,7 +72,7 @@ namespace ubv.client.logic
             OnInitialized?.Invoke();
         }
 
-        public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
+        public override bool IsPredictionWrong(WorldState localState, WorldState remoteState)
         {
             bool err = false;
             // mettre un bool pour IsAlreadyCorrecting ?
@@ -89,7 +89,7 @@ namespace ubv.client.logic
             return err;
         }
 
-        public override void UpdateStateFromWorld(ref WorldState state)
+        public override void SaveSimulationInState(ref WorldState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {
@@ -124,7 +124,7 @@ namespace ubv.client.logic
             common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
         }
 
-        public override void UpdateWorldFromState(WorldState state)
+        public override void ResetSimulationToState(WorldState state)
         {
             m_timeSinceLastGoal = 0;
             foreach (PlayerState player in state.Players().Values)
@@ -182,6 +182,26 @@ namespace ubv.client.logic
         public Transform GetLocalPlayerTransform()
         {
             return m_localPlayerBody.transform;
+        }
+
+        public override void UpdateSimulationFromState(WorldState localState, WorldState remoteState)
+        {
+        }
+
+        public override void DisableSimulation()
+        {
+            foreach (Rigidbody2D body in Bodies.Values)
+            {
+                body.simulated = false;
+            }
+        }
+
+        public override void EnableSimulation()
+        {
+            foreach (Rigidbody2D body in Bodies.Values)
+            {
+                body.simulated = true;
+            }
         }
 
         public Dictionary<int, PlayerPrefab> GetPlayersGameObject()

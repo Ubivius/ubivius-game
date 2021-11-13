@@ -4,9 +4,9 @@ using ubv.common.serialization;
 
 namespace ubv.server.logic.ai
 {
-    public class RoamingState : EnemyState
+    public class RoamingState : EnemyBehaviorState
     {
-        private EnemyPathFindingMovement m_enemyPathFindingMovement;
+        private EnemyMovementUpdater m_enemyPathFindingMovement;
         private bool m_inMotion;
         private float m_reachedPositionDistance = 1f;
         private float m_targetRange = 50f;
@@ -17,7 +17,7 @@ namespace ubv.server.logic.ai
         {
         }
 
-        public RoamingState(EnemyPathFindingMovement enemyPathFindingMovement)
+        public RoamingState(EnemyMovementUpdater enemyPathFindingMovement)
         {
             m_enemyPathFindingMovement = enemyPathFindingMovement;
 
@@ -25,9 +25,8 @@ namespace ubv.server.logic.ai
             m_startingPosition = m_enemyPathFindingMovement.GetPosition();
             m_roamPosition = GetRoamingPosition();
         }
-
-        // Update is called once per frames
-        public override EnemyState Update()
+        
+        public override EnemyBehaviorState Update()
         {
             if (!m_enemyPathFindingMovement.IsPositionWalkable(m_roamPosition) || Vector3.SqrMagnitude(m_roamPosition - m_enemyPathFindingMovement.GetPosition()) < m_reachedPositionDistance * m_reachedPositionDistance /*|| verify if target is walkable with a getnode*/)
             {
@@ -39,7 +38,8 @@ namespace ubv.server.logic.ai
 
             else if (!m_inMotion)
             {
-                m_enemyPathFindingMovement.MoveTo(m_roamPosition);
+                Debug.Log("Roaming position : " + m_roamPosition.ToString());
+                m_enemyPathFindingMovement.SetTargetPosition(m_roamPosition);
                 m_inMotion = true;
             }
 
@@ -51,7 +51,7 @@ namespace ubv.server.logic.ai
             return m_startingPosition + Utils.GetRandomDir() * Random.Range(1f, 10f);
         }
 
-        private EnemyState FindTarget()
+        private EnemyBehaviorState FindTarget()
         {
 
             //if (Vector3.SqrMagnitude(m_enemyPathFindingMovement.GetPosition() - m_enemyPathFindingMovement.GetPlayerPosition()) < m_targetRange * m_targetRange)
@@ -61,16 +61,6 @@ namespace ubv.server.logic.ai
             //}
 
             return this;
-        }
-
-        protected override ID.BYTE_TYPE SerializationID()
-        {
-            return ID.BYTE_TYPE.ROAMING_STATE;
-        }
-
-        public override EnemyStateInfo.EnemyStateType GetEnemyStateType()
-        {
-            return EnemyStateInfo.EnemyStateType.ROAMING;
         }
     }
 }
