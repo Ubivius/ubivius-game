@@ -46,6 +46,6 @@ public class PathNode
 
     public Vector3 GetWorldVector(Vector3 worldOrigin, float nodeSize)
     {
-        return worldOrigin + new Vector3(x * nodeSize, y * nodeSize);
+        return worldOrigin + new Vector3((x + 0.5f) * nodeSize, (y + 0.5f) * nodeSize);
     }
 }

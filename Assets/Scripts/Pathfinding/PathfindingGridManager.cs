@@ -135,28 +135,41 @@ namespace ubv.server.logic
 
         private void AddAllWalkableNeighbours(PathNode p)
         {
-            // TODO MAYBE : fix aux enemies in walls serait de disable la navigation
-            // diagonale qui passe à coté d'un non-walkable
             if(!m_logicGrid.Grid[p.x, p.y].IsWalkable)
             {
                 return;
             }
             
-            p.AddNeighbour(GetNodeIfWalkable(p.x - 1, p.y));
-            p.AddNeighbour(GetNodeIfWalkable(p.x - 1, p.y - 1));
-            p.AddNeighbour(GetNodeIfWalkable(p.x - 1, p.y + 1));
+            for(int x = -1; x < 1; x++)
+            {
+                for (int y = -1; y < 1; y++)
+                {
+                    PathNode node = GetNodeIfWalkable(p.x + x, p.y + y);
+                    if (node != null && node != p)
+                    {
+                        if (IsPathPossible(p, node))
+                            p.AddNeighbour(node);
+                    }
+                }
+            }
             
-            p.AddNeighbour(GetNodeIfWalkable(p.x + 1, p.y));
-            p.AddNeighbour(GetNodeIfWalkable(p.x + 1, p.y - 1));
-            p.AddNeighbour(GetNodeIfWalkable(p.x + 1, p.y + 1));
-            
-            p.AddNeighbour(GetNodeIfWalkable(p.x, p.y - 1));
-            p.AddNeighbour(GetNodeIfWalkable(p.x, p.y + 1));
-
             foreach(PathNode n in p.GetNeighbourList())
             {
                 n.AddNeighbour(p);
             }
+        }
+
+        private bool IsPathPossible(PathNode origin, PathNode goal)
+        {
+            if (origin.x == goal.x || origin.y == goal.y) return true;
+
+            int dx = goal.x - origin.x;
+            int dy = goal.y - origin.y;
+
+            if (GetNodeIfWalkable(origin.x + dx, origin.y) != null &&
+                GetNodeIfWalkable(origin.x, origin.y + dy) != null) return true;
+
+            return false;
         }
 
         public PathNode GetNodeIfWalkable(float x, float y)

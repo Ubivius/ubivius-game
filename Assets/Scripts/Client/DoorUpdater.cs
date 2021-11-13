@@ -31,29 +31,21 @@ namespace Assets.Scripts.Client
             state.SetOpeningDoor(m_OpeningDoor);
         }
 
-        public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
+        public override bool IsPredictionWrong(WorldState localState, WorldState remoteState)
         {
-            m_OpeningDoor = remoteState.OpeningDoors().Value;
-            m_OpeningDoorDiff = DiffInOpeningDoor(m_OpeningDoor, localState.OpeningDoors().Value);
-            //m_OpeningDoorDiff = m_OpeningDoor.Except(localState.OpeningDoors().Value).ToList();
-            bool result = false;
-            if (m_OpeningDoorDiff.Count > 0)
-            {
-                result = true;
-            }
-            return result;
+            return false;
         }
 
         public override void Step(InputFrame input, float deltaTime)
         {
         }
 
-        public override void UpdateStateFromWorld(ref WorldState state)
+        public override void SaveSimulationInState(ref WorldState state)
         {
             state.SetOpeningDoor(m_OpeningDoor);
         }
 
-        public override void UpdateWorldFromState(WorldState state)
+        public override void ResetSimulationToState(WorldState state)
         {
             foreach (ubv.common.serialization.types.Int32 doorSection in m_OpeningDoorDiff)
             {
@@ -125,6 +117,21 @@ namespace Assets.Scripts.Client
                 m_tileDoor.SetTile(pos, null);
                 m_tileDoor.RefreshTile(pos);
             }
+        }
+
+        public override void UpdateSimulationFromState(WorldState localState, WorldState remoteState)
+        {
+            m_OpeningDoor = remoteState.OpeningDoors().Value;
+            m_OpeningDoorDiff = DiffInOpeningDoor(m_OpeningDoor, localState.OpeningDoors().Value);
+            ResetSimulationToState(remoteState);
+        }
+
+        public override void DisableSimulation()
+        {
+        }
+
+        public override void EnableSimulation()
+        {
         }
     }
 }

@@ -19,39 +19,26 @@ namespace ubv.client.logic
         [SerializeField] private EnemySettings m_enemySettings;
         
         private Dictionary<int, Rigidbody2D> m_bodies;
-        private Dictionary<int, EnemyState> m_goalStates;
-
+        private Dictionary<int, EnemyState> m_enemies;
+        
         public override void Init(WorldState clientState, int localID)
         {
-            m_goalStates = new Dictionary<int, EnemyState>();
+            m_enemies = new Dictionary<int, EnemyState>();
             m_bodies = new Dictionary<int, Rigidbody2D>();
         }
 
-        public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
+        public override bool IsPredictionWrong(WorldState localState, WorldState remoteState)
         {
-            if (localState.Enemies().Count != remoteState.Enemies().Count)
-            {
-                return true;
-            }
-            
-            foreach (EnemyState enemy in remoteState.Enemies().Values)
-            {
-                bool err = enemy.IsDifferent(localState.Enemies()[enemy.GUID.Value], m_correctionTolerance);
-                if (err)
-                {
-                    return true;
-                }
-            }
             return false;
         }
 
-        public override void UpdateStateFromWorld(ref WorldState state)
+        public override void SaveSimulationInState(ref WorldState state)
         {
-            foreach(int id in m_goalStates.Keys)
+            foreach(int id in m_enemies.Keys)
             {
                 if (!state.Enemies().ContainsKey(id))
                 {
-                    state.AddEnemy(new EnemyState(m_goalStates[id]));
+                    state.AddEnemy(new EnemyState(m_enemies[id]));
                 }
             }
 
@@ -59,9 +46,8 @@ namespace ubv.client.logic
             foreach (EnemyState enemy in state.Enemies().Values)
             {
                 enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
-                enemy.Direction.Value = m_goalStates[enemy.GUID.Value].Direction.Value;
 
-                if(!m_goalStates.ContainsKey(enemy.GUID.Value))
+                if(!m_enemies.ContainsKey(enemy.GUID.Value))
                 {
                     toRemove.Add(enemy.GUID.Value);
                 }
@@ -75,12 +61,27 @@ namespace ubv.client.logic
 
         public override void Step(InputFrame input, float deltaTime)
         {
-            RemoveEnemiesFromSimulation();
+            foreach (EnemyState enemy in m_enemies.Values)
+            {
+                if((m_bodies[enemy.GUID.Value].position - enemy.Position.Value).sqrMagnitude > m_enemySettings.Velocity * m_enemySettings.Velocity)
+                {
+                    m_bodies[enemy.GUID.Value].position = enemy.Position.Value;
+                }
+
+                common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], enemy.Position.Value, m_enemySettings.Velocity);
+            }
         }
 
-        public override void UpdateWorldFromState(WorldState remoteState)
+        public override void ResetSimulationToState(WorldState remoteState)
         {
-            AddEnemiesToSimulation();
+        }
+
+        public override void FixedStateUpdate(float deltaTime)
+        {
+        }
+
+        public override void UpdateSimulationFromState(WorldState localState, WorldState remoteState)
+        {
             foreach (EnemyState enemy in remoteState.Enemies().Values)
             {
                 if (!m_bodies.ContainsKey(enemy.GUID.Value))
@@ -90,61 +91,39 @@ namespace ubv.client.logic
                     m_bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
                     m_bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
                 }
-                
-                if ((m_bodies[enemy.GUID.Value].position - enemy.Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
-                {
-                    m_bodies[enemy.GUID.Value].position = enemy.Position.Value;
-                }
-                else
-                {
-                    // lerp ?
-                }
-                 
-                m_goalStates[enemy.GUID.Value] = enemy;
+                m_enemies[enemy.GUID.Value] = enemy;
             }
-
             // Destroy enemies that do not exist in server
             List<int> destroyElements = new List<int>();
             foreach (int enemyKey in m_bodies.Keys)
             {
-                if(!remoteState.Enemies().ContainsKey(enemyKey))
+                if (!remoteState.Enemies().ContainsKey(enemyKey))
                 {
                     destroyElements.Add(enemyKey);
                 }
             }
 
-            foreach(int enemyKey in destroyElements)
+            foreach (int enemyKey in destroyElements)
             {
                 Destroy(m_bodies[enemyKey]);
                 m_bodies.Remove(enemyKey);
-                m_goalStates.Remove(enemyKey);
+                m_enemies.Remove(enemyKey);
             }
         }
 
-        private void RemoveEnemiesFromSimulation()
+        public override void DisableSimulation()
         {
             foreach (Rigidbody2D body in m_bodies.Values)
             {
-                body.velocity = Vector2.zero;
+                body.simulated = false;
             }
         }
 
-        private void AddEnemiesToSimulation()
+        public override void EnableSimulation()
         {
-            foreach (int id in m_bodies.Keys)
+            foreach (Rigidbody2D body in m_bodies.Values)
             {
-                Rigidbody2D body = m_bodies[id];
-                body.velocity = m_goalStates[id].Direction.Value;
-            }
-        }
-
-        public override void FixedStateUpdate(float deltaTime)
-        {
-            AddEnemiesToSimulation();
-
-            foreach (EnemyState enemy in m_goalStates.Values)
-            {
-                common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], enemy.Direction.Value, m_enemySettings.Velocity);
+                body.simulated = true;
             }
         }
     }

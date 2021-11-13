@@ -18,7 +18,6 @@ namespace ubv
             {
                 // send this over network
                 public serialization.types.Vector2 Position;
-                public serialization.types.Vector2 Direction;
                 
                 public serialization.types.Int32 GUID;
 
@@ -26,27 +25,24 @@ namespace ubv
                 {
                     Position = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(0);
-                    Direction = new serialization.types.Vector2(Vector2.zero);
 
-                    InitSerializableMembers(Position, GUID, Direction);
+                    InitSerializableMembers(Position, GUID);
                 }
 
                 public EnemyState(int enemyID) : base()
                 {
                     Position = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(enemyID);
-                    Direction = new serialization.types.Vector2(Vector2.zero);
 
-                    InitSerializableMembers(Position, GUID, Direction);
+                    InitSerializableMembers(Position, GUID);
                 }
 
                 public EnemyState(EnemyState enemy) : base()
                 {
                     Position = new serialization.types.Vector2(enemy.Position.Value);
                     GUID = new serialization.types.Int32(enemy.GUID.Value);
-                    Direction = new serialization.types.Vector2(enemy.Direction.Value);
 
-                    InitSerializableMembers(Position, GUID, Direction);
+                    InitSerializableMembers(Position, GUID);
                 }
 
                 protected override ID.BYTE_TYPE SerializationID()
@@ -61,12 +57,6 @@ namespace ubv
                     if ((Position.Value - other.Position.Value).sqrMagnitude > tolerance * tolerance)
                     {
                         Debug.Log("Self pos " + Position.Value + " vs other pos " + other.Position.Value);
-                        return true;
-                    }
-
-                    if ((Direction.Value - other.Direction.Value).sqrMagnitude > tolerance * tolerance)
-                    {
-                        Debug.Log("Self goal " + Direction.Value + " vs other goal " + other.Direction.Value);
                         return true;
                     }
 

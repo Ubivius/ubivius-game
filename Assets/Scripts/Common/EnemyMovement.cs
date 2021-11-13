@@ -12,9 +12,16 @@ namespace ubv
             /// </summary>
             public class EnemyMovement
             {
-                static public void Execute(Rigidbody2D rigidbody, Vector2 direction, float speed)
+                static public void Execute(Rigidbody2D rigidbody, Vector2 goalPosition, float speed, float reachTolerance = 0.1f)
                 {
-                    rigidbody.velocity = direction.normalized * speed;
+                    Vector2 delta = goalPosition - rigidbody.position;
+                    Vector2 vel = Vector2.zero;
+                    if(delta.sqrMagnitude > reachTolerance * reachTolerance)
+                    {
+                        vel = delta.normalized;
+                    }
+
+                    rigidbody.velocity = vel * speed;
                 }
             }
         }
