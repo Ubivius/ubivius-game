@@ -66,6 +66,18 @@ namespace ubv
                     return ID.BYTE_TYPE.PLAYER_STATE;
                 }
 
+                public bool IsPositionDifferent(PlayerState other, float errorTolerance = 0.1f)
+                {
+                    if (other == this) return false;
+
+                    if ((other.Position.Value - Position.Value).sqrMagnitude > errorTolerance * errorTolerance)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+
                 public bool IsDifferent(PlayerState other, float errorTolerance = 0.1f)
                 {
                     if (other == this) return false;

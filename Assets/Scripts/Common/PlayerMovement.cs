@@ -12,9 +12,9 @@ namespace ubv
             /// </summary>
             public class PlayerMovement
             {
-                static public void Execute(ref Rigidbody2D rigidbody, gameplay.PlayerStats stats, common.data.InputFrame input, float deltaTime)
+                static public void Execute(ref Rigidbody2D rigidbody, Vector2 velocity)
                 {
-                    rigidbody.velocity = GetVelocity(input.Movement.Value, input.Sprinting.Value, stats);
+                    rigidbody.velocity = velocity;
                 }
 
                 static public Vector2 GetVelocity(Vector2 dir, bool isSprinting, gameplay.PlayerStats stats)

@@ -54,7 +54,9 @@ namespace ubv.server.logic
             foreach (int id in client.Players().Keys)
             {
                 Rigidbody2D body = m_bodies[id];
-                common.logic.PlayerMovement.Execute(ref body, m_playerControllers[id].GetStats(), frames[id], Time.fixedDeltaTime);
+                Vector2 velocity = common.logic.PlayerMovement.GetVelocity(frames[id].Movement.Value, 
+                    frames[id].Sprinting.Value, m_playerControllers[id].GetStats());
+                common.logic.PlayerMovement.Execute(ref body, velocity);
                 m_isSprinting[id] = frames[id].Sprinting.Value;
             }
         }

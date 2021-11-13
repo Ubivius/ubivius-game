@@ -24,13 +24,10 @@ namespace ubv.client.logic
         public Dictionary<int, common.gameplay.PlayerController> PlayerControllers { get; private set; }
         public Dictionary<int, PlayerAnimator> PlayerAnimators { get; private set; }
         private Rigidbody2D m_localPlayerBody;
-
-        private Dictionary<int, bool> m_isSprinting;
-
+        
         private int m_playerGUID;
-
-        private float m_timeSinceLastGoal;
-        private Dictionary<int, PlayerState> m_goalStates;
+        
+        private Dictionary<int, PlayerState> m_players;
 
         public UnityAction OnInitialized;
         private UnityAction<bool> m_sprintAction;
@@ -39,12 +36,10 @@ namespace ubv.client.logic
         public override void Init(WorldState clientState, int localID)
         {
             m_sprintActions = new Dictionary<int, UnityAction<bool>>();
-            m_timeSinceLastGoal = 0;
             Players = new Dictionary<int, PlayerPrefab>();
             Bodies = new Dictionary<int, Rigidbody2D>();
-            m_isSprinting = new Dictionary<int, bool>();
 
-            m_goalStates = new Dictionary<int, PlayerState>();
+            m_players = new Dictionary<int, PlayerState>();
             PlayerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             PlayerAnimators = new Dictionary<int, PlayerAnimator>();
             int id = 0;
@@ -56,7 +51,6 @@ namespace ubv.client.logic
                 Players[id] = playerGameObject;
                 Bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
                 Bodies[id].name = "Client player " + id.ToString();
-                m_isSprinting[id] = false;
 
                 PlayerControllers[id] = playerGameObject.GetComponent<common.gameplay.PlayerController>();
                 PlayerAnimators[id] = playerGameObject.GetComponent<PlayerAnimator>();
@@ -66,7 +60,7 @@ namespace ubv.client.logic
                     Bodies[id].bodyType = RigidbodyType2D.Kinematic;
                 }
 
-                m_goalStates[id] = state;
+                m_players[id] = state;
                 m_sprintActions[id] = PlayerAnimators[id].SetSprinting;
             }
 
@@ -77,107 +71,83 @@ namespace ubv.client.logic
 
         public override bool IsPredictionWrong(WorldState localState, WorldState remoteState)
         {
-            bool err = false;
-            // mettre un bool pour IsAlreadyCorrecting ?
-            // check correction on goalStates au lieu du current position TODO
-            foreach(PlayerState player in remoteState.Players().Values)
-            {
-                PlayerState localPlayer = localState.Players()[player.GUID.Value];
-                if (localPlayer.IsDifferent(player, m_correctionTolerance))
-                {
-                    //Debug.Log("Needing correction");
-                    return true;
-                }
-            }
-            return err;
+            PlayerState localPlayer = localState.Players()[m_playerGUID];
+            PlayerState remotePlayer = remoteState.Players()[m_playerGUID];
+            bool isDiff = localPlayer.IsPositionDifferent(remotePlayer, m_correctionTolerance);
+            if (isDiff) Debug.LogWarning("Player and server positions are different.");
+            return isDiff;
         }
 
         public override void SaveSimulationInState(ref WorldState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {
-                if (player.GUID.Value != m_playerGUID)
-                {
-                    player.Position.Value = m_goalStates[player.GUID.Value].Position.Value; 
-                    player.Velocity.Value = m_goalStates[player.GUID.Value].Velocity.Value;
-                }
-                else
-                {
-                    player.Position.Value = Bodies[player.GUID.Value].position;
-                    player.Velocity.Value = Bodies[player.GUID.Value].velocity;
-                }
-                player.States.Set((int)PlayerStateEnum.IS_SPRINTING, m_isSprinting[player.GUID.Value]);
+                int id = player.GUID.Value;
+                float walkVelocity = PlayerControllers[id].GetStats().WalkingVelocity.Value;
+                bool isSprinting = Bodies[id].velocity.sqrMagnitude > walkVelocity * walkVelocity;
+                player.Position.Value = Bodies[id].position;
+                player.Velocity.Value = Bodies[id].velocity;
+                player.States.Set((int)PlayerStateEnum.IS_SPRINTING, isSprinting);
             }
         }
 
         public override void Step(InputFrame input, float deltaTime)
         {
-            m_timeSinceLastGoal += deltaTime;
-            foreach (PlayerState player in m_goalStates.Values)
-            {
-                int id = player.GUID.Value;
+            m_sprintActions[m_playerGUID].Invoke(input.Sprinting.Value);
 
-                if (id != m_playerGUID)
-                {
-                    LerpTowardsState(player, m_timeSinceLastGoal);
-                    m_sprintActions[player.GUID.Value].Invoke(player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING));
-                }
-            }
-            m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
-            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
+            Vector2 velocity = common.logic.PlayerMovement.GetVelocity(input.Movement.Value,
+                input.Sprinting.Value,
+                PlayerControllers[m_playerGUID].GetStats());
+
+            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, velocity);
         }
 
         public override void ResetSimulationToState(WorldState state)
         {
-            m_timeSinceLastGoal = 0;
-            foreach (PlayerState player in state.Players().Values)
+            int localID = m_playerGUID;
+            PlayerState remote = state.Players()[localID];
+            m_players[localID] = remote;
+
+            Bodies[localID].position = m_players[localID].Position.Value;
+            Bodies[localID].velocity = m_players[localID].Velocity.Value;
+
+            foreach (int id in Bodies.Keys)
             {
-                int id = player.GUID.Value;
-                m_goalStates[id] = player;
-
-                Vector2 currentPos = Bodies[id].position;
-                Vector2 goalPos = m_goalStates[id].Position.Value;
-
-                if ((goalPos - currentPos).sqrMagnitude > m_maxPositionError * m_maxPositionError)
+                if (id != m_playerGUID)
                 {
-                    currentPos = goalPos;
-                    Bodies[id].position = currentPos;
+                    Rigidbody2D body = Bodies[id];
+                    body.simulated = false;
                 }
-                m_isSprinting[id] = player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING);
             }
         }
 
         public override void FixedStateUpdate(float deltaTime)
         {
-
-        }
-
-        private void LerpTowardsState(PlayerState player, float timeSinceLastGoal)
-        {
-            // if position joueur est trop éloignée, snap
-            // else:
-            // pas de lerp sur la vitesse, mais on rajoute à la vitesse le déplacement vers la position voulue
-            int id = player.GUID.Value;
-            Vector2 currentPos = Bodies[id].position;
-            Vector2 goalPos = m_goalStates[id].Position.Value;
-            Vector2 velocity = m_goalStates[id].Velocity.Value;
-            Vector2 delta = goalPos - currentPos;
-            if (delta.sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
+            foreach (int id in Bodies.Keys)
             {
-                float progression = timeSinceLastGoal / m_positionLerpTime;
-                if (progression > 1)
+                if (id != m_playerGUID)
                 {
-                    Bodies[id].position = goalPos;
-                }
-                else
-                {
-                    Bodies[id].position = Vector2.Lerp(currentPos, goalPos, progression);
+                    Rigidbody2D body = Bodies[id];
+                    body.simulated = false;
                 }
             }
+            // update every remote player
+            foreach (PlayerState player in m_players.Values)
+            {
+                int id = player.GUID.Value;
 
-            Bodies[id].velocity = velocity;
+                if (id != m_playerGUID)
+                {
+                    Vector2 vel = player.Velocity.Value;
+                    float walkVelocity = PlayerControllers[id].GetStats().WalkingVelocity.Value;
+                    bool isSprinting = vel.sqrMagnitude > walkVelocity * walkVelocity;
+                    m_sprintActions[player.GUID.Value].Invoke(isSprinting);
+                    Rigidbody2D body = Bodies[id];
+                    common.logic.PlayerMovement.Execute(ref body, vel);
+                }
+            }
         }
-
+        
         public Transform GetLocalPlayerTransform()
         {
             return m_localPlayerBody.transform;
@@ -185,20 +155,33 @@ namespace ubv.client.logic
 
         public override void UpdateSimulationFromState(WorldState localState, WorldState remoteState)
         {
+            // update remote players 
+            foreach(int id in remoteState.Players().Keys)
+            {
+                if (id != m_playerGUID)
+                {
+                    m_players[id] = remoteState.Players()[id];
+
+                    Bodies[id].position = m_players[id].Position.Value;
+                    Bodies[id].velocity = m_players[id].Velocity.Value;
+                }
+            }
         }
 
         public override void DisableSimulation()
         {
-            foreach (Rigidbody2D body in Bodies.Values)
+            foreach (int id in Bodies.Keys)
             {
+                Rigidbody2D body = Bodies[id];
                 body.simulated = false;
             }
         }
 
         public override void EnableSimulation()
         {
-            foreach (Rigidbody2D body in Bodies.Values)
+            foreach (int id in Bodies.Keys)
             {
+                Rigidbody2D body = Bodies[id];
                 body.simulated = true;
             }
         }

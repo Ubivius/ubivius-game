@@ -187,8 +187,7 @@ namespace ubv.client.logic
                 m_updaters[i].SaveSimulationInState(ref state);
                 m_updaters[i].Step(input, deltaTime);
             }
-
-
+            
             for (int i = 0; i < m_updaters.Count; i++)
             {
                 m_updaters[i].FixedStateUpdate(deltaTime);
@@ -363,7 +362,7 @@ namespace ubv.client.logic
 
         private void UpdateClientState(int bufferIndex)
         {
-            // set current client state to last one then updating it
+            // set current client state to last one then update it
             UpdateStateFromWorldAndStep(
                 ref m_clientStateBuffer[bufferIndex],
                 m_inputBuffer[bufferIndex],
