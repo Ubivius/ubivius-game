@@ -57,4 +57,17 @@ namespace ubv.common.data
             return ID.BYTE_TYPE.SERVER_STARTS_MESSAGE;
         }
     }
+
+    public class ServerEndsMessage : Serializable
+    {
+        public ServerEndsMessage()
+        {
+            InitSerializableMembers();
+        }
+
+        protected override ID.BYTE_TYPE SerializationID()
+        {
+            return ID.BYTE_TYPE.SERVER_ENDS_MESSAGE;
+        }
+    }
 }

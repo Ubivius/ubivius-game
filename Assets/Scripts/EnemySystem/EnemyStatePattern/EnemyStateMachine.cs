@@ -8,19 +8,19 @@ namespace ubv.server.logic.ai
 {
     public class EnemyStateMachine : MonoBehaviour
     {
-        public EnemyState CurrentEnemyState;
+        public EnemyBehaviorState CurrentEnemyState;
         //public Transform player;
-        private EnemyPathFindingMovement m_pathfindingMovement;
+        private EnemyMovementUpdater m_movement;
 
         private void Awake()
         {
-            m_pathfindingMovement = GetComponent<EnemyPathFindingMovement>();
-            CurrentEnemyState = new RoamingState(m_pathfindingMovement);
+            m_movement = GetComponent<EnemyMovementUpdater>();
         }
 
         // Use this for initialization
         void Start()
         {
+            CurrentEnemyState = new RoamingState(m_movement);
         }
 
         // Update is called once per frame

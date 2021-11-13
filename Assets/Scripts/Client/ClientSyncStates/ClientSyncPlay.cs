@@ -24,10 +24,12 @@ namespace ubv.client.logic
             SUBSTATE_PLAY,
             SUBSTATE_OPTIONS,
             SUBSTATE_LEAVING,
-            SUBSTATE_TRANSITION
+            SUBSTATE_TRANSITION,
+            SUBSTATE_END
         }
 
         [SerializeField] private string m_menuScene;
+        [SerializeField] private string m_EndScene;
         [SerializeField] private string m_physicsScene;
         
         private int m_lastReceivedRemoteTick;
@@ -152,11 +154,6 @@ namespace ubv.client.logic
 
                     ++m_localTick;
                     ClientCorrection(m_lastReceivedRemoteTick % CLIENT_STATE_BUFFER_SIZE);
-
-                    for (int i = 0; i < m_updaters.Count; i++)
-                    {
-                        m_updaters[i].FixedStateUpdate(Time.deltaTime);
-                    }
                     break;
                 default:
                     break;
@@ -174,6 +171,10 @@ namespace ubv.client.logic
                     ClientStateManager.Instance.BackToScene(m_menuScene);
                     m_currentSubState = SubState.SUBSTATE_TRANSITION;
                     break;
+                case SubState.SUBSTATE_END:
+                    ClientStateManager.Instance.PushScene(m_EndScene);
+                    m_currentSubState = SubState.SUBSTATE_TRANSITION;
+                    break;
                 default:
                     break;
             }
@@ -183,26 +184,17 @@ namespace ubv.client.logic
         {
             for (int i = 0; i < m_updaters.Count; i++)
             {
-                m_updaters[i].UpdateStateFromWorld(ref state);
+                m_updaters[i].SaveSimulationInState(ref state);
                 m_updaters[i].Step(input, deltaTime);
             }
-                    
-            m_clientPhysics.Simulate(deltaTime);
-        }
-                
-        private List<ClientStateUpdater> UpdatersNeedingCorrection(WorldState localState, WorldState remoteState)
-        {
-            List<ClientStateUpdater> needCorrection = new List<ClientStateUpdater>();
+
 
             for (int i = 0; i < m_updaters.Count; i++)
             {
-                if (m_updaters[i].NeedsCorrection(localState, remoteState))
-                {
-                    needCorrection.Add(m_updaters[i]);
-                }
+                m_updaters[i].FixedStateUpdate(deltaTime);
             }
 
-            return needCorrection;
+            m_clientPhysics.Simulate(deltaTime);
         }
 
         private int MeanLatencyFromRTTMessage(RTTMessage msg)
@@ -330,6 +322,8 @@ namespace ubv.client.logic
                 m_inputBuffer[bufferIndex].Movement.Value = m_lastInput.Movement.Value;
                 m_inputBuffer[bufferIndex].Sprinting.Value = m_lastInput.Sprinting.Value;
                 m_inputBuffer[bufferIndex].Interact.Value = m_lastInput.Interact.Value;
+                m_inputBuffer[bufferIndex].Shooting.Value = m_lastInput.Shooting.Value;
+                m_inputBuffer[bufferIndex].ShootingDirection.Value = m_lastInput.ShootingDirection.Value;
             }
             else
             {
@@ -386,40 +380,48 @@ namespace ubv.client.logic
             {
                 if (m_lastReceivedServerState != null)
                 {
-                    // on devrait quand même reset les shits qui ont pas besoin de correction
-                    // parce qu'on call phys simulate et ça ça affecte des updaters
-                    // qui ne devraient peut-être pas être affectés
-                    // sol 1: reset all
-                    // sol 2: corriger direct sans simulate pour les updaters qui n'ont pas besoin de phy sim
-                    // et quand on doit caller phy sim, on reset tous les physical updaters
-                    List<ClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastReceivedServerState);
-                    if (updaters.Count > 0) 
+                    HashSet<ClientStateUpdater> rightUpdaters = new HashSet<ClientStateUpdater>();
+                    WorldState localState = m_clientStateBuffer[m_lastReceivedRemoteTick % CLIENT_STATE_BUFFER_SIZE];
+                    for (int i = 0; i < m_updaters.Count; i++)
                     {
-                        int rewindTicks = m_lastReceivedRemoteTick;
-                                
-                        // reset world state to last server-sent state
-                        // pour le moment, on prend l'option 1 et on reset all
-                        for (int i = 0; i < m_updaters.Count; i++)
+                        if (m_updaters[i].IsPredictionWrong(localState, m_lastReceivedServerState))
                         {
-                            m_updaters[i].UpdateWorldFromState(m_lastReceivedServerState);
+                            m_updaters[i].ResetSimulationToState(m_lastReceivedServerState);
                         }
-
-                        Debug.Log("CORRECTION : Remote ticks : " + m_lastReceivedRemoteTick + ". Local ticks : " + m_localTick + ". Diff = " + (m_localTick - m_lastReceivedRemoteTick));
-
-                        while (rewindTicks < m_localTick)
+                        else
                         {
-                            int rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
-
-                            for (int i = 0; i < m_updaters.Count; i++)
-                            {
-                                m_updaters[i].UpdateStateFromWorld(ref m_clientStateBuffer[rewindIndex]);
-                                m_updaters[i].Step(m_inputBuffer[rewindIndex], Time.fixedDeltaTime);
-                            }
-
-                            m_clientPhysics.Simulate(Time.fixedDeltaTime);
+                            m_updaters[i].UpdateSimulationFromState(localState, m_lastReceivedServerState);
+                            rightUpdaters.Add(m_updaters[i]);
                         }
                     }
-                            
+                    
+                    foreach (ClientStateUpdater u in rightUpdaters)
+                    {
+                        u.DisableSimulation();
+                    }
+
+                    int rewindTicks = m_lastReceivedRemoteTick;
+                    while (rewindTicks < m_localTick)
+                    {
+                        int rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
+
+                        for (int i = 0; i < m_updaters.Count; i++)
+                        {
+                            if(!rightUpdaters.Contains(m_updaters[i]))
+                            {
+                                m_updaters[i].SaveSimulationInState(ref m_clientStateBuffer[rewindIndex]);
+                                m_updaters[i].Step(m_inputBuffer[rewindIndex], Time.fixedDeltaTime);
+                            }
+                        }
+
+                        m_clientPhysics.Simulate(Time.fixedDeltaTime);
+                    }
+
+                    foreach (ClientStateUpdater u in rightUpdaters)
+                    {
+                        u.EnableSimulation();
+                    }
+
                     m_lastReceivedServerState = null;
                 }
             }
@@ -434,6 +436,15 @@ namespace ubv.client.logic
                 Debug.Log("Received server start message.");
 #endif // DEBUG_LOG
                 m_currentSubState = SubState.SUBSTATE_PLAY;
+                return;
+            }
+            ServerEndsMessage finish = common.serialization.IConvertible.CreateFromBytes<ServerEndsMessage>(packet.Data.ArraySegment());
+            if (finish != null)
+            {
+#if DEBUG_LOG
+                Debug.Log("Received server end message.");
+#endif // DEBUG_LOG
+                m_currentSubState = SubState.SUBSTATE_END;
                 return;
             }
         }

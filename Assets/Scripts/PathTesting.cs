@@ -40,13 +40,14 @@ namespace ubv.server.testing
 
                 m_path = m_pathfindingGridManager.GetPathRoute(
                     new Vector2(x, y),
-                    new Vector2(endx, endy)).m_pathNodeList;
+                    new Vector2(endx, endy)).PathNodeList;
                 m_stopwatch.Stop();
                 UnityEngine.Debug.Log("Elapsed pathfinding time : " + m_stopwatch.ElapsedMilliseconds + " ms");
                 m_stopwatch.Reset();
             }
         }
 
+#if UNITY_EDITOR
         public void BlockNode()
         {
             if (m_pathfindingGridManager.IsSetUpDone() == true)
@@ -62,6 +63,7 @@ namespace ubv.server.testing
                 m_pathfindingGridManager.OpenDoor(x, y);
             }
         }
+#endif // UNITY_EDITOR
 
         //pt pour le faire avec la sourie
         public static Vector3 GetMouseWorldPosition()

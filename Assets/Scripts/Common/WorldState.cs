@@ -23,9 +23,9 @@ namespace ubv.common
             }
         }
 
-        public class EnemyHashMap : HashMap<common.data.EnemyStateData>
+        public class EnemyHashMap : HashMap<common.data.EnemyState>
         {
-            public EnemyHashMap(Dictionary<int, common.data.EnemyStateData> enemies) : base(enemies)
+            public EnemyHashMap(Dictionary<int, common.data.EnemyState> enemies) : base(enemies)
             { }
 
             protected override ID.BYTE_TYPE SerializationID()
@@ -55,7 +55,7 @@ namespace ubv.common
         public WorldState() : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
-            m_enemyStatesDatas = new EnemyHashMap(new Dictionary<int, common.data.EnemyStateData>());
+            m_enemyStatesDatas = new EnemyHashMap(new Dictionary<int, common.data.EnemyState>());
             m_openingDoorList = new Vector2IntList(new System.Collections.Generic.List<serialization.types.Int32>());
             InitSerializableMembers(m_playerStates, m_enemyStatesDatas, m_openingDoorList);
         }
@@ -68,7 +68,7 @@ namespace ubv.common
                 dictStates.Add(state.GUID.Value, state);
             }
             m_playerStates = new PlayerHashMap(dictStates);
-            m_enemyStatesDatas = new EnemyHashMap(new Dictionary<int, common.data.EnemyStateData>());
+            m_enemyStatesDatas = new EnemyHashMap(new Dictionary<int, common.data.EnemyState>());
             m_openingDoorList = new Vector2IntList(new System.Collections.Generic.List<serialization.types.Int32>());
             InitSerializableMembers(m_playerStates, m_enemyStatesDatas, m_openingDoorList);
         }
@@ -76,7 +76,7 @@ namespace ubv.common
         public WorldState(ref WorldState state) : base()
         {
             m_playerStates = new PlayerHashMap(new Dictionary<int, common.data.PlayerState>());
-            m_enemyStatesDatas = new EnemyHashMap(new Dictionary<int, common.data.EnemyStateData>());
+            m_enemyStatesDatas = new EnemyHashMap(new Dictionary<int, common.data.EnemyState>());
 
             SetPlayers(state.m_playerStates.Value);
             SetEnemies(state.m_enemyStatesDatas.Value);
@@ -97,7 +97,7 @@ namespace ubv.common
             m_playerStates.Value[playerState.GUID.Value] = playerState;
         }
 
-        public void AddEnemy(data.EnemyStateData enemyStateData)
+        public void AddEnemy(data.EnemyState enemyStateData)
         {
             m_enemyStatesDatas.Value[enemyStateData.GUID.Value] = enemyStateData;
         }
@@ -110,12 +110,12 @@ namespace ubv.common
                 m_playerStates.Value[player.GUID.Value] = new common.data.PlayerState(player);
             }
         }
-        public void SetEnemies(Dictionary<int, common.data.EnemyStateData> enemyStatesData)
+        public void SetEnemies(Dictionary<int, common.data.EnemyState> enemyStatesData)
         {
             m_enemyStatesDatas.Value.Clear();
-            foreach (common.data.EnemyStateData enemyStateData in enemyStatesData.Values)
+            foreach (common.data.EnemyState enemyStateData in enemyStatesData.Values)
             {
-                m_enemyStatesDatas.Value[enemyStateData.GUID.Value] = new common.data.EnemyStateData();
+                m_enemyStatesDatas.Value[enemyStateData.GUID.Value] = new common.data.EnemyState();
             }
         }
 
@@ -124,7 +124,7 @@ namespace ubv.common
             return m_playerStates.Value;
         }
 
-        public Dictionary<int, common.data.EnemyStateData> Enemies()
+        public Dictionary<int, common.data.EnemyState> Enemies()
         {
             return m_enemyStatesDatas.Value;
         }

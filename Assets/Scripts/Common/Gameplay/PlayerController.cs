@@ -12,7 +12,6 @@ namespace ubv.common.gameplay
         [SerializeField] private float m_defaultRunningMultiplier;
 
         private HealthSystem m_healthSystem;
-
         private PlayerStats m_defaultStats;
 
         private void Awake()
