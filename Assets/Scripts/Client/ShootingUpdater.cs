@@ -92,27 +92,6 @@ namespace ubv.client.logic
 
         public override bool IsPredictionWrong(WorldState localState, WorldState remoteState)
         {
-            /*foreach (PlayerState player in remoteState.Players().Values)
-            {
-                int playerId = player.GUID.Value;
-
-                if (player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING) && !localState.Players()[playerId].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING)
-                 || !player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING) && localState.Players()[playerId].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING))
-                {
-                    return true;
-                }
-                else if (player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING))
-                {
-                    if (!(player.ShootingDirection.Value.x > localState.Players()[playerId].ShootingDirection.Value.x * (1 - m_correctionTolerance))
-                     && !(player.ShootingDirection.Value.x < localState.Players()[playerId].ShootingDirection.Value.x * (1 + m_correctionTolerance))
-                     && !(player.ShootingDirection.Value.y > localState.Players()[playerId].ShootingDirection.Value.y * (1 - m_correctionTolerance))
-                     && !(player.ShootingDirection.Value.y < localState.Players()[playerId].ShootingDirection.Value.y * (1 + m_correctionTolerance)))
-                    {
-                        return true;
-                    }
-                }
-            }*/
-
             return false;
         }
 
