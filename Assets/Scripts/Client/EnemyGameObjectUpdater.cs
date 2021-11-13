@@ -59,7 +59,7 @@ namespace ubv.client.logic
             foreach (EnemyState enemy in state.Enemies().Values)
             {
                 enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
-                enemy.Direction = m_goalStates[enemy.GUID.Value].Direction;
+                enemy.Direction.Value = m_goalStates[enemy.GUID.Value].Direction.Value;
 
                 if(!m_goalStates.ContainsKey(enemy.GUID.Value))
                 {
@@ -75,14 +75,12 @@ namespace ubv.client.logic
 
         public override void Step(InputFrame input, float deltaTime)
         {
-            foreach (EnemyState enemy in m_goalStates.Values)
-            {
-                common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], enemy.Direction.Value, m_enemySettings.Velocity);
-            }
+            RemoveEnemiesFromSimulation();
         }
 
         public override void UpdateWorldFromState(WorldState remoteState)
         {
+            AddEnemiesToSimulation();
             foreach (EnemyState enemy in remoteState.Enemies().Values)
             {
                 if (!m_bodies.ContainsKey(enemy.GUID.Value))
@@ -123,10 +121,31 @@ namespace ubv.client.logic
             }
         }
 
+        private void RemoveEnemiesFromSimulation()
+        {
+            foreach (Rigidbody2D body in m_bodies.Values)
+            {
+                body.velocity = Vector2.zero;
+            }
+        }
+
+        private void AddEnemiesToSimulation()
+        {
+            foreach (int id in m_bodies.Keys)
+            {
+                Rigidbody2D body = m_bodies[id];
+                body.velocity = m_goalStates[id].Direction.Value;
+            }
+        }
+
         public override void FixedStateUpdate(float deltaTime)
         {
-        }
-        
+            AddEnemiesToSimulation();
 
+            foreach (EnemyState enemy in m_goalStates.Values)
+            {
+                common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], enemy.Direction.Value, m_enemySettings.Velocity);
+            }
+        }
     }
 }

@@ -152,11 +152,6 @@ namespace ubv.client.logic
 
                     ++m_localTick;
                     ClientCorrection(m_lastReceivedRemoteTick % CLIENT_STATE_BUFFER_SIZE);
-
-                    for (int i = 0; i < m_updaters.Count; i++)
-                    {
-                        m_updaters[i].FixedStateUpdate(Time.deltaTime);
-                    }
                     break;
                 default:
                     break;
@@ -186,7 +181,13 @@ namespace ubv.client.logic
                 m_updaters[i].UpdateStateFromWorld(ref state);
                 m_updaters[i].Step(input, deltaTime);
             }
-                    
+
+
+            for (int i = 0; i < m_updaters.Count; i++)
+            {
+                m_updaters[i].FixedStateUpdate(deltaTime);
+            }
+
             m_clientPhysics.Simulate(deltaTime);
         }
                 
