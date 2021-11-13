@@ -112,10 +112,16 @@ namespace ubv.common.world
 
         public void GenerateWorld()
         {
-            while (!m_mapIsValid)
+            int i = 0;
+            while (!m_mapIsValid && i < 5)
             {
+                i++;
                 try
                 {
+                    m_floor.ClearAllTiles();
+                    m_door.ClearAllTiles();
+                    m_wall.ClearAllTiles();
+
                     m_roomManager = new generationManager.RoomManager(m_worldGeneratorToRoomManager);
                     m_masterLogicGrid = m_roomManager.GenerateRoomGrid();
                     m_roomInMap = m_roomManager.GetRoomInMap();
@@ -143,7 +149,6 @@ namespace ubv.common.world
 
                     SetPlayerSpawnPosList();
 
-                    m_mapIsValid = true;
 
                     OnWorldGenerated?.Invoke();
 
@@ -158,8 +163,8 @@ namespace ubv.common.world
                             throw new MapCreationException("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
                         }
                     }
+                    m_mapIsValid = true;
 
-                    //m_pathfinder
                 }
                 catch (MapCreationException)
                 {
