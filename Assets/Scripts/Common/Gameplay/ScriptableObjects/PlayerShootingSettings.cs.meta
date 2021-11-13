@@ -1,12 +1,9 @@
 fileFormatVersion: 2
-guid: 981f1d3988757204383258e21d88b9e9
+guid: 23e49d1e638c32445a6a19f2cecb66a8
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - m_playerSettings: {instanceID: 0}
-  - m_playerShootingSettings: {instanceID: 0}
-  - m_gameMaster: {instanceID: 0}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
