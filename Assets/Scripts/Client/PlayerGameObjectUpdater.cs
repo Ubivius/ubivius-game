@@ -124,7 +124,7 @@ namespace ubv.client.logic
                 if (id != m_playerGUID)
                 {
                     Rigidbody2D body = Bodies[id];
-                    body.simulated = false;
+                    body.simulated = true;
                 }
             }
             // update every remote player
@@ -134,11 +134,16 @@ namespace ubv.client.logic
 
                 if (id != m_playerGUID)
                 {
+                    Rigidbody2D body = Bodies[id];
+                    if((player.Position.Value - body.position).sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
+                    {
+                        body.position = player.Position.Value;
+                    }
+
                     Vector2 vel = player.Velocity.Value;
                     float walkVelocity = PlayerControllers[id].GetStats().WalkingVelocity.Value;
                     bool isSprinting = vel.sqrMagnitude > walkVelocity * walkVelocity;
                     m_sprintActions[player.GUID.Value].Invoke(isSprinting);
-                    Rigidbody2D body = Bodies[id];
                     common.logic.PlayerMovement.Execute(ref body, vel);
                 }
             }
@@ -154,13 +159,7 @@ namespace ubv.client.logic
             // update remote players 
             foreach(int id in remoteState.Players().Keys)
             {
-                if (id != m_playerGUID)
-                {
-                    m_players[id] = remoteState.Players()[id];
-
-                    Bodies[id].position = m_players[id].Position.Value;
-                    Bodies[id].velocity = m_players[id].Velocity.Value;
-                }
+                m_players[id] = remoteState.Players()[id];
             }
         }
 
