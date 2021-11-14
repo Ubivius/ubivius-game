@@ -103,10 +103,7 @@ namespace ubv.client.logic
             int localID = m_playerGUID;
             PlayerState remote = state.Players()[localID];
             m_players[localID] = remote;
-
-            Bodies[localID].position = m_players[localID].Position.Value;
-            Bodies[localID].velocity = m_players[localID].Velocity.Value;
-
+            
             foreach (int id in Bodies.Keys)
             {
                 if (id != m_playerGUID)
@@ -138,13 +135,16 @@ namespace ubv.client.logic
                     if((player.Position.Value - body.position).sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
                     {
                         body.position = player.Position.Value;
+                        // voir cahier de notes : add dbv à la vitesse pour la correction
+                        // snap si plus gros que vitesse de sprint pour X (1..10?) frame
                     }
 
                     Vector2 vel = player.Velocity.Value;
-                    float walkVelocity = PlayerControllers[id].GetStats().WalkingVelocity.Value;
-                    bool isSprinting = vel.sqrMagnitude > walkVelocity * walkVelocity;
-                    m_sprintActions[player.GUID.Value].Invoke(isSprinting);
                     common.logic.PlayerMovement.Execute(ref body, vel);
+
+                    float walkVelocity = PlayerControllers[id].GetStats().WalkingVelocity.Value;
+                    bool isSprinting = body.velocity.sqrMagnitude > walkVelocity * walkVelocity;
+                    m_sprintActions[player.GUID.Value].Invoke(isSprinting);
                 }
             }
         }
