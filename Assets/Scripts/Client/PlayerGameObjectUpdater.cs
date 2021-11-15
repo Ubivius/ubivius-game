@@ -11,6 +11,7 @@ namespace ubv.client.logic
     /// </summary>
     public class PlayerGameObjectUpdater : ClientStateUpdater
     {
+        [SerializeField] private int m_maxLerpFrames = 10;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerAnimator m_playerAnimator;
@@ -131,18 +132,26 @@ namespace ubv.client.logic
 
                 if (id != m_playerGUID)
                 {
+                    float walkVelocity = PlayerControllers[id].GetStats().WalkingVelocity.Value;
+                    float sprintVelocity = walkVelocity * PlayerControllers[id].GetStats().RunningMultiplier.Value;
                     Rigidbody2D body = Bodies[id];
-                    if((player.Position.Value - body.position).sqrMagnitude > m_correctionTolerance * m_correctionTolerance)
-                    {
-                        body.position = player.Position.Value;
-                        // voir cahier de notes : add dbv à la vitesse pour la correction
-                        // snap si plus gros que vitesse de sprint pour X (1..10?) frame
-                    }
 
                     Vector2 vel = player.Velocity.Value;
+                    Vector2 deltaPos = player.Position.Value - body.position;
+
+                    if (deltaPos.sqrMagnitude > Mathf.Pow(sprintVelocity * deltaTime * m_maxLerpFrames, 2))
+                    {
+                        body.position = player.Position.Value;
+                    }
+                    else
+                    {
+                        float speed = vel.magnitude;
+                        vel += deltaPos;
+                        vel *= speed / vel.magnitude;
+                    }
+                    
                     common.logic.PlayerMovement.Execute(ref body, vel);
 
-                    float walkVelocity = PlayerControllers[id].GetStats().WalkingVelocity.Value;
                     bool isSprinting = body.velocity.sqrMagnitude > walkVelocity * walkVelocity;
                     m_sprintActions[player.GUID.Value].Invoke(isSprinting);
                 }
