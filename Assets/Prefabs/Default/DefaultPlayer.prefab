@@ -89,7 +89,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_defaultMaxHealth: 15
-  m_defaultWalkingVelocity: 8
+  m_defaultWalkingVelocity: 4
   m_defaultRunningMultiplier: 1.5
 --- !u!114 &134318626118672903
 MonoBehaviour:
