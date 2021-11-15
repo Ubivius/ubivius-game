@@ -104,7 +104,10 @@ namespace ubv.client.logic
             int localID = m_playerGUID;
             PlayerState remote = state.Players()[localID];
             m_players[localID] = remote;
-            
+
+            Bodies[localID].position = m_players[localID].Position.Value;
+            Bodies[localID].velocity = m_players[localID].Velocity.Value;
+
             foreach (int id in Bodies.Keys)
             {
                 if (id != m_playerGUID)
@@ -146,8 +149,16 @@ namespace ubv.client.logic
                     else
                     {
                         float speed = vel.magnitude;
-                        vel += deltaPos;
-                        vel *= speed / vel.magnitude;
+                        if (speed > 0)
+                        {
+                            vel += deltaPos;
+                            vel *= speed / vel.magnitude;
+                        }
+                        else
+                        {
+                            float deltaPosMagnitude = deltaPos.magnitude;
+                            vel = deltaPos * sprintVelocity / deltaPosMagnitude;
+                        }
                     }
                     
                     common.logic.PlayerMovement.Execute(ref body, vel);
