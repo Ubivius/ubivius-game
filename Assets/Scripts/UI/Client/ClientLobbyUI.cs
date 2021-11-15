@@ -22,6 +22,7 @@ namespace ubv.ui.client
         [SerializeField] private PlayerInLobby m_playerThree;
         [SerializeField] private int m_refreshRateUsers = 37;
         private PlayerInLobby[] m_playersInLobby;
+        private Dictionary<int, PlayerInLobby> m_playerIDs;
 
         private UserInfo m_activeUser;
         private CharacterData m_activeUserCharacter;
@@ -36,6 +37,7 @@ namespace ubv.ui.client
         {
             m_characters = new List<CharacterData>();
             m_users = new Dictionary<int, UserInfo>();
+            m_playerIDs = new Dictionary<int, PlayerInLobby>();
             m_playersInLobby = new PlayerInLobby[] { m_playerOne, m_playerTwo, m_playerThree };
         }
 
@@ -44,7 +46,7 @@ namespace ubv.ui.client
             base.Start();
             m_socialServices = ubv.client.logic.ClientNetworkingManager.Instance.SocialServices;
             m_activeUser = m_lobby.GetActiveUser();
-            m_lobby.OnClientListUpdate += UpdatePlayers;
+            m_lobby.OnClientCharacterListUpdate += UpdatePlayers;
 
             m_playerOne.HidePlayer();
             m_playerTwo.HidePlayer();
@@ -76,6 +78,7 @@ namespace ubv.ui.client
                     CharacterData character = m_characters[i];
                     int playerIntID = character.PlayerID.GetHashCode();
                     UserInfo user = m_users[playerIntID];
+                    m_playerIDs[playerIntID]= m_playersInLobby[i];
                     if (user != null && character != null)
                     {
                         m_playersInLobby[i].ShowPlayer(user, character);
@@ -113,7 +116,6 @@ namespace ubv.ui.client
 
                     if (!m_users.ContainsKey(playerIntID))
                     {
-                        
                         m_socialServices.GetUserInfo(character.PlayerID, OnGetUserInfo);
                     }
                 }
@@ -149,7 +151,7 @@ namespace ubv.ui.client
             //Go to game search scene
             m_lobby.BackToCharacterSelect();
         }
-
+        
         public void ToggleReady()
         {
             m_activeUser.Ready = !m_activeUser.Ready;

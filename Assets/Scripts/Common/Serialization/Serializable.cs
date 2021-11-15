@@ -341,6 +341,8 @@ namespace ubv.common.serialization
 
         public class Bool : Serialized<bool>
         {
+            public Bool() : base() { }
+
             public Bool(bool value) : base(value)
             {
             }
