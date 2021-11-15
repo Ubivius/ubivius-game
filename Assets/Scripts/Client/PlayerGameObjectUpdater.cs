@@ -163,7 +163,7 @@ namespace ubv.client.logic
                     
                     common.logic.PlayerMovement.Execute(ref body, vel);
 
-                    bool isSprinting = body.velocity.sqrMagnitude > walkVelocity * walkVelocity;
+                    bool isSprinting = body.velocity.sqrMagnitude > (walkVelocity * walkVelocity) + m_correctionTolerance;
                     m_sprintActions[player.GUID.Value].Invoke(isSprinting);
                 }
             }
