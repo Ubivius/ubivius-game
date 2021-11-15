@@ -1,17 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Net;
-using ubv.udp;
-using System.Collections.Generic;
-using UnityEngine.SceneManagement;
-using ubv.common.data;
-using ubv.tcp;
-using System.Net.Http;
-using static ubv.microservices.DispatcherMicroservice;
 using static ubv.microservices.CharacterDataService;
-using UnityEngine.Events;
-using ubv.utils;
 using ubv.microservices;
+using ubv.ui.client;
 
 namespace ubv.client.logic
 {
@@ -21,54 +11,28 @@ namespace ubv.client.logic
     public class ClientCharacterSelectState : ClientSyncState
     {
         [SerializeField] private string m_clientGameSearch;
-        private CharacterData[] m_cachedCharacters;
-        private bool m_joiningGame;
-        
-        protected override void StateLoad()
+
+        protected override void Awake()
         {
-            m_cachedCharacters = null;
-            m_joiningGame = false;
-            CharacterService.Request(new GetCharactersFromUserRequest(UserInfo.ID, OnCharactersFetchedFromService));
-        }
-        
-        private void OnCharactersFetchedFromService(CharacterData[] characters)
-        {
-            m_cachedCharacters = characters;
-            // for now, skip selection
-            SetActiveCharacter(m_cachedCharacters[0].ID);
+            base.Awake();
+            m_canBack = true;
         }
 
-        public void SetActiveCharacter(string characterID)
+        protected override void StateLoad()
         {
-            data.LoadingData.ActiveCharacterID = characterID;
         }
 
         public override void StateUpdate()
         {
-            if (data.LoadingData.ActiveCharacterID != null && !m_joiningGame)
-            {
-                GoToJoinGame();
-            }
-        }
-
-        public CharacterData GetActiveCharacter()
-        {
-            if (m_cachedCharacters != null)
-            {
-                return m_cachedCharacters[0];
-            }
-            return null;
         }
         
-        private void GoToJoinGame()
+        public void GoToJoinGame()
         {
-            m_joiningGame = true;
             ClientStateManager.Instance.PushScene(m_clientGameSearch);
         }
-        
+
         protected override void StateUnload()
         {
-            m_joiningGame = false;
         }
 
         protected override void StatePause()
@@ -77,6 +41,11 @@ namespace ubv.client.logic
 
         protected override void StateResume()
         {
+        }
+
+        public void GoBackToPreviousState()
+        {
+            ClientStateManager.Instance.PopState();
         }
     }   
 }

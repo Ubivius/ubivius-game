@@ -16,14 +16,20 @@ namespace ubv.client.logic
     /// <summary>
     /// Represents the state of the server during the game
     /// </summary>
-    public class ClientSyncPlay : ClientSyncState, udp.client.IUDPClientReceiver, tcp.client.ITCPClientReceiver
+    public class ClientSyncPlay : ClientSyncState
     {
         private enum SubState
         {
             SUBSTATE_WAITING_FOR_SERVER_GO,
-            SUBSTATE_PLAY
+            SUBSTATE_PLAY,
+            SUBSTATE_OPTIONS,
+            SUBSTATE_LEAVING,
+            SUBSTATE_TRANSITION,
+            SUBSTATE_END
         }
 
+        [SerializeField] private string m_menuScene;
+        [SerializeField] private string m_EndScene;
         [SerializeField] private string m_physicsScene;
         
         private int m_lastReceivedRemoteTick;
@@ -59,7 +65,7 @@ namespace ubv.client.logic
 
         private SubState m_currentSubState;
         
-        private bool ConnectedToServer { get { return m_TCPClient.IsConnected(); } }
+        private bool ConnectedToServer { get { return m_server.IsConnected(); } }
         
         public UnityAction OnInitializationDone;
 
@@ -85,17 +91,18 @@ namespace ubv.client.logic
 
             m_fixedUpdateDeltaTime = Time.fixedDeltaTime;
             m_baseTickTime = m_fixedUpdateDeltaTime;
+            m_server.OnTCPReceive += ReceiveTCP;
+            m_server.OnUDPReceive += ReceiveUDP;
+            m_server.OnServerDisconnect += OnDisconnect;
         }
 
-        private void Start()
+        public override void OnStart()
         {
             Init(data.LoadingData.ServerInit);
         }
 
         private void Init(ServerInitMessage serverInit)
-        {
-            data.ClientCacheData.SaveCache(true);
-            
+        {   
             for (ushort i = 0; i < CLIENT_STATE_BUFFER_SIZE; i++)
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
@@ -111,16 +118,13 @@ namespace ubv.client.logic
 
             foreach (ClientStateUpdater updater in m_updaters)
             {
-                updater.Init(m_clientStateBuffer[0], PlayerID.Value);
+                updater.Init(m_clientStateBuffer[0], CurrentUser.ID);
             }
-
-            m_UDPClient.Subscribe(this);
-            m_TCPClient.Subscribe(this);
-
+            
             UpdateClockOffset(LatencyFromRTT(m_meanRTT));
 
             ClientWorldLoadedMessage worldLoaded = new ClientWorldLoadedMessage();
-            m_TCPClient.Send(worldLoaded.GetBytes());
+            m_server.TCPSend(worldLoaded.GetBytes());
 
             OnInitializationDone?.Invoke();
         }
@@ -132,70 +136,65 @@ namespace ubv.client.logic
                 Time.fixedDeltaTime = m_fixedUpdateDeltaTime;
             }
 
-            if (!ShouldUpdate())
-                return;
-
-
-            UpdateClockOffset(LatencyFromRTT(m_meanRTT));
-
-            int bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
-
-            UpdateInput(bufferIndex);
-
-            if (Time.frameCount % 4 == 0)
+            switch (m_currentSubState)
             {
-                ManageRTTCheck(m_localTick);
-            }
+                case SubState.SUBSTATE_PLAY:
+                    UpdateClockOffset(LatencyFromRTT(m_meanRTT));
 
-            UpdateClientState(bufferIndex);
-            
-            ++m_localTick;
-            ClientCorrection(m_lastReceivedRemoteTick % CLIENT_STATE_BUFFER_SIZE);
+                    int bufferIndex = m_localTick % CLIENT_STATE_BUFFER_SIZE;
 
-            for (int i = 0; i < m_updaters.Count; i++)
-            {
-                m_updaters[i].FixedStateUpdate(Time.deltaTime);
+                    UpdateInput(bufferIndex);
+
+                    if (Time.frameCount % 4 == 0)
+                    {
+                        ManageRTTCheck(m_localTick);
+                    }
+
+                    UpdateClientState(bufferIndex);
+
+                    ++m_localTick;
+                    ClientCorrection(m_lastReceivedRemoteTick % CLIENT_STATE_BUFFER_SIZE);
+                    break;
+                default:
+                    break;
             }
         }
 
         public override void StateUpdate()
         {
-            if (ShouldUpdate())
+            switch (m_currentSubState)
             {
-                m_lastInput = InputController.CurrentFrame();
+                case SubState.SUBSTATE_PLAY:
+                    m_lastInput = InputController.CurrentFrame();
+                    break;
+                case SubState.SUBSTATE_LEAVING:
+                    ClientStateManager.Instance.BackToScene(m_menuScene);
+                    m_currentSubState = SubState.SUBSTATE_TRANSITION;
+                    break;
+                case SubState.SUBSTATE_END:
+                    ClientStateManager.Instance.PushScene(m_EndScene);
+                    m_currentSubState = SubState.SUBSTATE_TRANSITION;
+                    break;
+                default:
+                    break;
             }
         }
         
         private void UpdateStateFromWorldAndStep(ref WorldState state, InputFrame input, float deltaTime)
         {
-            if (!ShouldUpdate())
-                return;
-
             for (int i = 0; i < m_updaters.Count; i++)
             {
-                m_updaters[i].UpdateStateFromWorld(ref state);
+                m_updaters[i].SaveSimulationInState(ref state);
                 m_updaters[i].Step(input, deltaTime);
             }
-                    
-            m_clientPhysics.Simulate(deltaTime);
-        }
-                
-        private List<ClientStateUpdater> UpdatersNeedingCorrection(WorldState localState, WorldState remoteState)
-        {
-            if (!ShouldUpdate())
-                return null;
 
-            List<ClientStateUpdater> needCorrection = new List<ClientStateUpdater>();
 
             for (int i = 0; i < m_updaters.Count; i++)
             {
-                if (m_updaters[i].NeedsCorrection(localState, remoteState))
-                {
-                    needCorrection.Add(m_updaters[i]);
-                }
+                m_updaters[i].FixedStateUpdate(deltaTime);
             }
 
-            return needCorrection;
+            m_clientPhysics.Simulate(deltaTime);
         }
 
         private int MeanLatencyFromRTTMessage(RTTMessage msg)
@@ -285,14 +284,11 @@ namespace ubv.client.logic
         private void ManageRTTCheck(int tick)
         {
             m_packetSendTimeStamps[tick] = DateTime.UtcNow.Ticks;
-            m_UDPClient.Send(new RTTMessage(m_packetSendTimeStamps[tick], tick).GetBytes(), PlayerID.Value);
+            m_server.UDPSend(new RTTMessage(m_packetSendTimeStamps[tick], tick).GetBytes());
         }
 
-        public void ReceivePacket(UDPToolkit.Packet packet)
+        private void ReceiveUDP(UDPToolkit.Packet packet)
         {
-            if (!ShouldUpdate() )
-                return;
-            
             lock (m_lock)
             {
                 ClientStateMessage stateMessage = common.serialization.IConvertible.CreateFromBytes<ClientStateMessage>(packet.Data.ArraySegment());
@@ -321,13 +317,13 @@ namespace ubv.client.logic
 
         private void UpdateInput(int bufferIndex)
         {
-            if (!ShouldUpdate())
-                return;
-
             if (m_lastInput != null)
             {
                 m_inputBuffer[bufferIndex].Movement.Value = m_lastInput.Movement.Value;
                 m_inputBuffer[bufferIndex].Sprinting.Value = m_lastInput.Sprinting.Value;
+                m_inputBuffer[bufferIndex].Interact.Value = m_lastInput.Interact.Value;
+                m_inputBuffer[bufferIndex].Shooting.Value = m_lastInput.Shooting.Value;
+                m_inputBuffer[bufferIndex].ShootingDirection.Value = m_lastInput.ShootingDirection.Value;
             }
             else
             {
@@ -346,34 +342,27 @@ namespace ubv.client.logic
 
             InputMessage inputMessage = new InputMessage();
 
-            inputMessage.PlayerID.Value = PlayerID.Value;
+            inputMessage.PlayerID.Value = CurrentUser.ID;
             inputMessage.InputFrames.Value = frames;
 
 #if NETWORK_SIMULATE
             if (UnityEngine.Random.Range(0f, 1f) > m_packetLossChance)
             {
                 //Debug.Log("CLIENT Sending ticks " + (m_lastReceivedRemoteTick  + 1) + " to " + m_localTick);
-                m_UDPClient.Send(inputMessage.GetBytes(), PlayerID.Value);
+                m_server.UDPSend(inputMessage.GetBytes());
             }
             else
             {
                 Debug.Log("SIMULATING PACKET LOSS");
             }
 #else
-            m_udpClient.Send(inputMessage.GetBytes(), PlayerID.Value);
+            m_server.UDPSend(inputMessage.GetBytes(), PlayerID.Value);
 #endif //NETWORK_SIMULATE       
                     
         }
 
-        private bool ShouldUpdate()
-        {
-            return ConnectedToServer && m_currentSubState == SubState.SUBSTATE_PLAY;
-        }
-
         private void UpdateClientState(int bufferIndex)
         {
-            if (!ShouldUpdate())
-                return;
             // set current client state to last one then updating it
             UpdateStateFromWorldAndStep(
                 ref m_clientStateBuffer[bufferIndex],
@@ -383,9 +372,6 @@ namespace ubv.client.logic
 
         private void ClientCorrection(int remoteIndex)
         {
-            if (!ShouldUpdate())
-                return;
-            
             // receive a state from server
             // check what tick it corresponds to
             // rewind client state to the tick
@@ -394,54 +380,54 @@ namespace ubv.client.logic
             {
                 if (m_lastReceivedServerState != null)
                 {
-                    // on devrait quand même reset les shits qui ont pas besoin de correction
-                    // parce qu'on call phys simulate et ça ça affecte des updaters
-                    // qui ne devraient peut-être pas être affectés
-                    // sol 1: reset all
-                    // sol 2: corriger direct sans simulate pour les updaters qui n'ont pas besoin de phy sim
-                    // et quand on doit caller phy sim, on reset tous les physical updaters
-                    List<ClientStateUpdater> updaters = UpdatersNeedingCorrection(m_clientStateBuffer[remoteIndex], m_lastReceivedServerState);
-                    if (updaters.Count > 0) 
+                    HashSet<ClientStateUpdater> rightUpdaters = new HashSet<ClientStateUpdater>();
+                    WorldState localState = m_clientStateBuffer[m_lastReceivedRemoteTick % CLIENT_STATE_BUFFER_SIZE];
+                    for (int i = 0; i < m_updaters.Count; i++)
                     {
-                        int rewindTicks = m_lastReceivedRemoteTick;
-                                
-                        // reset world state to last server-sent state
-                        // pour le moment, on prend l'option 1 et on reset all
-                        for (int i = 0; i < m_updaters.Count; i++)
+                        if (m_updaters[i].IsPredictionWrong(localState, m_lastReceivedServerState))
                         {
-                            m_updaters[i].UpdateWorldFromState(m_lastReceivedServerState);
+                            m_updaters[i].ResetSimulationToState(m_lastReceivedServerState);
                         }
-
-                        Debug.Log("CORRECTION : Remote ticks : " + m_lastReceivedRemoteTick + ". Local ticks : " + m_localTick + ". Diff = " + (m_localTick - m_lastReceivedRemoteTick));
-
-                        while (rewindTicks < m_localTick)
+                        else
                         {
-                            int rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
-
-                            for (int i = 0; i < m_updaters.Count; i++)
-                            {
-                                m_updaters[i].UpdateStateFromWorld(ref m_clientStateBuffer[rewindIndex]);
-                                m_updaters[i].Step(m_inputBuffer[rewindIndex], Time.fixedDeltaTime);
-                            }
-
-                            m_clientPhysics.Simulate(Time.fixedDeltaTime);
+                            m_updaters[i].UpdateSimulationFromState(localState, m_lastReceivedServerState);
+                            rightUpdaters.Add(m_updaters[i]);
                         }
                     }
-                            
+                    
+                    foreach (ClientStateUpdater u in rightUpdaters)
+                    {
+                        u.DisableSimulation();
+                    }
+
+                    int rewindTicks = m_lastReceivedRemoteTick;
+                    while (rewindTicks < m_localTick)
+                    {
+                        int rewindIndex = rewindTicks++ % CLIENT_STATE_BUFFER_SIZE;
+
+                        for (int i = 0; i < m_updaters.Count; i++)
+                        {
+                            if(!rightUpdaters.Contains(m_updaters[i]))
+                            {
+                                m_updaters[i].SaveSimulationInState(ref m_clientStateBuffer[rewindIndex]);
+                                m_updaters[i].Step(m_inputBuffer[rewindIndex], Time.fixedDeltaTime);
+                            }
+                        }
+
+                        m_clientPhysics.Simulate(Time.fixedDeltaTime);
+                    }
+
+                    foreach (ClientStateUpdater u in rightUpdaters)
+                    {
+                        u.EnableSimulation();
+                    }
+
                     m_lastReceivedServerState = null;
                 }
             }
         }
 
-        public void OnSuccessfulTCPConnect()
-        {
-#if DEBUG_LOG
-            Debug.Log("Successful connection to server.");
-#endif // DEBUG_LOG
-            m_TCPClient.Send(new IdentificationMessage().GetBytes());
-        }
-
-        public void ReceivePacket(TCPToolkit.Packet packet)
+        private void ReceiveTCP(TCPToolkit.Packet packet)
         {
             ServerStartsMessage ready = common.serialization.IConvertible.CreateFromBytes<ServerStartsMessage>(packet.Data.ArraySegment());
             if (ready != null)
@@ -452,18 +438,29 @@ namespace ubv.client.logic
                 m_currentSubState = SubState.SUBSTATE_PLAY;
                 return;
             }
+            ServerEndsMessage finish = common.serialization.IConvertible.CreateFromBytes<ServerEndsMessage>(packet.Data.ArraySegment());
+            if (finish != null)
+            {
+#if DEBUG_LOG
+                Debug.Log("Received server end message.");
+#endif // DEBUG_LOG
+                m_currentSubState = SubState.SUBSTATE_END;
+                return;
+            }
         }
 
-        public void OnDisconnect()
+        private void OnDisconnect()
         {
 #if DEBUG_LOG
             Debug.Log("Disconnected from server.");
 #endif // DEBUG_LOG
-            m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
+            m_currentSubState = SubState.SUBSTATE_LEAVING;
         }
 
         protected override void StateUnload()
         {
+            m_server.OnTCPReceive += ReceiveTCP;
+            m_server.OnUDPReceive += ReceiveUDP;
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
         }
 

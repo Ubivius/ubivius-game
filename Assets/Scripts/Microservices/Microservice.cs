@@ -108,6 +108,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("GET Request was not successful");
 #endif // DEBUG_LOG
+                request.FailureCallback?.Invoke(message.ReasonPhrase);
             }
         }
 
@@ -123,6 +124,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("POST Request " + request.URL() + " was not successful: " + message.ReasonPhrase);
 #endif // DEBUG_LOG
+                request.FailureCallback?.Invoke(message.ReasonPhrase);
             }
         }
 
@@ -138,6 +140,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("PUT Request was not successful");
 #endif // DEBUG_LOG
+                request.FailureCallback?.Invoke(message.ReasonPhrase);
             }
         }
 
@@ -153,6 +156,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("DELETE Request was not successful");
 #endif // DEBUG_LOG
+                request.FailureCallback?.Invoke(message.ReasonPhrase);
             }
         }
     }

@@ -20,7 +20,7 @@ namespace ubv.client.logic
         /// </summary>
         /// <param name="state">State to store and update</param>
         /// <param name="deltaTime"></param>
-        public abstract void UpdateStateFromWorld(ref WorldState state);
+        public abstract void SaveSimulationInState(ref WorldState state);
 
         /// <summary>
         /// Updates the local state.
@@ -30,10 +30,17 @@ namespace ubv.client.logic
         public abstract void Step(common.data.InputFrame input, float deltaTime);
 
         /// <summary>
-        /// Sets the current local client state to state
+        /// Resets the simulation to state
         /// </summary>
         /// <param name="state">State to update to</param>
-        public abstract void UpdateWorldFromState(WorldState state);
+        public abstract void ResetSimulationToState(WorldState state);
+
+        /// <summary>
+        /// Update simulation based on diff between local and remote state
+        /// </summary>
+        /// <param name="localState">local state</param>
+        /// <param name="remoteState">remote state to check against</param>
+        public abstract void UpdateSimulationFromState(WorldState localState, WorldState remoteState);
 
         /// <summary>
         /// Checks if current local state needs to be corrected according to
@@ -41,7 +48,11 @@ namespace ubv.client.logic
         /// </summary>
         /// <param name="remoteState">The state as computed by the server</param>
         /// <returns>If the client states needs correction</returns>
-        public abstract bool NeedsCorrection(WorldState localState, WorldState remoteState);
+        public abstract bool IsPredictionWrong(WorldState localState, WorldState remoteState);
+        
+        public abstract void DisableSimulation();
+
+        public abstract void EnableSimulation();
 
         public abstract void FixedStateUpdate(float deltaTime);
     }

@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:Assets/Prefabs/Client/UI/TextChatUI.prefab.meta
 guid: bcad3073013bf7e40b03e1cb10780a39
+=======
+guid: 30e0be4506d6747a4a0300c7cfd9e0ed
+>>>>>>> 88e9156 (WIP):Assets/Prefabs/Gameplay/Shooting/Bullet.prefab.meta
 PrefabImporter:
   externalObjects: {}
   userData: 
