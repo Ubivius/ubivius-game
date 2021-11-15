@@ -1333,7 +1333,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enemySettings: {fileID: 11400000, guid: 387cec5fcfcc1a6499b0d050382f46fd, type: 2}
   m_pathfindingGridManager: {fileID: 1730964089}
-  m_enemyCount: 10
+  m_enemyCount: 0
 --- !u!1001 &1802319657
 PrefabInstance:
   m_ObjectHideFlags: 0

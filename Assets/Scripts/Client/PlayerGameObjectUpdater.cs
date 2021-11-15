@@ -23,7 +23,8 @@ namespace ubv.client.logic
         private Rigidbody2D m_localPlayerBody;
         
         private int m_playerGUID;
-        
+        private Vector2 m_cachedPlayerVelocity;
+
         private Dictionary<int, PlayerState> m_players;
 
         public UnityAction OnInitialized;
@@ -188,7 +189,15 @@ namespace ubv.client.logic
             foreach (int id in Bodies.Keys)
             {
                 Rigidbody2D body = Bodies[id];
-                body.simulated = false;
+                if (id == m_playerGUID)
+                {
+                    m_cachedPlayerVelocity = body.velocity;
+                    body.velocity = Vector2.zero;
+                }
+                else
+                {
+                    body.simulated = false;
+                }
             }
         }
 
@@ -197,7 +206,14 @@ namespace ubv.client.logic
             foreach (int id in Bodies.Keys)
             {
                 Rigidbody2D body = Bodies[id];
-                body.simulated = true;
+                if (id == m_playerGUID)
+                {
+                    body.velocity = m_cachedPlayerVelocity;
+                }
+                else
+                {
+                    body.simulated = true;
+                }
             }
         }
 
