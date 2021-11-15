@@ -142,7 +142,7 @@ namespace ubv.client.logic
                     Vector2 vel = player.Velocity.Value;
                     Vector2 deltaPos = player.Position.Value - body.position;
 
-                    if (deltaPos.sqrMagnitude > Mathf.Pow(sprintVelocity * deltaTime * m_maxLerpFrames, 2))
+                    if (deltaPos.sqrMagnitude > Mathf.Pow(walkVelocity * deltaTime * m_maxLerpFrames, 2))
                     {
                         body.position = player.Position.Value;
                     }
@@ -154,10 +154,10 @@ namespace ubv.client.logic
                             vel += deltaPos;
                             vel *= speed / vel.magnitude;
                         }
-                        else
+                        else if (deltaPos.sqrMagnitude > Mathf.Pow(m_correctionTolerance, 2))
                         {
                             float deltaPosMagnitude = deltaPos.magnitude;
-                            vel = deltaPos * sprintVelocity / deltaPosMagnitude;
+                            vel = deltaPos * walkVelocity / deltaPosMagnitude;
                         }
                     }
                     
