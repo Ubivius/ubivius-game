@@ -22,55 +22,82 @@ namespace ubv
             /// </summary>
             public class PlayerState : serialization.Serializable
             {
-                // send this over network
                 public utils.Bitset States;
                 public serialization.types.Vector2 Velocity;
                 public serialization.types.Vector2 Position;
-                public serialization.types.Float Rotation;
                 public serialization.types.Vector2 ShootingDirection;
-
-                // TODO : not send this via network because not likely to be changed
                 public serialization.types.Int32 GUID;
 
                 public PlayerState() : base()
                 {
                     Position = new serialization.types.Vector2(Vector2.zero);
                     Velocity = new serialization.types.Vector2(Vector2.zero);
-                    Rotation = new serialization.types.Float(0);
                     ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(0);
                     States = new utils.Bitset();
 
-                    InitSerializableMembers(Position, Velocity, Rotation, ShootingDirection, GUID, States);
+                    InitSerializableMembers(Position, Velocity, ShootingDirection, GUID, States);
                 }
 
                 public PlayerState(int playerID) : base()
                 {
                     Position = new serialization.types.Vector2(Vector2.zero);
                     Velocity = new serialization.types.Vector2(Vector2.zero);
-                    Rotation = new serialization.types.Float(0);
                     ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(playerID);
                     States = new utils.Bitset();
 
-                    InitSerializableMembers(Position, Velocity, Rotation, ShootingDirection, GUID, States);
+                    InitSerializableMembers(Position, Velocity, ShootingDirection, GUID, States);
                 }
 
                 public PlayerState(PlayerState player) : base()
                 {
                     Position = new serialization.types.Vector2(Vector2.zero);
                     Velocity = new serialization.types.Vector2(Vector2.zero);
-                    Rotation = new serialization.types.Float(player.Rotation.Value);
                     ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(player.GUID.Value);
                     States = new utils.Bitset();
 
-                    InitSerializableMembers(Position, Velocity, Rotation, ShootingDirection, GUID, States);
+                    InitSerializableMembers(Position, Velocity, ShootingDirection, GUID, States);
                 }
                 
                 protected override ID.BYTE_TYPE SerializationID()
                 {
                     return ID.BYTE_TYPE.PLAYER_STATE;
+                }
+
+                public bool IsPositionDifferent(PlayerState other, float errorTolerance = 0.1f)
+                {
+                    if (other == this) return false;
+
+                    if ((other.Position.Value - Position.Value).sqrMagnitude > errorTolerance * errorTolerance)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                public bool IsDifferent(PlayerState other, float errorTolerance = 0.1f)
+                {
+                    if (other == this) return false;
+
+                    if ((other.Position.Value - Position.Value).sqrMagnitude > errorTolerance * errorTolerance)
+                    {
+                        return true;
+                    }
+
+                    if ((other.Velocity.Value - Velocity.Value).sqrMagnitude > errorTolerance * errorTolerance)
+                    {
+                        return true;
+                    }
+
+                    if (other.States.IsDifferent(States))
+                    {
+                        return true;
+                    }
+
+                    return false;
                 }
             }
         }
