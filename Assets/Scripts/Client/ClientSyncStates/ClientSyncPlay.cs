@@ -464,8 +464,7 @@ namespace ubv.client.logic
         }
 
         protected override void StatePause()
-        {
-        }
+        { }
 
         protected override void StateResume()
         {
