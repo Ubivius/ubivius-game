@@ -131,7 +131,6 @@ GameObject:
   m_Component:
   - component: {fileID: 134844666}
   - component: {fileID: 134844665}
-  - component: {fileID: 134844667}
   m_Layer: 0
   m_Name: ClientSyncPlay
   m_TagString: Untagged
@@ -163,7 +162,7 @@ MonoBehaviour:
   - {fileID: 352309656}
   - {fileID: 748845329}
   - {fileID: 969313555}
-  m_packetLossChance: 0.01
+  m_packetLossChance: 0
 --- !u!4 &134844666
 Transform:
   m_ObjectHideFlags: 0
@@ -182,21 +181,10 @@ Transform:
   - {fileID: 482350417}
   - {fileID: 1686495564}
   - {fileID: 833420282}
+  - {fileID: 376912850}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &134844667
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 134844664}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65a997f22d4492d4ab9c22d921c5362c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &304581781
 GameObject:
   m_ObjectHideFlags: 0
@@ -414,12 +402,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 376912848}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_Father: {fileID: 134844666}
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &482350416
 GameObject:
@@ -498,8 +486,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66fb5cb2c76006842817f259375f9096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_lerpTime: 2
-  m_correctionTolerance: 0.1
+  m_velocityLerpTime: 0.3
+  m_maxPositionError: 1
+  m_positionLerpTime: 0.2
+  m_correctionTolerance: 0.5
   m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
   m_playerAnimator: {fileID: 0}
 --- !u!1 &583337820
@@ -790,8 +780,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae0b2c2a6df97a7488b7af77c0811dd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_lerpTime: 0.2
-  m_correctionTolerance: 0.01
+  m_correctionTolerance: 2
   m_enemySettings: {fileID: 11400000, guid: f879c9996d7fac746a7b9ecc8da43704, type: 2}
 --- !u!1001 &805576473
 PrefabInstance:
@@ -915,6 +904,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1524123814586921725, guid: bcad3073013bf7e40b03e1cb10780a39,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1524123814586921725, guid: bcad3073013bf7e40b03e1cb10780a39,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -17
+      objectReference: {fileID: 0}
     - target: {fileID: 1524123815419339147, guid: bcad3073013bf7e40b03e1cb10780a39,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -1037,7 +1036,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0

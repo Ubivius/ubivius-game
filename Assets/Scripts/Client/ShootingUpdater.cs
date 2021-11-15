@@ -10,7 +10,6 @@ namespace ubv.client.logic
     /// </summary>
     public class ShootingUpdater : ClientStateUpdater
     {
-        [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerShootingSettings m_playerShootingSettings;
         [SerializeField] private PlayerGameObjectUpdater m_playerGameObjectUpdater;
         [SerializeField] private float m_correctionTolerance = 0.05f;
@@ -41,45 +40,7 @@ namespace ubv.client.logic
                 m_shootingDirection[id] = Vector2.zero;
             }
         }
-
-        public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
-        {
-            foreach (PlayerState player in remoteState.Players().Values)
-            {
-                int playerId = player.GUID.Value;
-
-                if (player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING) && !localState.Players()[playerId].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING)
-                 || !player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING) && localState.Players()[playerId].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING))
-                {
-                    return true;
-                }
-                else if (player.States.IsTrue((int)PlayerStateEnum.IS_SHOOTING))
-                {
-                    if (!(player.ShootingDirection.Value.x > localState.Players()[playerId].ShootingDirection.Value.x * (1 - m_correctionTolerance))
-                     && !(player.ShootingDirection.Value.x < localState.Players()[playerId].ShootingDirection.Value.x * (1 + m_correctionTolerance))
-                     && !(player.ShootingDirection.Value.y > localState.Players()[playerId].ShootingDirection.Value.y * (1 - m_correctionTolerance))
-                     && !(player.ShootingDirection.Value.y < localState.Players()[playerId].ShootingDirection.Value.y * (1 + m_correctionTolerance)))
-                    {
-                        return true;
-                    }
-                }                
-            }
-
-            return false;
-        }
-
-        public override void UpdateStateFromWorld(ref WorldState state)
-        {
-            foreach (PlayerState player in state.Players().Values)
-            {
-                if (player.GUID.Value != m_playerGUID)
-                {
-                    player.ShootingDirection.Value = m_goalStates[player.GUID.Value].ShootingDirection.Value;
-                }
-                player.States.Set((int)PlayerStateEnum.IS_SHOOTING, m_isShooting[player.GUID.Value]);
-            }
-        }
-
+        
         public override void Step(InputFrame input, float deltaTime)
         {
             m_isShooting[m_playerGUID] = input.Shooting.Value;
@@ -100,19 +61,43 @@ namespace ubv.client.logic
                 common.logic.PlayerShooting.Execute(Players[m_playerGUID], m_playerShootingSettings, m_shootingDirection[m_playerGUID], deltaTime);
             }
         }
+        
+        public override void FixedStateUpdate(float deltaTime)
+        { }
 
-        public override void UpdateWorldFromState(WorldState state)
+        public override void SaveSimulationInState(ref WorldState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {
-                m_isShooting[player.GUID.Value] = state.Players()[player.GUID.Value].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING);
-                m_shootingDirection[player.GUID.Value] = state.Players()[player.GUID.Value].ShootingDirection.Value;
+                if (player.GUID.Value != m_playerGUID)
+                {
+                    player.ShootingDirection.Value = m_goalStates[player.GUID.Value].ShootingDirection.Value;
+                }
+                player.States.Set((int)PlayerStateEnum.IS_SHOOTING, m_isShooting[player.GUID.Value]);
             }
         }
 
-        public override void FixedStateUpdate(float deltaTime)
-        {
+        public override void ResetSimulationToState(WorldState state)
+        { }
 
+        public override void UpdateSimulationFromState(WorldState localState, WorldState remoteState)
+        {
+            foreach (PlayerState player in remoteState.Players().Values)
+            {
+                m_isShooting[player.GUID.Value] = remoteState.Players()[player.GUID.Value].States.IsTrue((int)PlayerStateEnum.IS_SHOOTING);
+                m_shootingDirection[player.GUID.Value] = remoteState.Players()[player.GUID.Value].ShootingDirection.Value;
+            }
         }
+
+        public override bool IsPredictionWrong(WorldState localState, WorldState remoteState)
+        {
+            return false;
+        }
+
+        public override void DisableSimulation()
+        { }
+
+        public override void EnableSimulation()
+        { }
     }
 }

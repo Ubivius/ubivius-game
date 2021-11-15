@@ -131,7 +131,6 @@ namespace ubv.ui.client
 
                 foreach (int id in toRemove)
                 {
-                    Debug.Log("Removing user id " + id);
                     m_users.Remove(id);
                 }
             }
@@ -141,7 +140,6 @@ namespace ubv.ui.client
         {
             lock (m_userLock)
             {
-                Debug.Log("Got user info in UI from " + info.UserName);
                 m_users[info.ID] = info;
             }
         }

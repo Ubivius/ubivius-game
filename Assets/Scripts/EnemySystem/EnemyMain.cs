@@ -15,7 +15,7 @@ public class EnemyMain : MonoBehaviour
     }*/
 
     //public Enemy Enemy { get; private set; }
-    public EnemyPathFindingMovement EnemyPathFindingMovement { get; private set; }
+    public EnemyMovementUpdater EnemyPathFindingMovement { get; private set; }
     //public EnemyTargeting EnemyTargeting { get; private set; }
     //public EnemyStats EnemyStats { get; private set; }
     public Rigidbody2D EnemyRigidbody2D { get; private set; }
@@ -28,7 +28,7 @@ public class EnemyMain : MonoBehaviour
     {
         //Enemy = GetComponent<Enemy>();
 
-        EnemyPathFindingMovement = GetComponent<EnemyPathFindingMovement>();
+        EnemyPathFindingMovement = GetComponent<EnemyMovementUpdater>();
         //EnemyTargeting = GetComponent<EnemyTargeting>();
         //EnemyStats = GetComponent<EnemyStats>();
         EnemyRigidbody2D = GetComponent<Rigidbody2D>();
