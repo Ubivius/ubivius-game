@@ -1367,8 +1367,13 @@ PrefabInstance:
       objectReference: {fileID: 1730964089}
     - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}
+      propertyPath: m_boundariesMap.x
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
       propertyPath: m_boundariesMap.y
-      value: 250
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}

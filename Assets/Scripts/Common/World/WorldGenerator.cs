@@ -112,15 +112,21 @@ namespace ubv.common.world
 
         public void GenerateWorld()
         {
-            int i = 0;
-            while (!m_mapIsValid && i < 5)
+            while (!m_mapIsValid && m_mapGenerationAttempt < 1000)
             {
-                i++;
                 try
                 {
-                    m_floor.ClearAllTiles();
-                    m_door.ClearAllTiles();
-                    m_wall.ClearAllTiles();
+                    if (m_roomManager != null)
+                    {
+                        m_floor.ClearAllTiles();
+                        m_door.ClearAllTiles();
+                        m_wall.ClearAllTiles();
+                        foreach (RoomInfo room in m_roomInMap)
+                        {
+                            Destroy(room.gameObject);
+                        }
+                        m_roomInMap.Clear();
+                    }
 
                     m_roomManager = new generationManager.RoomManager(m_worldGeneratorToRoomManager);
                     m_masterLogicGrid = m_roomManager.GenerateRoomGrid();
@@ -148,7 +154,6 @@ namespace ubv.common.world
                     m_wall.RefreshAllTiles();
 
                     SetPlayerSpawnPosList();
-
 
                     OnWorldGenerated?.Invoke();
 
@@ -209,7 +214,7 @@ namespace ubv.common.world
             {
                 for (int y = 0; y < m_masterLogicGrid.Height; y++)
                 {
-                    if (m_masterLogicGrid.Grid[x, y].GetCellType() == cellType.CellInfo.CellType.CELL_FINALBUTTON)
+                    if (m_masterLogicGrid.Grid[x, y].GetCellType() == cellType.CellInfo.CellType.CELL_SECTIONDOORBUTTON)
                     {
                         return new Vector2(x, y - 1);
                     }
