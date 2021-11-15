@@ -10,7 +10,6 @@ namespace ubv.client.logic
     /// </summary>
     public class ShootingUpdater : ClientStateUpdater
     {
-        [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerShootingSettings m_playerShootingSettings;
         [SerializeField] private PlayerGameObjectUpdater m_playerGameObjectUpdater;
         [SerializeField] private float m_correctionTolerance = 0.05f;

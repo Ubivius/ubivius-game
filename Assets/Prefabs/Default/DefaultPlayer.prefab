@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 5955352065461813605}
   - component: {fileID: 4833654209021585595}
   - component: {fileID: 134318626118672903}
-  - component: {fileID: 7577910867354918622}
   - component: {fileID: 3613650373499371973}
   - component: {fileID: 2297808816556685682}
   - component: {fileID: -8184666661811255946}
@@ -73,9 +72,9 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: -0.26}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.25
 --- !u!114 &4833654209021585595
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104,22 +103,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FirePoint: {fileID: 7993229010338054016}
---- !u!58 &7577910867354918622
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6058910025482233828}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.12}
-  serializedVersion: 2
-  m_Radius: 0.5
 --- !u!212 &3613650373499371973
 SpriteRenderer:
   m_ObjectHideFlags: 0
