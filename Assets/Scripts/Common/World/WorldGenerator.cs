@@ -121,6 +121,7 @@ namespace ubv.common.world
                         m_floor.ClearAllTiles();
                         m_door.ClearAllTiles();
                         m_wall.ClearAllTiles();
+                        
                         foreach (RoomInfo room in m_roomInMap)
                         {
                             Destroy(room.gameObject);
