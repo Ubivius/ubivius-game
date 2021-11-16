@@ -119,6 +119,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1562b3f3c35d14748a1bf15a2cef2e43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  HealthPoint: 100
 --- !u!114 &686873656258829070
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -169,3 +170,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd0482350d201814cb9f782261f752dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_reachedTargetDistance: 0.1

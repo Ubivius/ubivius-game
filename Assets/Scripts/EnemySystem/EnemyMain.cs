@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ubv.server.logic.ai;
+using ubv.common.gameplay.shooting;
 
 public class EnemyMain : MonoBehaviour
 {
+    [SerializeField] public int HealthPoint;
     //public event EventHandler OnDestroySelf;
     //public event EventHandler<OnDamagedEventArgs> OnDamaged;
     /*public class OnDamagedEventArgs
@@ -22,7 +24,7 @@ public class EnemyMain : MonoBehaviour
     //public ICharacterAnims CharacterAnims { get; private set; }
     //public IAimShootAnims AimShootAnims { get; private set; }
 
-    //public HealthSystem HealthSystem { get; private set; }
+    public HealthSystem HealthSystem { get; private set; }
 
     private void Awake()
     {
@@ -35,12 +37,20 @@ public class EnemyMain : MonoBehaviour
         //CharacterAnims = GetComponent<ICharacterAnims>();
         //AimShootAnims = GetComponent<IAimShootAnims>();
 
-        //HealthSystem = new HealthSystem(100);
+        HealthSystem = new HealthSystem(HealthPoint);
+        Hittable hit = GetComponent<Hittable>();
+        hit.OnHit += Hit;
     }
 
     public Vector2 GetPosition()
     {
         return (Vector2) transform.position;
+    }
+
+    private void Hit()
+    {
+        Debug.Log("OUCH CRISS!");
+        HealthSystem.Damage(25);
     }
 
     /*public void DestroySelf()
