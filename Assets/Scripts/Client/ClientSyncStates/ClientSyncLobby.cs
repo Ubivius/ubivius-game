@@ -106,6 +106,7 @@ namespace ubv.client.logic
                             readyClients.Add(id);
                         }
                     }
+                    OnReadyClientSetUpdate?.Invoke(readyClients);
                     return;
                 }
 
