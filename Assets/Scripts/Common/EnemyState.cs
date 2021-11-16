@@ -18,31 +18,34 @@ namespace ubv
             {
                 // send this over network
                 public serialization.types.Vector2 Position;
-                
+                public serialization.types.Int32 HealthPoint;
                 public serialization.types.Int32 GUID;
 
                 public EnemyState() : base()
                 {
                     Position = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(0);
+                    HealthPoint = new serialization.types.Int32(0);
 
-                    InitSerializableMembers(Position, GUID);
+                    InitSerializableMembers(Position, GUID, HealthPoint);
                 }
 
                 public EnemyState(int enemyID) : base()
                 {
                     Position = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(enemyID);
+                    HealthPoint = new serialization.types.Int32(0);
 
-                    InitSerializableMembers(Position, GUID);
+                    InitSerializableMembers(Position, GUID, HealthPoint);
                 }
 
                 public EnemyState(EnemyState enemy) : base()
                 {
                     Position = new serialization.types.Vector2(enemy.Position.Value);
                     GUID = new serialization.types.Int32(enemy.GUID.Value);
+                    HealthPoint = new serialization.types.Int32(enemy.HealthPoint.Value);
 
-                    InitSerializableMembers(Position, GUID);
+                    InitSerializableMembers(Position, GUID, HealthPoint);
                 }
 
                 protected override ID.BYTE_TYPE SerializationID()
@@ -59,6 +62,8 @@ namespace ubv
                         Debug.Log("Self pos " + Position.Value + " vs other pos " + other.Position.Value);
                         return true;
                     }
+
+                    if (!other.HealthPoint.Value.Equals(HealthPoint.Value)) return true;
 
                     return false;
                 }

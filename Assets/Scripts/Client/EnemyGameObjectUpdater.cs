@@ -20,11 +20,13 @@ namespace ubv.client.logic
         
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, EnemyState> m_enemies;
+        private Dictionary<int, EnemyMain> m_enemyMain;
         
         public override void Init(WorldState clientState, int localID)
         {
             m_enemies = new Dictionary<int, EnemyState>();
             m_bodies = new Dictionary<int, Rigidbody2D>();
+            m_enemyMain = new Dictionary<int, EnemyMain>();
         }
 
         public override bool IsPredictionWrong(WorldState localState, WorldState remoteState)
@@ -46,6 +48,7 @@ namespace ubv.client.logic
             foreach (EnemyState enemy in state.Enemies().Values)
             {
                 enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
+                enemy.HealthPoint.Value = m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint();
 
                 if(!m_enemies.ContainsKey(enemy.GUID.Value))
                 {
@@ -66,6 +69,11 @@ namespace ubv.client.logic
                 if((m_bodies[enemy.GUID.Value].position - enemy.Position.Value).sqrMagnitude > m_enemySettings.Velocity * m_enemySettings.Velocity)
                 {
                     m_bodies[enemy.GUID.Value].position = enemy.Position.Value;
+                }
+
+                if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() != enemy.HealthPoint.Value)
+                {
+                    m_enemyMain[enemy.GUID.Value].HealthSystem.SetHealthPoint(enemy.HealthPoint.Value);
                 }
 
                 common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], enemy.Position.Value, m_enemySettings.Velocity);
@@ -90,6 +98,8 @@ namespace ubv.client.logic
 
                     m_bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
                     m_bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
+
+                    m_enemyMain[enemy.GUID.Value] = enemyGameObject.GetComponent<EnemyMain>();
                 }
                 m_enemies[enemy.GUID.Value] = enemy;
             }
@@ -108,6 +118,7 @@ namespace ubv.client.logic
                 Destroy(m_bodies[enemyKey]);
                 m_bodies.Remove(enemyKey);
                 m_enemies.Remove(enemyKey);
+                m_enemyMain.Remove(enemyKey);
             }
         }
 

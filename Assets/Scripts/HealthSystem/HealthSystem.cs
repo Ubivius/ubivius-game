@@ -22,10 +22,20 @@ public class HealthSystem
             OnHealthChanged = new UnityEvent();
         }
     }
+
+    public int GetHealthPoint()
+    {
+        return m_health;
+    }
         
     public float GetHealthPercent() 
     {
         return (float)m_health / m_healthMax;
+    }
+
+    public void SetHealthPoint(int healthPoint)
+    {
+        m_health = healthPoint;
     }
 
     public void Damage(int amount) 

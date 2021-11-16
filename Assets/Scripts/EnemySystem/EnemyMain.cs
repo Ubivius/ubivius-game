@@ -7,7 +7,7 @@ using ubv.common.gameplay.shooting;
 
 public class EnemyMain : MonoBehaviour
 {
-    [SerializeField] public int HealthPoint;
+    [SerializeField] public int MaxHealthPoint;
     //public event EventHandler OnDestroySelf;
     //public event EventHandler<OnDamagedEventArgs> OnDamaged;
     /*public class OnDamagedEventArgs
@@ -37,7 +37,7 @@ public class EnemyMain : MonoBehaviour
         //CharacterAnims = GetComponent<ICharacterAnims>();
         //AimShootAnims = GetComponent<IAimShootAnims>();
 
-        HealthSystem = new HealthSystem(HealthPoint);
+        HealthSystem = new HealthSystem(MaxHealthPoint);
         Hittable hit = GetComponent<Hittable>();
         hit.OnHit += Hit;
     }

@@ -20,6 +20,7 @@ namespace ubv.server.logic
 
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, EnemyMovementUpdater> m_enemyMovementUpdaters;
+        private Dictionary<int, EnemyMain> m_enemyMain;
 
         public override void Setup()
         {
@@ -53,6 +54,7 @@ namespace ubv.server.logic
                 EnemyState enemy = m_enemies[id];
 
                 enemy.Position.Value = m_enemyMovementUpdaters[id].GetPosition();
+                enemy.HealthPoint.Value = m_enemyMain[id].HealthSystem.GetHealthPoint();
             }
         }
 
@@ -73,14 +75,18 @@ namespace ubv.server.logic
                     EnemyMovementUpdater enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyMovementUpdater>();
                     enemyPathFindingMovement.SetPathfinding(m_pathfindingGridManager);
 
+                    EnemyMain enemyMain = enemyGameObject.GetComponent<EnemyMain>();
+
                     int id = System.Guid.NewGuid().GetHashCode();
                     body.name = "Server enemy " + id.ToString();
 
                     m_bodies.Add(id, body);
                     m_enemyMovementUpdaters.Add(id, enemyPathFindingMovement);
+                    m_enemyMain.Add(id, enemyMain);
 
                     EnemyState enemyStateData = new EnemyState(id);
                     enemyStateData.Position.Value = m_enemyMovementUpdaters[id].GetNextPosition();
+                    enemyStateData.HealthPoint.Value = m_enemyMain[id].MaxHealthPoint;
 
                     m_enemies.Add(id, enemyStateData);
                     state.AddEnemy(enemyStateData);
