@@ -14,5 +14,7 @@ public abstract class ServerGameplayStateUpdater : MonoBehaviour
 
     public abstract void UpdateWorld(WorldState client);
 
+    public virtual void OnPlayerLeaving(int playerID) { }
+
     public virtual void PrepareWorldStateBeforeSnapshot(WorldState world) { }
 }

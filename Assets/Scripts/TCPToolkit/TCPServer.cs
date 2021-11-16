@@ -174,7 +174,7 @@ namespace ubv.tcp.server
                 }
                 m_activeEndpoints[ep] = false;
 
-                RemoveClient(m_clientIDs[ep]);
+                DisconnectClient(m_clientIDs[ep]);
 
 #if DEBUG_LOG
                 Debug.Log("Removing " + ep.ToString() + " TCP connection");
@@ -219,10 +219,15 @@ namespace ubv.tcp.server
             m_clientIDs.Add(source, playerID);
         }
 
-        private void RemoveClient(int playerID)
+        public void RemoveClient(int playerID)
         {
             m_clientIDs.Remove(m_clientEndpoints[playerID]);
             m_clientEndpoints.Remove(playerID);
+        }
+
+        private void DisconnectClient(int playerID)
+        {
+            RemoveClient(playerID);
             lock (m_lock)
             {
                 foreach (ITCPServerReceiver receiver in m_receivers)

@@ -87,12 +87,7 @@ namespace ubv.server
 
         public void OnTCPDisconnect(int playerID)
         {
-            lock (m_connectionLock)
-            {
-                m_pendingPlayers.Remove(playerID);
-                m_connectedPlayers.Remove(playerID);
-                UDPServer.RemoveClient(playerID);
-            }
+            RemovePlayer(playerID);
             OnPlayerDisconnect.Invoke(playerID);
         }
 
@@ -104,6 +99,17 @@ namespace ubv.server
                 state = m_connectedPlayers.Contains(playerID);
             }
             return state;
+        }
+
+        public void RemovePlayer(int playerID)
+        {
+            lock (m_connectionLock)
+            {
+                m_pendingPlayers.Remove(playerID);
+                m_connectedPlayers.Remove(playerID);
+                UDPServer.RemoveClient(playerID);
+                TCPServer.RemoveClient(playerID);
+            }
         }
     }
 }

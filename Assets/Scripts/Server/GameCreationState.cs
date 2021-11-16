@@ -208,6 +208,13 @@ namespace ubv.server.logic
                 m_worldLoadedClients.Add(playerID);
                 return;
             }
+
+            ClientLeavingMessage clientLeave = IConvertible.CreateFromBytes<ClientLeavingMessage>(packet.Data.ArraySegment());
+            if (clientLeave != null)
+            {
+                OnPlayerLeaving(playerID);
+                return;
+            }
         }
 
         protected override void OnPlayerConnect(int playerID)
@@ -230,7 +237,6 @@ namespace ubv.server.logic
             Debug.Log("Player (ID  " + playerID + ") disconnected.");
 #endif // DEBUG_LOG
             RemovePlayerFromLobby(playerID);
-            BroadcastPlayerList();
         }
 
         private void RemovePlayerFromLobby(int playerID)
@@ -240,7 +246,15 @@ namespace ubv.server.logic
                 m_activeClients.Remove(playerID);
                 m_readyClients.Remove(playerID);
                 m_worldLoadedClients.Remove(playerID);
+                m_serverConnection.RemovePlayer(playerID);
             }
+            BroadcastPlayerList();
+        }
+
+        private void OnPlayerLeaving(int playerID)
+        {
+            m_clientCharacters.Remove(playerID);
+            RemovePlayerFromLobby(playerID);
         }
     }
 }

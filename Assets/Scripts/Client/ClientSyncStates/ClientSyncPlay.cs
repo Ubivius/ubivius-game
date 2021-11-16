@@ -456,10 +456,21 @@ namespace ubv.client.logic
             m_currentSubState = SubState.SUBSTATE_LEAVING;
         }
 
+        public void LeaveGame()
+        {
+            if (m_server.IsConnected())
+            {
+                m_server.TCPSend(new ClientLeavingMessage().GetBytes());
+                m_server.Disconnect();
+            }
+            m_currentSubState = SubState.SUBSTATE_LEAVING;
+        }
+
         protected override void StateUnload()
         {
-            m_server.OnTCPReceive += ReceiveTCP;
-            m_server.OnUDPReceive += ReceiveUDP;
+            m_server.OnTCPReceive -= ReceiveTCP;
+            m_server.OnUDPReceive -= ReceiveUDP;
+            m_server.OnServerDisconnect -= OnDisconnect;
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
         }
 

@@ -256,5 +256,18 @@ namespace ubv.server.logic
                 m_connectedClients[playerID] = false;
             }
         }
+        
+
+        private void OnPlayerLeaving(int playerID)
+        {
+            m_clientCharacters.Remove(playerID);
+            m_clientInputBuffers.Remove(playerID);
+            m_connectedClients.Remove(playerID);
+
+            foreach (ServerGameplayStateUpdater updater in m_updaters)
+            {
+                updater.OnPlayerLeaving(playerID);
+            }
+        }
     }
 }

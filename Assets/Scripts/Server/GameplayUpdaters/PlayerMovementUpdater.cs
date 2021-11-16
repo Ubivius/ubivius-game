@@ -83,5 +83,15 @@ namespace ubv.server.logic
             m_bodies[player.GUID.Value].position = pos;
             player.Position.Value = m_bodies[player.GUID.Value].position;
         }
+
+        public override void OnPlayerLeaving(int playerID)
+        {
+            Destroy(m_playersGameObjects[playerID].gameObject);
+            m_bodies.Remove(playerID);
+            m_playersGameObjects.Remove(playerID);
+            m_playerStates.Remove(playerID);
+            m_isSprinting.Remove(playerID);
+            m_playerControllers.Remove(playerID);
+        }
     }
 }

@@ -16,4 +16,17 @@ namespace ubv.common.data
             return ID.BYTE_TYPE.CLIENT_READY_MESSAGE;
         }
     }
+
+    public class ClientLeavingMessage : Serializable
+    {
+        public ClientLeavingMessage()
+        {
+            InitSerializableMembers();
+        }
+
+        protected override ID.BYTE_TYPE SerializationID()
+        {
+            return ID.BYTE_TYPE.CLIENT_LEAVING_MESSAGE;
+        }
+    }
 }

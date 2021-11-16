@@ -185,6 +185,12 @@ namespace ubv.client.logic
 
         public void BackToCharacterSelect()
         {
+            if (m_server.IsConnected())
+            {
+                m_server.TCPSend(new ClientLeavingMessage().GetBytes());
+                m_server.Disconnect();
+            }
+
             m_currentSubState = SubState.SUBSTATE_TRANSITION;
             if (!ClientStateManager.Instance.BackToScene(m_characterSelectScene))
             {
