@@ -112,10 +112,22 @@ namespace ubv.common.world
 
         public void GenerateWorld()
         {
-            while (!m_mapIsValid)
+            while (!m_mapIsValid && m_mapGenerationAttempt < 1000)
             {
                 try
                 {
+                    if (m_roomManager != null)
+                    {
+                        m_floor.ClearAllTiles();
+                        m_door.ClearAllTiles();
+                        m_wall.ClearAllTiles();                        
+                        foreach (RoomInfo room in m_roomInMap)
+                        {
+                            Destroy(room.gameObject);
+                        }
+                        m_roomInMap.Clear();
+                    }
+
                     m_roomManager = new generationManager.RoomManager(m_worldGeneratorToRoomManager);
                     m_masterLogicGrid = m_roomManager.GenerateRoomGrid();
                     m_roomInMap = m_roomManager.GetRoomInMap();
@@ -143,8 +155,6 @@ namespace ubv.common.world
 
                     SetPlayerSpawnPosList();
 
-                    m_mapIsValid = true;
-
                     OnWorldGenerated?.Invoke();
 
 
@@ -158,8 +168,8 @@ namespace ubv.common.world
                             throw new MapCreationException("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
                         }
                     }
+                    m_mapIsValid = true;
 
-                    //m_pathfinder
                 }
                 catch (MapCreationException)
                 {
@@ -204,7 +214,7 @@ namespace ubv.common.world
             {
                 for (int y = 0; y < m_masterLogicGrid.Height; y++)
                 {
-                    if (m_masterLogicGrid.Grid[x, y].GetCellType() == cellType.CellInfo.CellType.CELL_FINALBUTTON)
+                    if (m_masterLogicGrid.Grid[x, y].GetCellType() == cellType.CellInfo.CellType.CELL_SECTIONDOORBUTTON)
                     {
                         return new Vector2(x, y - 1);
                     }
