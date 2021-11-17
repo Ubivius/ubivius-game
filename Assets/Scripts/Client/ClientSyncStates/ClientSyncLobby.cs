@@ -96,7 +96,7 @@ namespace ubv.client.logic
                 }
 
                 ClientStatusMessage clientStatus = common.serialization.IConvertible.CreateFromBytes<ClientStatusMessage>(packet.Data.ArraySegment());
-                if (clientList != null)
+                if (clientStatus != null)
                 {
                     HashSet<int> readyClients = new HashSet<int>();
                     foreach(int id in clientStatus.ClientReadyStatus.Value.Keys)
