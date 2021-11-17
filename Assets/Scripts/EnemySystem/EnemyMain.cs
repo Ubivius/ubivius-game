@@ -40,6 +40,8 @@ public class EnemyMain : MonoBehaviour
         HealthSystem = new HealthSystem(MaxHealthPoint);
         Hittable hit = GetComponent<Hittable>();
         hit.OnHit += Hit;
+
+        HealthSystem.OnDead += DestroySelf;
     }
 
     public Vector2 GetPosition()
@@ -53,18 +55,17 @@ public class EnemyMain : MonoBehaviour
         HealthSystem.Damage(25);
     }
 
-    /*public void DestroySelf()
+    public void DestroySelf()
     {
-        OnDestroySelf?.Invoke(this, EventArgs.Empty);
-        GetComponent<CharacterAim_Base>()?.DestroySelf();
+        Destroy(transform);
     }
 
-    public void Damage(Player attacker, float damageMultiplier)
-    {
-        OnDamaged?.Invoke(this, new OnDamagedEventArgs
-        {
-            attacker = attacker,
-            damageMultiplier = damageMultiplier,
-        });
-    }*/
+    //public void Damage(Player attacker, float damageMultiplier)
+    //{
+    //    OnDamaged?.Invoke(this, new OnDamagedEventArgs
+    //    {
+    //        attacker = attacker,
+    //        damageMultiplier = damageMultiplier,
+    //    });
+    //}
 }
