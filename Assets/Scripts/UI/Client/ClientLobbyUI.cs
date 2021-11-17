@@ -64,19 +64,14 @@ namespace ubv.ui.client
 
         private void RefreshUsersInLobby()
         {
-            /*if (!m_activeUserDisplayed && m_activeUser != null && m_activeUserCharacter != null)
-            {
-                m_mainPlayer.ShowPlayer(m_activeUser, m_activeUserCharacter);
-                m_activeUserDisplayed = true;
-            }*/
-
             for (int i = 0; i < m_playersInLobby.Length; i++)
             {
                 if (i < m_characters.Count)
                 {
                     CharacterData character = m_characters[i];
                     int playerIntID = character.PlayerID.GetHashCode();
-                    UserInfo user = m_users[playerIntID];
+                    UserInfo user = m_users.ContainsKey(playerIntID) ? m_users[playerIntID] : null;
+                    
                     if (user != null && character != null)
                     {
                         m_playersInLobby[i].ShowPlayer(user, character);
@@ -103,23 +98,14 @@ namespace ubv.ui.client
                 foreach (CharacterData character in m_characters)
                 {
                     int playerIntID = character.PlayerID.GetHashCode();
-                    /*if (playerIntID == m_activeUser.ID)
-                    {
-                        m_activeUserCharacter = character;
-                    }
-                    else*/
-                    {
-                        playerIntIDs.Add(playerIntID);
-                    }
+                    playerIntIDs.Add(playerIntID);
 
                     if (!m_users.ContainsKey(playerIntID))
                     {
                         m_socialServices.GetUserInfo(character.PlayerID, OnGetUserInfo);
                     }
                 }
-
-               // m_characters.Remove(m_activeUserCharacter);
-
+                
                 List<int> toRemove = new List<int>();
                 foreach (int id in m_users.Keys)
                 {
