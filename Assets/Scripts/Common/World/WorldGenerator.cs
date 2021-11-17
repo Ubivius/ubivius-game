@@ -196,15 +196,31 @@ namespace ubv.common.world
             }
         }
 
-        private void SetEnemySpawnPositionList()
+        private Vector2 AddSpawn()
         {
             int width = m_masterLogicGrid.Width;
             int height = m_masterLogicGrid.Height;
+
+            const int MAX_ENEMY_SPAWNS = 20;
+
+            for (int i = 0; i < MAX_ENEMY_SPAWNS; i++)
+            {
+                Vector2 pos;
+
+                do
+                {
+
+                } while ();
+            }
 
             // check des randoms pos
             // s'assure qu'elles sont walkable
             // s'assure qu'il n'y a pas de path vers le spawn des joueurs OU le final button
             // insère à la liste
+
+            Vector2 spawn = m_enemySpawnPositions[0];
+            m_enemySpawnPositions.RemoveAt(0);
+            return spawn;
         }
 
         private Vector2 GetCentralPiecePos()
