@@ -206,7 +206,7 @@ namespace ubv.common.world
             }
         }
 
-        private Vector2 AddSpawn()
+        private void AddSpawns()
         {
             int width = m_masterLogicGrid.Width;
             int height = m_masterLogicGrid.Height;
@@ -215,22 +215,20 @@ namespace ubv.common.world
 
             for (int i = 0; i < MAX_ENEMY_SPAWNS; i++)
             {
-                Vector2 pos;
+                Vector2 pos = Vector2.zero;
 
                 do
                 {
+                    int xPos = Random.Range(1, width - 1);
+                    int yPos = Random.Range(1, height - 1);
+                    pos = new Vector2(xPos, yPos);
+                 } while (m_pathfinder.GetNodeIfWalkable(pos.x, pos.y) == null
+                          /* && m_pathfinder.GetPathRoute(pos, GetCentralPiecePos()) != null
+                          && m_pathfinder.GetPathRoute(pos, GetFinalButtonPos()) != null*/);
 
-                } while ();
+                Debug.Log("Adding new enemy possible spawn: " + pos);
+                m_enemySpawnPositions.Add(pos);
             }
-
-            // check des randoms pos
-            // s'assure qu'elles sont walkable
-            // s'assure qu'il n'y a pas de path vers le spawn des joueurs OU le final button
-            // insère à la liste
-
-            Vector2 spawn = m_enemySpawnPositions[0];
-            m_enemySpawnPositions.RemoveAt(0);
-            return spawn;
         }
 
         private Vector2 GetCentralPiecePos()
@@ -250,6 +248,23 @@ namespace ubv.common.world
             return new Vector2(0, 0);
         }
 
+        private Vector2 GetFinalButtonPos()
+        {
+            int width = m_masterLogicGrid.Width;
+            int height = m_masterLogicGrid.Height;
+            for (int x = 0; x < m_masterLogicGrid.Width; x++) // On ne veut pas regarder en dehors du tableau
+            {
+                for (int y = 0; y < m_masterLogicGrid.Height; y++)
+                {
+                    if (m_masterLogicGrid.Grid[x, y].GetCellType() == cellType.CellInfo.CellType.CELL_FINALBUTTON)
+                    {
+                        return new Vector2(x, y - 1);
+                    }
+                }
+            }
+            return new Vector2(0, 0);
+        }
+
         public Vector2Int GetPlayerSpawnPos()
         {
             int select = Random.Range(0, m_playerSpawnPos.Count - 1);
@@ -260,6 +275,8 @@ namespace ubv.common.world
 
         public Vector2 GetEnemySpawnPosition()
         {
+            if (m_enemySpawnPositions.Count == 0)
+                AddSpawns();
             int select = Random.Range(0, m_enemySpawnPositions.Count - 1);
             Vector2 pos = m_enemySpawnPositions[select];
             m_enemySpawnPositions.RemoveAt(select);

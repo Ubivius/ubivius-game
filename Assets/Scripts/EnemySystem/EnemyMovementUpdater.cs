@@ -62,7 +62,12 @@ namespace ubv.server.logic.ai
         public void SetTargetPosition(Vector2 targetPosition)
         {
             m_currentPathIndex = 0;
-            m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition).PathVectorList;
+            m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition)?.PathVectorList;
+        }
+
+        public void SetPosition(Vector2 position)
+        {
+            transform.position = position;
         }
         
         public Vector2 GetPosition()
