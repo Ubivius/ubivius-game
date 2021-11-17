@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: DefaultEnemyClient
   m_EditorClassIdentifier: 
   Velocity: 5
-  EnemyPrefab: {fileID: 3188290116599518035, guid: 78c51dd0bc715004d8342e067074612d,
+  EnemyPrefab: {fileID: 3188290116599518035, guid: 132e4edbe3478334686c32a07ec50e7f,
     type: 3}
