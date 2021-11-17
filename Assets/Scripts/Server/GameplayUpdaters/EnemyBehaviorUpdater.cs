@@ -27,6 +27,7 @@ namespace ubv.server.logic
             m_bodies = new Dictionary<int, Rigidbody2D>();
             m_enemies = new Dictionary<int, EnemyState>();
             m_enemyMovementUpdaters = new Dictionary<int, EnemyMovementUpdater>();
+            m_enemyMain = new Dictionary<int, EnemyMain>();
         }
 
         public override void InitWorld(WorldState state)
