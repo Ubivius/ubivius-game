@@ -55,7 +55,7 @@ namespace ubv
 
                 public bool IsDifferent(EnemyState other, float tolerance = 0.1f)
                 {
-                    if (!other.GUID.Value.Equals(GUID.Value)) return true;
+                    if (other == this) return false;
 
                     if ((Position.Value - other.Position.Value).sqrMagnitude > tolerance * tolerance)
                     {
