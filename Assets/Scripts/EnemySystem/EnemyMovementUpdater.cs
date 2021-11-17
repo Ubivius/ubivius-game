@@ -59,10 +59,11 @@ namespace ubv.server.logic.ai
             m_pathVectorList = null;
         }
 
-        public void SetTargetPosition(Vector2 targetPosition)
+        public bool SetTargetPosition(Vector2 targetPosition)
         {
             m_currentPathIndex = 0;
             m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition)?.PathVectorList;
+            return m_pathVectorList != null;
         }
 
         public void SetPosition(Vector2 position)

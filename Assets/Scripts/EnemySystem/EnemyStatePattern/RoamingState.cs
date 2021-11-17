@@ -24,11 +24,18 @@ namespace ubv.server.logic.ai
             m_enemyMovement = enemyMovement;
             m_playerMovement = playerMovement;
             m_currentRoamPositionIndex = 0;
-            m_roamPositions = new List<Vector2>();
             m_pathfinding = pathfinding;
+            m_enemyMovement.SetPathfinding(m_pathfinding);
+            GenerateRandomRoamingPositions(startPosition);
+        }
 
-            m_roamPositions.Add(startPosition);
-
+        private void GenerateRandomRoamingPositions(Vector2 startPosition)
+        {
+            m_currentRoamPositionIndex = 0;
+            m_roamPositions = new List<Vector2>
+            {
+                startPosition
+            };
             m_inMotion = false;
             for (int i = 1; i < m_totalRoamPositions; i++)
             {
@@ -41,7 +48,6 @@ namespace ubv.server.logic.ai
                 Debug.Log("Adding enemy roam position:" + pos);
                 m_roamPositions.Add(pos);
             }
-            m_enemyMovement.SetPathfinding(pathfinding);
             m_enemyMovement.SetPosition(startPosition);
             m_enemyMovement.SetTargetPosition(CurrentRoamPosition());
         }
@@ -55,8 +61,16 @@ namespace ubv.server.logic.ai
         {
             if ((CurrentRoamPosition() - m_enemyMovement.GetPosition()).sqrMagnitude < m_reachedPositionDistance * m_reachedPositionDistance)
             {
+                int start = m_currentRoamPositionIndex;
                 ++m_currentRoamPositionIndex;
-                m_enemyMovement.SetTargetPosition(CurrentRoamPosition());
+                while (!m_enemyMovement.SetTargetPosition(CurrentRoamPosition()))
+                {
+                    ++m_currentRoamPositionIndex;
+                    if(m_currentRoamPositionIndex % m_roamPositions.Count == start)
+                    {
+                        GenerateRandomRoamingPositions(m_enemyMovement.GetPosition());
+                    }
+                }
             }
 
             if (DetectsPlayer())
