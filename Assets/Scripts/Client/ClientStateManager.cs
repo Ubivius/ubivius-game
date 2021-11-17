@@ -121,7 +121,7 @@ namespace ubv.client.logic
             m_loadingScreenUI.FadeAway(0.5f);
             m_sceneStates[sceneToLoad].gameObject.SetActive(true);
             m_sceneStates[sceneToLoad].OnStart();
-            m_loadingScreen.gameObject.SetActive(false);
+            m_loadingScreenUI.gameObject.SetActive(false);
         }
 
         private IEnumerator UnloadSceneCoroutine(string sceneToUnload)
@@ -138,25 +138,25 @@ namespace ubv.client.logic
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_sceneStack.Peek()));
             m_loadingScreenUI.FadeAway(0.5f);
             m_sceneStates[m_sceneStack.Peek()].gameObject.SetActive(true);
-            m_loadingScreen.gameObject.SetActive(false);
+            m_loadingScreenUI.gameObject.SetActive(false);
         }
 
         private IEnumerator UnloadScenesUntilCoroutine(string sceneToReach)
         {
-            m_loadingScreen.gameObject.SetActive(true);
+            m_loadingScreenUI.gameObject.SetActive(true);
             while (!m_sceneStack.Peek().Equals(sceneToReach))
             {
                 AsyncOperation unload = SceneManager.UnloadSceneAsync(m_sceneStack.Pop());
                 unload.allowSceneActivation = true;
                 while (!unload.isDone)
                 {
-                    m_loadingScreen.SetPercentage(unload.progress);
+                    m_loadingScreenUI.SetPercentage(unload.progress);
                     yield return null;
                 }
             }
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_sceneStack.Peek()));
             m_sceneStates[m_sceneStack.Peek()].gameObject.SetActive(true);
-            m_loadingScreen.gameObject.SetActive(false);
+            m_loadingScreenUI.gameObject.SetActive(false);
         }
     }
 }
