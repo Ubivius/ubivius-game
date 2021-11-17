@@ -5,11 +5,14 @@ using ubv.common.data;
 using System.Collections.Generic;
 using UnityEngine.Events;
 using ubv.server.logic.ai;
+using ubv.common.world;
 
 namespace ubv.server.logic
 {
     public class EnemyBehaviorUpdater : ServerGameplayStateUpdater
     {
+        [SerializeField] private PlayerMovementUpdater m_playerMovementUpdater;
+        [SerializeField] private WorldGenerator m_worldGenerator;
         [SerializeField] private EnemySettings m_enemySettings;
         [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
         [SerializeField] private int m_enemyCount;
@@ -72,6 +75,9 @@ namespace ubv.server.logic
                     Rigidbody2D body = enemyGameObject.GetComponent<Rigidbody2D>();
                     EnemyMovementUpdater enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyMovementUpdater>();
                     enemyPathFindingMovement.SetPathfinding(m_pathfindingGridManager);
+
+                    EnemyStateMachine stateMachine = enemyGameObject.GetComponent<EnemyStateMachine>();
+                    stateMachine.Init(m_playerMovementUpdater, m_worldGenerator, m_pathfindingGridManager);
 
                     int id = System.Guid.NewGuid().GetHashCode();
                     body.name = "Server enemy " + id.ToString();

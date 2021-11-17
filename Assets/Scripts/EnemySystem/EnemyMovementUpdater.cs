@@ -69,11 +69,6 @@ namespace ubv.server.logic.ai
         {
             return new Vector2(transform.position.x, transform.position.y);
         }
-        
-        public bool IsPositionWalkable(Vector2 worldPosition)
-        {
-            return m_pathfindingGridManager.GetNodeIfWalkable(worldPosition.x, worldPosition.y) != null;
-        }
 
         public Vector2 GetNextPosition()
         {

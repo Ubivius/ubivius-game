@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using ubv.common.world;
+using UnityEngine;
 
 /// <summary>
 /// In charge of updating the state of the enemy
@@ -8,7 +9,7 @@ namespace ubv.server.logic.ai
 {
     public class EnemyStateMachine : MonoBehaviour
     {
-        public EnemyBehaviorState CurrentEnemyState;
+        private EnemyBehaviorState m_currentEnemyState;
         //public Transform player;
         private EnemyMovementUpdater m_movement;
 
@@ -16,17 +17,16 @@ namespace ubv.server.logic.ai
         {
             m_movement = GetComponent<EnemyMovementUpdater>();
         }
-
-        // Use this for initialization
-        void Start()
+        
+        public void Init(PlayerMovementUpdater playerMovement, WorldGenerator world, PathfindingGridManager pathfinding)
         {
-            CurrentEnemyState = new RoamingState(m_movement);
+            m_currentEnemyState = new RoamingState(world.GetEnemySpawnPosition(), m_movement, playerMovement, pathfinding);
         }
 
         // Update is called once per frame
         void Update()
         {
-            CurrentEnemyState = CurrentEnemyState.Update();
+            m_currentEnemyState = m_currentEnemyState?.Update();
         }
     }
 }

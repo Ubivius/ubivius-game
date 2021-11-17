@@ -202,7 +202,11 @@ namespace ubv.server.logic
 
             List<PathNode> pathNodeList = this.GetPath(startNode, endNode);
 
-            return new PathRoute(pathNodeList, m_worldOrigin, m_nodeSize);
+            if (pathNodeList != null)
+            {
+                return new PathRoute(pathNodeList, m_worldOrigin, m_nodeSize);
+            }
+            return null;
         }
 
         private void UpdateNeighboursOnCellChange(common.world.cellType.LogicCell cell)
