@@ -11,6 +11,11 @@ namespace ubv.utils
         public string UserName;
         public string CharacterID;
         public string CharacterName;
+        public string GameID;
+        public string ServerTCPAddress;
+        public string ServerUDPAddress;
+        public int ServerTCPPort;
+        public int ServerUDPPort;
         public bool Alive;
         public int GamesPlayed;
         public int EnemiesKilled;

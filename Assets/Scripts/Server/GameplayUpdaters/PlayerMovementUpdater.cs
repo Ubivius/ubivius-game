@@ -10,6 +10,8 @@ namespace ubv.server.logic
     {
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private GameMaster m_gameMaster;
+
+        private Dictionary<int, PlayerPrefab> m_playersGameObjects;
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, PlayerState> m_playerStates;
         private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
@@ -17,6 +19,7 @@ namespace ubv.server.logic
 
         public override void Setup()
         {
+            m_playersGameObjects = new Dictionary<int, PlayerPrefab>();
             m_bodies = new Dictionary<int, Rigidbody2D>();
             m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             m_playerStates = new Dictionary<int, PlayerState>();
@@ -25,9 +28,10 @@ namespace ubv.server.logic
 
         public override void InitWorld(WorldState state)
         {
-            foreach(int id in state.Players().Keys)
+            foreach (int id in state.Players().Keys)
             {
-                GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
+                PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
+                m_playersGameObjects.Add(id, playerGameObject);
                 Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
                 common.gameplay.PlayerController playerCtrl = playerGameObject.GetComponent<common.gameplay.PlayerController>();
 
@@ -41,19 +45,20 @@ namespace ubv.server.logic
                 playerState.Position.Value = m_bodies[id].position;
 
                 m_playerControllers.Add(id, playerCtrl);
-                m_playerStates.Add(id, playerState);
+                m_playerStates.Add(id, state.Players()[id]);
             }
         }
-        
+
         public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
         {
             foreach (int id in client.Players().Keys)
             {
                 Rigidbody2D body = m_bodies[id];
-                common.logic.PlayerMovement.Execute(ref body, m_playerControllers[id].GetStats(), frames[id], Time.fixedDeltaTime);
+                Vector2 velocity = common.logic.PlayerMovement.GetVelocity(frames[id].Movement.Value, 
+                    frames[id].Sprinting.Value, m_playerControllers[id].GetStats());
+                common.logic.PlayerMovement.Execute(ref body, velocity);
                 m_isSprinting[id] = frames[id].Sprinting.Value;
             }
-            
         }
 
         public override void UpdateWorld(WorldState client)
@@ -63,11 +68,14 @@ namespace ubv.server.logic
                 Rigidbody2D body = m_bodies[id];
                 PlayerState player = m_playerStates[id];
                 player.Position.Value = body.position;
-                player.Rotation.Value = body.rotation;
                 player.Velocity.Value = body.velocity;
-                player.States.Set(0, m_isSprinting[id]);
+                player.States.Set((int)PlayerStateEnum.IS_SPRINTING, m_isSprinting[id]);
             }
-           
+        }
+
+        public Dictionary<int, PlayerPrefab> GetPlayersGameObject()
+        {
+            return m_playersGameObjects;
         }
 
         public void SetPlayerPosition(PlayerState player, Vector2Int pos)

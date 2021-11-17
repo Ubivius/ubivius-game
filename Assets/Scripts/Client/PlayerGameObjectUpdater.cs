@@ -9,47 +9,47 @@ namespace ubv.client.logic
     /// <summary>
     /// Instantiate players and moves them according to their player states
     /// </summary>
-    public class PlayerGameObjectUpdater :  ClientStateUpdater
+    public class PlayerGameObjectUpdater : ClientStateUpdater
     {
-        [SerializeField] private float m_lerpTime = 0.2f;
+        [SerializeField] private int m_maxLerpFrames = 10;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
         [SerializeField] private PlayerAnimator m_playerAnimator;
 
+        public Dictionary<int, PlayerPrefab> Players { get; private set; }
         public Dictionary<int, Rigidbody2D> Bodies { get; private set; }
         public Dictionary<int, common.gameplay.PlayerController> PlayerControllers { get; private set; }
         public Dictionary<int, PlayerAnimator> PlayerAnimators { get; private set; }
         private Rigidbody2D m_localPlayerBody;
-
-        private Dictionary<int, bool> m_isSprinting;
-
+        
         private int m_playerGUID;
+        private Vector2 m_cachedPlayerVelocity;
 
-        private float m_timeSinceLastGoal;
-        private Dictionary<int, PlayerState> m_goalStates;
+        private Dictionary<int, PlayerState> m_players;
 
         public UnityAction OnInitialized;
-        UnityAction<bool> m_sprintAction;
+        private UnityAction<bool> m_sprintAction;
         private Dictionary<int, UnityAction<bool>> m_sprintActions;
 
-        
         public override void Init(WorldState clientState, int localID)
         {
             m_sprintActions = new Dictionary<int, UnityAction<bool>>();
-            m_timeSinceLastGoal = 0;
+            Players = new Dictionary<int, PlayerPrefab>();
             Bodies = new Dictionary<int, Rigidbody2D>();
-            m_isSprinting = new Dictionary<int, bool>();
-            m_goalStates = new Dictionary<int, PlayerState>();
+
+            m_players = new Dictionary<int, PlayerState>();
             PlayerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             PlayerAnimators = new Dictionary<int, PlayerAnimator>();
             int id = 0;
+            
             foreach(PlayerState state in clientState.Players().Values)
             {
                 id = state.GUID.Value;
-                GameObject playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
+                PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
+                Players[id] = playerGameObject;
                 Bodies[id] = playerGameObject.GetComponent<Rigidbody2D>();
                 Bodies[id].name = "Client player " + id.ToString();
-                m_isSprinting[id] = false;
+
                 PlayerControllers[id] = playerGameObject.GetComponent<common.gameplay.PlayerController>();
                 PlayerAnimators[id] = playerGameObject.GetComponent<PlayerAnimator>();
 
@@ -57,119 +57,169 @@ namespace ubv.client.logic
                 {
                     Bodies[id].bodyType = RigidbodyType2D.Kinematic;
                 }
-                
-                m_goalStates[id] = state;
-                m_sprintActions[id] = PlayerAnimators[id].SetSprinting;
 
+                m_players[id] = state;
+                m_sprintActions[id] = PlayerAnimators[id].SetSprinting;
             }
 
             m_playerGUID = localID;
             m_localPlayerBody = Bodies[localID];
             OnInitialized?.Invoke();
-            
         }
 
-        public override bool NeedsCorrection(WorldState localState, WorldState remoteState)
+        public override bool IsPredictionWrong(WorldState localState, WorldState remoteState)
         {
-            bool err = false;
-            // mettre un bool pour IsAlreadyCorrecting ?
-            // check correction on goalStates au lieu du current position TODO
-            foreach(PlayerState player in remoteState.Players().Values)
-            {
-                err = (player.Position.Value - localState.Players()[player.GUID.Value].Position.Value).sqrMagnitude > m_correctionTolerance * m_correctionTolerance;
-                if (err)
-                {
-                    //Debug.Log("Needing correction");
-                    return true;
-                }
-            }
-            return err;
+            PlayerState localPlayer = localState.Players()[m_playerGUID];
+            PlayerState remotePlayer = remoteState.Players()[m_playerGUID];
+            bool isDiff = localPlayer.IsPositionDifferent(remotePlayer, m_correctionTolerance);
+            if (isDiff) Debug.LogWarning("Player and server positions are different.");
+            return isDiff;
         }
 
-        public override void UpdateStateFromWorld(ref WorldState state)
+        public override void SaveSimulationInState(ref WorldState state)
         {
             foreach (PlayerState player in state.Players().Values)
             {
-                if (player.GUID.Value != m_playerGUID)
-                {
-                    player.Position.Value = m_goalStates[player.GUID.Value].Position.Value; 
-                    player.Rotation.Value = m_goalStates[player.GUID.Value].Rotation.Value;
-                    player.Velocity.Value = m_goalStates[player.GUID.Value].Velocity.Value;
-                }
-                else
-                {
-                    player.Position.Value = Bodies[player.GUID.Value].position;
-                    player.Rotation.Value = Bodies[player.GUID.Value].rotation;
-                    player.Velocity.Value = Bodies[player.GUID.Value].velocity;
-                }
-                player.States.Set((int)PlayerStateEnum.IS_SPRINTING, m_isSprinting[player.GUID.Value]);
+                int id = player.GUID.Value;
+                float walkVelocity = PlayerControllers[id].GetStats().WalkingVelocity.Value;
+                bool isSprinting = Bodies[id].velocity.sqrMagnitude > walkVelocity * walkVelocity;
+                player.Position.Value = Bodies[id].position;
+                player.Velocity.Value = Bodies[id].velocity;
+                player.States.Set((int)PlayerStateEnum.IS_SPRINTING, isSprinting);
             }
         }
 
         public override void Step(InputFrame input, float deltaTime)
         {
-            m_timeSinceLastGoal += deltaTime;
-            m_isSprinting[m_playerGUID] = input.Sprinting.Value;
-            foreach (PlayerState player in m_goalStates.Values)
-            {
-                if (player.GUID.Value != m_playerGUID)
-                {
-                    LerpTowardGoalState(player, m_timeSinceLastGoal);
-                    m_sprintActions[player.GUID.Value].Invoke(player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING));
-                }
-                m_sprintActions[m_playerGUID].Invoke(m_isSprinting[m_playerGUID]);
-            }
-            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, PlayerControllers[m_playerGUID].GetStats(), input, deltaTime);
+            m_sprintActions[m_playerGUID].Invoke(input.Sprinting.Value);
+
+            Vector2 velocity = common.logic.PlayerMovement.GetVelocity(input.Movement.Value,
+                input.Sprinting.Value,
+                PlayerControllers[m_playerGUID].GetStats());
+
+            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, velocity);
         }
 
-        public override void UpdateWorldFromState(WorldState state)
+        public override void ResetSimulationToState(WorldState state)
         {
-            m_timeSinceLastGoal = 0;
-            foreach (PlayerState player in state.Players().Values)
+            int localID = m_playerGUID;
+            PlayerState remote = state.Players()[localID];
+            m_players[localID] = remote;
+
+            Bodies[localID].position = m_players[localID].Position.Value;
+            Bodies[localID].velocity = m_players[localID].Velocity.Value;
+
+            foreach (int id in Bodies.Keys)
             {
-                //Bodies[player.GUID.Value].position = player.Position.Value;
-                m_goalStates[player.GUID.Value] = player;
-
-                if (player.GUID.Value == m_playerGUID)
+                if (id != m_playerGUID)
                 {
-                    Bodies[player.GUID.Value].position = player.Position.Value;
-                    Bodies[player.GUID.Value].rotation = player.Rotation.Value;
-                    Bodies[player.GUID.Value].velocity = player.Velocity.Value;
+                    Rigidbody2D body = Bodies[id];
+                    body.simulated = false;
                 }
-
-                m_isSprinting[player.GUID.Value] = player.States.IsTrue((int)PlayerStateEnum.IS_SPRINTING);
             }
         }
 
         public override void FixedStateUpdate(float deltaTime)
         {
+            foreach (int id in Bodies.Keys)
+            {
+                if (id != m_playerGUID)
+                {
+                    Rigidbody2D body = Bodies[id];
+                    body.simulated = true;
+                }
+            }
+            // update every remote player
+            foreach (PlayerState player in m_players.Values)
+            {
+                int id = player.GUID.Value;
 
+                if (id != m_playerGUID)
+                {
+                    float walkVelocity = PlayerControllers[id].GetStats().WalkingVelocity.Value;
+                    float sprintVelocity = walkVelocity * PlayerControllers[id].GetStats().RunningMultiplier.Value;
+                    Rigidbody2D body = Bodies[id];
+
+                    Vector2 vel = player.Velocity.Value;
+                    Vector2 deltaPos = player.Position.Value - body.position;
+
+                    if (deltaPos.sqrMagnitude > Mathf.Pow(walkVelocity * deltaTime * m_maxLerpFrames, 2))
+                    {
+                        body.position = player.Position.Value;
+                    }
+                    else
+                    {
+                        float speed = vel.magnitude;
+                        if (speed > 0)
+                        {
+                            vel += deltaPos;
+                            vel *= speed / vel.magnitude;
+                        }
+                        else if (deltaPos.sqrMagnitude > Mathf.Pow(m_correctionTolerance, 2))
+                        {
+                            float deltaPosMagnitude = deltaPos.magnitude;
+                            vel = deltaPos * walkVelocity / deltaPosMagnitude;
+                        }
+                    }
+                    
+                    common.logic.PlayerMovement.Execute(ref body, vel);
+
+                    bool isSprinting = body.velocity.sqrMagnitude > (walkVelocity * walkVelocity) + m_correctionTolerance;
+                    m_sprintActions[player.GUID.Value].Invoke(isSprinting);
+                }
+            }
         }
-
-        private void LerpTowardGoalState(PlayerState player, float time)
-        {
-            Bodies[player.GUID.Value].velocity = Vector2.Lerp(Bodies[player.GUID.Value].velocity, m_goalStates[player.GUID.Value].Velocity.Value, time / m_lerpTime);
-            if ((Bodies[player.GUID.Value].velocity - m_goalStates[player.GUID.Value].Velocity.Value).sqrMagnitude < 0.01f)
-            {
-                Bodies[player.GUID.Value].velocity = m_goalStates[player.GUID.Value].Velocity.Value;
-            }
-
-            Bodies[player.GUID.Value].position = Vector2.Lerp(Bodies[player.GUID.Value].position, m_goalStates[player.GUID.Value].Position.Value, time / m_lerpTime);
-            if ((Bodies[player.GUID.Value].position - m_goalStates[player.GUID.Value].Position.Value).sqrMagnitude < 0.01f)
-            {
-                Bodies[player.GUID.Value].position = m_goalStates[player.GUID.Value].Position.Value;
-            }
-
-            Bodies[player.GUID.Value].rotation = Mathf.Lerp(Bodies[player.GUID.Value].rotation, m_goalStates[player.GUID.Value].Rotation.Value, time / m_lerpTime);
-            if (Bodies[player.GUID.Value].rotation - m_goalStates[player.GUID.Value].Rotation.Value < 0.01f)
-            {
-                Bodies[player.GUID.Value].rotation = m_goalStates[player.GUID.Value].Rotation.Value;
-            }
-        }
-
+        
         public Transform GetLocalPlayerTransform()
         {
             return m_localPlayerBody.transform;
+        }
+
+        public override void UpdateSimulationFromState(WorldState localState, WorldState remoteState)
+        {
+            // update remote players 
+            foreach(int id in remoteState.Players().Keys)
+            {
+                m_players[id] = remoteState.Players()[id];
+            }
+        }
+
+        public override void DisableSimulation()
+        {
+            foreach (int id in Bodies.Keys)
+            {
+                Rigidbody2D body = Bodies[id];
+                if (id == m_playerGUID)
+                {
+                    m_cachedPlayerVelocity = body.velocity;
+                    body.velocity = Vector2.zero;
+                }
+                else
+                {
+                    body.simulated = false;
+                }
+            }
+        }
+
+        public override void EnableSimulation()
+        {
+            foreach (int id in Bodies.Keys)
+            {
+                Rigidbody2D body = Bodies[id];
+                if (id == m_playerGUID)
+                {
+                    body.velocity = m_cachedPlayerVelocity;
+                }
+                else
+                {
+                    body.simulated = true;
+                }
+            }
+        }
+
+        public Dictionary<int, PlayerPrefab> GetPlayersGameObject()
+        {
+            return Players;
         }
     }
 }

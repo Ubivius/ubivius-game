@@ -13,4 +13,6 @@ public abstract class ServerGameplayStateUpdater : MonoBehaviour
     public abstract void FixedUpdateFromClient(WorldState world, Dictionary<int, InputFrame> inputs, float deltaTime);
 
     public abstract void UpdateWorld(WorldState client);
+
+    public virtual void PrepareWorldStateBeforeSnapshot(WorldState world) { }
 }

@@ -42,5 +42,10 @@ namespace ubv.client.logic
         protected override void StateResume()
         {
         }
+
+        public void GoBackToPreviousState()
+        {
+            ClientStateManager.Instance.PopState();
+        }
     }   
 }

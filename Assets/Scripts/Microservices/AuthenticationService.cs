@@ -22,7 +22,7 @@ namespace ubv.microservices
             Debug.Log("Mocking auth. Auto logging in with random ID (or forced ID provided if any)");
 #endif // DEBUG_LOG
             string id = m_mockData.UserID.Length > 0 ? m_mockData.UserID : System.Guid.NewGuid().ToString();
-            request.Callback.Invoke(id);
+            request.Success.Invoke(id);
         }
 
         protected override void OnPostResponse(string JSON, PostAuthenticationRequest originalRequest)
@@ -31,7 +31,7 @@ namespace ubv.microservices
             string token = authResponse.accessToken;
             m_HTTPClient.SetAuthenticationToken(token);
 
-            originalRequest.Callback.Invoke(authResponse.id);
+            originalRequest.Success.Invoke(authResponse.id);
         }
     }
 }

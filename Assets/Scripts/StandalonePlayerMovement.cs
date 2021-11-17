@@ -42,7 +42,10 @@ namespace ubv.client
                 m_sprintAction.Invoke(m_isSprinting);
             }
 
-            PlayerMovement.Execute(ref m_body, m_playerController.GetStats(), InputController.CurrentFrame(), Time.fixedDeltaTime);
+            Vector2 velocity = PlayerMovement.GetVelocity(InputController.CurrentFrame().Movement.Value,
+                InputController.CurrentFrame().Sprinting.Value,
+                m_playerController.GetStats());
+            PlayerMovement.Execute(ref m_body, velocity);
             m_physics.Simulate(Time.fixedDeltaTime);
         }
     }

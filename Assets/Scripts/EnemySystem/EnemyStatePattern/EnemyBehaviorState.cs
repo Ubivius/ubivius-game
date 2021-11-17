@@ -1,18 +1,20 @@
 ﻿using System.Collections;
+using ubv.common.data;
+using ubv.common.serialization;
 using UnityEngine;
 
 namespace ubv.server.logic.ai
 {
-    abstract public class EnemyState
+    abstract public class EnemyBehaviorState
     {
         // Use this for initialization
-        public virtual EnemyState Init()
+        public virtual EnemyBehaviorState Init()
         {
             return this;
         }
-
+        
         // Update is called once per frame
-        public virtual EnemyState Update()
+        public virtual EnemyBehaviorState Update()
         {
             return this;
         }

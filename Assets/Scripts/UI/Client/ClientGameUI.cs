@@ -30,11 +30,11 @@ namespace ubv.ui.client
                 CharacterUI characterUI = GameObject.Instantiate(m_characterUIPrefab, transform);
                 m_characterUIs[id] = characterUI;
                 string strID = ubv.client.data.LoadingData.ServerInit.PlayerCharacters.Value[id].Value;
-                ClientSyncState.CharacterService.Request(new GetSingleCharacterRequest(strID, (CharacterDataService.CharacterData[] character) =>
+                ClientSyncState.CharacterService.GetCharacter(strID, (CharacterDataService.CharacterData character) =>
                 {
-                    characterUI.SetName(character[0].Name);
+                    characterUI.SetName(character.Name);
                     characterUI.TargetPlayerTransform = m_playerUpdater.Bodies[id].transform;
-                }));
+                });
             }
         }
 
