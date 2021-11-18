@@ -15,8 +15,8 @@ TagManager:
   - 
   - 
   - Players
-  - FieldOfViewPrimary
-  - FieldOfViewSecondary
+  - 
+  - 
   - 
   - 
   - 
@@ -41,7 +41,4 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
-    locked: 0
-  - name: FieldOfView
-    uniqueID: 289845367
     locked: 0
