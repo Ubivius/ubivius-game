@@ -63,14 +63,14 @@ namespace ubv.server.logic.ai
             {
                 int start = m_currentRoamPositionIndex;
                 ++m_currentRoamPositionIndex;
-                while (!m_enemyMovement.SetTargetPosition(CurrentRoamPosition()))
+                /*while (!m_enemyMovement.SetTargetPosition(CurrentRoamPosition()))
                 {
                     ++m_currentRoamPositionIndex;
                     if(m_currentRoamPositionIndex % m_roamPositions.Count == start)
                     {
                         GenerateRandomRoamingPositions(m_enemyMovement.GetPosition());
                     }
-                }
+                }*/
             }
 
             if (DetectsPlayer())
