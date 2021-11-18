@@ -64,16 +64,8 @@ namespace ubv.server.logic.ai
                 ++m_currentRoamPositionIndex;
                 if (!m_enemyMovement.SetTargetPosition(CurrentRoamPosition()))
                 {
-                    Debug.Log("Roaming position is unreachable, wtf ?");
+                    Debug.LogError("Roaming position is unreachable, wtf ?");
                 }
-                /*while (!m_enemyMovement.SetTargetPosition(CurrentRoamPosition()))
-                {
-                    ++m_currentRoamPositionIndex;
-                    if(m_currentRoamPositionIndex % m_roamPositions.Count == start)
-                    {
-                        GenerateRandomRoamingPositions(m_enemyMovement.GetPosition());
-                    }
-                }*/
             }
 
             if (DetectsPlayer())
