@@ -11,7 +11,9 @@ namespace ubv.server.logic.ai
         private EnemyMovementUpdater m_enemyMovement;
         private PlayerMovementUpdater m_playerMovement;
         private bool m_inMotion;
-        
+
+        private const float m_playerDetectionRange = 10f;
+
         private const float m_minimumRoamDistance = 5f;
         private const float m_maximumRoamDistance = 20f;
         private List<Vector2> m_roamPositions;
@@ -78,6 +80,17 @@ namespace ubv.server.logic.ai
 
         private bool DetectsPlayer()
         {
+            var playerGameObjects = m_playerMovement.GetPlayersGameObject().Values;
+            foreach (PlayerPrefab player in playerGameObjects)
+            {
+                Vector2 playerPosition = player.transform.position;
+                float playerDist = (playerPosition - m_enemyMovement.GetPosition()).sqrMagnitude;
+                if (playerDist < Mathf.Pow(m_playerDetectionRange, 2))
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
 
