@@ -170,6 +170,7 @@ namespace ubv.common.world
                             throw new MapCreationException("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
                         }
                     }
+                    AddSpawns();
                     m_mapIsValid = true;
 
                 }
@@ -211,7 +212,7 @@ namespace ubv.common.world
             int width = m_masterLogicGrid.Width;
             int height = m_masterLogicGrid.Height;
 
-            const int MAX_ENEMY_SPAWNS = 20;
+            const int MAX_ENEMY_SPAWNS = 100;
 
             for (int i = 0; i < MAX_ENEMY_SPAWNS; i++)
             {
@@ -219,12 +220,12 @@ namespace ubv.common.world
 
                 do
                 {
-                    int xPos = Random.Range(1, width - 1);
-                    int yPos = Random.Range(1, height - 1);
+                    int xPos = Random.Range(3, width - 4);
+                    int yPos = Random.Range(3, height - 4);
                     pos = new Vector2(xPos, yPos);
                  } while (m_pathfinder.GetNodeIfWalkable(pos.x, pos.y) == null
-                          /* && m_pathfinder.GetPathRoute(pos, GetCentralPiecePos()) != null
-                          && m_pathfinder.GetPathRoute(pos, GetFinalButtonPos()) != null*/);
+                          || m_pathfinder.GetPathRoute(pos, GetCentralPiecePos()) != null
+                           || m_pathfinder.GetPathRoute(pos, GetFinalButtonPos()) != null);
 
                 Debug.Log("Adding new enemy possible spawn: " + pos);
                 m_enemySpawnPositions.Add(pos);
