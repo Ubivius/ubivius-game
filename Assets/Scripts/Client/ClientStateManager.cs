@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using ubv.ui.client;
 
 namespace ubv.client.logic
 {
@@ -13,8 +14,8 @@ namespace ubv.client.logic
         public static ClientStateManager Instance { get; private set; } = null;
 
         [SerializeField]
-        private LoadingScreen m_loadingScreen;
-        
+        private LoadingScreenUI m_loadingScreenUI;
+
         [SerializeField]
         private string m_startingScene;
 
@@ -36,7 +37,7 @@ namespace ubv.client.logic
 
         private void Start()
         {
-            m_loadingScreen.gameObject.SetActive(false);
+            m_loadingScreenUI.gameObject.SetActive(false);
             ClientSyncState.InitDependencies();
             PushScene(m_startingScene);
         }
@@ -107,51 +108,53 @@ namespace ubv.client.logic
         
         private IEnumerator LoadSceneCoroutine(string sceneToLoad)
         {
-            m_loadingScreen.gameObject.SetActive(true);
+            m_loadingScreenUI.FadeIn(0.5f);
             AsyncOperation load = SceneManager.LoadSceneAsync(sceneToLoad, LoadSceneMode.Additive);
             load.allowSceneActivation = true;
             while (!load.isDone)
             {
-                m_loadingScreen.SetPercentage(load.progress);
+                float progress = Mathf.Clamp01(load.progress / 0.9f);
+                m_loadingScreenUI.SetPercentage(progress);
                 yield return null;
             }
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneToLoad));
             m_sceneStates[sceneToLoad].gameObject.SetActive(true);
             m_sceneStates[sceneToLoad].OnStart();
-            m_loadingScreen.gameObject.SetActive(false);
+            m_loadingScreenUI.FadeAway(0.5f);
         }
 
         private IEnumerator UnloadSceneCoroutine(string sceneToUnload)
         {
-            m_loadingScreen.gameObject.SetActive(true);
+            m_loadingScreenUI.FadeIn(0.5f);
             AsyncOperation unload = SceneManager.UnloadSceneAsync(sceneToUnload);
             unload.allowSceneActivation = true;
             while (!unload.isDone)
             {
-                m_loadingScreen.SetPercentage(unload.progress);
+                float progress = Mathf.Clamp01(unload.progress / 0.9f);
+                m_loadingScreenUI.SetPercentage(progress);
                 yield return null;
             }
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_sceneStack.Peek()));
+            m_loadingScreenUI.FadeAway(0.5f);
             m_sceneStates[m_sceneStack.Peek()].gameObject.SetActive(true);
-            m_loadingScreen.gameObject.SetActive(false);
         }
 
         private IEnumerator UnloadScenesUntilCoroutine(string sceneToReach)
         {
-            m_loadingScreen.gameObject.SetActive(true);
+            m_loadingScreenUI.FadeIn(0.5f);
             while (!m_sceneStack.Peek().Equals(sceneToReach))
             {
                 AsyncOperation unload = SceneManager.UnloadSceneAsync(m_sceneStack.Pop());
                 unload.allowSceneActivation = true;
                 while (!unload.isDone)
                 {
-                    m_loadingScreen.SetPercentage(unload.progress);
+                    m_loadingScreenUI.SetPercentage(unload.progress);
                     yield return null;
                 }
             }
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_sceneStack.Peek()));
             m_sceneStates[m_sceneStack.Peek()].gameObject.SetActive(true);
-            m_loadingScreen.gameObject.SetActive(false);
+            m_loadingScreenUI.FadeAway(0.5f);
         }
     }
 }

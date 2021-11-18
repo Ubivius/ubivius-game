@@ -486,9 +486,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66fb5cb2c76006842817f259375f9096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_velocityLerpTime: 0.3
-  m_maxPositionError: 1
-  m_positionLerpTime: 0.2
+  m_maxLerpFrames: 10
   m_correctionTolerance: 0.5
   m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
   m_playerAnimator: {fileID: 0}
@@ -692,9 +690,24 @@ MonoBehaviour:
   m_doors: {fileID: 1549189266}
   m_interactable: {fileID: 304581782}
   m_playerSpawn: {fileID: 1320442776}
-  m_defaultFloorTile: {fileID: 11400000, guid: 2dcd60d668d7a654680b9f70a5d1e0e2, type: 2}
+  m_floorCenterTile: {fileID: 11400000, guid: f4f19033dbaa30a48aa256032fc3fc3f, type: 2}
+  m_floorBottomLeftTile: {fileID: 11400000, guid: ed89cef0dac18d14789307bf59cd0ff0,
+    type: 2}
+  m_floorTopLeftTile: {fileID: 11400000, guid: 2dcd60d668d7a654680b9f70a5d1e0e2, type: 2}
+  m_floorBottomRightTile: {fileID: 11400000, guid: 382a5774fbf769e4e8dbc22859321081,
+    type: 2}
+  m_floorTopRightTile: {fileID: 11400000, guid: bb84f6abc7d1e4c4290852bf777872fe,
+    type: 2}
   m_defaultDoorTile: {fileID: 11400000, guid: 80d28b64781f8174bb0a70be99f2800a, type: 2}
-  m_defaultInteractableTile: {fileID: 11400000, guid: 63f95df79b16f3d44a73a1d1bb9d3046,
+  m_interactableDefaultTile: {fileID: 11400000, guid: cee1ab31a83dda4459a2db04d857eabe,
+    type: 2}
+  m_interactableTopRightTile: {fileID: 11400000, guid: b2ab7db1dbcace14d97c85631b79fa26,
+    type: 2}
+  m_interactableBottomRightTile: {fileID: 11400000, guid: 0d657cddb2d4f1c489b1eec286ef5906,
+    type: 2}
+  m_interactableBottomLeftTile: {fileID: 11400000, guid: 84e9391a288f1814fbe25ec0ce429bbf,
+    type: 2}
+  m_interactableTopLeftTile: {fileID: 11400000, guid: 63f95df79b16f3d44a73a1d1bb9d3046,
     type: 2}
   m_defaultPlayerSpawnTile: {fileID: 11400000, guid: 7990e8cbb69c7744ebd140e6186861bd,
     type: 2}
@@ -1200,7 +1213,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 534ef99c72d8e214c867db94bdce8f3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
   m_playerShootingSettings: {fileID: 11400000, guid: e9e0b7007b894254586ea1109e168b46,
     type: 2}
   m_playerGameObjectUpdater: {fileID: 554541790}
@@ -1799,17 +1811,17 @@ PrefabInstance:
     - target: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
         type: 3}
       propertyPath: m_BackGroundColor.b
-      value: 0.3647059
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
         type: 3}
       propertyPath: m_BackGroundColor.g
-      value: 0.12941177
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
         type: 3}
       propertyPath: m_BackGroundColor.r
-      value: 0.09411766
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8568193985000567240, guid: 10e14b9cfc08f364eb4ade651bee9ae5,
         type: 3}
