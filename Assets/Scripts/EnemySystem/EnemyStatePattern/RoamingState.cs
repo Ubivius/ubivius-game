@@ -11,7 +11,6 @@ namespace ubv.server.logic.ai
         private EnemyMovementUpdater m_enemyMovement;
         private PlayerMovementUpdater m_playerMovement;
         private bool m_inMotion;
-        private const float m_reachedPositionDistance = 1f;
         
         private const float m_minimumRoamDistance = 5f;
         private const float m_maximumRoamDistance = 20f;
@@ -59,10 +58,14 @@ namespace ubv.server.logic.ai
 
         public override EnemyBehaviorState Update()
         {
-            if ((CurrentRoamPosition() - m_enemyMovement.GetPosition()).sqrMagnitude < m_reachedPositionDistance * m_reachedPositionDistance)
+            if (m_enemyMovement.IsDoneMoving())
             {
                 int start = m_currentRoamPositionIndex;
                 ++m_currentRoamPositionIndex;
+                if (!m_enemyMovement.SetTargetPosition(CurrentRoamPosition()))
+                {
+                    Debug.Log("Roaming position is unreachable, wtf ?");
+                }
                 /*while (!m_enemyMovement.SetTargetPosition(CurrentRoamPosition()))
                 {
                     ++m_currentRoamPositionIndex;

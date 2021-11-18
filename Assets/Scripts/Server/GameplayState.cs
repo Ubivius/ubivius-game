@@ -78,6 +78,15 @@ namespace ubv.server.logic
             {
                 updater.InitWorld(m_currentWorldState);
             }
+            
+            ServerStartsMessage message = new ServerStartsMessage();
+#if DEBUG_LOG
+            Debug.Log("Starting game.");
+#endif // DEBUG_LOG
+            foreach (int id in m_clients)
+            {
+                m_serverConnection.TCPServer.Send(message.GetBytes(), id);
+            }
         }
                 
         protected override void StateFixedUpdate()
@@ -97,7 +106,7 @@ namespace ubv.server.logic
 #if DEBUG_LOG
                     else
                     { 
-                        Debug.Log("SERVER Missed input " + m_masterTick + " from client " + id);
+                        //Debug.Log("SERVER Missed input " + m_masterTick + " from client " + id);
                     }
 #endif // DEBUG_LOG
 
