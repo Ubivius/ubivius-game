@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using ubv.common.world.cellType;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -15,9 +16,18 @@ namespace ubv.client.world
         [SerializeField] private Tilemap m_playerSpawn;
 
         // list of tiles 
-        [SerializeField] private Tile m_defaultFloorTile;
+        [SerializeField] private Tile m_floorCenterTile;
+        [SerializeField] private Tile m_floorBottomLeftTile;
+        [SerializeField] private Tile m_floorTopLeftTile;
+        [SerializeField] private Tile m_floorBottomRightTile;
+        [SerializeField] private Tile m_floorTopRightTile;
+
         [SerializeField] private Tile m_defaultDoorTile;
-        [SerializeField] private Tile m_defaultInteractableTile;
+        [SerializeField] private Tile m_interactableDefaultTile;
+        [SerializeField] private Tile m_interactableTopRightTile;
+        [SerializeField] private Tile m_interactableBottomRightTile;
+        [SerializeField] private Tile m_interactableBottomLeftTile;
+        [SerializeField] private Tile m_interactableTopLeftTile;
         [SerializeField] private Tile m_defaultPlayerSpawnTile;
 
         [SerializeField] private Tile m_defaultWallTile;
@@ -77,6 +87,17 @@ namespace ubv.client.world
             // créer arrays de tile ensuite call setTiles ?
             Vector3Int pos = new Vector3Int(0, 0, 0);
 
+            int mapWidth = cellInfos.GetLength(0);
+            int mapHeight = cellInfos.GetLength(1);
+
+            int xHalf = mapWidth / 2;
+            int xOneThird = mapWidth / 3;
+            int xTwoThird = 2 * mapWidth / 3;
+
+            int yHalf = mapHeight / 2;
+            int yOneThird = mapHeight / 3;
+            int yTwoThird = 2 * mapHeight / 3;
+
             List<Tile> wallCells =          new List<Tile>();
             List<Tile> floorCells =         new List<Tile>();
             List<Tile> doorCells =          new List<Tile>();
@@ -89,9 +110,11 @@ namespace ubv.client.world
             List<Vector3Int> doorButtonPos =  new List<Vector3Int>();
             List<Vector3Int> playerSpawnPos = new List<Vector3Int>();
 
-            for (int x = 0; x < cellInfos.GetLength(0); x++)
+            int sectionButtonCounter = 0;
+
+            for (int x = 0; x < mapWidth; x++)
             {
-                for (int y = 0; y < cellInfos.GetLength(1); y++)
+                for (int y = 0; y < mapHeight; y++)
                 {
                     LogicCell cell = cellInfos[x, y].CellFromBytes();
                     LogicCell leftCell = cellInfos[x, y].CellFromBytes();
@@ -103,6 +126,8 @@ namespace ubv.client.world
                     LogicCell diagoUpRightCell = cellInfos[x, y].CellFromBytes();
                     LogicCell diagoBottomLeftCell = cellInfos[x, y].CellFromBytes();
                     LogicCell diagoBottomRightCell = cellInfos[x, y].CellFromBytes();
+
+                    
 
 
                     if (x <= 0 ) {
@@ -246,35 +271,82 @@ namespace ubv.client.world
                     }
                     else if (cell is FloorCell)
                     {
-                        floorCells.Add(m_defaultFloorTile);
+                        if (pos.x > xOneThird && pos.x < xTwoThird && pos.y > yOneThird && pos.y < yTwoThird)
+                            floorCells.Add(m_floorCenterTile);
+                        else if (pos.x < xHalf && pos.y < yHalf) 
+                            floorCells.Add(m_floorBottomLeftTile);
+                        else if (pos.x < xHalf && pos.y >= yHalf)
+                            floorCells.Add(m_floorTopLeftTile);
+                        else if (pos.x >= xHalf && pos.y < yHalf)
+                            floorCells.Add(m_floorBottomRightTile);
+                        else if (pos.x >= xHalf && pos.y >= yHalf)
+                            floorCells.Add(m_floorTopRightTile);
+
                         floorPos.Add(pos);
                     }
                     else if (cell is DoorCell door)
                     {
                         doorCells.Add(m_defaultDoorTile);
                         doorPos.Add(pos);
-                        floorCells.Add(m_defaultFloorTile);
+
+                        if (pos.x > xOneThird && pos.x < xTwoThird && pos.y > yOneThird && pos.y < yTwoThird)
+                            floorCells.Add(m_floorCenterTile);
+                        else if (pos.x < xHalf && pos.y < yHalf)
+                            floorCells.Add(m_floorBottomLeftTile);
+                        else if (pos.x < xHalf && pos.y >= yHalf)
+                            floorCells.Add(m_floorTopLeftTile);
+                        else if (pos.x >= xHalf && pos.y < yHalf)
+                            floorCells.Add(m_floorBottomRightTile);
+                        else if (pos.x >= xHalf && pos.y >= yHalf)
+                            floorCells.Add(m_floorTopRightTile);
+
                         floorPos.Add(pos);
                         AddToDoorList(door, pos);
                     }
                     else if (cell is DoorButtonCell)
                     {
-                        doorButtonCells.Add(m_defaultInteractableTile);
+                        doorButtonCells.Add(m_interactableDefaultTile);
                         doorButtonPos.Add(pos);
                     }
                     else if (cell is SectionButton)
                     {
-                        doorButtonCells.Add(m_defaultInteractableTile);
+                        doorButtonCells.Add(m_interactableDefaultTile);
                         doorButtonPos.Add(pos);
                     }
                     else if (cell is SectionDoorButtonCell)
                     {
-                        doorButtonCells.Add(m_defaultInteractableTile);
+                        if (cellInfos[x - 3, y].CellFromBytes() is SectionDoorButtonCell == false &&
+                            cellInfos[x + 3, y].CellFromBytes() is SectionDoorButtonCell)
+                        {
+                            doorButtonCells.Add(m_interactableTopRightTile);
+                            sectionButtonCounter++;
+                        }
+
+                        else if (cellInfos[x - 3, y].CellFromBytes() is SectionDoorButtonCell &&
+                                 cellInfos[x + 3, y].CellFromBytes() is SectionDoorButtonCell && sectionButtonCounter == 1)
+                        {
+                            doorButtonCells.Add(m_interactableBottomRightTile);
+                            sectionButtonCounter++;
+                        }
+                        else if (cellInfos[x - 3, y].CellFromBytes() is SectionDoorButtonCell &&
+                                 cellInfos[x + 3, y].CellFromBytes() is SectionDoorButtonCell && sectionButtonCounter == 2)
+                        {
+                            doorButtonCells.Add(m_interactableBottomLeftTile);
+                            sectionButtonCounter++;
+                        }
+                        else if (cellInfos[x - 3, y].CellFromBytes() is SectionDoorButtonCell &&
+                                 cellInfos[x + 3, y].CellFromBytes() is SectionDoorButtonCell == false)
+                        {
+                            doorButtonCells.Add(m_interactableTopLeftTile);
+                            sectionButtonCounter++;
+                        }
+                        else
+                            doorButtonCells.Add(m_interactableDefaultTile);
                         doorButtonPos.Add(pos);
                     }
                     else if (cell is FinalButtonCell)
                     {
-                        doorButtonCells.Add(m_defaultInteractableTile);
+                        doorButtonCells.Add(m_interactableDefaultTile);
                         doorButtonPos.Add(pos);
                     }
                     else if (cell is PlayerSpawnCell)
@@ -284,6 +356,9 @@ namespace ubv.client.world
                     }
                 }
             }
+
+
+            
 
             m_walls.SetTiles(wallPos.ToArray(), wallCells.ToArray());
             m_floor.SetTiles(floorPos.ToArray(), floorCells.ToArray());

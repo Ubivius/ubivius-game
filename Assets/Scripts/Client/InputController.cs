@@ -30,6 +30,9 @@ namespace ubv
             private bool m_IsSprinting = false;
             private bool m_interact = false;
             private bool m_IsShooting = false;
+            private Vector2 m_aim = Vector2.zero;
+
+            private bool m_isAiming = false;
 
             private void Awake()
             {
@@ -55,6 +58,9 @@ namespace ubv
 
                 m_controls.Gameplay.Shoot.performed += context => SetShooting(true);
                 m_controls.Gameplay.Shoot.canceled += context => SetShooting(false);
+
+                m_controls.Gameplay.Aim.performed += context => SetAim(context.ReadValue<Vector2>());
+                m_controls.Gameplay.Aim.canceled += context => SetAim(Vector2.zero);
             }
 
             // Start is called before the first frame update
@@ -83,6 +89,19 @@ namespace ubv
                 m_IsShooting = isShooting;
             }
 
+            private void SetAim(Vector2 movement)
+            {
+                if (movement == Vector2.zero)
+                {
+                    m_isAiming = false;
+                }
+                else
+                {
+                    m_isAiming = true;
+                }
+                m_aim = movement;
+            }
+
             // Update is called once per frame
             void Update()
             {
@@ -92,13 +111,20 @@ namespace ubv
 
                 m_currentInputFrame.Shooting.Value = m_IsShooting;
 
-                Vector2 aimDir = Vector2.zero;
-                if (m_playerTransform != null)
+                if (!m_isAiming)
                 {
-                    Vector2 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
-                    aimDir = mousePos - (Vector2)m_playerTransform.position;
+                    Vector2 aimDir = Vector2.zero;
+                    if (m_playerTransform != null)
+                    {
+                        Vector2 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
+                        aimDir = mousePos - (Vector2)m_playerTransform.position;
+                    }
+                    m_currentInputFrame.ShootingDirection.Value = aimDir.normalized;
                 }
-                m_currentInputFrame.ShootingDirection.Value = aimDir.normalized;
+                else
+                {
+                    m_currentInputFrame.ShootingDirection.Value = m_aim.normalized;
+                }
             }
         
             static public common.data.InputFrame CurrentFrame()
