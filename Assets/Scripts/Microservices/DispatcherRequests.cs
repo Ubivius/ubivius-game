@@ -23,20 +23,41 @@ namespace ubv.microservices
         }
     }
     
-    public class GetServerInfoRequest : GetMicroserviceRequest
+    public class GetServerInfoRequest : GetDispatcherRequest
     {
         public readonly string GameID;
-        public readonly UnityAction<ServerInfo> SuccessCallback;
 
-        public GetServerInfoRequest(string gameID, UnityAction<ServerInfo> callback, UnityAction<string> failCallback) : base(failCallback)
+        public GetServerInfoRequest(string gameID, UnityAction<ServerInfo> callback, UnityAction<string> failCallback) : base(callback, failCallback)
         {
             GameID = gameID;
-            SuccessCallback = callback;
         }
 
         public override string URL()
         {
             return "IP/" + GameID;
+        }
+    }
+
+    public class GetNewServerInfoRequest : GetDispatcherRequest
+    {
+        public GetNewServerInfoRequest(UnityAction<ServerInfo> callback, UnityAction<string> failCallback) : base(callback, failCallback)
+        {
+            Debug.Log("Made it to Line 49 of DispatcherRequests.cs");
+        }
+
+        public override string URL()
+        {
+            return "GameServer";
+        }
+    }
+
+    public abstract class GetDispatcherRequest : GetMicroserviceRequest
+    {
+        public readonly UnityAction<ServerInfo> SuccessCallback;
+
+        public GetDispatcherRequest(UnityAction<ServerInfo> callback, UnityAction<string> failCallback) : base(failCallback)
+        {
+            SuccessCallback = callback;
         }
     }
 
