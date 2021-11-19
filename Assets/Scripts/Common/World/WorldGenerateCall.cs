@@ -10,7 +10,7 @@ namespace ubv.common.world
         // Start is called before the first frame update
         void Start()
         {
-            m_generator.GenerateWorld();
+            //m_generator.GenerateWorld();
         }
     }
 }

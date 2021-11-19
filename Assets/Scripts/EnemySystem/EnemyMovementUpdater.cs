@@ -17,9 +17,15 @@ namespace ubv.server.logic.ai
         private List<Vector2> m_pathVectorList;
         private int m_currentPathIndex;
 
+        private Vector2 m_currentTargetPosition;
+
+        private bool m_isDoneMoving;
+
         private void Awake()
         {
+            m_currentTargetPosition = Vector2.zero;
             m_currentPathIndex = 0;
+            m_isDoneMoving = true;
         }
         
         public Vector2 GetMovementDirection()
@@ -36,6 +42,11 @@ namespace ubv.server.logic.ai
         {
             Vector2 delta = GetNextPosition() - GetPosition();
             return (delta.sqrMagnitude < m_reachedTargetDistance * m_reachedTargetDistance);
+        }
+
+        public bool IsDoneMoving()
+        {
+            return m_isDoneMoving;
         }
 
         public void Update()
@@ -57,22 +68,29 @@ namespace ubv.server.logic.ai
         public void StopMoving()
         {
             m_pathVectorList = null;
+            m_isDoneMoving = true;
         }
 
-        public void SetTargetPosition(Vector2 targetPosition)
+        public bool SetTargetPosition(Vector2 targetPosition)
         {
-            m_currentPathIndex = 0;
-            m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition).PathVectorList;
+            if(m_currentTargetPosition != targetPosition)
+            { 
+                m_currentTargetPosition = targetPosition;
+                m_currentPathIndex = 0;
+                m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition)?.PathVectorList;
+                m_isDoneMoving = m_pathVectorList == null;
+            }
+            return !m_isDoneMoving;
+        }
+
+        public void SetPosition(Vector2 position)
+        {
+            transform.position = position;
         }
         
         public Vector2 GetPosition()
         {
             return new Vector2(transform.position.x, transform.position.y);
-        }
-        
-        public bool IsPositionWalkable(Vector2 worldPosition)
-        {
-            return m_pathfindingGridManager.GetNodeIfWalkable(worldPosition.x, worldPosition.y) != null;
         }
 
         public Vector2 GetNextPosition()

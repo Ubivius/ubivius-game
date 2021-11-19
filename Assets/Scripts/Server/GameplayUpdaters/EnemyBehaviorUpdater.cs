@@ -5,11 +5,14 @@ using ubv.common.data;
 using System.Collections.Generic;
 using UnityEngine.Events;
 using ubv.server.logic.ai;
+using ubv.common.world;
 
 namespace ubv.server.logic
 {
     public class EnemyBehaviorUpdater : ServerGameplayStateUpdater
     {
+        [SerializeField] private PlayerMovementUpdater m_playerMovementUpdater;
+        [SerializeField] private WorldGenerator m_worldGenerator;
         [SerializeField] private EnemySettings m_enemySettings;
         [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
         [SerializeField] private int m_enemyCount;
@@ -59,33 +62,28 @@ namespace ubv.server.logic
         private void EnemySpawn(WorldState state)
         {
             int i = 0;
-            int xPos;
-            int yPos;
             while (i < m_enemyCount)
             {
-                xPos = Random.Range(0, m_mapNodes.GetLength(0) - 1);
-                yPos = Random.Range(0, m_mapNodes.GetLength(1) - 1);
+                GameObject enemyGameObject = Instantiate(m_enemySettings.EnemyPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+                Rigidbody2D body = enemyGameObject.GetComponent<Rigidbody2D>();
+                EnemyMovementUpdater enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyMovementUpdater>();
+                enemyPathFindingMovement.SetPathfinding(m_pathfindingGridManager);
 
-                if (m_pathfindingGridManager.GetNodeIfWalkable(xPos, yPos) != null)
-                {
-                    GameObject enemyGameObject = Instantiate(m_enemySettings.EnemyPrefab, new Vector3(xPos, yPos, 0), Quaternion.identity);
-                    Rigidbody2D body = enemyGameObject.GetComponent<Rigidbody2D>();
-                    EnemyMovementUpdater enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyMovementUpdater>();
-                    enemyPathFindingMovement.SetPathfinding(m_pathfindingGridManager);
+                EnemyStateMachine stateMachine = enemyGameObject.GetComponent<EnemyStateMachine>();
+                stateMachine.Init(m_playerMovementUpdater, m_worldGenerator, m_pathfindingGridManager);
 
-                    int id = System.Guid.NewGuid().GetHashCode();
-                    body.name = "Server enemy " + id.ToString();
+                int id = System.Guid.NewGuid().GetHashCode();
+                body.name = "Server enemy " + id.ToString();
 
-                    m_bodies.Add(id, body);
-                    m_enemyMovementUpdaters.Add(id, enemyPathFindingMovement);
+                m_bodies.Add(id, body);
+                m_enemyMovementUpdaters.Add(id, enemyPathFindingMovement);
 
-                    EnemyState enemyStateData = new EnemyState(id);
-                    enemyStateData.Position.Value = m_enemyMovementUpdaters[id].GetNextPosition();
+                EnemyState enemyStateData = new EnemyState(id);
+                enemyStateData.Position.Value = m_enemyMovementUpdaters[id].GetNextPosition();
 
-                    m_enemies.Add(id, enemyStateData);
-                    state.AddEnemy(enemyStateData);
-                    ++i;
-                }
+                m_enemies.Add(id, enemyStateData);
+                state.AddEnemy(enemyStateData);
+                ++i;
             }
         }
     }

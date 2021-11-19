@@ -27,7 +27,8 @@ public class PathNode
     {
         if (pathNode != null)
         {
-            this.m_neighbourList.Add(pathNode);
+            if(!m_neighbourList.Contains(pathNode))
+                m_neighbourList.Add(pathNode);
             return true;
         }
         else
