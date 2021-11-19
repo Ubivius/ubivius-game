@@ -7,6 +7,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 686873656258829068, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
+        type: 3}
+      propertyPath: DamagePoint
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 686873656258829068, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
+        type: 3}
+      propertyPath: MaxHealthPoint
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 686873656258829070, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
         type: 3}
       propertyPath: m_Enabled
@@ -76,6 +86,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SimpleEnemyVariantCLient
+      objectReference: {fileID: 0}
+    - target: {fileID: 2610835637809276321, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 686873656258829071, guid: 0fc42a915c8c2e84b88bbc5e57441d03, type: 3}

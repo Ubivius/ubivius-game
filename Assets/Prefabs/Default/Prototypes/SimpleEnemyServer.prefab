@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 686873656258829069}
   - component: {fileID: 2656123850511472361}
   - component: {fileID: -7654363759067701336}
+  - component: {fileID: 2610835637809276321}
   m_Layer: 0
   m_Name: SimpleEnemyServer
   m_TagString: Untagged
@@ -120,7 +121,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1562b3f3c35d14748a1bf15a2cef2e43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  HealthPoint: 100
+  MaxHealthPoint: 100
+  DamagePoint: 25
 --- !u!114 &686873656258829070
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182,5 +184,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76e7927c83cba0842b359bc7b2d32a4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2610835637809276321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 686873656258829074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e6cace833b34c048a81bea02b0540ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

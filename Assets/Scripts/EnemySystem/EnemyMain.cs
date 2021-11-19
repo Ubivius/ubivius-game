@@ -7,7 +7,8 @@ using ubv.common.gameplay.shooting;
 
 public class EnemyMain : MonoBehaviour
 {
-    [SerializeField] public int MaxHealthPoint;
+    [SerializeField] public int MaxHealthPoint = 100;
+    [SerializeField] public int DamagePoint = 25;
     //public event EventHandler OnDestroySelf;
     //public event EventHandler<OnDamagedEventArgs> OnDamaged;
     /*public class OnDamagedEventArgs
@@ -51,13 +52,14 @@ public class EnemyMain : MonoBehaviour
 
     private void Hit()
     {
-        Debug.Log("OUCH CRISS!");
-        HealthSystem.Damage(25);
+        HealthSystem.Damage(DamagePoint);
     }
 
     public void DestroySelf()
     {
-        Destroy(transform);
+        Destroy(transform.gameObject);
+        //ex when we'll need to add animation
+        //Destroy(GetComponent<BoxCollider>());
     }
 
     //public void Damage(Player attacker, float damageMultiplier)
