@@ -27,7 +27,6 @@ namespace ubv.server.logic
 
         private void Awake()
         {
-            Debug.Log("Pathfinding manager started");
             m_worldGenerator.OnWorldGenerated += OnWorldGenerated;            
         }
 
@@ -44,7 +43,6 @@ namespace ubv.server.logic
 
         public void SetPathNodesFromLogicGrid(LogicGrid logicGrid)
         {
-            Debug.Log("Set PathNodes From LogicGrid");
             m_cellToNodes = new Dictionary<common.world.cellType.LogicCell, PathNode>();
             m_logicGrid = logicGrid;
             m_pathNodes = new PathNode[m_logicGrid.Width, m_logicGrid.Height];

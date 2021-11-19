@@ -10,7 +10,11 @@ namespace ubv.server.logic.ai
         private Vector2 m_lastSeenPlayerPosition;
         private RoamingState m_lastRoamingState;
 
-        private const int m_updateInverseRate = 60;
+        private const int m_updateInverseRate = 10;
+        private readonly int m_updateOffset;
+
+        private const float m_suspiciousTime = 5.0f;
+        private float m_suspiciousTimer;
         
         public ChasingState(RoamingState roaming, float detectionRange,
             PlayerMovementUpdater playerMovement, 
@@ -20,21 +24,42 @@ namespace ubv.server.logic.ai
         {
             m_playerDetectionRange = detectionRange;
             m_lastRoamingState = roaming;
+            m_updateOffset = Random.Range(0, m_updateInverseRate);
+            m_suspiciousTimer = 0;
         }
 
         public override EnemyBehaviorState Update()
         {
-            if (Time.frameCount % m_updateInverseRate == 0)
+            if (Time.frameCount % m_updateInverseRate == m_updateOffset)
             {
+                float updateTime = Time.fixedDeltaTime * m_updateInverseRate;
                 if (!SpotPlayer())
                 {
-                    return m_lastRoamingState;
+                    m_suspiciousTimer += updateTime;
                 }
                 else
                 {
-                    m_enemyMovement.SetTargetPosition(m_lastSeenPlayerPosition);
+                    bool reachable = m_enemyMovement.SetTargetPosition(m_lastSeenPlayerPosition);
+                    if (reachable)
+                    {
+                        Debug.Log("Saw player!");
+                        m_suspiciousTimer = 0;
+                    }
+                    else
+                    {
+                        Debug.Log("Saw player but can't reach it.");
+                        m_suspiciousTimer += updateTime;
+                    }
                 }
             }
+
+            if(m_suspiciousTimer > m_suspiciousTime)
+            {
+                Debug.Log("No player for a while, returning to roam.");
+                m_suspiciousTimer = 0;
+                return m_lastRoamingState;
+            }
+
             return this;
         }
 
