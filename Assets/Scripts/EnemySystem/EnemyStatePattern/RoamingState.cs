@@ -7,9 +7,6 @@ namespace ubv.server.logic.ai
 {
     public class RoamingState : EnemyBehaviorState
     {
-        private PathfindingGridManager m_pathfinding;
-        private EnemyMovementUpdater m_enemyMovement;
-        private PlayerMovementUpdater m_playerMovement;
         private bool m_inMotion;
 
         private const float m_playerDetectionRange = 10f;
@@ -20,13 +17,13 @@ namespace ubv.server.logic.ai
         private int m_currentRoamPositionIndex;
         private const int m_totalRoamPositions = 3;
         
-        public RoamingState(Vector2 startPosition, EnemyMovementUpdater enemyMovement, PlayerMovementUpdater playerMovement, PathfindingGridManager pathfinding)
+        public RoamingState(Vector2 startPosition, 
+            EnemyMovementUpdater enemyMovement, 
+            PlayerMovementUpdater playerMovement, 
+            PathfindingGridManager pathfinding) : 
+            base(enemyMovement, playerMovement, pathfinding)
         {
-            m_enemyMovement = enemyMovement;
-            m_playerMovement = playerMovement;
             m_currentRoamPositionIndex = 0;
-            m_pathfinding = pathfinding;
-            m_enemyMovement.SetPathfinding(m_pathfinding);
             GenerateRandomRoamingPositions(startPosition);
         }
 
@@ -72,13 +69,13 @@ namespace ubv.server.logic.ai
 
             if (DetectsPlayer())
             {
-                return new ChasingState();
+                return new ChasingState(this, m_playerDetectionRange, m_playerMovement, m_enemyMovement, m_pathfinding);
             }
 
             return this;
         }
 
-        private bool DetectsPlayer()
+        public bool DetectsPlayer()
         {
             var playerGameObjects = m_playerMovement.GetPlayersGameObject().Values;
             foreach (PlayerPrefab player in playerGameObjects)

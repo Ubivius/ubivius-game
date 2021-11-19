@@ -96,7 +96,7 @@ Rigidbody2D:
   m_GameObject: {fileID: 686873656258829074}
   m_BodyType: 1
   m_Simulated: 1
-  m_UseFullKinematicContacts: 0
+  m_UseFullKinematicContacts: 1
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
@@ -169,3 +169,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd0482350d201814cb9f782261f752dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_reachedTargetDistance: 0.1

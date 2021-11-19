@@ -17,10 +17,13 @@ namespace ubv.server.logic.ai
         private List<Vector2> m_pathVectorList;
         private int m_currentPathIndex;
 
+        private Vector2 m_currentTargetPosition;
+
         private bool m_isDoneMoving;
 
         private void Awake()
         {
+            m_currentTargetPosition = Vector2.zero;
             m_currentPathIndex = 0;
             m_isDoneMoving = true;
         }
@@ -70,9 +73,13 @@ namespace ubv.server.logic.ai
 
         public bool SetTargetPosition(Vector2 targetPosition)
         {
-            m_currentPathIndex = 0;
-            m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition)?.PathVectorList;
-            m_isDoneMoving = m_pathVectorList == null;
+            if(m_currentTargetPosition != targetPosition)
+            { 
+                m_currentTargetPosition = targetPosition;
+                m_currentPathIndex = 0;
+                m_pathVectorList = m_pathfindingGridManager.GetPathRoute(GetPosition(), targetPosition)?.PathVectorList;
+                m_isDoneMoving = m_pathVectorList == null;
+            }
             return !m_isDoneMoving;
         }
 
