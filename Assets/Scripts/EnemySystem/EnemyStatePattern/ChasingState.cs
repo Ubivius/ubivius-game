@@ -42,12 +42,10 @@ namespace ubv.server.logic.ai
                     bool reachable = m_enemyMovement.SetTargetPosition(m_lastSeenPlayerPosition);
                     if (reachable)
                     {
-                        Debug.Log("Saw player!");
                         m_suspiciousTimer = 0;
                     }
                     else
                     {
-                        Debug.Log("Saw player but can't reach it.");
                         m_suspiciousTimer += updateTime;
                     }
                 }
@@ -55,7 +53,6 @@ namespace ubv.server.logic.ai
 
             if(m_suspiciousTimer > m_suspiciousTime)
             {
-                Debug.Log("No player for a while, returning to roam.");
                 m_suspiciousTimer = 0;
                 return m_lastRoamingState;
             }

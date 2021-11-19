@@ -138,9 +138,9 @@ namespace ubv.server.logic
                 return;
             }
             
-            for(int x = -1; x < 1; x++)
+            for(int x = -1; x <= 1; x++)
             {
-                for (int y = -1; y < 1; y++)
+                for (int y = -1; y <= 1; y++)
                 {
                     PathNode node = GetNodeIfWalkable(p.x + x, p.y + y);
                     if (node != null && node != p)
