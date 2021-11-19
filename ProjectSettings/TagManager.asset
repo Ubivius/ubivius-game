@@ -16,6 +16,8 @@ TagManager:
   - 
   - Players
   - Enemies
+  - FieldOfView
+  - TextChat
   - 
   - 
   - 
