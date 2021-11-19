@@ -104,14 +104,6 @@ namespace ubv.server.logic
                     if (EveryoneHasWorld())
                     {
                         m_worldLoadedClients.Clear();
-                        ServerStartsMessage message = new ServerStartsMessage();
-#if DEBUG_LOG
-                        Debug.Log("Starting game.");
-#endif // DEBUG_LOG
-                        foreach (int id in m_activeClients)
-                        {
-                            m_serverConnection.TCPServer.Send(message.GetBytes(), id);
-                        }
 
                         m_currentSubState = SubState.SUBSTATE_GOING_TO_PLAY;
                         

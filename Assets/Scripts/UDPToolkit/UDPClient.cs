@@ -122,7 +122,7 @@ namespace ubv
 
                         for (int i = tmp.Length; i < m_packetBytesBuffer.Length; i++)
                         {
-                            m_packetBytesBuffer[i] = bytes[i];
+                            m_packetBytesBuffer[i] = bytes[i- tmp.Length];
                         }
 
                         UDPToolkit.Packet packet = UDPToolkit.Packet.FirstPacketFromBytes(m_packetBytesBuffer);
