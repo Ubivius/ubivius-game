@@ -48,7 +48,7 @@ namespace ubv
 #if DEBUG_LOG
                     Debug.Log("Launching UDP server at " + localEndPoint.ToString());
 #endif // DEBUG_LOG
-
+                    
                     m_server.BeginReceive(EndReceiveCallback, m_server);
                 }
                 
@@ -104,7 +104,7 @@ namespace ubv
                         Debug.Log("Socket error: " + e.ToString());
                     }
 
-                    if (bytes != null)
+                    if (bytes != null && bytes.Length > 0)
                     {
                         // append to m_packetBytesBuffer
                         byte[] tmp = new byte[m_packetBytesBuffer.Length];
@@ -116,7 +116,7 @@ namespace ubv
 
                         for (int i = tmp.Length; i < m_packetBytesBuffer.Length; i++)
                         {
-                            m_packetBytesBuffer[i] = bytes[i];
+                            m_packetBytesBuffer[i] = bytes[i - tmp.Length];
                         }
 
                         UDPToolkit.Packet packet = UDPToolkit.Packet.FirstPacketFromBytes(m_packetBytesBuffer);
