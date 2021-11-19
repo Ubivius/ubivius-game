@@ -268,6 +268,7 @@ namespace ubv.tcp.server
                     Debug.Log(ex.Message);
                     lock (m_lock)
                     {
+                        m_requestToSendEvent.Set();
                         m_activeEndpoints[source] = false;
                         break;
                     }
