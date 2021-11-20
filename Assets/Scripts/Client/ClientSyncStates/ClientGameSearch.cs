@@ -121,7 +121,7 @@ namespace ubv.client.logic
             }
             else
             {
-                DispatcherService.RequestNewServer(OnServerInfoReceived, OnDispatcherFail);
+                DispatcherService.RequestNewServerInfo(OnServerInfoReceived, OnDispatcherFail);
             }
         }
 
