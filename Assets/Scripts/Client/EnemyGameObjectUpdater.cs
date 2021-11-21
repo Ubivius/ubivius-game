@@ -117,7 +117,7 @@ namespace ubv.client.logic
 
             foreach (int enemyKey in destroyElements)
             {
-                Destroy(m_bodies[enemyKey]);
+                Destroy(m_bodies[enemyKey].transform.gameObject);
                 m_bodies.Remove(enemyKey);
                 m_enemies.Remove(enemyKey);
                 m_enemyMain.Remove(enemyKey);
