@@ -104,14 +104,6 @@ namespace ubv.server.logic
                     if (EveryoneHasWorld())
                     {
                         m_worldLoadedClients.Clear();
-                        ServerStartsMessage message = new ServerStartsMessage();
-#if DEBUG_LOG
-                        Debug.Log("Starting game.");
-#endif // DEBUG_LOG
-                        foreach (int id in m_activeClients)
-                        {
-                            m_serverConnection.TCPServer.Send(message.GetBytes(), id);
-                        }
 
                         m_currentSubState = SubState.SUBSTATE_GOING_TO_PLAY;
                         
@@ -126,8 +118,23 @@ namespace ubv.server.logic
 
         private void BroadcastPlayerList()
         {
-            Debug.Log("Broadcasting player/character list");
             byte[] bytes = new CharacterListMessage(GetActiveCharacters()).GetBytes();
+            foreach (int id in m_activeClients)
+            {
+                m_serverConnection.TCPServer.Send(bytes, id);
+            }
+        }
+
+        private void BroadcastClientsStatus()
+        {
+            Dictionary<int, common.serialization.types.Bool> readyClients = new Dictionary<int, common.serialization.types.Bool>();
+            
+            foreach(int  id in m_activeClients)
+            {
+                readyClients.Add(id, new common.serialization.types.Bool(m_readyClients.Contains(id)));
+            }
+
+            byte[] bytes = new ClientStatusMessage(readyClients).GetBytes();
             foreach (int id in m_activeClients)
             {
                 Debug.Log("Sending to :" + id);
@@ -196,6 +203,8 @@ namespace ubv.server.logic
                 Debug.Log("Client " + playerID + " is ready to receive world.");
 #endif // DEBUG_LOG
                 m_readyClients.Add(playerID);
+
+                BroadcastClientsStatus();
                 return;
             }
             

@@ -233,7 +233,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 160762943}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 439446a9ce17b3847bfc64f121e4bbe0, type: 3}
   m_Name: 
@@ -1246,7 +1246,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1740651405
 Transform:
   m_ObjectHideFlags: 0
@@ -1331,9 +1331,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc75538b967bb964d831e27b26a69e00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_playerMovementUpdater: {fileID: 1470650681}
+  m_worldGenerator: {fileID: 1802319659}
   m_enemySettings: {fileID: 11400000, guid: 387cec5fcfcc1a6499b0d050382f46fd, type: 2}
   m_pathfindingGridManager: {fileID: 1730964089}
-  m_enemyCount: 20
+  m_enemyCount: 50
 --- !u!1001 &1802319657
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1367,8 +1369,13 @@ PrefabInstance:
       objectReference: {fileID: 1730964089}
     - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}
+      propertyPath: m_boundariesMap.x
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
+        type: 3}
       propertyPath: m_boundariesMap.y
-      value: 250
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 4247499401278839593, guid: 2440ad9a813087043aff3d8131677843,
         type: 3}

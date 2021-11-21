@@ -70,6 +70,7 @@ namespace ubv.common.world
         public UnityAction OnWorldGenerated;
 
         private List<Vector2Int> m_playerSpawnPos;
+        private List<Vector2> m_enemySpawnPositions;
 
         private bool m_mapIsValid;
         private int m_mapGenerationAttempt;
@@ -80,6 +81,7 @@ namespace ubv.common.world
 
             m_mapIsValid = false;
             m_mapGenerationAttempt = 0;
+            m_enemySpawnPositions = new List<Vector2>();
 
             m_worldGeneratorToRoomManager = new dataStruct.WorldGeneratorToRoomManager(
                 m_boundariesMap,
@@ -112,10 +114,22 @@ namespace ubv.common.world
 
         public void GenerateWorld()
         {
-            while (!m_mapIsValid)
+            while (!m_mapIsValid && m_mapGenerationAttempt < 1000)
             {
                 try
                 {
+                    if (m_roomManager != null)
+                    {
+                        m_floor.ClearAllTiles();
+                        m_door.ClearAllTiles();
+                        m_wall.ClearAllTiles();                        
+                        foreach (RoomInfo room in m_roomInMap)
+                        {
+                            Destroy(room.gameObject);
+                        }
+                        m_roomInMap.Clear();
+                    }
+
                     m_roomManager = new generationManager.RoomManager(m_worldGeneratorToRoomManager);
                     m_masterLogicGrid = m_roomManager.GenerateRoomGrid();
                     m_roomInMap = m_roomManager.GetRoomInMap();
@@ -143,8 +157,6 @@ namespace ubv.common.world
 
                     SetPlayerSpawnPosList();
 
-                    m_mapIsValid = true;
-
                     OnWorldGenerated?.Invoke();
 
 
@@ -153,13 +165,14 @@ namespace ubv.common.world
                     foreach (Vector2Int spawn in m_playerSpawnPos)
                     {
                         PathRoute route = m_pathfinder.GetPathRoute(spawn, centralPos);
-                        if (route.PathVectorList.Count < 1)
+                        if (route == null || route.PathVectorList.Count < 1)
                         {
                             throw new MapCreationException("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
                         }
                     }
+                    AddSpawns();
+                    m_mapIsValid = true;
 
-                    //m_pathfinder
                 }
                 catch (MapCreationException)
                 {
@@ -182,8 +195,6 @@ namespace ubv.common.world
         private void SetPlayerSpawnPosList()
         {
             m_playerSpawnPos = new List<Vector2Int>();
-            int width = m_masterLogicGrid.Width;
-            int height = m_masterLogicGrid.Height;
             for (int x = 0; x < m_masterLogicGrid.Width; x++) // On ne veut pas regarder en dehors du tableau
             {
                 for (int y = 0; y < m_masterLogicGrid.Height; y++)
@@ -196,7 +207,49 @@ namespace ubv.common.world
             }
         }
 
+        private void AddSpawns()
+        {
+            int width = m_masterLogicGrid.Width;
+            int height = m_masterLogicGrid.Height;
+
+            const int MAX_ENEMY_SPAWNS = 100;
+
+            for (int i = 0; i < MAX_ENEMY_SPAWNS; i++)
+            {
+                Vector2 pos = Vector2.zero;
+
+                do
+                {
+                    int xPos = Random.Range(3, width - 4);
+                    int yPos = Random.Range(3, height - 4);
+                    pos = new Vector2(xPos, yPos);
+                 } while (m_pathfinder.GetNodeIfWalkable(pos.x, pos.y) == null
+                          || m_pathfinder.GetPathRoute(pos, GetCentralPiecePos()) != null
+                           || m_pathfinder.GetPathRoute(pos, GetFinalButtonPos()) != null);
+
+                Debug.Log("Adding new enemy possible spawn: " + pos);
+                m_enemySpawnPositions.Add(pos);
+            }
+        }
+
         private Vector2 GetCentralPiecePos()
+        {
+            int width = m_masterLogicGrid.Width;
+            int height = m_masterLogicGrid.Height;
+            for (int x = 0; x < m_masterLogicGrid.Width; x++) // On ne veut pas regarder en dehors du tableau
+            {
+                for (int y = 0; y < m_masterLogicGrid.Height; y++)
+                {
+                    if (m_masterLogicGrid.Grid[x, y].GetCellType() == cellType.CellInfo.CellType.CELL_SECTIONDOORBUTTON)
+                    {
+                        return new Vector2(x, y - 1);
+                    }
+                }
+            }
+            return new Vector2(0, 0);
+        }
+
+        private Vector2 GetFinalButtonPos()
         {
             int width = m_masterLogicGrid.Width;
             int height = m_masterLogicGrid.Height;
@@ -218,6 +271,16 @@ namespace ubv.common.world
             int select = Random.Range(0, m_playerSpawnPos.Count - 1);
             Vector2Int pos = m_playerSpawnPos[select];
             m_playerSpawnPos.RemoveAt(select);
+            return pos;
+        }
+
+        public Vector2 GetEnemySpawnPosition()
+        {
+            if (m_enemySpawnPositions.Count == 0)
+                AddSpawns();
+            int select = Random.Range(0, m_enemySpawnPositions.Count - 1);
+            Vector2 pos = m_enemySpawnPositions[select];
+            m_enemySpawnPositions.RemoveAt(select);
             return pos;
         }
 

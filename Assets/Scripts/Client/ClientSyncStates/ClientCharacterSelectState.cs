@@ -25,7 +25,7 @@ namespace ubv.client.logic
         public override void StateUpdate()
         {
         }
-        
+
         public void GoToJoinGame()
         {
             ClientStateManager.Instance.PushScene(m_clientGameSearch);
@@ -46,6 +46,12 @@ namespace ubv.client.logic
         public void GoBackToPreviousState()
         {
             ClientStateManager.Instance.PopState();
+        }
+
+        public void GoToLobby(string lobbyID)
+        {
+            data.LoadingData.GameID = lobbyID;
+            GoToJoinGame();
         }
     }   
 }

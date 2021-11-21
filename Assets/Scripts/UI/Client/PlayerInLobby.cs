@@ -25,10 +25,10 @@ namespace ubv.ui.client
         {
             m_character.text = character.Name;
             m_username.text = user.UserName;
-            string statusText = "NOT READY";
+            string statusText = "EN ATTENTE";
             if (user.Ready)
             {
-                statusText = "READY";
+                statusText = "PRÊT";
             }
             m_status.text = statusText;
 
