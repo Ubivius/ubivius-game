@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2656123850511472361}
   - component: {fileID: 1696493609957149189}
   - component: {fileID: 2639211009317505095}
+  - component: {fileID: 1860965694748860274}
   m_Layer: 9
   m_Name: SimpleEnemyServer
   m_TagString: Untagged
@@ -120,6 +121,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1562b3f3c35d14748a1bf15a2cef2e43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MaxHealthPoint: 100
+  DamagePoint: 25
 --- !u!114 &686873656258829070
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,3 +180,15 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.2
+--- !u!114 &1860965694748860274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 686873656258829074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76e7927c83cba0842b359bc7b2d32a4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
