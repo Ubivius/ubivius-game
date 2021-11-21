@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 
 namespace ubv.ui.client
 {
@@ -11,6 +12,7 @@ namespace ubv.ui.client
         [SerializeField] private Button m_createButton;
         [SerializeField] private Button m_joinButton;
         [SerializeField] private CharacterPickerUI m_characterPicker;
+        [SerializeField] private TMP_InputField m_serverID;
         private EventSystem system;
 
         private void Awake()
@@ -47,6 +49,11 @@ namespace ubv.ui.client
         public void Back()
         {
             m_characterSelectState.GoBackToPreviousState();
+        }
+
+        public void GoToLobby()
+        {
+            this.m_characterSelectState.GoToLobby(m_serverID.text);
         }
     }
 }

@@ -27,7 +27,6 @@ namespace ubv.server.logic
 
         private void Awake()
         {
-            Debug.Log("Pathfinding manager started");
             m_worldGenerator.OnWorldGenerated += OnWorldGenerated;            
         }
 
@@ -44,7 +43,6 @@ namespace ubv.server.logic
 
         public void SetPathNodesFromLogicGrid(LogicGrid logicGrid)
         {
-            Debug.Log("Set PathNodes From LogicGrid");
             m_cellToNodes = new Dictionary<common.world.cellType.LogicCell, PathNode>();
             m_logicGrid = logicGrid;
             m_pathNodes = new PathNode[m_logicGrid.Width, m_logicGrid.Height];
@@ -86,8 +84,8 @@ namespace ubv.server.logic
 
         public PathNode GetNode(float x, float y)
         {
-            int xi = Mathf.RoundToInt(x);
-            int yi = Mathf.RoundToInt(y);
+            int xi = Mathf.FloorToInt(x);
+            int yi = Mathf.FloorToInt(y);
 
             if (xi >= 0 && yi >= 0 && xi < m_logicGrid.Width && yi < m_logicGrid.Height)
             {
@@ -140,14 +138,14 @@ namespace ubv.server.logic
                 return;
             }
             
-            for(int x = -1; x < 1; x++)
+            for(int x = -1; x <= 1; x++)
             {
-                for (int y = -1; y < 1; y++)
+                for (int y = -1; y <= 1; y++)
                 {
                     PathNode node = GetNodeIfWalkable(p.x + x, p.y + y);
                     if (node != null && node != p)
                     {
-                        if (IsPathPossible(p, node))
+                        if (IsNeighbourPathPossible(p, node))
                             p.AddNeighbour(node);
                     }
                 }
@@ -159,7 +157,7 @@ namespace ubv.server.logic
             }
         }
 
-        private bool IsPathPossible(PathNode origin, PathNode goal)
+        private bool IsNeighbourPathPossible(PathNode origin, PathNode goal)
         {
             if (origin.x == goal.x || origin.y == goal.y) return true;
 
@@ -174,8 +172,8 @@ namespace ubv.server.logic
 
         public PathNode GetNodeIfWalkable(float x, float y)
         {
-            int xi = Mathf.RoundToInt(x);
-            int yi = Mathf.RoundToInt(y);
+            int xi = Mathf.FloorToInt(x);
+            int yi = Mathf.FloorToInt(y);
 
             if (xi >= 0 && yi >= 0 && xi < m_logicGrid.Width && yi < m_logicGrid.Height)
             {
@@ -202,7 +200,11 @@ namespace ubv.server.logic
 
             List<PathNode> pathNodeList = this.GetPath(startNode, endNode);
 
-            return new PathRoute(pathNodeList, m_worldOrigin, m_nodeSize);
+            if (pathNodeList != null)
+            {
+                return new PathRoute(pathNodeList, m_worldOrigin, m_nodeSize);
+            }
+            return null;
         }
 
         private void UpdateNeighboursOnCellChange(common.world.cellType.LogicCell cell)
