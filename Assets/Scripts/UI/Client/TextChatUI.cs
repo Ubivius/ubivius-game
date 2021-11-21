@@ -206,7 +206,7 @@ namespace ubv.ui.client
                 }
                 else
                 {
-                    m_socialServices.SendMessageToCurrentGameChat(t_matchFriend.Groups[3].Value, null, (string message) => {
+                    m_socialServices.SendMessageToCurrentGameChat(m_messageInputField.text, null, (string message) => {
                         m_errorMessageQueue.Enqueue(message);
                     });
                 }

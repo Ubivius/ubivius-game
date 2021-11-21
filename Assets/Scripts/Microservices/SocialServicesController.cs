@@ -149,12 +149,12 @@ namespace ubv.microservices
 
         public void SendMessageToCurrentGameChat(string message, UnityAction success = default, UnityAction<string> fail = default)
         {
-            if (true) // if (on a pas encore de general chat) (va être avec dispatcher)
+            if (string.IsNullOrEmpty(client.data.LoadingData.GameChatID))
             {
                 fail?.Invoke("Cannot send to game chat - you are not in a game yet");
                 return;
             }
-            SendMessageToConversation("placeholder-general-chat", message, success, fail);
+            SendMessageToConversation(client.data.LoadingData.GameChatID, message, success, fail);
         }
 
         public void SendMessageToConversation(string conversationID, string message, UnityAction successCallback = default, UnityAction<string> failCallback = default)

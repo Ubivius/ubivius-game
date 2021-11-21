@@ -8,6 +8,7 @@ using ubv.common.data;
 using ubv.common.serialization;
 using ubv.common;
 using ubv.utils;
+using ubv.microservices;
 
 namespace ubv.server.logic
 {
@@ -29,6 +30,7 @@ namespace ubv.server.logic
 
         private SubState m_currentSubState;
 
+        [SerializeField] private TextChatService m_textChatService;
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
 
         private Dictionary<int, common.serialization.types.String> m_clientCharacters;
@@ -36,6 +38,8 @@ namespace ubv.server.logic
 
         private HashSet<int> m_readyClients;
         private HashSet<int> m_worldLoadedClients;
+
+        private string m_conversationID;
 
         [SerializeField] private List<ServerInitializer> m_serverInitializers;
         
@@ -66,7 +70,14 @@ namespace ubv.server.logic
                 initializer.Init();
             }
 
-            Debug.Log("Testing server in cluster");
+            m_textChatService.CreateNewConversation("default-game-id", new string[0], OnConversationCreated);
+        }
+
+        private void OnConversationCreated(string conversationID)
+        {
+            Debug.Log("Creating conversation :" + conversationID);
+            // mark as READY for agones
+            m_conversationID = conversationID;
         }
         
         private bool EveryoneIsReady()
@@ -164,6 +175,7 @@ namespace ubv.server.logic
                 status.GameStatus.Value = (uint)ServerStatusMessage.ServerStatus.STATUS_LOBBY;
                 status.AcceptsNewPlayers.Value = m_currentSubState == SubState.SUBSTATE_WAITING_FOR_PLAYERS && m_activeClients.Count < 4;
                 status.CharacterID.Value = m_clientCharacters.ContainsKey(playerID) ? m_clientCharacters[playerID].Value : string.Empty;
+                status.GameChatID.Value = m_conversationID;
                 m_serverConnection.TCPServer.Send(status.GetBytes(), playerID);
                 return;
             }

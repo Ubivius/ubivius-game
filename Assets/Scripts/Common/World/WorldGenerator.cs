@@ -226,8 +226,7 @@ namespace ubv.common.world
                  } while (m_pathfinder.GetNodeIfWalkable(pos.x, pos.y) == null
                           || m_pathfinder.GetPathRoute(pos, GetCentralPiecePos()) != null
                            || m_pathfinder.GetPathRoute(pos, GetFinalButtonPos()) != null);
-
-                Debug.Log("Adding new enemy possible spawn: " + pos);
+                
                 m_enemySpawnPositions.Add(pos);
             }
         }
