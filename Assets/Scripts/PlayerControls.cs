@@ -65,6 +65,14 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""OpenMenu"",
+                    ""type"": ""Button"",
+                    ""id"": ""62c25435-efe7-40d5-a69a-48c5167a5098"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -221,6 +229,28 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""action"": ""Aim"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f68426f9-e9fa-4f5e-8242-74d7ab9588fb"",
+                    ""path"": ""<Gamepad>/start"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""gamepad"",
+                    ""action"": ""OpenMenu"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b70a48ba-99dd-48d1-bc34-257c6df64043"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""keyboard"",
+                    ""action"": ""OpenMenu"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -280,6 +310,14 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""name"": ""RightTrigger"",
                     ""type"": ""Button"",
                     ""id"": ""4819ef67-55e1-4b77-8e3d-e93e75a4e10a"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
+                    ""name"": ""CloseMenu"",
+                    ""type"": ""Button"",
+                    ""id"": ""90b77781-44fc-4a4d-bca7-81182039e37e"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
@@ -472,6 +510,28 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""action"": ""Right"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""df9c59f5-430f-4ab5-9555-89e41d328d91"",
+                    ""path"": ""<Gamepad>/start"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""gamepad"",
+                    ""action"": ""CloseMenu"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7cef3217-40ef-489b-8b4b-b4a5b6138e2b"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""keyboard"",
+                    ""action"": ""CloseMenu"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -535,6 +595,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         m_Gameplay_Shoot = m_Gameplay.FindAction("Shoot", throwIfNotFound: true);
         m_Gameplay_Interact = m_Gameplay.FindAction("Interact", throwIfNotFound: true);
         m_Gameplay_Aim = m_Gameplay.FindAction("Aim", throwIfNotFound: true);
+        m_Gameplay_OpenMenu = m_Gameplay.FindAction("OpenMenu", throwIfNotFound: true);
         // Menu
         m_Menu = asset.FindActionMap("Menu", throwIfNotFound: true);
         m_Menu_Down = m_Menu.FindAction("Down", throwIfNotFound: true);
@@ -544,6 +605,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         m_Menu_Back = m_Menu.FindAction("Back", throwIfNotFound: true);
         m_Menu_LeftTrigger = m_Menu.FindAction("LeftTrigger", throwIfNotFound: true);
         m_Menu_RightTrigger = m_Menu.FindAction("RightTrigger", throwIfNotFound: true);
+        m_Menu_CloseMenu = m_Menu.FindAction("CloseMenu", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -599,6 +661,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
     private readonly InputAction m_Gameplay_Shoot;
     private readonly InputAction m_Gameplay_Interact;
     private readonly InputAction m_Gameplay_Aim;
+    private readonly InputAction m_Gameplay_OpenMenu;
     public struct GameplayActions
     {
         private @PlayerControls m_Wrapper;
@@ -609,6 +672,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         public InputAction @Shoot => m_Wrapper.m_Gameplay_Shoot;
         public InputAction @Interact => m_Wrapper.m_Gameplay_Interact;
         public InputAction @Aim => m_Wrapper.m_Gameplay_Aim;
+        public InputAction @OpenMenu => m_Wrapper.m_Gameplay_OpenMenu;
         public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -636,6 +700,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Aim.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnAim;
                 @Aim.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnAim;
                 @Aim.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnAim;
+                @OpenMenu.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnOpenMenu;
+                @OpenMenu.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnOpenMenu;
+                @OpenMenu.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnOpenMenu;
             }
             m_Wrapper.m_GameplayActionsCallbackInterface = instance;
             if (instance != null)
@@ -658,6 +725,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Aim.started += instance.OnAim;
                 @Aim.performed += instance.OnAim;
                 @Aim.canceled += instance.OnAim;
+                @OpenMenu.started += instance.OnOpenMenu;
+                @OpenMenu.performed += instance.OnOpenMenu;
+                @OpenMenu.canceled += instance.OnOpenMenu;
             }
         }
     }
@@ -673,6 +743,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
     private readonly InputAction m_Menu_Back;
     private readonly InputAction m_Menu_LeftTrigger;
     private readonly InputAction m_Menu_RightTrigger;
+    private readonly InputAction m_Menu_CloseMenu;
     public struct MenuActions
     {
         private @PlayerControls m_Wrapper;
@@ -684,6 +755,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         public InputAction @Back => m_Wrapper.m_Menu_Back;
         public InputAction @LeftTrigger => m_Wrapper.m_Menu_LeftTrigger;
         public InputAction @RightTrigger => m_Wrapper.m_Menu_RightTrigger;
+        public InputAction @CloseMenu => m_Wrapper.m_Menu_CloseMenu;
         public InputActionMap Get() { return m_Wrapper.m_Menu; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -714,6 +786,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @RightTrigger.started -= m_Wrapper.m_MenuActionsCallbackInterface.OnRightTrigger;
                 @RightTrigger.performed -= m_Wrapper.m_MenuActionsCallbackInterface.OnRightTrigger;
                 @RightTrigger.canceled -= m_Wrapper.m_MenuActionsCallbackInterface.OnRightTrigger;
+                @CloseMenu.started -= m_Wrapper.m_MenuActionsCallbackInterface.OnCloseMenu;
+                @CloseMenu.performed -= m_Wrapper.m_MenuActionsCallbackInterface.OnCloseMenu;
+                @CloseMenu.canceled -= m_Wrapper.m_MenuActionsCallbackInterface.OnCloseMenu;
             }
             m_Wrapper.m_MenuActionsCallbackInterface = instance;
             if (instance != null)
@@ -739,6 +814,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @RightTrigger.started += instance.OnRightTrigger;
                 @RightTrigger.performed += instance.OnRightTrigger;
                 @RightTrigger.canceled += instance.OnRightTrigger;
+                @CloseMenu.started += instance.OnCloseMenu;
+                @CloseMenu.performed += instance.OnCloseMenu;
+                @CloseMenu.canceled += instance.OnCloseMenu;
             }
         }
     }
@@ -778,6 +856,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         void OnShoot(InputAction.CallbackContext context);
         void OnInteract(InputAction.CallbackContext context);
         void OnAim(InputAction.CallbackContext context);
+        void OnOpenMenu(InputAction.CallbackContext context);
     }
     public interface IMenuActions
     {
@@ -788,5 +867,6 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         void OnBack(InputAction.CallbackContext context);
         void OnLeftTrigger(InputAction.CallbackContext context);
         void OnRightTrigger(InputAction.CallbackContext context);
+        void OnCloseMenu(InputAction.CallbackContext context);
     }
 }
