@@ -183,7 +183,6 @@ namespace ubv.client.logic
         public void LeaveGame()
         {
             m_currentSubState = SubState.SUBSTATE_LEAVING;
-            StateUpdate();
         }
 
         private void UpdateStateFromWorldAndStep(ref WorldState state, InputFrame input, float deltaTime)
