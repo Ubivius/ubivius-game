@@ -20,14 +20,14 @@ namespace ubv.server.logic
 
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, EnemyMovementUpdater> m_enemyMovementUpdaters;
-        private Dictionary<int, EnemyMain> m_enemyMain;
+        private Dictionary<int, EnemyMainServer> m_enemyMain;
 
         public override void Setup()
         {
             m_bodies = new Dictionary<int, Rigidbody2D>();
             m_enemies = new Dictionary<int, EnemyState>();
             m_enemyMovementUpdaters = new Dictionary<int, EnemyMovementUpdater>();
-            m_enemyMain = new Dictionary<int, EnemyMain>();
+            m_enemyMain = new Dictionary<int, EnemyMainServer>();
         }
 
         public override void InitWorld(WorldState state)
@@ -101,7 +101,7 @@ namespace ubv.server.logic
                     EnemyMovementUpdater enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyMovementUpdater>();
                     enemyPathFindingMovement.SetPathfinding(m_pathfindingGridManager);
 
-                    EnemyMain enemyMain = enemyGameObject.GetComponent<EnemyMain>();
+                    EnemyMainServer enemyMain = enemyGameObject.GetComponent<EnemyMainServer>();
 
                     int id = System.Guid.NewGuid().GetHashCode();
                     body.name = "Server enemy " + id.ToString();

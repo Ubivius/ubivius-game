@@ -20,13 +20,13 @@ namespace ubv.client.logic
         
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, EnemyState> m_enemies;
-        private Dictionary<int, EnemyMain> m_enemyMain;
+        private Dictionary<int, EnemyMainClient> m_enemyMain;
         
         public override void Init(WorldState clientState, int localID)
         {
             m_enemies = new Dictionary<int, EnemyState>();
             m_bodies = new Dictionary<int, Rigidbody2D>();
-            m_enemyMain = new Dictionary<int, EnemyMain>();
+            m_enemyMain = new Dictionary<int, EnemyMainClient>();
         }
 
         public override bool IsPredictionWrong(WorldState localState, WorldState remoteState)
@@ -47,12 +47,14 @@ namespace ubv.client.logic
             List<int> toRemove = new List<int>();
             foreach (EnemyState enemy in state.Enemies().Values)
             {
-                enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
-                enemy.HealthPoint.Value = m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint();
-
                 if(!m_enemies.ContainsKey(enemy.GUID.Value))
                 {
                     toRemove.Add(enemy.GUID.Value);
+                }
+                else
+                {
+                    enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
+                    enemy.HealthPoint.Value = m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint();
                 }
             }
             
@@ -99,7 +101,7 @@ namespace ubv.client.logic
                     m_bodies[enemy.GUID.Value] = enemyGameObject.GetComponent<Rigidbody2D>();
                     m_bodies[enemy.GUID.Value].name = "Client enemy " + enemy.GUID.Value.ToString();
 
-                    m_enemyMain[enemy.GUID.Value] = enemyGameObject.GetComponent<EnemyMain>();
+                    m_enemyMain[enemy.GUID.Value] = enemyGameObject.GetComponent<EnemyMainClient>();
                 }
                 m_enemies[enemy.GUID.Value] = enemy;
             }
@@ -135,6 +137,18 @@ namespace ubv.client.logic
             foreach (Rigidbody2D body in m_bodies.Values)
             {
                 body.simulated = true;
+            }
+        }
+
+        bool IsEnemyAlive(int id)
+        {
+            if (m_enemies[id] == null || m_bodies[id] == null || m_enemyMain[id] == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
     }
