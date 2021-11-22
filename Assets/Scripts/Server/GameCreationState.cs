@@ -126,7 +126,6 @@ namespace ubv.server.logic
 
                         m_currentSubState = SubState.SUBSTATE_GOING_TO_PLAY;
 
-                        m_agones.AllocateGameServer();
                         m_gameplayState.Init(m_clientCharacters);
                         ChangeState(m_gameplayState);
                     }
@@ -198,6 +197,10 @@ namespace ubv.server.logic
                     {
                         if (!string.IsNullOrEmpty(lobbyEnter.CharacterID.Value))
                         {
+                            if(m_activeClients.Count == 0)
+                            {
+                                m_agones.AllocateGameServer();
+                            }
                             m_intToStringUserIDs[playerID] = lobbyEnter.StringPlayerID.Value;
 #if DEBUG_LOG
                             Debug.Log("Adding character " + lobbyEnter.CharacterID.Value + " to player " + playerID);
