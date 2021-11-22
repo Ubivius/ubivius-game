@@ -121,7 +121,7 @@ namespace ubv.client.logic
             }
             else
             {
-                DispatcherService.RequestNewServer(OnServerInfoReceived, OnDispatcherFail);
+                DispatcherService.RequestNewServerInfo(OnServerInfoReceived, OnDispatcherFail);
             }
         }
 
@@ -174,6 +174,7 @@ namespace ubv.client.logic
                 ServerStatusMessage status = common.serialization.IConvertible.CreateFromBytes<ServerStatusMessage>(packet.Data.ArraySegment());
                 if(status != null)
                 {
+                    data.LoadingData.GameChatID = status.GameChatID.Value;
                     if (!status.PlayerID.Value.Equals(CurrentUser.ID))
                     {
 #if DEBUG_LOG

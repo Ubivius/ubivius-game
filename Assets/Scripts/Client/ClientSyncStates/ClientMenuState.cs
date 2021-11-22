@@ -22,7 +22,7 @@ namespace ubv.client
                 {
                     data.ClientCacheData.SaveCache(string.Empty);
                 }
-                else if (!cache.LastGameID.Equals(string.Empty))
+                else if (cache.LastGameID != null && !cache.LastGameID.Equals(string.Empty))
                 {
                     data.LoadingData.GameID = cache.LastGameID;
                     // for now, auto rejoin

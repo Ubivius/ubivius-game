@@ -179,7 +179,12 @@ namespace ubv.client.logic
                     break;
             }
         }
-        
+
+        public void LeaveGame()
+        {
+            m_currentSubState = SubState.SUBSTATE_LEAVING;
+        }
+
         private void UpdateStateFromWorldAndStep(ref WorldState state, InputFrame input, float deltaTime)
         {
             for (int i = 0; i < m_updaters.Count; i++)
