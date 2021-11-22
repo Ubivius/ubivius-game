@@ -28,7 +28,7 @@ namespace ubv.ui.client
             string statusText = "EN ATTENTE";
             if (user.Ready)
             {
-                statusText = "PRÊT";
+                statusText = "PRET";
             }
             m_status.text = statusText;
 

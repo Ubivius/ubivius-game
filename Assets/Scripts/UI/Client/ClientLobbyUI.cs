@@ -43,6 +43,7 @@ namespace ubv.ui.client
         {
             base.Start();
             m_socialServices = ubv.client.logic.ClientNetworkingManager.Instance.SocialServices;
+            m_socialServices.UpdateUserStatus(StatusType.InLobby);
             m_activeUser = m_lobby.GetActiveUser();
             m_lobby.OnClientCharacterListUpdate += UpdatePlayers;
             m_lobby.OnReadyClientSetUpdate += UpdateReadiness;
