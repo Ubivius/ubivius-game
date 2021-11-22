@@ -6,26 +6,31 @@ using UnityEngine.Events;
 
 public class HealthSystem
 {
-    public UnityEvent OnHealthChanged;
-    public UnityEvent OnDead;
+    public UnityAction OnHealthChanged;
+    public UnityAction OnDead;
 
     private int m_healthMax;
     private int m_health;
 
     public HealthSystem(int healthMax) 
     {
-        this.m_healthMax = healthMax;
-        this.m_health = healthMax;
+        m_healthMax = healthMax;
+        m_health = healthMax;
+    }
 
-        if (OnHealthChanged == null)
-        {
-            OnHealthChanged = new UnityEvent();
-        }
+    public int GetHealthPoint()
+    {
+        return m_health;
     }
         
     public float GetHealthPercent() 
     {
         return (float)m_health / m_healthMax;
+    }
+
+    public void SetHealthPoint(int healthPoint)
+    {
+        m_health = healthPoint;
     }
 
     public void Damage(int amount) 
@@ -36,17 +41,17 @@ public class HealthSystem
             m_health = 0;
         }
 
-        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke();
+        OnHealthChanged?.Invoke();
 
         if (m_health <= 0) 
         {
-            this.Die();
+            Die();
         }
     }
 
     public void Die() 
     {
-        if (this.OnDead != null) this.OnDead.Invoke();
+        OnDead?.Invoke();
     }
 
     public void Heal(int amount) 
@@ -57,6 +62,6 @@ public class HealthSystem
             m_health = m_healthMax;
         }
 
-        if (this.OnHealthChanged != null) this.OnHealthChanged.Invoke();
+        OnHealthChanged?.Invoke();
     }
 }
