@@ -16,3 +16,12 @@ MonoBehaviour:
   UserName: murphy
   CharacterID: murphy-character-id
   CharacterName: mock-simpson
+  GameID: defaultgameid
+  ServerTCPAddress: 127.0.0.1
+  ServerUDPAddress: 127.0.0.1
+  ServerTCPPort: 9151
+  ServerUDPPort: 9150
+  Alive: 0
+  GamesPlayed: 0
+  EnemiesKilled: 0
+  GamesWon: 0

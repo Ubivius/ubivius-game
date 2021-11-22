@@ -11,25 +11,34 @@ namespace ubv
             public class InputFrame : serialization.Serializable
             {
                 public serialization.types.Bool Sprinting;
+                public serialization.types.Bool Shooting;
+                public serialization.types.Vector2 ShootingDirection;
                 public serialization.types.Vector2 Movement;
+                public serialization.types.Bool Interact;
                 public NetInfo Info;
 
                 public InputFrame()
                 {
                     Sprinting = new serialization.types.Bool(false);
+                    Shooting = new serialization.types.Bool(false);
+                    ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     Movement = new serialization.types.Vector2(Vector2.zero);
+                    Interact = new serialization.types.Bool(false);
                     Info = new NetInfo(0);
 
-                    InitSerializableMembers(Sprinting, Movement, Info);
+                    InitSerializableMembers(Sprinting, Shooting, ShootingDirection, Movement, Interact, Info);
                 }
 
-                public InputFrame(bool sprinting, Vector2 movement, long time, int tick)
+                public InputFrame(bool sprinting, bool shooting, Vector2 shootingDirection, Vector2 movement, long time, int tick)
                 {
                     Sprinting = new serialization.types.Bool(sprinting);
+                    Shooting = new serialization.types.Bool(shooting);
+                    ShootingDirection = new serialization.types.Vector2(shootingDirection);
                     Movement = new serialization.types.Vector2(movement);
+                    Interact = new serialization.types.Bool(false);
                     Info = new NetInfo(tick);
 
-                    InitSerializableMembers(Sprinting, Movement, Info);
+                    InitSerializableMembers(Sprinting, Shooting, ShootingDirection, Movement, Interact, Info);
                 }
                 
 
@@ -37,6 +46,9 @@ namespace ubv
                 {
                     Movement.Value = Vector2.zero;
                     Sprinting.Value = false;
+                    Interact.Value = false;
+                    Shooting.Value = false;
+                    ShootingDirection.Value = Vector2.zero;
                 }
                 
                 protected override ID.BYTE_TYPE SerializationID()

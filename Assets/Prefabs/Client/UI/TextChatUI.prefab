@@ -475,8 +475,8 @@ MonoBehaviour:
   m_Padding:
     m_Left: 10
     m_Right: 10
-    m_Top: 0
-    m_Bottom: 0
+    m_Top: 5
+    m_Bottom: 5
   m_ChildAlignment: 6
   m_Spacing: 5
   m_ChildForceExpandWidth: 1
@@ -511,7 +511,7 @@ GameObject:
   - component: {fileID: 1524123814079555449}
   - component: {fileID: 1524123814079555453}
   m_Layer: 5
-  m_Name: TextChat
+  m_Name: TextChatUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -561,20 +561,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d93a080b67c10b74097f101cc392fa04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_socialServices: {fileID: 0}
   m_messagesBox: {fileID: 1524123813941880249}
   m_chatBox: {fileID: 1932149009117155696}
   m_scrollbar: {fileID: 6989387292528122010}
   m_messageInputField: {fileID: 1524123813768451549}
   m_messagePrefab: {fileID: 6319124753176951157, guid: 9eb7326fd59aef84c80a7f24c9987e89,
     type: 3}
-  m_eventSystem: {fileID: 0}
   m_sendButton: {fileID: 6989387293229352491}
   m_showButton: {fileID: 2949437867680968452}
   m_hideButton: {fileID: 7346157229167944978}
   m_shrinkButton: {fileID: 6989387292560292446}
   m_expandButton: {fileID: 6989387293638258799}
   m_privateColor: {r: 0, g: 1, b: 0.9525311, a: 1}
-  m_defaultColor: {r: 1, g: 0.5707547, b: 0.5707547, a: 1}
+  m_defaultColor: {r: 1, g: 0.78305614, b: 0.43867922, a: 1}
+  m_ErrorColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &1524123814133938906
 GameObject:
   m_ObjectHideFlags: 0

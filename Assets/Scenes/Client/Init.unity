@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55b2dbc7bfb9f9845a0420010f7e64c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_loadingScreen: {fileID: 2097583750}
+  m_loadingScreenUI: {fileID: 1954187830}
   m_startingScene: ClientLogin
 --- !u!1 &1118717361
 GameObject:
@@ -207,10 +207,56 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1877816070}
-  - {fileID: 2097583751}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1651257018
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1651257019}
+  - component: {fileID: 1651257020}
+  m_Layer: 0
+  m_Name: Achievements
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1651257019
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651257018}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1877816070}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1651257020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651257018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6dd81c489e2301d4d8973e6f01a2c25c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_mock: 0
+  m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
+  m_HTTPClient: {fileID: 1877816073}
+  m_serviceEndpoint: http://achievements.dev.ubivius.tk
 --- !u!1001 &1877816069
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -218,6 +264,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1118717364}
     m_Modifications:
+    - target: {fileID: 1124455532151190757, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1424532028110512240, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 1584834600499235231, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_TCPClient
@@ -308,6 +364,26 @@ PrefabInstance:
       propertyPath: m_serverAddress
       value: 192.168.0.141
       objectReference: {fileID: 0}
+    - target: {fileID: 1584834601242082870, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1584834601926501234, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2306795571984995539, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_TCPTimeout
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 2306795571984995539, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_UDPTimeout
+      value: 30
+      objectReference: {fileID: 0}
     - target: {fileID: 2629458355001083077, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: User
@@ -323,6 +399,31 @@ PrefabInstance:
       propertyPath: SocialServices
       value: 
       objectReference: {fileID: 1877816071}
+    - target: {fileID: 2833739906713535996, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2971893872073089457, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4058432572729070908, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_timerOffset
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4058432572729070908, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_conversationFetchInterval
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4120744887446643272, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: AutoReconnect
@@ -343,6 +444,11 @@ PrefabInstance:
       propertyPath: m_connectionKeepAliveIntervalMS
       value: 1000
       objectReference: {fileID: 0}
+    - target: {fileID: 5980181654224121731, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_mock
@@ -362,6 +468,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_serviceEndpoint
       value: http://auth.anon.dev.ubivius.tk
+      objectReference: {fileID: 0}
+    - target: {fileID: 6292887063064703510, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 6443474415815815136, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_timerOffset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6443474415815815136, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_conversationFetchInterval
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -446,13 +567,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
+      propertyPath: m_serviceEndpoint
+      value: 172.105.110.175
+      objectReference: {fileID: 0}
+    - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
       propertyPath: m_serverTCPAddress
-      value: 10.238.173.51
+      value: 127.0.0.1
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serverUDPAddress
-      value: 10.238.173.51
+      value: 127.0.0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7676663511256152388, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -479,6 +610,11 @@ PrefabInstance:
       propertyPath: m_serviceEndpoint
       value: http://user.dev.ubivius.tk
       objectReference: {fileID: 0}
+    - target: {fileID: 8156371440444099849, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 8253229592228528839, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_auth
@@ -503,12 +639,17 @@ PrefabInstance:
     - target: {fileID: 8253229592228528839, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://friendslist.dev.ubivius.tk/
+      value: http://friendslist.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_Name
       value: TCPClient
+      objectReference: {fileID: 0}
+    - target: {fileID: 9190401287086597186, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6337505888355199336, guid: c732e1b58c017874bbf5da45531902cf, type: 3}
@@ -616,13 +757,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56f55256fc4a6704eafd0dd78732d19e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1001 &2097583749
+--- !u!1001 &1954187829
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 1118717364}
+    m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 243060326930419941, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.505
+      objectReference: {fileID: 0}
+    - target: {fileID: 243060326930419941, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_Pivot.x
@@ -636,7 +787,7 @@ PrefabInstance:
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
@@ -681,7 +832,7 @@ PrefabInstance:
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 84.51459
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
@@ -691,27 +842,27 @@ PrefabInstance:
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -637.4582
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -311.42993
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
@@ -733,23 +884,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: LoadingCanvas
       objectReference: {fileID: 0}
+    - target: {fileID: 7336287852514340380, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cdbd62b2c6d1d6c4e92c9373112f7879, type: 3}
---- !u!114 &2097583750 stripped
+--- !u!114 &1954187830 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 317767094960396312, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+  m_CorrespondingSourceObject: {fileID: 7336287852514340358, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
     type: 3}
-  m_PrefabInstance: {fileID: 2097583749}
+  m_PrefabInstance: {fileID: 1954187829}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fb83e50f5a6dde468b41a05494d202f, type: 3}
+  m_Script: {fileID: 11500000, guid: 4c89c84bc9d8aa0459b7d9a0c9e1e179, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!224 &2097583751 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
-    type: 3}
-  m_PrefabInstance: {fileID: 2097583749}
-  m_PrefabAsset: {fileID: 0}

@@ -10,40 +10,78 @@ namespace ubv.microservices
     {
         [SerializeField]
         private MicroserviceAutoFetcher m_messagesFetcher;
-
-        [SerializeField]
-        private FriendsListService m_friends;
-
-        private Dictionary<string, string> m_cachedUsers;
+        
         // conversationID, messages
         private Dictionary<string, Dictionary<string, MessageInfo>> m_cachedConversations;
 
+        private int m_activeRequestCount;
+
         public bool IsFetcherActive;
-        // userID, msgInfo
-        public UnityAction<string, MessageInfo> OnNewMessageFrom;
+        // conversationID, msgInfo
+        public UnityAction<string, MessageInfo> OnNewMessageInConversation;
+
         private void Awake()
         {
+            m_activeRequestCount = 0;
             IsFetcherActive = false;
             m_cachedConversations = new Dictionary<string, Dictionary<string, MessageInfo>>();
-            m_cachedUsers = new Dictionary<string, string>();
             m_messagesFetcher.FetchLogic += FetchNewMessages;
         }
 
+        public void AddConversationToCache(string conversationID)
+        {
+            this.Request(new GetMessagesRequest(conversationID, (MessageInfo[] msgs) =>
+            {
+                RefreshConversation(conversationID, new List<MessageInfo>(msgs), false);
+            }));
+        }
+        
+        public void GetMessagesFromConversation(string conversationID, UnityAction<Dictionary<string, MessageInfo>> OnGetMessages)
+        {
+            this.Request(new GetMessagesRequest(conversationID, (MessageInfo[] msgs) =>
+            {
+                RefreshConversation(conversationID, new List<MessageInfo>(msgs), false);
+                OnGetMessages(m_cachedConversations[conversationID]);
+            }));
+        }
+        
         private void FetchNewMessages()
         {
-            if (!IsFetcherActive)
+            if (!IsFetcherActive || m_cachedConversations.Count == 0)
+            {
+                m_messagesFetcher.ReadyForNewFetch();
                 return;
+            }
 
             foreach (string conversationID in m_cachedConversations.Keys)
             {
-                this.Request(new GetMessagesRequest(conversationID, (MessageInfo[] msgs) => 
+                lock (m_requestLock)
                 {
+                    m_activeRequestCount++;
+                }
+                this.Request(new GetMessagesRequest(conversationID, (MessageInfo[] msgs) =>
+                {
+                    lock (m_requestLock)
+                    {
+                        m_activeRequestCount--;
+                    }
+                    if (m_activeRequestCount == 0)
+                    {
+                        m_messagesFetcher.ReadyForNewFetch();
+                    }
                     RefreshConversation(conversationID, new List<MessageInfo>(msgs));
                 }));
             }
         }
 
-        private void RefreshConversation(string conversationID, List<MessageInfo> messages)
+        /// <summary>
+        /// Updates the conversations, caching it if not already locally cached, and
+        /// callbacks OnNewMessages if enabled
+        /// </summary>
+        /// <param name="conversationID"></param>
+        /// <param name="messages"></param>
+        /// <param name="callUpdateCallback"></param>
+        private void RefreshConversation(string conversationID, List<MessageInfo> messages, bool callUpdateCallback = true)
         {
             if (!m_cachedConversations.ContainsKey(conversationID))
             {
@@ -54,16 +92,18 @@ namespace ubv.microservices
             {
                 return;
             }
-            
-            foreach(MessageInfo msg in messages)
+
+            foreach (MessageInfo msg in messages)
             {
                 if (!m_cachedConversations[conversationID].ContainsKey(msg.MessageID))
                 {
                     m_cachedConversations[conversationID].Add(msg.MessageID, msg);
-                    OnNewMessageFrom.Invoke(msg.UserID, msg);
+                    if (callUpdateCallback)
+                    {
+                        OnNewMessageInConversation.Invoke(conversationID, msg);
+                    }
                 }
             }
-            m_messagesFetcher.ReadyForNewFetch();
         }
 
         public struct JSONConversationInfo
@@ -85,7 +125,8 @@ namespace ubv.microservices
                     infos[i] = new MessageInfo(messages[i].id,
                         messages[i].user_id,
                         messages[i].conversation_id,
-                        messages[i].text);
+                        messages[i].text, 
+                        System.DateTime.Parse(messages[i].created_on.Split('.')[0]));
                 }
 
                 msgReq.Callback.Invoke(infos);
@@ -103,25 +144,9 @@ namespace ubv.microservices
             originalRequest.Callback?.Invoke();
         }
 
-        public void SendMessageTo(string currentUserID, string otherUserID, string text, UnityAction callback = default)
+        public void SendMessageToConversation(string currentUserID, string conversationID, string text, UnityAction successCallback = default, UnityAction<string> failCallback = default)
         {
-            // get le conversation id associé à la relation entre current user pis other user
-            // le cache (dans TextChat ?)
-            if (m_cachedUsers.ContainsKey(otherUserID))
-            {
-                this.Request(new PostTextChatRequest(currentUserID, m_cachedUsers[otherUserID], text, callback));
-            }
-            else
-            {
-                m_friends.GetConversationWith(currentUserID, otherUserID, (string convID) => 
-                {
-                    if (convID != null)
-                    {
-                        m_cachedUsers.Add(otherUserID, convID);
-                        this.Request(new PostTextChatRequest(currentUserID, m_cachedUsers[otherUserID], text, callback));
-                    }
-                });
-            }
+            this.Request(new PostTextChatRequest(currentUserID, conversationID, text, successCallback, failCallback));
         }
 
 #if UNITY_EDITOR
@@ -155,7 +180,11 @@ namespace ubv.microservices
                         }
                     }));
                 //}));
-            }));
+            },
+            (string err) => {
+                Debug.LogError(err);
+            }
+            ));
 
         }
 

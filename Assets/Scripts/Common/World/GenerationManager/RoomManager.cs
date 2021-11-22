@@ -126,6 +126,12 @@ namespace ubv.common.world.generationManager
                     );
                 AddRoomToSection0(myRoom, false);
             }
+
+            foreach (RoomInfo room in m_mandatoryRoomPoolBottomLeft)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(room, positionUnusedRoom, Quaternion.identity, m_grid.transform);
+                AddRoomToBottomLeft(myRoom, true);
+            }
             for (int i = 0; i < m_numberRandomRoomBottomLeft; i++)
             {
                 RoomInfo myRoom = GameObject.Instantiate(
@@ -135,6 +141,12 @@ namespace ubv.common.world.generationManager
                     m_grid.transform
                     );
                 AddRoomToBottomLeft(myRoom, false);
+            }
+
+            foreach (RoomInfo room in m_mandatoryRoomPoolTopLeft)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(room, positionUnusedRoom, Quaternion.identity, m_grid.transform);
+                AddRoomToTopLeft(myRoom, true);
             }
             for (int i = 0; i < m_numberRandomRoomTopLeft; i++)
             {
@@ -146,6 +158,12 @@ namespace ubv.common.world.generationManager
                     );
                 AddRoomToTopLeft(myRoom, false);
             }
+
+            foreach (RoomInfo room in m_mandatoryRoomPoolTopRight)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(room, positionUnusedRoom, Quaternion.identity, m_grid.transform);
+                AddRoomToTopRight(myRoom, true);
+            }
             for (int i = 0; i < m_numberRandomRoomTopRight; i++)
             {
                 RoomInfo myRoom = GameObject.Instantiate(
@@ -155,6 +173,12 @@ namespace ubv.common.world.generationManager
                     m_grid.transform
                     );
                 AddRoomToTopRight(myRoom, false);
+            }
+
+            foreach (RoomInfo room in m_mandatoryRoomPoolBottomRight)
+            {
+                RoomInfo myRoom = GameObject.Instantiate(room, positionUnusedRoom, Quaternion.identity, m_grid.transform);
+                AddRoomToBottomRight(myRoom, true);
             }
             for (int i = 0; i < m_numberRandomRoomBottomRight; i++)
             {
@@ -327,6 +351,7 @@ namespace ubv.common.world.generationManager
                 if(nbrTry == c_mandatoryTry)
                 {
                     Debug.Log("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : SECTION0 to small for mandatory room, look your sizing");
                 }
                 return new Vector2Int(-1, -1);
             }
@@ -346,6 +371,7 @@ namespace ubv.common.world.generationManager
             if (nbrTry == c_mandatoryTry)
             {
                 Debug.Log("MAP CREATION ALERT : Was not able to fit in SECTION0 mandatory room, look your sizing");
+                throw new MapCreationException("MAP CREATION ALERT : Was not able to fit in SECTION0 mandatory room, look your sizing");
             }
             return new Vector2Int(-1, -1);
         }
@@ -359,6 +385,7 @@ namespace ubv.common.world.generationManager
                 if (nbrTry == c_mandatoryTry)
                 {
                     Debug.Log("MAP CREATION ALERT : TopLeft to small for mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : TopLeft to small for mandatory room, look your sizing");
                 }
                 return new Vector2Int(-1, -1);
             }
@@ -382,6 +409,7 @@ namespace ubv.common.world.generationManager
             else if (nbrTry == c_mandatoryTry)
             {
                 Debug.Log("MAP CREATION ALERT : Was not able to fit in TOPLEFT mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : Was not able to fit in TOPLEFT mandatory room, look your sizing");
             }
             return new Vector2Int(-1, -1);
         }
@@ -395,6 +423,7 @@ namespace ubv.common.world.generationManager
                 if (nbrTry == c_mandatoryTry)
                 {
                     Debug.Log("MAP CREATION ALERT : TopRight to small for mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : TopRight to small for mandatory room, look your sizing");
                 }
                 return new Vector2Int(-1, -1);
             }
@@ -418,6 +447,7 @@ namespace ubv.common.world.generationManager
             else if (nbrTry == c_mandatoryTry)
             {
                 Debug.Log("MAP CREATION ALERT : Was not able to fit in TOPRIGHT mandatory room, look your sizing");
+                throw new MapCreationException("MAP CREATION ALERT : Was not able to fit in TOPRIGHT mandatory room, look your sizing");
             }
             return new Vector2Int(-1, -1);
         }
@@ -431,6 +461,7 @@ namespace ubv.common.world.generationManager
                 if (nbrTry == c_mandatoryTry)
                 {
                     Debug.Log("MAP CREATION ALERT : BottomLeft to small for mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : BottomLeft to small for mandatory room, look your sizing");
                 }
                 return new Vector2Int(-1, -1);
             }
@@ -454,6 +485,7 @@ namespace ubv.common.world.generationManager
             else if (nbrTry == c_mandatoryTry)
             {
                 Debug.Log("MAP CREATION ALERT : Was not able to fit in BOTTOMLEFT mandatory room, look your sizing");
+                throw new MapCreationException("MAP CREATION ALERT : Was not able to fit in BOTTOMLEFT mandatory room, look your sizing");
             }
             return new Vector2Int(-1, -1);
         }
@@ -467,6 +499,7 @@ namespace ubv.common.world.generationManager
                 if (nbrTry == c_mandatoryTry)
                 {
                     Debug.Log("MAP CREATION ALERT : BottomRight to small for mandatory room, look your sizing");
+                    throw new MapCreationException("MAP CREATION ALERT : BottomRight to small for mandatory room, look your sizing");
                 }
                 return new Vector2Int(-1, -1);
             }
@@ -490,6 +523,7 @@ namespace ubv.common.world.generationManager
             else if (nbrTry == c_mandatoryTry)
             {
                 Debug.Log("MAP CREATION ALERT : Was not able to fit in BOTTOMRIGHT mandatory room, look your sizing");
+                throw new MapCreationException("MAP CREATION ALERT : Was not able to fit in BOTTOMRIGHT mandatory room, look your sizing");
             }
             return new Vector2Int(-1, -1);
         }

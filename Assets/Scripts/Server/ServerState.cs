@@ -19,6 +19,7 @@ namespace ubv.server.logic
         static private ServerState m_currentState = null;
         static protected GameplayState m_gameplayState;
         static protected GameCreationState m_gameCreationState;
+        static protected EndGameState m_endGameState;
 
         static protected ServerConnectionManager m_serverConnection;
 

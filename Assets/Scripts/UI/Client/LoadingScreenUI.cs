@@ -2,22 +2,21 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ubv.ui.client
 {
-    public class LoadingScreenUI : MonoBehaviour
+    public class LoadingScreenUI : LoadingScreen
     {
         [SerializeField] private TextMeshProUGUI m_percentageText;
+        [SerializeField] private Slider m_progressBar;
         [SerializeField] private CanvasGroup m_canvasGroup;
-
-        [SerializeField]
-        private LoadingScreen m_loadingScreen;
 
         private float m_currentPercentage;
 
         private void Awake()
         {
-            m_loadingScreen.OnPercentageChanged += (float value) => 
+            OnPercentageChanged += (float value) => 
             {
                 m_currentPercentage = value;
             };
@@ -25,17 +24,29 @@ namespace ubv.ui.client
 
         private void Update()
         {
-            SetLoadPercentageText(m_currentPercentage);
+            SetLoadPercentage(m_currentPercentage);
         }
 
-        private void SetLoadPercentageText(float percentage)
+        private void SetLoadPercentage(float percentage)
         {
-            m_percentageText.text = (100 * percentage).ToString("00.00") + "%";
+            m_percentageText.text = (100 * percentage).ToString("00") + "%";
+            m_progressBar.value = percentage;
         }
 
         public void FadeLoadingScreen(float targetValue, float duration)
         {
             StartCoroutine(FadeLoadingScreenCoroutine(targetValue, duration));
+        }
+
+        public void FadeIn(float duration)
+        {
+            gameObject.SetActive(true);
+            StartCoroutine(FadeInCoroutine(duration));
+        }
+
+        private IEnumerator FadeInCoroutine(float duration)
+        {
+            yield return StartCoroutine(FadeLoadingScreenCoroutine(100, duration));
         }
 
         public void FadeAway(float duration)
