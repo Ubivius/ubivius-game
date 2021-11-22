@@ -51,7 +51,8 @@ namespace ubv.client.logic
                 {
                     toRemove.Add(enemy.GUID.Value);
                 }
-                else
+
+                if (IsEnemyAlive(enemy.GUID.Value))
                 {
                     enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
                     enemy.HealthPoint.Value = m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint();
@@ -68,17 +69,20 @@ namespace ubv.client.logic
         {
             foreach (EnemyState enemy in m_enemies.Values)
             {
-                if((m_bodies[enemy.GUID.Value].position - enemy.Position.Value).sqrMagnitude > m_enemySettings.Velocity * m_enemySettings.Velocity)
+                if(IsEnemyAlive(enemy.GUID.Value))
                 {
-                    m_bodies[enemy.GUID.Value].position = enemy.Position.Value;
-                }
+                    if ((m_bodies[enemy.GUID.Value].position - enemy.Position.Value).sqrMagnitude > m_enemySettings.Velocity * m_enemySettings.Velocity)
+                    {
+                        m_bodies[enemy.GUID.Value].position = enemy.Position.Value;
+                    }
 
-                if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() != enemy.HealthPoint.Value)
-                {
-                    m_enemyMain[enemy.GUID.Value].HealthSystem.SetHealthPoint(enemy.HealthPoint.Value);
-                }
+                    if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() != enemy.HealthPoint.Value)
+                    {
+                        m_enemyMain[enemy.GUID.Value].HealthSystem.SetHealthPoint(enemy.HealthPoint.Value);
+                    }
 
-                common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], enemy.Position.Value, m_enemySettings.Velocity);
+                    common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], enemy.Position.Value, m_enemySettings.Velocity);
+                }
             }
         }
 
@@ -128,7 +132,10 @@ namespace ubv.client.logic
         {
             foreach (Rigidbody2D body in m_bodies.Values)
             {
-                body.simulated = false;
+                if(body != null)
+                {
+                    body.simulated = false;
+                }
             }
         }
 
@@ -136,7 +143,10 @@ namespace ubv.client.logic
         {
             foreach (Rigidbody2D body in m_bodies.Values)
             {
-                body.simulated = true;
+                if(body !=null)
+                {
+                    body.simulated = true;
+                }
             }
         }
 
