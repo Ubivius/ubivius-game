@@ -20,7 +20,9 @@ namespace ubv.microservices
         
         public UnityAction<string> OnAuthentication;
         // sender, receiver, Message
-        public UnityAction<string, string, MessageInfo> OnNewMessage;
+        public UnityAction<string, string, MessageInfo> OnNewPrivateMessage;
+        // sender, Message
+        public UnityAction<string, MessageInfo> OnNewGeneralMessage;
         public UnityAction<string> OnNewInviteFrom;
 
         private Dictionary<string, UserInfo> m_cachedUsers;
@@ -49,22 +51,27 @@ namespace ubv.microservices
                     m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
                     m_textChat.OnNewMessageInConversation += (string conversationID, MessageInfo msg) => {
-                        if (!msg.UserID.Equals(CurrentUser.StringID))
+
+                        if (conversationID.Equals(client.data.LoadingData.GameChatID))
                         {
-                            OnNewMessage(msg.UserID, CurrentUser.StringID, msg);
+                            OnNewGeneralMessage?.Invoke(msg.UserID, msg);
+                        }
+                        else if (!msg.UserID.Equals(CurrentUser.StringID))
+                        {
+                            OnNewPrivateMessage(msg.UserID, CurrentUser.StringID, msg);
                         }
                         else
                         {
                             if (m_cachedConversationUsers.ContainsKey(conversationID))
                             {
-                                OnNewMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
+                                OnNewPrivateMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
                             }
                             else
                             {
                                 GetUserIDFromConversation(conversationID, (string friendID) => 
                                 {
                                     m_cachedConversationUsers[conversationID] = friendID;
-                                    OnNewMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
+                                    OnNewPrivateMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
                                 });
                             }
                         }
