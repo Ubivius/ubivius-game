@@ -109,6 +109,7 @@ namespace ubv.client.logic
                 }
                 m_enemies[enemy.GUID.Value] = enemy;
             }
+
             // Destroy enemies that do not exist in server
             List<int> destroyElements = new List<int>();
             foreach (int enemyKey in m_bodies.Keys)
