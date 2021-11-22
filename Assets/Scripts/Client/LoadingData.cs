@@ -15,5 +15,6 @@ namespace ubv.client.data
         static public ServerInitMessage ServerInit = null;
         static public string GameID = string.Empty;
         static public string ActiveCharacterID = string.Empty;
+        static public string GameChatID = null;
     }
 }

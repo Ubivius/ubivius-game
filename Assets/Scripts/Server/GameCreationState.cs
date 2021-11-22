@@ -8,6 +8,7 @@ using ubv.common.data;
 using ubv.common.serialization;
 using ubv.common;
 using ubv.utils;
+using ubv.microservices;
 
 namespace ubv.server.logic
 {
@@ -29,6 +30,7 @@ namespace ubv.server.logic
 
         private SubState m_currentSubState;
 
+        [SerializeField] private TextChatService m_textChatService;
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
 
         private Dictionary<int, common.serialization.types.String> m_clientCharacters;
@@ -36,6 +38,11 @@ namespace ubv.server.logic
 
         private HashSet<int> m_readyClients;
         private HashSet<int> m_worldLoadedClients;
+
+        private Dictionary<int, string> m_intToStringUserIDs;
+             
+        private string m_conversationID;
+        private string m_uniqueGameID;
 
         [SerializeField] private List<ServerInitializer> m_serverInitializers;
         
@@ -46,6 +53,7 @@ namespace ubv.server.logic
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_PLAYERS;
             ServerState.m_gameCreationState = this;
             ChangeState(this);
+            m_uniqueGameID = System.Guid.NewGuid().ToString();
         }
 
         protected override void StateStart()
@@ -55,6 +63,7 @@ namespace ubv.server.logic
 
         public void Init()
         {
+            m_intToStringUserIDs = new Dictionary<int, string>();
             m_activeClients = new HashSet<int>();
             m_clientCharacters = new Dictionary<int, common.serialization.types.String>();
 
@@ -65,8 +74,15 @@ namespace ubv.server.logic
             {
                 initializer.Init();
             }
+            
+            m_textChatService.CreateNewConversation(m_uniqueGameID, new string[0], OnConversationCreated);
+        }
 
-            Debug.Log("Testing server in cluster");
+        private void OnConversationCreated(string conversationID)
+        {
+            Debug.Log("Creating conversation :" + conversationID);
+            // mark as READY for agones
+            m_conversationID = conversationID;
         }
         
         private bool EveryoneIsReady()
@@ -164,6 +180,7 @@ namespace ubv.server.logic
                 status.GameStatus.Value = (uint)ServerStatusMessage.ServerStatus.STATUS_LOBBY;
                 status.AcceptsNewPlayers.Value = m_currentSubState == SubState.SUBSTATE_WAITING_FOR_PLAYERS && m_activeClients.Count < 4;
                 status.CharacterID.Value = m_clientCharacters.ContainsKey(playerID) ? m_clientCharacters[playerID].Value : string.Empty;
+                status.GameChatID.Value = m_conversationID;
                 m_serverConnection.TCPServer.Send(status.GetBytes(), playerID);
                 return;
             }
@@ -177,12 +194,14 @@ namespace ubv.server.logic
                     {
                         if (!string.IsNullOrEmpty(lobbyEnter.CharacterID.Value))
                         {
+                            m_intToStringUserIDs[playerID] = lobbyEnter.StringPlayerID.Value;
 #if DEBUG_LOG
                             Debug.Log("Adding character " + lobbyEnter.CharacterID.Value + " to player " + playerID);
 #endif // DEBUG_LOG
                             m_clientCharacters[playerID] = lobbyEnter.CharacterID;
                             m_activeClients.Add(playerID);
                             BroadcastPlayerList();
+                            m_textChatService.SetUsersOfConversation(m_conversationID, m_uniqueGameID, ActiveUsersAsStringArray(), null);
                         }
                         else
                         {
@@ -219,6 +238,19 @@ namespace ubv.server.logic
             }
         }
 
+        private string[] ActiveUsersAsStringArray()
+        {
+            string[] users = new string[m_activeClients.Count];
+
+            int i = 0;
+            foreach(int id in m_activeClients)
+            {
+                users[i++] = m_intToStringUserIDs[id];
+            }
+
+            return users;
+        }
+
         protected override void OnPlayerConnect(int playerID)
         {
             lock (m_lock)
@@ -249,6 +281,7 @@ namespace ubv.server.logic
                 m_activeClients.Remove(playerID);
                 m_readyClients.Remove(playerID);
                 m_worldLoadedClients.Remove(playerID);
+                m_textChatService.SetUsersOfConversation(m_conversationID, m_uniqueGameID, ActiveUsersAsStringArray(), null);
             }
         }
     }
