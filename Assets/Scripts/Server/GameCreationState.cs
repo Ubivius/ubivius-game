@@ -20,6 +20,9 @@ namespace ubv.server.logic
     {
         static public ServerInitMessage CachedServerInit;
 
+        [SerializeField]
+        private http.agonesServer.HTTPAgonesServer m_agones;
+
         private enum SubState
         {
             SUBSTATE_WAITING_FOR_PLAYERS = 0,
@@ -65,8 +68,8 @@ namespace ubv.server.logic
             {
                 initializer.Init();
             }
-
-            Debug.Log("Testing server in cluster");
+            // quand la conversation est créée (après le merge)
+            m_agones.ReadyGameServer();
         }
         
         private bool EveryoneIsReady()
@@ -106,7 +109,8 @@ namespace ubv.server.logic
                         m_worldLoadedClients.Clear();
 
                         m_currentSubState = SubState.SUBSTATE_GOING_TO_PLAY;
-                        
+
+                        m_agones.AllocateGameServer();
                         m_gameplayState.Init(m_clientCharacters);
                         ChangeState(m_gameplayState);
                     }
