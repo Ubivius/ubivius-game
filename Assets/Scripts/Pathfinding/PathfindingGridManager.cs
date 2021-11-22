@@ -188,7 +188,6 @@ namespace ubv.server.logic
         {
             if (!IsSetUpDone()) return null;
             List<PathNode> path = m_pathfinding.FindPath(startNode, endNode);
-            if (path == null) Debug.Log("No path found!");
             return path;
         }
 

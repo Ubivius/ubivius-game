@@ -6,18 +6,21 @@ namespace ubv.common.data
 {
     public class OnLobbyEnteredMessage : Serializable
     {
+        public serialization.types.String StringPlayerID;
         public serialization.types.String CharacterID;
 
         public OnLobbyEnteredMessage()
         {
+            StringPlayerID = new serialization.types.String("");
             CharacterID = new serialization.types.String("");
-            InitSerializableMembers(CharacterID);
+            InitSerializableMembers(CharacterID, StringPlayerID);
         }
 
-        public OnLobbyEnteredMessage(string characterID)
+        public OnLobbyEnteredMessage(string characterID, string playerID)
         {
+            StringPlayerID = new serialization.types.String(playerID);
             CharacterID = new serialization.types.String(characterID);
-            InitSerializableMembers(CharacterID);
+            InitSerializableMembers(CharacterID, StringPlayerID);
         }
 
         protected override ID.BYTE_TYPE SerializationID()
