@@ -43,7 +43,6 @@ namespace ubv.server.logic.ai
                     pos = GenerateRandomEndPositionFromStart(m_roamPositions[i - 1]);
                 }
                 while (m_pathfinding.GetPathRoute(m_roamPositions[i - 1], pos) == null);
-                Debug.Log("Adding enemy roam position:" + pos);
                 m_roamPositions.Add(pos);
             }
             m_enemyMovement.SetPosition(startPosition);
