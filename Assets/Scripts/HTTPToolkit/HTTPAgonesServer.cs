@@ -27,8 +27,6 @@ namespace ubv.http.agonesServer
                 Debug.Log(("Agones Server - Failed to connect, exiting"));
                 Application.Quit(1);
             }
-
-            this.ReadyGameServer();
         }
 
         public async void ReadyGameServer()
@@ -41,6 +39,20 @@ namespace ubv.http.agonesServer
             else
             {
                 Debug.Log($"Agones Server - Ready failed");
+                Application.Quit();
+            }
+        }
+
+        public async void AllocateGameServer()
+        {
+            bool ok = await m_agones.Allocate();
+            if (ok)
+            {
+                Debug.Log($"Agones Server - Allocated");
+            }
+            else
+            {
+                Debug.Log($"Agones Server - Allocation failed");
                 Application.Quit();
             }
         }
@@ -86,9 +98,11 @@ namespace ubv.http.agonesServer
                 Application.Quit();
             }
         }
+
         void OnDestroy()
         {
             Debug.Log("Agones Server - Close");
+            ShutdownGameServer();
         }
     }
 }
