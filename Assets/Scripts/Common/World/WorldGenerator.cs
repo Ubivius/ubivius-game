@@ -176,6 +176,10 @@ namespace ubv.common.world
                 }
                 catch (MapCreationException)
                 {
+                    if (m_roomManager != null)
+                    {
+                        m_roomInMap = m_roomManager.GetRoomInMap();
+                    }
                     if (m_mapGenerationAttempt > 200)
                     {
                         m_boundariesMap = new Vector2Int(m_boundariesMap.x + 50, m_boundariesMap.y + 50);
