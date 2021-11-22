@@ -48,5 +48,26 @@ namespace ubv.client
             PlayerMovement.Execute(ref m_body, velocity);
             m_physics.Simulate(Time.fixedDeltaTime);
         }
+
+        public void Kill()
+        {
+            m_playerAnimator.Kill();
+        }
+
+        public void Revive()
+        {
+            m_playerAnimator.Revive();
+        }
+
+        public void Damage()
+        {
+            m_playerAnimator.Damage();
+        }
+
+        public void Attack()
+        {
+            m_playerAnimator.Attack();
+        }
+
     }
 }
