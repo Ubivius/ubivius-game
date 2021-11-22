@@ -962,6 +962,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ce2bf89a8d2deb43ae7c402749225b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_agones: {fileID: 1740651406}
   m_textChatService: {fileID: 1985295696}
   m_worldGenerator: {fileID: 1802319659}
   m_serverInitializers:
