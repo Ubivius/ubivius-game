@@ -7,7 +7,7 @@ using System;
 namespace ubv.microservices
 {
     public class TextChatService : Microservice<GetTextChatRequest,
-        PostTextChatRequest, PutMicroserviceRequest, DeleteMicroserviceRequest>
+        PostTextChatRequest, PutTextChatRequest, DeleteMicroserviceRequest>
     {
         [SerializeField]
         private MicroserviceAutoFetcher m_messagesFetcher;
@@ -81,9 +81,9 @@ namespace ubv.microservices
             this.Request(new PostConversationRequest(gameID, users, OnConversationCreated, null));
         }
 
-        public void AddUserToConversation(string conversationID, string user)
+        public void SetUsersOfConversation(string conversationID, string gameID, string[] users, UnityAction OnConversationUpdated)
         {
-
+            this.Request(new PutTextChatRequest(conversationID, gameID, users, OnConversationUpdated, null));
         }
 
         /// <summary>
@@ -153,10 +153,14 @@ namespace ubv.microservices
             }
             else if(originalRequest is PostConversationRequest postConversation)
             {
-                Debug.Log(JSON);
                 JSONConversationInfo conversation = JsonUtility.FromJson<JSONConversationInfo>(JSON);
                 postConversation.Callback?.Invoke(conversation.id);
             }
+        }
+
+        protected override void OnPutResponse(string JSON, PutTextChatRequest originalRequest)
+        {
+            originalRequest.Callback?.Invoke();
         }
 
         public void SendMessageToConversation(string currentUserID, string conversationID, string text, UnityAction successCallback = default, UnityAction<string> failCallback = default)

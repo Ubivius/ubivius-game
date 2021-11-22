@@ -53,6 +53,14 @@ namespace ubv.microservices
     }
 
     [System.Serializable]
+    public struct JSONConversationUpdate
+    {
+        public string id;
+        public string[] user_id;
+        public string game_id;
+    }
+
+    [System.Serializable]
     public struct JSONConversationInfo
     {
         public string id;
@@ -157,6 +165,38 @@ namespace ubv.microservices
         {
             return JsonUtility.ToJson(new JSONConversation
             {
+                user_id = m_users,
+                game_id = m_gameID
+            }).ToString();
+        }
+
+        public override string URL()
+        {
+            return "conversations";
+        }
+    }
+
+    public class PutTextChatRequest : PutMicroserviceRequest
+    {
+        public readonly UnityAction Callback;
+
+        private readonly string m_conversationID;
+        private readonly string[] m_users;
+        private readonly string m_gameID;
+
+        public PutTextChatRequest(string conversationID, string gameID, string[] users, UnityAction successCallback, UnityAction<string> failCallback) : base(failCallback)
+        {
+            m_conversationID = conversationID;
+            m_users = users;
+            m_gameID = gameID;
+            Callback = successCallback;
+        }
+
+        public override string JSONString()
+        {
+            return JsonUtility.ToJson(new JSONConversationUpdate
+            {
+                id = m_conversationID,
                 user_id = m_users,
                 game_id = m_gameID
             }).ToString();
