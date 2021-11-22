@@ -146,7 +146,7 @@ namespace ubv.client.logic
         {
             foreach (Rigidbody2D body in m_bodies.Values)
             {
-                if(body !=null)
+                if(body != null)
                 {
                     body.simulated = true;
                 }
@@ -155,7 +155,7 @@ namespace ubv.client.logic
 
         bool IsEnemyAlive(int id)
         {
-            if (m_enemies[id] == null || m_bodies[id] == null || m_enemyMain[id] == null)
+            if (!m_enemies.ContainsKey(id) || !m_bodies.ContainsKey(id) || !m_enemyMain.ContainsKey(id))
             {
                 return false;
             }
