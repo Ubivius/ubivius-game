@@ -42,6 +42,7 @@ namespace ubv
                         }
 
                         // animation de gun ou qqchose vient se plug ici ?
+                        player.PlayerAnimator.Attack();
 
                         Debug.DrawLine(player.transform.position, hit.point, Color.green, 0.25f);
 
