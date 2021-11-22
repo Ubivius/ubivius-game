@@ -172,6 +172,7 @@ namespace ubv.client.logic
 
         private void Init()
         {
+            SocialServices.AddConversationToCache(data.LoadingData.GameChatID);
             m_activeCharacterID = data.LoadingData.ActiveCharacterID;
             if (!string.IsNullOrEmpty(m_activeCharacterID))
             {

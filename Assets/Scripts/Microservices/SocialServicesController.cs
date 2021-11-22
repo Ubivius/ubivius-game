@@ -164,6 +164,11 @@ namespace ubv.microservices
             SendMessageToConversation(client.data.LoadingData.GameChatID, message, success, fail);
         }
 
+        public void AddConversationToCache(string conversationID)
+        {
+            m_textChat.AddConversationToCache(conversationID);
+        }
+
         public void SendMessageToConversation(string conversationID, string message, UnityAction successCallback = default, UnityAction<string> failCallback = default)
         {
             m_textChat.SendMessageToConversation(CurrentUser.StringID, conversationID, message, successCallback, failCallback);
