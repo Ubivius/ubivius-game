@@ -195,7 +195,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7993229010338054016}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: FirePoint
   m_TagString: Bullets
   m_Icon: {fileID: 0}
