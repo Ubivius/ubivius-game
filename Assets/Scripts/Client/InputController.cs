@@ -18,7 +18,10 @@ namespace ubv
             // TODO: make data and  behaviour available to server (to make it symetrical)
 
             [SerializeField] private PlayerGameObjectUpdater m_playerUpdater;
-            [SerializeField] private Camera cam;
+            [SerializeField] private Camera m_cam;
+            public GameObject PauseMenuUI;
+
+            public static bool GameIsPaused = false;
 
             private Transform m_playerTransform;
             private PlayerControls m_controls;
@@ -61,6 +64,10 @@ namespace ubv
 
                 m_controls.Gameplay.Aim.performed += context => SetAim(context.ReadValue<Vector2>());
                 m_controls.Gameplay.Aim.canceled += context => SetAim(Vector2.zero);
+
+                m_controls.Gameplay.OpenMenu.performed += context => GamePause();
+
+                m_controls.Menu.CloseMenu.performed += context => GamePause();
             }
 
             // Start is called before the first frame update
@@ -102,6 +109,34 @@ namespace ubv
                 m_aim = movement;
             }
 
+            public void GamePause()
+            {
+                if (GameIsPaused)
+                {
+                    Resume();
+                }
+                else
+                {
+                    Pause();
+                }
+            }
+
+            private void Resume()
+            {
+                PauseMenuUI.SetActive(false);
+                GameIsPaused = false;
+                m_controls.Gameplay.Enable();
+                m_controls.Menu.Disable();
+            }
+
+            private void Pause()
+            {
+                PauseMenuUI.SetActive(true);
+                GameIsPaused = true;
+                m_controls.Menu.Enable();
+                m_controls.Gameplay.Disable();
+            }
+
             // Update is called once per frame
             void Update()
             {
@@ -116,7 +151,7 @@ namespace ubv
                     Vector2 aimDir = Vector2.zero;
                     if (m_playerTransform != null)
                     {
-                        Vector2 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
+                        Vector2 mousePos = m_cam.ScreenToWorldPoint(Input.mousePosition);
                         aimDir = mousePos - (Vector2)m_playerTransform.position;
                     }
                     m_currentInputFrame.ShootingDirection.Value = aimDir.normalized;
@@ -130,6 +165,11 @@ namespace ubv
             static public common.data.InputFrame CurrentFrame()
             {
                 return m_currentInputFrame;
+            }
+
+            public PlayerControls GetControls()
+            {
+                return m_controls;
             }
 
             private void FixedUpdate()

@@ -173,13 +173,14 @@ namespace ubv.client.logic
 
         private void Init()
         {
+            SocialServices.AddConversationToCache(data.LoadingData.GameChatID);
             m_activeCharacterID = data.LoadingData.ActiveCharacterID;
             if (!string.IsNullOrEmpty(m_activeCharacterID))
             {
                 m_awaitedInitMessage = null;
                 m_clientCharacters?.Clear();
                 Debug.Log("Entering lobby with character:" + m_activeCharacterID);
-                m_server.TCPSend(new OnLobbyEnteredMessage(m_activeCharacterID).GetBytes());
+                m_server.TCPSend(new OnLobbyEnteredMessage(m_activeCharacterID, CurrentUser.StringID).GetBytes());
             }
             else
             {

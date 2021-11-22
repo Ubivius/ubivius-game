@@ -21,7 +21,9 @@ namespace ubv.microservices
 
         public UnityAction<string> OnAuthentication;
         // sender, receiver, Message
-        public UnityAction<string, string, MessageInfo> OnNewMessage;
+        public UnityAction<string, string, MessageInfo> OnNewPrivateMessage;
+        // sender, Message
+        public UnityAction<string, MessageInfo> OnNewGeneralMessage;
         public UnityAction<RelationInfo> OnNewInvite;
         public UnityAction<RelationInfo> OnNewFriend;
         public UnityAction<RelationInfo> UpdateFriend;
@@ -52,24 +54,28 @@ namespace ubv.microservices
                     m_textChat.IsFetcherActive = true;
                     m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
-                    m_textChat.OnNewMessageInConversation += (string conversationID, MessageInfo msg) =>
-                    {
-                        if (!msg.UserID.Equals(CurrentUser.StringID))
+                    m_textChat.OnNewMessageInConversation += (string conversationID, MessageInfo msg) => {
+
+                        if (conversationID.Equals(client.data.LoadingData.GameChatID))
                         {
-                            OnNewMessage(msg.UserID, CurrentUser.StringID, msg);
+                            OnNewGeneralMessage?.Invoke(msg.UserID, msg);
+                        }
+                        else if (!msg.UserID.Equals(CurrentUser.StringID))
+                        {
+                            OnNewPrivateMessage(msg.UserID, CurrentUser.StringID, msg);
                         }
                         else
                         {
                             if (m_cachedConversationUsers.ContainsKey(conversationID))
                             {
-                                OnNewMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
+                                OnNewPrivateMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
                             }
                             else
                             {
                                 GetUserIDFromConversation(conversationID, (string friendID) =>
                                 {
                                     m_cachedConversationUsers[conversationID] = friendID;
-                                    OnNewMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
+                                    OnNewPrivateMessage(CurrentUser.StringID, m_cachedConversationUsers[conversationID], msg);
                                 });
                             }
                         }
@@ -160,12 +166,17 @@ namespace ubv.microservices
 
         public void SendMessageToCurrentGameChat(string message, UnityAction success = default, UnityAction<string> fail = default)
         {
-            if (true) // if (on a pas encore de general chat) (va être avec dispatcher)
+            if (string.IsNullOrEmpty(client.data.LoadingData.GameChatID))
             {
                 fail?.Invoke("Cannot send to game chat - you are not in a game yet");
                 return;
             }
-            SendMessageToConversation("placeholder-general-chat", message, success, fail);
+            SendMessageToConversation(client.data.LoadingData.GameChatID, message, success, fail);
+        }
+
+        public void AddConversationToCache(string conversationID)
+        {
+            m_textChat.AddConversationToCache(conversationID);
         }
 
         public void SendMessageToConversation(string conversationID, string message, UnityAction successCallback = default, UnityAction<string> failCallback = default)

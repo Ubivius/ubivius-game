@@ -72,7 +72,8 @@ namespace ubv.ui.client
             m_rectTransform = transform.GetComponent<RectTransform>();
             m_scrollbar.value = 0;
             
-            m_socialServices.OnNewMessage += OnNewPrivateMessageFrom;
+            m_socialServices.OnNewPrivateMessage += OnNewPrivateMessageFrom;
+            m_socialServices.OnNewGeneralMessage += OnNewGeneralMessage;
         }
 
         void Update() {
@@ -206,7 +207,7 @@ namespace ubv.ui.client
                 }
                 else
                 {
-                    m_socialServices.SendMessageToCurrentGameChat(t_matchFriend.Groups[3].Value, null, (string message) => {
+                    m_socialServices.SendMessageToCurrentGameChat(m_messageInputField.text, null, (string message) => {
                         m_errorMessageQueue.Enqueue(message);
                     });
                 }
@@ -222,6 +223,13 @@ namespace ubv.ui.client
                 m_socialServices.GetUserInfo(receiverID, (UserInfo receiver) => {
                     m_newPrivateMessagesQueue.Enqueue(new Tuple<string, string, string, DateTime>(sender.UserName, receiver.UserName, msg.Text, msg.CreatedOn));
                 });
+            });
+        }
+
+        private void OnNewGeneralMessage(string senderID, MessageInfo msg)
+        {
+            m_socialServices.GetUserInfo(senderID, (UserInfo sender) => {
+                m_newGeneralMessagesQueue.Enqueue(new Tuple<string, string, DateTime>(sender.UserName, msg.Text, msg.CreatedOn));
             });
         }
 

@@ -44,6 +44,32 @@ namespace ubv.microservices
         public string created_on;
     }
 
+
+    [System.Serializable]
+    public struct JSONConversation
+    {
+        public string[] user_id;
+        public string game_id;
+    }
+
+    [System.Serializable]
+    public struct JSONConversationUpdate
+    {
+        public string id;
+        public string[] user_id;
+        public string game_id;
+    }
+
+    [System.Serializable]
+    public struct JSONConversationInfo
+    {
+        public string id;
+        public string[] user_id;
+        public string game_id;
+        public string created_on;
+        public string updated_on;
+    }
+
     public delegate void OnGetConversationRequest(ConversationInfo info);
     public delegate void OnGetMessagesRequest(MessageInfo[] infos);
 
@@ -83,15 +109,22 @@ namespace ubv.microservices
         }
     }
 
-    public class PostTextChatRequest : PostMicroserviceRequest
+    public abstract class PostTextChatRequest : PostMicroserviceRequest
     {
+        public PostTextChatRequest(UnityAction<string> failCallback) : base(failCallback)
+        {
+        }
+    }
+
+    public class PostMessageRequest : PostTextChatRequest
+    {
+        public readonly UnityAction Callback;
+
         private readonly string m_userID;
         private readonly string m_conversationID;
         private readonly string m_text;
-
-        public readonly UnityAction Callback;
-
-        public PostTextChatRequest(string userID, string conversationID, string text, UnityAction successCallback, UnityAction<string> failCallback) : base(failCallback)
+        
+        public PostMessageRequest(string userID, string conversationID, string text, UnityAction successCallback, UnityAction<string> failCallback) : base(failCallback)
         {
             m_userID = userID;
             m_conversationID = conversationID;
@@ -101,7 +134,8 @@ namespace ubv.microservices
 
         public override string JSONString()
         {
-            return JsonUtility.ToJson(new JSONMessage {
+            return JsonUtility.ToJson(new JSONMessage
+            {
                 user_id = m_userID,
                 conversation_id = m_conversationID,
                 text = m_text
@@ -111,6 +145,66 @@ namespace ubv.microservices
         public override string URL()
         {
             return "messages";
+        }
+    }
+
+    public class PostConversationRequest : PostTextChatRequest
+    {
+        public readonly UnityAction<string> Callback;
+        private readonly string[] m_users;
+        private readonly string m_gameID;
+
+        public PostConversationRequest(string gameID, string[] users, UnityAction<string> successCallback, UnityAction<string> failCallback) : base(failCallback)
+        {
+            m_users = users;
+            m_gameID = gameID;
+            Callback = successCallback;
+        }
+
+        public override string JSONString()
+        {
+            return JsonUtility.ToJson(new JSONConversation
+            {
+                user_id = m_users,
+                game_id = m_gameID
+            }).ToString();
+        }
+
+        public override string URL()
+        {
+            return "conversations";
+        }
+    }
+
+    public class PutTextChatRequest : PutMicroserviceRequest
+    {
+        public readonly UnityAction Callback;
+
+        private readonly string m_conversationID;
+        private readonly string[] m_users;
+        private readonly string m_gameID;
+
+        public PutTextChatRequest(string conversationID, string gameID, string[] users, UnityAction successCallback, UnityAction<string> failCallback) : base(failCallback)
+        {
+            m_conversationID = conversationID;
+            m_users = users;
+            m_gameID = gameID;
+            Callback = successCallback;
+        }
+
+        public override string JSONString()
+        {
+            return JsonUtility.ToJson(new JSONConversationUpdate
+            {
+                id = m_conversationID,
+                user_id = m_users,
+                game_id = m_gameID
+            }).ToString();
+        }
+
+        public override string URL()
+        {
+            return "conversations";
         }
     }
 }
