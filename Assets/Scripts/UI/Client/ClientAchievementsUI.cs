@@ -23,7 +23,7 @@ namespace ubv.ui.client
             // Instantiate the prefab
             GameObject achievement_axample = Instantiate(m_achievementPrefab, m_content.transform);
             // Add the info on the prefab
-            achievement_axample.GetComponent<Achievement>().InitializeAchievement("Example title", "HAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA HAHAHAHAHAHAHAHAHAHAHAHA You're slowly making it there!", "01/23/2021");
+            achievement_axample.GetComponent<Achievement>().InitializeAchievement("Enfin libre!", "S'échapper du vaisseau pour la première fois.", "023/10/2021");
             // If the achievement is unlocked, call this method.
             achievement_axample.GetComponent<Achievement>().Unlock();
         }
