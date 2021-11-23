@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ubv.ui.client;
 using UnityEngine;
 
 namespace ubv.client.logic
@@ -9,8 +10,7 @@ namespace ubv.client.logic
     /// </summary>
     public class ClientAchievementState : ClientSyncState
     {
-        [SerializeField] ubv.microservices.AchievementService m_achievementService;
-        [SerializeField] ubv.ui.client.ClientAchievementUI m_clientAchievementUI;
+        [SerializeField] ClientAchievementUI m_clientAchievementUI;
 
         protected override void Awake()
         {
@@ -29,7 +29,7 @@ namespace ubv.client.logic
 
         public void GetAllAchievements()
         {
-            m_achievementService.Request(new ubv.microservices.GetAllAchievementsRequest(m_clientAchievementUI.CreateAchievement));
+            AchievementService.Request(new ubv.microservices.GetAllAchievementsRequest(m_clientAchievementUI.CreateAchievement));
         }
 
         protected override void StateUnload()
@@ -42,11 +42,6 @@ namespace ubv.client.logic
 
         protected override void StateResume()
         {
-        }
-
-        public void GoBackToPreviousState()
-        {
-            ClientStateManager.Instance.PopState();
         }
     }
 }

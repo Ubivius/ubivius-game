@@ -241,6 +241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42e3283e9faad44109e2936b368555c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_clientAchievementUI: {fileID: 932389608}
 --- !u!1 &169884647
 GameObject:
   m_ObjectHideFlags: 0
@@ -304,7 +305,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 932389608}
         m_MethodName: Back
         m_Mode: 1
         m_Arguments:
@@ -616,7 +617,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 199023661}
   m_HandleRect: {fileID: 199023660}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -1012,7 +1013,7 @@ RectTransform:
   m_GameObject: {fileID: 932389606}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.87864995, y: 0.87864995, z: 0.87864995}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 151083052}
   - {fileID: 737971609}
@@ -1038,7 +1039,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 403978ae302897f4c829a44bf3bae0e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_achievementState: {fileID: 160192688}
+  m_achievementState: {fileID: 160192690}
   m_achievementPrefab: {fileID: 4636940300902928911, guid: 8f0f1e12aaa92ae42996150094097e44,
     type: 3}
   m_content: {fileID: 2075782362}
@@ -1049,6 +1050,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 160192689}
     m_Modifications:
+    - target: {fileID: 4639765599762925536, guid: 03305cafba4f2164c964bf389cec91b2,
+        type: 3}
+      propertyPath: m_RenderMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4639765599762925536, guid: 03305cafba4f2164c964bf389cec91b2,
         type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
@@ -1157,6 +1163,16 @@ PrefabInstance:
     - target: {fileID: 4639765599762925537, guid: 03305cafba4f2164c964bf389cec91b2,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4639765599762925539, guid: 03305cafba4f2164c964bf389cec91b2,
+        type: 3}
+      propertyPath: m_ScaleFactor
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4639765599762925539, guid: 03305cafba4f2164c964bf389cec91b2,
+        type: 3}
+      propertyPath: m_UiScaleMode
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4639765599762925541, guid: 03305cafba4f2164c964bf389cec91b2,
@@ -1319,7 +1335,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0, y: -224.33333}
+  m_AnchoredPosition: {x: 0, y: -224.33398}
   m_SizeDelta: {x: 0, y: 20}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1853639833
@@ -1566,7 +1582,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000061035156}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &2075782364
