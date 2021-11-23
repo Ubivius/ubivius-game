@@ -59,10 +59,11 @@ namespace ubv.ui.client {
             m_icon.color = t_color;
         }
 
-        public void InitializeAchievement(string a_name, string a_description, string a_date) {
+        public void InitializeAchievement(string a_name, string a_description, string a_icon) {
             m_name.text = a_name;
-            m_date.text = a_date;
             m_description.text = a_description;
+            m_date.text = "///";
+            // m_icon.text = a_icon;
         }
     }
 }

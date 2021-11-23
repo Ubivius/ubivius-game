@@ -38,6 +38,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Client/ClientEndGame.unity
     guid: edf02703cad720c4ca7c5a37fdc0acb6
+  - enabled: 1
+    path: Assets/Scenes/Client/ClientAchievement.unity
+    guid: 5c5036ab886a5e44285f9ab673f89372
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: d88c0c3ed6c35a74290494c7afc3d357,
       type: 2}
