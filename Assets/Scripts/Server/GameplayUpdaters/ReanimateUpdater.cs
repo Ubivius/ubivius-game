@@ -9,6 +9,8 @@ namespace ubv.server.logic
 {
     public class ReanimateUpdater : ServerGameplayStateUpdater
     {
+        [SerializeField] PlayerMovementUpdater m_playerMouvementUpdater;
+
         const float c_buttonDistance = 1.5f;
 
         public override void Setup()
@@ -28,24 +30,26 @@ namespace ubv.server.logic
                 // Faire le check présence client
                 if (frame[id].Interact.Value)
                 {
-                    List<PlayerState> players = new List<PlayerState>();
+                    List<int> playersId = new List<int>();
                     Vector2 currentPlayerPosition = state.Players()[id].Position.Value;
                     foreach (int id2 in state.Players().Keys)
                     {
                         if (id != id2)
                         {
-                            players.Add(state.Players()[id]);
+                            playersId.Add(id2);
                         }
                     }
 
-                    foreach (PlayerState player in players)
+                    foreach (int id2 in playersId)
                     {
-                        Vector2 playerPos = player.Position.Value;
+                        Vector2 playerPos = state.Players()[id2].Position.Value;
                         float diff = (currentPlayerPosition - playerPos).sqrMagnitude;
                         if (diff <= c_buttonDistance)
                         {
-                            // Heal
-                            continue;
+                            if (!m_playerMouvementUpdater.IsPlayerAlive(id2))
+                            {
+                                m_playerMouvementUpdater.Heal(id2);
+                            }
                         }
                     }
 

@@ -36,6 +36,7 @@ namespace ubv.server.logic
 
         private Tilemap m_finalDoorTilemap;
         private bool m_alreadyOpen;
+        private bool m_allPlayerDead;
 
         private void Awake()
         {
@@ -56,6 +57,15 @@ namespace ubv.server.logic
         public override void FixedUpdateFromClient(WorldState state, Dictionary<int, InputFrame> frames, float deltaTime)
         {
             state.SetOpeningDoor(m_openingDoorList);
+            m_allPlayerDead = true;
+            foreach (int id in state.Players().Keys)
+            {
+                m_allPlayerDead = !m_playerMovementUpdater.IsPlayerAlive(id);
+            }
+            if(m_allPlayerDead)
+            {
+                m_gamePlayState.EndGame();
+            }
         }
 
         public override void UpdateWorld(WorldState state)

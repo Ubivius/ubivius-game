@@ -92,5 +92,10 @@ namespace ubv.server.logic
         {
             return m_playerControllers[playerID].IsAlive();
         }
+
+        public void Heal(int playerID)
+        {
+            m_playerControllers[playerID].Heal(m_playerControllers[playerID].GetMaxHealth());
+        }
     }
 }
