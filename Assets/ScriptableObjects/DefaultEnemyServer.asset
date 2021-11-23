@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43a36572bcd8ee746b88483f765db2f9, type: 3}
   m_Name: DefaultEnemyServer
   m_EditorClassIdentifier: 
-  Velocity: 5
+  Velocity: 8
   EnemyPrefab: {fileID: 686873656258829074, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
     type: 3}

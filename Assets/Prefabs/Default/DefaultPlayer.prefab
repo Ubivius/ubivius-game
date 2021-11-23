@@ -90,8 +90,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_healthBar: {fileID: 981889164596723283}
   m_defaultMaxHealth: 80
-  m_defaultWalkingVelocity: 8
-  m_defaultRunningMultiplier: 1.3
+  m_defaultWalkingVelocity: 6
+  m_defaultRunningMultiplier: 1.5
 --- !u!114 &134318626118672903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -311,7 +311,7 @@ PrefabInstance:
     - target: {fileID: 212259403350062198, guid: 01a6b42a1d84b664c890d8dcb066becd,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 0
+      value: 98
       objectReference: {fileID: 0}
     - target: {fileID: 212330782697277028, guid: 01a6b42a1d84b664c890d8dcb066becd,
         type: 3}
@@ -331,7 +331,7 @@ PrefabInstance:
     - target: {fileID: 212330782697277028, guid: 01a6b42a1d84b664c890d8dcb066becd,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 0
+      value: 99
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 01a6b42a1d84b664c890d8dcb066becd, type: 3}
