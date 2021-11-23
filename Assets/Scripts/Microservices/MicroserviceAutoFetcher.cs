@@ -9,7 +9,7 @@ namespace ubv.microservices
         [SerializeField]
         private float m_timerOffset = 0f;
         [SerializeField]
-        private float m_conversationFetchInterval = 3.0f;
+        private float m_fetchInterval = 3.0f;
         private float m_fetchTimer;
         private bool m_readyToFetch;
 
@@ -17,7 +17,7 @@ namespace ubv.microservices
 
         private void Awake()
         {
-            m_fetchTimer = m_timerOffset;
+            m_fetchTimer = m_fetchInterval - m_timerOffset;
             m_readyToFetch = true;
         }
         
@@ -27,10 +27,10 @@ namespace ubv.microservices
             if (m_readyToFetch)
                 m_fetchTimer += Time.deltaTime;
 
-            if (m_fetchTimer >= m_conversationFetchInterval)
+            if (m_fetchTimer >= m_fetchInterval)
             {
-                m_readyToFetch = false;
                 m_fetchTimer = 0;
+                m_readyToFetch = false;
                 FetchLogic.Invoke();
             }
         }

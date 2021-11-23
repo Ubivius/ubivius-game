@@ -43,7 +43,6 @@ namespace ubv.microservices
                 m_invitesFetcher.ReadyForNewFetch();
                 return;
             }
-
             this.Request(new GetInvitesForUserRequest(DefaultUser, OnGetInvites));
         }
 
@@ -54,13 +53,7 @@ namespace ubv.microservices
                 m_friendsFetcher.ReadyForNewFetch();
                 return;
             }
-
             this.Request(new GetRelationsFromUserRequest(DefaultUser, OnGetFriends));
-        }
-
-        public void SendInviteTo(string userID)
-        {
-            this.Request(new PostInviteRequest(DefaultUser, userID));
         }
 
         public void GetAllFriendsIDs(string userID, UnityAction<HashSet<string>> OnGetFriendIDs)
@@ -237,7 +230,7 @@ namespace ubv.microservices
                 // friends list test
                 this.Request(new GetRelationsFromUserRequest(id, (RelationInfo[] infos) =>
                 {
-                    m_users.Request(new GetUserInfoRequest(id, (UserInfo userInfo) =>
+                    m_users.Request(new GetUserInfoByIDRequest(id, (UserInfo userInfo) =>
                     {
                         Debug.Log("ID:" + userInfo.StringID);
                         Debug.Log(userInfo.UserName + "'s friends :");
@@ -245,7 +238,7 @@ namespace ubv.microservices
                     
                     foreach (RelationInfo info in infos)
                     {
-                        m_users.Request(new GetUserInfoRequest(info.FriendUserID, (UserInfo userInfo) => 
+                        m_users.Request(new GetUserInfoByIDRequest(info.FriendUserID, (UserInfo userInfo) => 
                         {
                             Debug.Log("Conversation :" + info.ConversationID);
                             Debug.Log(" with user " + userInfo.UserName);

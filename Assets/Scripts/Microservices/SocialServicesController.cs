@@ -47,13 +47,14 @@ namespace ubv.microservices
         {
             m_auth.Request(new PostAuthenticationRequest(user, password, (string userID) =>
             {
-                m_users.Request(new GetUserInfoRequest(userID, (UserInfo info) =>
+                m_users.Request(new GetUserInfoByIDRequest(userID, (UserInfo info) =>
                 {
                     CurrentUser = info;
                     m_friendsList.DefaultUser = CurrentUser.StringID;
                     m_textChat.IsFetcherActive = true;
                     m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
+                    UpdateUserStatus(StatusType.Online);
                     m_textChat.OnNewMessageInConversation += (string conversationID, MessageInfo msg) => {
 
                         if (conversationID.Equals(client.data.LoadingData.GameChatID))
@@ -247,7 +248,7 @@ namespace ubv.microservices
             }
             else
             {
-                m_users.Request(new GetUserInfoRequest(userID, (UserInfo info) =>
+                m_users.Request(new GetUserInfoByIDRequest(userID, (UserInfo info) =>
                 {
                     m_cachedUsers.Add(userID, info);
                     callback(info);
@@ -255,18 +256,36 @@ namespace ubv.microservices
             }
         }
 
-        public void UpdateUser(UserInfo user)
+        public void SendInviteTo(string username, UnityAction callback)
+        {
+            m_users.Request(new GetUserInfoByUsernameRequest(username, (UserInfo userInfo) =>
+            {
+                m_friendsList.Request(new PostInviteRequest(CurrentUser.StringID, userInfo.StringID, () =>
+                {
+                    callback?.Invoke();
+                }));
+            }));
+        }
+
+        public void SetFriendslistFetcher(bool active)
+        {
+            m_friendsList.IsFetcherActive = active;
+        }
+
+
+        public void UpdateUser(UserInfo user, UnityAction callback = default)
         {
             m_users.Request(new PutUserInfoRequest(user, () =>
             {
                 m_cachedUsers.Add(user.StringID, user);
+                callback?.Invoke();
             }));
         }
 
-        public void UpdateUserStatus(StatusType status)
+        public void UpdateUserStatus(StatusType status, UnityAction callback = default)
         {
             CurrentUser.Status = status;
-            UpdateUser(CurrentUser);
+            UpdateUser(CurrentUser, callback);
         }
 
         public void AcceptInvite(RelationInfo relation, UnityAction callback)

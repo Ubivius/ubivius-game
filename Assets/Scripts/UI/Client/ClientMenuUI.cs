@@ -34,7 +34,7 @@ namespace ubv.ui.client
 
         public void Quit()
         {
-            Application.Quit();
+            m_menuState.Quit();
         }
     }
 }

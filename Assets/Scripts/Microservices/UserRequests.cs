@@ -53,12 +53,15 @@ namespace ubv.microservices
 
     public delegate void OnGetInfo(UserInfo info);
 
-    public class GetUserInfoRequest : GetMicroserviceRequest
+    public abstract class GetUserInfoRequest : GetMicroserviceRequest {
+        public OnGetInfo Callback;
+    }
+
+    public class GetUserInfoByIDRequest : GetUserInfoRequest
     {
         public readonly string ID;
-        public readonly OnGetInfo Callback;
 
-        public GetUserInfoRequest(string ID, OnGetInfo callback)
+        public GetUserInfoByIDRequest(string ID, OnGetInfo callback)
         {
             this.ID = ID;
             Callback = callback;
@@ -69,6 +72,23 @@ namespace ubv.microservices
             return "users/" + ID;
         }
     }
+
+    public class GetUserInfoByUsernameRequest : GetUserInfoRequest
+    {
+        public readonly string Username;
+
+        public GetUserInfoByUsernameRequest(string username, OnGetInfo callback)
+        {
+            this.Username = username;
+            Callback = callback;
+        }
+
+        public override string URL()
+        {
+            return "users/username/" + Username;
+        }
+    }
+
 
     public class PutUserInfoRequest : PutMicroserviceRequest
     {

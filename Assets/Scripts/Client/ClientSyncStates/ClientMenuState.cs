@@ -46,6 +46,11 @@ namespace ubv.client
             ClientStateManager.Instance.PushScene(m_clientMyCharatcers);
         }
 
+        public void Quit()
+        {
+            SocialServices.UpdateUserStatus(microservices.StatusType.Offline, Application.Quit);
+        }
+
         protected override void StateLoad()
         { }
 

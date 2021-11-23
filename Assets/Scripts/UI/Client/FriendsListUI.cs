@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using ubv.client.logic;
 using ubv.microservices;
 using UnityEngine.Events;
+using System;
 
 namespace ubv.ui.client
 {
@@ -26,6 +27,7 @@ namespace ubv.ui.client
         [SerializeField] private Image m_userStatusDot;
         [SerializeField] private Button m_showButton;
         [SerializeField] private Button m_hideButton;
+        [SerializeField] private TMP_InputField m_inputField;
 
         [Header("Colors")]
         [SerializeField] private Color m_onlineColor;
@@ -40,11 +42,13 @@ namespace ubv.ui.client
         private Queue<RelationInfo> m_updateFriendQueue;
 
         private UserInfo m_activeUser;
+        private bool m_inviteSent;
 
         public bool FriendsListIsHidden { get; set; }
 
         private void Awake()
         {
+            m_inviteSent = false;
             m_newInviteQueue = new Queue<RelationInfo>();
             m_newFriendQueue = new Queue<RelationInfo>();
             m_updateFriendQueue = new Queue<RelationInfo>();
@@ -55,12 +59,19 @@ namespace ubv.ui.client
 
         private void Update()
         {
+            if(m_inviteSent)
+            {
+                m_inputField.text = "";
+                m_inviteSent = false;
+            }
+
             while (m_newInviteQueue.Count > 0)
             {
                 RelationInfo invite = m_newInviteQueue.Dequeue();
                 InviteUI invitePrefab = Instantiate(m_invitePrefab, m_invitesListBox.transform);
                 m_invitesPrefabList.Add(invite.RelationID, invitePrefab);
                 invitePrefab.SetInvite(invite);
+                Canvas.ForceUpdateCanvases();
             }
             while (m_newFriendQueue.Count > 0)
             {
@@ -68,6 +79,7 @@ namespace ubv.ui.client
                 FriendUI friendPrefab = Instantiate(m_friendPrefab, m_friendsListBox.transform);
                 m_friendsPrefabList.Add(friend.RelationID, friendPrefab);
                 friendPrefab.SetFriend(friend);
+                Canvas.ForceUpdateCanvases();
             }
             while (m_updateFriendQueue.Count > 0)
             {
@@ -77,8 +89,7 @@ namespace ubv.ui.client
         }
 
         void Start() {
-            FriendsListIsHidden = true;
-            ToggleDisplayFriendsList();
+            Show();
             m_activeUser = m_socialServices.CurrentUser;
             m_username.text = m_activeUser.UserName;
             if(m_activeUser.Status != StatusType.Online)
@@ -97,6 +108,11 @@ namespace ubv.ui.client
             m_newInviteQueue.Enqueue(invite);
         }
 
+        private void OnSendInvite()
+        {
+            m_inviteSent = true;
+        }
+
         private void OnNewFriend(RelationInfo friend)
         {
             m_newFriendQueue.Enqueue(friend);
@@ -110,16 +126,11 @@ namespace ubv.ui.client
         private void OnDeleteInvite(string relationID)
         {
             m_invitesPrefabList.Remove(relationID);
-        }
-
-        public void ToggleDisplayFriendsList() {
-            FriendsListIsHidden = !FriendsListIsHidden;
-
-            m_showButton.gameObject.SetActive(FriendsListIsHidden);
-            m_hideButton.gameObject.SetActive(!FriendsListIsHidden);
+            Canvas.ForceUpdateCanvases();
         }
 
         public void Hide() {
+            m_socialServices.SetFriendslistFetcher(false);
             m_friendsList.SetActive(false);
             FriendsListIsHidden = true;
 
@@ -128,11 +139,20 @@ namespace ubv.ui.client
         }
 
         public void Show() {
+            m_socialServices.SetFriendslistFetcher(true);
             m_friendsList.SetActive(true);
             FriendsListIsHidden = false;
 
             m_hideButton.gameObject.SetActive(true);
             m_showButton.gameObject.SetActive(false);
+        }
+
+        public void SendInvite()
+        {
+            if(!string.IsNullOrEmpty(m_inputField.text))
+            {
+                m_socialServices.SendInviteTo(m_inputField.text, OnSendInvite);
+            }
         }
 
         public void UpdateStatus(StatusType status)
