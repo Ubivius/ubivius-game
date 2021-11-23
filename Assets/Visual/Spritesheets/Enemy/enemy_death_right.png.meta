@@ -69,7 +69,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 20
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -126,10 +126,10 @@ TextureImporter:
       name: enemy_death_right_0
       rect:
         serializedVersion: 2
-        x: 33
+        x: 7
         y: 992
-        width: 40
-        height: 48
+        width: 92
+        height: 124
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,10 +147,10 @@ TextureImporter:
       name: enemy_death_right_1
       rect:
         serializedVersion: 2
-        x: 33
+        x: 7
         y: 868
-        width: 40
-        height: 48
+        width: 92
+        height: 124
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -168,10 +168,10 @@ TextureImporter:
       name: enemy_death_right_2
       rect:
         serializedVersion: 2
-        x: 33
+        x: 7
         y: 744
-        width: 40
-        height: 64
+        width: 92
+        height: 124
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -189,10 +189,10 @@ TextureImporter:
       name: enemy_death_right_3
       rect:
         serializedVersion: 2
-        x: 33
+        x: 7
         y: 620
-        width: 40
-        height: 120
+        width: 92
+        height: 124
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -210,10 +210,10 @@ TextureImporter:
       name: enemy_death_right_4
       rect:
         serializedVersion: 2
-        x: 33
+        x: 7
         y: 496
-        width: 40
-        height: 120
+        width: 92
+        height: 124
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -231,10 +231,10 @@ TextureImporter:
       name: enemy_death_right_5
       rect:
         serializedVersion: 2
-        x: 33
+        x: 7
         y: 372
-        width: 40
-        height: 120
+        width: 92
+        height: 124
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -252,10 +252,10 @@ TextureImporter:
       name: enemy_death_right_6
       rect:
         serializedVersion: 2
-        x: 33
-        y: 247
-        width: 40
-        height: 48
+        x: 7
+        y: 248
+        width: 92
+        height: 124
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -273,10 +273,10 @@ TextureImporter:
       name: enemy_death_right_7
       rect:
         serializedVersion: 2
-        x: 33
+        x: 7
         y: 124
-        width: 40
-        height: 48
+        width: 92
+        height: 124
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

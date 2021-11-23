@@ -1,18 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &5581807096215233689
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3188290116599518035}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fa40ce8df21afb4d8496d80cecfe14f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_body: {fileID: 3188290116599518034}
 --- !u!95 &9217019087020901512
 Animator:
   serializedVersion: 3
@@ -32,6 +19,19 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &5581807096215233689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3188290116599518035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fa40ce8df21afb4d8496d80cecfe14f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_body: {fileID: 3188290116599518034}
 --- !u!1001 &2717736607014455361
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -49,10 +49,26 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 686873656258829072, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -7281072281464225046, guid: 336f2162063a27d439fe5df8a8512d3c,
+        type: 3}
     - target: {fileID: 686873656258829073, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
         type: 3}
       propertyPath: m_RootOrder
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 686873656258829073, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 686873656258829073, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 686873656258829073, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
         type: 3}
@@ -109,10 +125,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: DefaultEnemy
       objectReference: {fileID: 0}
+    - target: {fileID: 1696493609957149189, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
+        type: 3}
+      propertyPath: m_Radius
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1696493609957149189, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
+        type: 3}
+      propertyPath: m_Offset.y
+      value: -2.5
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 686873656258829071, guid: 0fc42a915c8c2e84b88bbc5e57441d03, type: 3}
     - {fileID: 686873656258829070, guid: 0fc42a915c8c2e84b88bbc5e57441d03, type: 3}
     - {fileID: 2656123850511472361, guid: 0fc42a915c8c2e84b88bbc5e57441d03, type: 3}
+    - {fileID: 2639211009317505095, guid: 0fc42a915c8c2e84b88bbc5e57441d03, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 0fc42a915c8c2e84b88bbc5e57441d03, type: 3}
 --- !u!1 &3188290116599518035 stripped
 GameObject:
