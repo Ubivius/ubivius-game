@@ -48,7 +48,8 @@ namespace ubv.client
 
         public void Quit()
         {
-            SocialServices.UpdateUserStatus(microservices.StatusType.Offline, Application.Quit);
+            SocialServices.UpdateUserStatus(microservices.StatusType.Offline);
+            Application.Quit();
         }
 
         protected override void StateLoad()

@@ -28,6 +28,7 @@ namespace ubv.ui.client
         [SerializeField] private Button m_showButton;
         [SerializeField] private Button m_hideButton;
         [SerializeField] private TMP_InputField m_inputField;
+        [SerializeField] private Image m_notifInviteSent;
 
         [Header("Colors")]
         [SerializeField] private Color m_onlineColor;
@@ -43,12 +44,15 @@ namespace ubv.ui.client
 
         private UserInfo m_activeUser;
         private bool m_inviteSent;
+        private float m_timerNotif;
+        [SerializeField] private float m_timerDelayNotif = 10.0f;
 
         public bool FriendsListIsHidden { get; set; }
 
         private void Awake()
         {
             m_inviteSent = false;
+            m_notifInviteSent.gameObject.SetActive(false);
             m_newInviteQueue = new Queue<RelationInfo>();
             m_newFriendQueue = new Queue<RelationInfo>();
             m_updateFriendQueue = new Queue<RelationInfo>();
@@ -62,7 +66,18 @@ namespace ubv.ui.client
             if(m_inviteSent)
             {
                 m_inputField.text = "";
+                m_notifInviteSent.gameObject.SetActive(true);
+                m_timerNotif = m_timerDelayNotif;
                 m_inviteSent = false;
+            }
+
+            if(m_timerNotif < 0)
+            {
+                m_notifInviteSent.gameObject.SetActive(false);
+            }
+            else
+            {
+                m_timerNotif -= Time.deltaTime;
             }
 
             while (m_newInviteQueue.Count > 0)
