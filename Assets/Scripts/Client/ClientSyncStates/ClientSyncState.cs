@@ -11,6 +11,7 @@ namespace ubv.client.logic
         static public DispatcherMicroservice DispatcherService;
         static public SocialServicesController SocialServices;
         static public CharacterDataService CharacterService;
+        static public AchievementService AchievementService;
 
         private PlayerControls m_controls;
 
@@ -23,6 +24,7 @@ namespace ubv.client.logic
             DispatcherService = ClientNetworkingManager.Instance.Dispatcher;
             SocialServices = ClientNetworkingManager.Instance.SocialServices;
             CharacterService = ClientNetworkingManager.Instance.CharacterData;
+            AchievementService = ClientNetworkingManager.Instance.AchievementService;
         }
 
         protected readonly object m_lock = new object();

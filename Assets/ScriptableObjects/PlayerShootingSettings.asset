@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxShootingDist: 15
   BulletDelay: 0.25
+  GunHitPrefab: {fileID: 488842132039589032, guid: 23a7d9b8e2fea104daf51ea5fd320853,
+    type: 3}
