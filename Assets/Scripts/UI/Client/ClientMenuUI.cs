@@ -24,7 +24,7 @@ namespace ubv.ui.client
 
         public void Achievements()
         {
-            // to be implemented
+            m_menuState.GoToMyAchievements();
         }
 
         public void Options()

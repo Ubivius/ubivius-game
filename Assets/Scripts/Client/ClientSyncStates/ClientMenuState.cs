@@ -11,6 +11,7 @@ namespace ubv.client
         [SerializeField] private string m_clientGameSearch;
         [SerializeField] private string m_clientCharacterSelect;
         [SerializeField] private string m_clientMyCharatcers;
+        [SerializeField] private string m_clientAchievements;
         [SerializeField] private EventSystem m_eventSystem;
         
         public override void OnStart()
@@ -44,6 +45,11 @@ namespace ubv.client
         public void GoToMyCharacters()
         {
             ClientStateManager.Instance.PushScene(m_clientMyCharatcers);
+        }
+
+        public void GoToMyAchievements()
+        {
+            ClientStateManager.Instance.PushScene(m_clientAchievements);
         }
 
         public void Quit()

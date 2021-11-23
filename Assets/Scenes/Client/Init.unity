@@ -411,6 +411,11 @@ PrefabInstance:
       propertyPath: SocialServices
       value: 
       objectReference: {fileID: 1877816071}
+    - target: {fileID: 2629458355001083077, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: AchievementService
+      value: 
+      objectReference: {fileID: 1651257020}
     - target: {fileID: 2833739906713535996, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_RootOrder
@@ -580,7 +585,7 @@ PrefabInstance:
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_mock
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}

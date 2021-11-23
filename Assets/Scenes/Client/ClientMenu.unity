@@ -220,7 +220,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1358901842}
-        m_MethodName: Stats
+        m_MethodName: Achievements
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2766,6 +2766,7 @@ MonoBehaviour:
   m_clientGameSearch: ClientGameSearch
   m_clientCharacterSelect: ClientCharacterSelect
   m_clientMyCharatcers: ClientMyCharacters
+  m_clientAchievements: ClientAchievement
   m_eventSystem: {fileID: 686921232}
 --- !u!4 &2070749476
 Transform:

@@ -62,25 +62,29 @@ namespace ubv.server.logic.ai
 
         private bool SpotPlayer()
         {
-            var playerGameObjects = m_playerMovement.GetPlayersGameObject().Values;
+            var playerGameObjects = m_playerMovement.GetPlayersGameObject();
             Vector2 closestPlayer = new Vector2(-100, -100);
             float closestPlayerDist = 1000;
             bool detectedPlayer = false;
-            foreach (PlayerPrefab player in playerGameObjects)
+            foreach (int id in playerGameObjects.Keys)
             {
-                Vector2 playerPosition = player.transform.position;
-                float playerDist = (playerPosition - m_enemyMovement.GetPosition()).sqrMagnitude;
-                if (playerDist < Mathf.Pow(m_playerDetectionRange, 2))
+                PlayerPrefab player = playerGameObjects[id];
+                if (m_playerMovement.IsPlayerAlive(id))
                 {
-                    detectedPlayer = true;
-                }
-
-                if (detectedPlayer)
-                {
-                    if (closestPlayerDist > playerDist)
+                    Vector2 playerPosition = player.transform.position;
+                    float playerDist = (playerPosition - m_enemyMovement.GetPosition()).sqrMagnitude;
+                    if (playerDist < Mathf.Pow(m_playerDetectionRange, 2))
                     {
-                        closestPlayerDist = playerDist;
-                        closestPlayer = playerPosition;
+                        detectedPlayer = true;
+                    }
+
+                    if (detectedPlayer)
+                    {
+                        if (closestPlayerDist > playerDist)
+                        {
+                            closestPlayerDist = playerDist;
+                            closestPlayer = playerPosition;
+                        }
                     }
                 }
             }
