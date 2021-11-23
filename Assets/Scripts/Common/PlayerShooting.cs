@@ -25,9 +25,9 @@ namespace ubv
 
                     if (m_playerLastShot[player] > playerShootingSettings.BulletDelay)
                     {
-                        Debug.Log("Trying to shoot");
+                        Debug.Log("Trying to shoot, max dist =" + playerShootingSettings.MaxShootingDist);
                         Vector3 shootingDirection = new Vector3(aimDirection.x, aimDirection.y, 0.0f);
-                        RaycastHit2D hit = Physics2D.Raycast(player.transform.position, shootingDirection, playerShootingSettings.MaxShootingDist/*, ~LayerMask.GetMask("Players")*/);
+                        RaycastHit2D hit = Physics2D.Raycast(player.transform.position, shootingDirection, playerShootingSettings.MaxShootingDist, ~LayerMask.GetMask("Players"));
 
                         if (hit.collider != null)
                         {
