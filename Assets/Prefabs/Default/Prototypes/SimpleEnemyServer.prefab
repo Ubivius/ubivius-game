@@ -122,7 +122,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxHealthPoint: 100
-  DamagePoint: 25
+  m_damagePoints: 25
 --- !u!114 &686873656258829070
 MonoBehaviour:
   m_ObjectHideFlags: 0

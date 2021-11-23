@@ -12,6 +12,11 @@ public class HealthSystem
     private int m_healthMax;
     private int m_health;
 
+    public bool IsDead
+    {
+        get { return m_health <= 0; }
+    }
+
     public HealthSystem(int healthMax) 
     {
         m_healthMax = healthMax;
@@ -35,6 +40,11 @@ public class HealthSystem
 
     public void Damage(int amount) 
     {
+        if (IsDead)
+        {
+            return;
+        }
+
         m_health -= amount;
         if (m_health < 0) 
         {
