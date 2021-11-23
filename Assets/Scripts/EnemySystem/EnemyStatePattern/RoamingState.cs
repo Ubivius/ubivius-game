@@ -76,14 +76,18 @@ namespace ubv.server.logic.ai
 
         public bool DetectsPlayer()
         {
-            var playerGameObjects = m_playerMovement.GetPlayersGameObject().Values;
-            foreach (PlayerPrefab player in playerGameObjects)
+            var playerGameObjects = m_playerMovement.GetPlayersGameObject();
+            foreach (int id in playerGameObjects.Keys)
             {
-                Vector2 playerPosition = player.transform.position;
-                float playerDist = (playerPosition - m_enemyMovement.GetPosition()).sqrMagnitude;
-                if (playerDist < Mathf.Pow(m_playerDetectionRange, 2))
+                PlayerPrefab player = playerGameObjects[id];
+                if (m_playerMovement.IsPlayerAlive(id))
                 {
-                    return true;
+                    Vector2 playerPosition = player.transform.position;
+                    float playerDist = (playerPosition - m_enemyMovement.GetPosition()).sqrMagnitude;
+                    if (playerDist < Mathf.Pow(m_playerDetectionRange, 2))
+                    {
+                        return true;
+                    }
                 }
             }
 

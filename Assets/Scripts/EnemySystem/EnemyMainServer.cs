@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using ubv.server.logic.ai;
 using ubv.common.gameplay.shooting;
+using ubv.common.gameplay;
 
 public class EnemyMainServer : MonoBehaviour
 {
     [SerializeField] public int MaxHealthPoint = 100;
-    [SerializeField] public int DamagePoint = 25;
+    [SerializeField] private int m_damagePoints = 25;
+    [SerializeField] private int m_attackPoints = 10;
     public Rigidbody2D EnemyRigidbody2D { get; private set; }
     public HealthSystem HealthSystem { get; private set; }
 
@@ -30,7 +32,7 @@ public class EnemyMainServer : MonoBehaviour
 
     private void Hit()
     {
-        HealthSystem.Damage(DamagePoint);
+        HealthSystem.Damage(m_damagePoints);
     }
 
     public void DestroySelf()
@@ -38,5 +40,15 @@ public class EnemyMainServer : MonoBehaviour
         Destroy(transform.gameObject);
         //ex when we'll need to add animation
         //Destroy(GetComponent<BoxCollider>());
+    }
+    
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+        if (player != null)
+        {
+            player.Damage(m_attackPoints);
+        }
     }
 }

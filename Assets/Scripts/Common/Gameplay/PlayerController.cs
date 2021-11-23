@@ -7,6 +7,7 @@ namespace ubv.common.gameplay
     {
         private PlayerSuit m_currentSuit;
 
+        [SerializeField] private HealthBar m_healthBar;
         [SerializeField] private float m_defaultMaxHealth;
         [SerializeField] private float m_defaultWalkingVelocity;
         [SerializeField] private float m_defaultRunningMultiplier;
@@ -18,6 +19,8 @@ namespace ubv.common.gameplay
         {
             m_defaultStats = new PlayerStats(m_defaultMaxHealth, m_defaultWalkingVelocity, m_defaultRunningMultiplier);
             m_healthSystem = new HealthSystem((int)m_defaultMaxHealth);
+            m_healthSystem.OnDead += OnKnockOut;
+            m_healthBar.Setup(m_healthSystem);
         }
 
         public void EquipSuit(PlayerSuit suit)
@@ -41,6 +44,34 @@ namespace ubv.common.gameplay
         public void ActivateSideItem()
         {
             m_currentSuit?.SideItem.Activate();
+        }
+
+        public void Damage(int damage)
+        {
+            Debug.Log("Ouch! ");
+            m_healthSystem.Damage(damage);
+        }
+
+        public void Heal(int healing)
+        {
+            Debug.Log("Heal! ");
+            m_healthSystem.Heal(healing);
+        }
+
+        public void OnKnockOut()
+        {
+            Debug.Log("Player knocked out");
+            // animation or something ?
+        }
+
+        public int GetCurrentHP()
+        {
+            return m_healthSystem.GetHealthPoint();
+        }
+
+        public bool IsAlive()
+        {
+            return !m_healthSystem.IsDead;
         }
     }
 }

@@ -43,6 +43,7 @@ namespace ubv.server.logic
                 PlayerState playerState = state.Players()[id];
 
                 playerState.Position.Value = m_bodies[id].position;
+                playerState.CurrentHP.Value = playerCtrl.GetCurrentHP();
 
                 m_playerControllers.Add(id, playerCtrl);
                 m_playerStates.Add(id, state.Players()[id]);
@@ -58,6 +59,8 @@ namespace ubv.server.logic
                     frames[id].Sprinting.Value, m_playerControllers[id].GetStats());
                 common.logic.PlayerMovement.Execute(ref body, velocity);
                 m_isSprinting[id] = frames[id].Sprinting.Value;
+
+                client.Players()[id].CurrentHP.Value = m_playerControllers[id].GetCurrentHP();
             }
         }
 
@@ -69,6 +72,7 @@ namespace ubv.server.logic
                 PlayerState player = m_playerStates[id];
                 player.Position.Value = body.position;
                 player.Velocity.Value = body.velocity;
+                player.CurrentHP.Value = m_playerControllers[id].GetCurrentHP();
                 player.States.Set((int)PlayerStateEnum.IS_SPRINTING, m_isSprinting[id]);
             }
         }
@@ -82,6 +86,11 @@ namespace ubv.server.logic
         {
             m_bodies[player.GUID.Value].position = pos;
             player.Position.Value = m_bodies[player.GUID.Value].position;
+        }
+
+        public bool IsPlayerAlive(int playerID)
+        {
+            return m_playerControllers[playerID].IsAlive();
         }
     }
 }
