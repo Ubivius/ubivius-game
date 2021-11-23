@@ -7,9 +7,7 @@ namespace ubv.server.logic.ai
 {
     public class RoamingState : EnemyBehaviorState
     {
-        private bool m_inMotion;
-
-        private const float m_playerDetectionRange = 10f;
+        private const float m_playerDetectionRange = 20f;
 
         private const float m_minimumRoamDistance = 5f;
         private const float m_maximumRoamDistance = 20f;
@@ -34,7 +32,7 @@ namespace ubv.server.logic.ai
             {
                 startPosition
             };
-            m_inMotion = false;
+
             for (int i = 1; i < m_totalRoamPositions; i++)
             {
                 Vector2 pos;
@@ -76,14 +74,18 @@ namespace ubv.server.logic.ai
 
         public bool DetectsPlayer()
         {
-            var playerGameObjects = m_playerMovement.GetPlayersGameObject().Values;
-            foreach (PlayerPrefab player in playerGameObjects)
+            var playerGameObjects = m_playerMovement.GetPlayersGameObject();
+            foreach (int id in playerGameObjects.Keys)
             {
-                Vector2 playerPosition = player.transform.position;
-                float playerDist = (playerPosition - m_enemyMovement.GetPosition()).sqrMagnitude;
-                if (playerDist < Mathf.Pow(m_playerDetectionRange, 2))
+                PlayerPrefab player = playerGameObjects[id];
+                if (m_playerMovement.IsPlayerAlive(id))
                 {
-                    return true;
+                    Vector2 playerPosition = player.transform.position;
+                    float playerDist = (playerPosition - m_enemyMovement.GetPosition()).sqrMagnitude;
+                    if (playerDist < Mathf.Pow(m_playerDetectionRange, 2))
+                    {
+                        return true;
+                    }
                 }
             }
 

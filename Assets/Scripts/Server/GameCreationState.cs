@@ -21,6 +21,9 @@ namespace ubv.server.logic
     {
         static public ServerInitMessage CachedServerInit;
 
+        [SerializeField]
+        private http.agonesServer.HTTPAgonesServer m_agones;
+
         private enum SubState
         {
             SUBSTATE_WAITING_FOR_PLAYERS = 0,
@@ -81,8 +84,8 @@ namespace ubv.server.logic
         private void OnConversationCreated(string conversationID)
         {
             Debug.Log("Creating conversation :" + conversationID);
-            // mark as READY for agones
             m_conversationID = conversationID;
+            m_agones.ReadyGameServer();
         }
         
         private bool EveryoneIsReady()
@@ -122,7 +125,7 @@ namespace ubv.server.logic
                         m_worldLoadedClients.Clear();
 
                         m_currentSubState = SubState.SUBSTATE_GOING_TO_PLAY;
-                        
+
                         m_gameplayState.Init(m_clientCharacters);
                         ChangeState(m_gameplayState);
                     }
@@ -194,6 +197,10 @@ namespace ubv.server.logic
                     {
                         if (!string.IsNullOrEmpty(lobbyEnter.CharacterID.Value))
                         {
+                            if(m_activeClients.Count == 0)
+                            {
+                                m_agones.AllocateGameServer();
+                            }
                             m_intToStringUserIDs[playerID] = lobbyEnter.StringPlayerID.Value;
 #if DEBUG_LOG
                             Debug.Log("Adding character " + lobbyEnter.CharacterID.Value + " to player " + playerID);
