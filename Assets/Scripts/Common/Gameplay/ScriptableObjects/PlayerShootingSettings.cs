@@ -8,5 +8,6 @@ namespace ubv.common
     {
         public float MaxShootingDist = 15f;
         public float BulletDelay;
+        public GameObject GunHitPrefab;
     }
 }
