@@ -10,7 +10,7 @@ public class HealthBar : MonoBehaviour
     public void Setup(HealthSystem healthSystem)
     {
         m_healthSystem = healthSystem;
-        m_healthSystem.OnHealthChanged.AddListener(HealthSystemOnHealthChanged);
+        m_healthSystem.OnHealthChanged += HealthSystemOnHealthChanged;
 
         UpdateHealthBar();
     }

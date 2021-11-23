@@ -27,6 +27,7 @@ namespace ubv
                 public serialization.types.Vector2 Position;
                 public serialization.types.Vector2 ShootingDirection;
                 public serialization.types.Int32 GUID;
+                public serialization.types.Int32 CurrentHP;
 
                 public PlayerState() : base()
                 {
@@ -35,8 +36,9 @@ namespace ubv
                     ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(0);
                     States = new utils.Bitset();
+                    CurrentHP = new serialization.types.Int32(0);
 
-                    InitSerializableMembers(Position, Velocity, ShootingDirection, GUID, States);
+                    InitSerializableMembers(Position, Velocity, ShootingDirection, GUID, States, CurrentHP);
                 }
 
                 public PlayerState(int playerID) : base()
@@ -46,8 +48,9 @@ namespace ubv
                     ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(playerID);
                     States = new utils.Bitset();
+                    CurrentHP = new serialization.types.Int32(0);
 
-                    InitSerializableMembers(Position, Velocity, ShootingDirection, GUID, States);
+                    InitSerializableMembers(Position, Velocity, ShootingDirection, GUID, States, CurrentHP);
                 }
 
                 public PlayerState(PlayerState player) : base()
@@ -57,8 +60,9 @@ namespace ubv
                     ShootingDirection = new serialization.types.Vector2(Vector2.zero);
                     GUID = new serialization.types.Int32(player.GUID.Value);
                     States = new utils.Bitset();
+                    CurrentHP = new serialization.types.Int32(player.CurrentHP.Value);
 
-                    InitSerializableMembers(Position, Velocity, ShootingDirection, GUID, States);
+                    InitSerializableMembers(Position, Velocity, ShootingDirection, GUID, States, CurrentHP);
                 }
                 
                 protected override ID.BYTE_TYPE SerializationID()
@@ -93,6 +97,11 @@ namespace ubv
                     }
 
                     if (other.States.IsDifferent(States))
+                    {
+                        return true;
+                    }
+
+                    if (other.CurrentHP.Value != CurrentHP.Value)
                     {
                         return true;
                     }
