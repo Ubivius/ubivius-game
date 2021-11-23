@@ -41,7 +41,7 @@ namespace ubv
                             hit.point = player.transform.position + (shootingDirection.normalized * playerShootingSettings.MaxShootingDist);
                         }
 
-                        // animation de gun ou qqchose vient se plug ici ?
+                        Instantiate(playerShootingSettings.GunHitPrefab, hit.point, Quaternion.identity);
 
                         Debug.DrawLine(player.transform.position, hit.point, Color.green, 0.25f);
 
