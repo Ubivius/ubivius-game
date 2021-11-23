@@ -206,7 +206,7 @@ GameObject:
   - component: {fileID: 160192689}
   - component: {fileID: 160192690}
   m_Layer: 0
-  m_Name: ClientAchievementsScene
+  m_Name: ClientAchievementScene
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -238,7 +238,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 160192688}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07cfdaf97ba118a42913b05386668eb2, type: 3}
+  m_Script: {fileID: 11500000, guid: 42e3283e9faad44109e2936b368555c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &169884647
@@ -1038,6 +1038,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 403978ae302897f4c829a44bf3bae0e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_achievementState: {fileID: 160192688}
   m_achievementPrefab: {fileID: 4636940300902928911, guid: 8f0f1e12aaa92ae42996150094097e44,
     type: 3}
   m_content: {fileID: 2075782362}
