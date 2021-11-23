@@ -27,7 +27,7 @@ namespace ubv
                     {
                         Debug.Log("Trying to shoot");
                         Vector3 shootingDirection = new Vector3(aimDirection.x, aimDirection.y, 0.0f);
-                        RaycastHit2D hit = Physics2D.Raycast(player.transform.position, shootingDirection, playerShootingSettings.MaxShootingDist, ~LayerMask.GetMask("Players"));
+                        RaycastHit2D hit = Physics2D.Raycast(player.transform.position, shootingDirection, playerShootingSettings.MaxShootingDist/*, ~LayerMask.GetMask("Players")*/);
 
                         if (hit.collider != null)
                         {
