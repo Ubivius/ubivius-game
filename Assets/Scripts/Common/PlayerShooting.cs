@@ -25,10 +25,10 @@ namespace ubv
 
                     if (m_playerLastShot[player] > playerShootingSettings.BulletDelay)
                     {
-                        Debug.Log("Trying to shoot, max dist =" + playerShootingSettings.MaxShootingDist);
                         Vector3 shootingDirection = new Vector3(aimDirection.x, aimDirection.y, 0.0f);
+                        Debug.Log("Trying to shoot, player pos = " + player.transform.position + ", dir = " + shootingDirection);
                         RaycastHit2D hit = Physics2D.Raycast(player.transform.position, shootingDirection, playerShootingSettings.MaxShootingDist, ~LayerMask.GetMask("Players"));
-
+                        Debug.Log("Hit :" + hit.ToString());
                         if (hit.collider != null)
                         {
                             Hittable hittable = hit.collider.GetComponent<Hittable>();
