@@ -243,7 +243,6 @@ MonoBehaviour:
   - {fileID: 352309656}
   - {fileID: 748845329}
   - {fileID: 969313555}
-  m_packetLossChance: 0
 --- !u!4 &134844666
 Transform:
   m_ObjectHideFlags: 0
