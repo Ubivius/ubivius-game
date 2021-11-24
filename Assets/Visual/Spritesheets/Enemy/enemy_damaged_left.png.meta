@@ -1,7 +1,13 @@
 fileFormatVersion: 2
-guid: 830c6c8153717ff46945492cfb1aef80
+guid: 3aa29aa644eee69438838cda0afde6a9
 TextureImporter:
-  internalIDToNameTable: []
+  internalIDToNameTable:
+  - first:
+      213: 645821404396439558
+    second: enemy_damaged_left_0
+  - first:
+      213: -6707849038717080304
+    second: enemy_damaged_left_1
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -45,7 +51,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 20
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -97,7 +103,49 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: enemy_damaged_left_0
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 123
+        width: 92
+        height: 124
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 608c465452b66f800800000000000000
+      internalID: 645821404396439558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: enemy_damaged_left_1
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 0
+        width: 92
+        height: 123
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 01da258c6dee8e2a0800000000000000
+      internalID: -6707849038717080304
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []

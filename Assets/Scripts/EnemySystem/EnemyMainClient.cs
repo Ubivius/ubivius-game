@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using ubv.client.logic;
 using UnityEngine;
 using ubv.server.logic.ai;
 using ubv.common.gameplay.shooting;
@@ -10,6 +12,7 @@ public class EnemyMainClient : MonoBehaviour
 {
     [SerializeField] public int MaxHealthPoint = 100;
     [SerializeField] private int m_damagePoints = 25;
+    [SerializeField] public PlayerAnimator playerAnimator;
 
     public Rigidbody2D EnemyRigidbody2D { get; private set; }
     public HealthSystem HealthSystem { get; private set; }

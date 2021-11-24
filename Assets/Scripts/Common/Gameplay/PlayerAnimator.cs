@@ -35,11 +35,30 @@ namespace ubv.client.logic
                     m_animator.SetFloat("Last Horizontal", m_lastXVelocity.x);
                     m_animator.SetFloat("Last Vertical", m_lastXVelocity.y);
                 }
-                    
             }
+        }
+
+       public void Kill()
+        {
+            m_animator.SetBool("IsDead", true);
+        }
+
+       public void Revive()
+       {
+           m_animator.SetBool("IsDead", false);
+       }
+
+        public void Damage() {
+            m_animator.SetTrigger("Damage");
+        }
+
+        public void Attack() {
+            m_animator.SetTrigger("Attack");
+        }
+
+        public void UpdateAimingDirection(Vector2 a_shootingDirection) {
+            m_animator.SetFloat("Aiming X", a_shootingDirection.x);
+            m_animator.SetFloat("Aiming Y", a_shootingDirection.y);
         }
     }
 }
-
-
-
