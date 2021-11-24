@@ -12,6 +12,12 @@ namespace ubv.ui.client
     public class ClientPauseMenuUI : TabBehaviour
     {
         [SerializeField] private ClientSyncPlay m_gameState;
+        [SerializeField] private Button m_defaultButton;
+
+        private void OnEnable()
+        {
+            m_defaultButton.Select();
+        }
 
         public void LeaveGame()
         {

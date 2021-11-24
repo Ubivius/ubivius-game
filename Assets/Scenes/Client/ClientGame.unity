@@ -1007,6 +1007,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_gameState: {fileID: 134844665}
+  m_defaultButton: {fileID: 450494987}
 --- !u!1 &482350416
 GameObject:
   m_ObjectHideFlags: 0
