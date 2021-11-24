@@ -71,5 +71,10 @@ namespace ubv.common.gameplay
         {
             return !m_healthSystem.IsDead;
         }
+
+        public int GetMaxHealth()
+        {
+            return (int)m_defaultMaxHealth;
+        }
     }
 }
