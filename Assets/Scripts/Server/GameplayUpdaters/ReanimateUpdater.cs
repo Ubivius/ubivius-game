@@ -25,6 +25,7 @@ namespace ubv.server.logic
 
         public override void FixedUpdateFromClient(WorldState state, Dictionary<int, InputFrame> frame, float deltaTime)
         {
+            Debug.Log("Dans FixedUpdateFromClient");
             foreach (int id in state.Players().Keys)
             {
                 // Faire le check présence client
