@@ -28,6 +28,9 @@ namespace ubv.client.logic
             SUBSTATE_END
         }
 
+        [SerializeField] private AudioClip m_mainGameTrack;
+        [SerializeField] private AudioClip m_defaultTrack;
+
         [SerializeField] private string m_menuScene;
         [SerializeField] private string m_EndScene;
         [SerializeField] private string m_physicsScene;
@@ -99,6 +102,7 @@ namespace ubv.client.logic
         public override void OnStart()
         {
             Init(data.LoadingData.ServerInit);
+            client.audio.MainAudio.SetMainTrack(m_mainGameTrack);
         }
 
         private void Init(ServerInitMessage serverInit)
@@ -466,6 +470,7 @@ namespace ubv.client.logic
             m_server.OnTCPReceive += ReceiveTCP;
             m_server.OnUDPReceive += ReceiveUDP;
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
+            client.audio.MainAudio.SetMainTrack(m_defaultTrack);
         }
 
         protected override void StatePause()

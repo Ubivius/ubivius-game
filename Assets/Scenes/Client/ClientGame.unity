@@ -231,6 +231,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd061c09ef56aae4aad8621ac5bd44f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_mainGameTrack: {fileID: 8300000, guid: dc42c4fd7d55da64f918e0d76334abe1, type: 3}
+  m_defaultTrack: {fileID: 8300000, guid: 9769a64709867fc4b85b6352fdc65831, type: 3}
   m_menuScene: ClientMenu
   m_EndScene: ClientEndGame
   m_physicsScene: ClientGame

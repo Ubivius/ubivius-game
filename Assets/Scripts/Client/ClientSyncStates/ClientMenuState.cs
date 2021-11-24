@@ -9,6 +9,8 @@ namespace ubv.client
 {
     public class ClientMenuState : ClientSyncState
     {
+        [SerializeField] private AudioClip m_mainMenuTrack;
+
         [SerializeField] private string m_clientGameSearch;
         [SerializeField] private string m_clientCharacterSelect;
         [SerializeField] private string m_clientMyCharatcers;
@@ -31,6 +33,8 @@ namespace ubv.client
                     RejoinGame();
                 }
             }
+
+            client.audio.MainAudio.SetMainTrack(m_mainMenuTrack);
         }
 
         public void RejoinGame()
