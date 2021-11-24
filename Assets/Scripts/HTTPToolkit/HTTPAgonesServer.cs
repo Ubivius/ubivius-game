@@ -91,6 +91,7 @@ namespace ubv.http.agonesServer
             if (ok)
             {
                 Debug.Log($"Agones Server - Game server shutting down");
+                Application.Quit();
             }
             else
             {
@@ -101,8 +102,7 @@ namespace ubv.http.agonesServer
 
         void OnDestroy()
         {
-            Debug.Log("Agones Server - Close");
-            ShutdownGameServer();
+            Debug.Log("Agones Server - Destroyed");
         }
     }
 }

@@ -16,6 +16,7 @@ namespace ubv.client
 
         public void GoToMenu()
         {
+            Debug.Log("BONJOUR JE SUIS LE BOUTON DU MENU");
             ClientStateManager.Instance.BackToScene(m_clientGameMenu);
         }
 
