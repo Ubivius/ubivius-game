@@ -21,6 +21,7 @@ namespace ubv.ui.client
         [SerializeField] private PlayerInLobby m_playerTwo;
         [SerializeField] private PlayerInLobby m_playerThree;
         [SerializeField] private int m_refreshRateUsers = 37;
+        [SerializeField] private TextMeshProUGUI m_gameIDText;
         private PlayerInLobby[] m_playersInLobby;
 
         private UserInfo m_activeUser;
@@ -46,6 +47,8 @@ namespace ubv.ui.client
             m_activeUser = m_lobby.GetActiveUser();
             m_lobby.OnClientCharacterListUpdate += UpdatePlayers;
             m_lobby.OnReadyClientSetUpdate += UpdateReadiness;
+
+            m_gameIDText.text = ubv.client.data.LoadingData.GameID;
 
             m_playerOne.HidePlayer();
             m_playerTwo.HidePlayer();
