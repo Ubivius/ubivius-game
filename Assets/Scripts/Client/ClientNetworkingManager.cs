@@ -19,6 +19,7 @@ namespace ubv.client.logic
         public SocialServicesController SocialServices;
         public CharacterDataService CharacterData;
         public DispatcherMicroservice Dispatcher;
+        public AchievementService AchievementService;
 
         private void Awake()
         {

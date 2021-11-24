@@ -32,6 +32,7 @@ public class EnemyMainServer : MonoBehaviour
 
     private void Hit()
     {
+        Debug.Log("Enemy is hit!");
         HealthSystem.Damage(m_damagePoints);
     }
 

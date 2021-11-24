@@ -48,13 +48,11 @@ namespace ubv.common.gameplay
 
         public void Damage(int damage)
         {
-            Debug.Log("Ouch! ");
             m_healthSystem.Damage(damage);
         }
 
         public void Heal(int healing)
         {
-            Debug.Log("Heal! ");
             m_healthSystem.Heal(healing);
         }
 

@@ -27,7 +27,6 @@ namespace ubv
                     {
                         Vector3 shootingDirection = new Vector3(aimDirection.x, aimDirection.y, 0.0f);
                         RaycastHit2D hit = Physics2D.Raycast(player.transform.position, shootingDirection, playerShootingSettings.MaxShootingDist, ~LayerMask.GetMask("Players"));
-
                         if (hit.collider != null)
                         {
                             Hittable hittable = hit.collider.GetComponent<Hittable>();
@@ -41,7 +40,7 @@ namespace ubv
                             hit.point = player.transform.position + (shootingDirection.normalized * playerShootingSettings.MaxShootingDist);
                         }
 
-                        // animation de gun ou qqchose vient se plug ici ?
+                        Instantiate(playerShootingSettings.GunHitPrefab, hit.point, Quaternion.identity);
 
                         Debug.DrawLine(player.transform.position, hit.point, Color.green, 0.25f);
 
