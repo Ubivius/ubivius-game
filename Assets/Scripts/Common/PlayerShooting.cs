@@ -23,9 +23,6 @@ namespace ubv
                         return;
                     }
 
-#if !UNITY_SERVER
-                    client.audio.MainAudio.PlayOnce(playerShootingSettings.PlayerShootClip, 0.5f);
-#endif
                     if (!m_playerLastShot.ContainsKey(player))
                     {
                         m_playerLastShot.Add(player, playerShootingSettings.BulletDelay + 1);
@@ -33,6 +30,9 @@ namespace ubv
 
                     if (m_playerLastShot[player] > playerShootingSettings.BulletDelay)
                     {
+#if !UNITY_SERVER
+                        client.audio.MainAudio.PlayOnce(playerShootingSettings.PlayerShootClip, 0.5f);
+#endif
                         Vector3 shootingDirection = new Vector3(aimDirection.x, aimDirection.y, 0.0f);
                         RaycastHit2D hit = Physics2D.Raycast(player.transform.position, shootingDirection, playerShootingSettings.MaxShootingDist, ~LayerMask.GetMask("Players"));
                         if (hit.collider != null)
