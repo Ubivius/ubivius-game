@@ -196,7 +196,7 @@ namespace ubv.microservices
                         Debug.Log("Conversation messages: ");
                         foreach (MessageInfo msg in messages)
                         {
-                            m_users.Request(new GetUserInfoRequest(msg.UserID, (UserInfo info) =>
+                            m_users.Request(new GetUserInfoByIDRequest(msg.UserID, (UserInfo info) =>
                             {
                                 Debug.Log(info.UserName + ": " + msg.Text);
                             }));

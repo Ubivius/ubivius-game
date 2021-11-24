@@ -22,11 +22,11 @@ namespace ubv.server.logic
             {
                 m_serverConnection.TCPServer.Send(new ServerEndsMessage().GetBytes(), id);
             }
+            m_agones.ShutdownGameServer();
         }
 
         protected override void StateStart() 
         {
-            m_agones.ShutdownGameServer();
         }
 
 

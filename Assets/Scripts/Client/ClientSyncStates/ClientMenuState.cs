@@ -3,6 +3,7 @@ using System.Collections;
 using ubv.client.logic;
 using System;
 using UnityEngine.EventSystems;
+using ubv.microservices;
 
 namespace ubv.client
 {
@@ -52,14 +53,23 @@ namespace ubv.client
             ClientStateManager.Instance.PushScene(m_clientAchievements);
         }
 
+        public void Quit()
+        {
+            SocialServices.UpdateUserStatus(StatusType.Offline);
+            Application.Quit();
+        }
+
         protected override void StateLoad()
-        { }
+        {
+            SocialServices.UpdateUserStatus(StatusType.Online);
+        }
 
         protected override void StatePause()
         { }
 
         protected override void StateResume()
         {
+            SocialServices.UpdateUserStatus(StatusType.Online);
             m_eventSystem.UpdateModules();
         }
 
