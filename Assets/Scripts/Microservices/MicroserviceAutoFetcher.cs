@@ -29,8 +29,8 @@ namespace ubv.microservices
 
             if (m_fetchTimer >= m_fetchInterval)
             {
-                m_fetchTimer = 0;
                 m_readyToFetch = false;
+                m_fetchTimer = 0;
                 FetchLogic.Invoke();
             }
         }

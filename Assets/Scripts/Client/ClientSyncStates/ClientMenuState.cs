@@ -55,7 +55,7 @@ namespace ubv.client
 
         public void Quit()
         {
-            SocialServices.UpdateUserStatus(microservices.StatusType.Offline);
+            SocialServices.UpdateUserStatus(StatusType.Offline);
             Application.Quit();
         }
 
