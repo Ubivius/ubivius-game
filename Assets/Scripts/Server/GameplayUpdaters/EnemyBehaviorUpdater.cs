@@ -24,12 +24,10 @@ namespace ubv.server.logic
         private Dictionary<int, Rigidbody2D> m_bodies;
         private Dictionary<int, EnemyMovementUpdater> m_enemyMovementUpdaters;
         private Dictionary<int, EnemyMainServer> m_enemyMain;
-
-        private bool m_readyToUpdate;
+        
 
         public override void Setup()
         {
-            m_readyToUpdate = false;
             m_bodies = new Dictionary<int, Rigidbody2D>();
             m_enemies = new Dictionary<int, EnemyState>();
             m_enemyMovementUpdaters = new Dictionary<int, EnemyMovementUpdater>();
@@ -44,8 +42,6 @@ namespace ubv.server.logic
         
         public override void FixedUpdateFromClient(WorldState client, Dictionary<int, InputFrame> frames, float deltaTime)
         {
-            if (!m_readyToUpdate)
-                return;
             foreach (int id in m_bodies.Keys)
             {
                 Rigidbody2D body = m_bodies[id];
@@ -59,8 +55,6 @@ namespace ubv.server.logic
 
         public override void UpdateWorld(WorldState client)
         {
-            if (!m_readyToUpdate)
-                return;
             List<int> toRemove = new List<int>();
             List<int> toRemoveLocal = new List<int>();
             foreach (int id in client.Enemies().Keys)
@@ -93,7 +87,7 @@ namespace ubv.server.logic
             }
         }
 
-        private IEnumerator SpawnCoroutine(WorldState state)
+        private void EnemySpawn(WorldState state)
         {
             int i = 0;
             while (i < m_enemyCount)
@@ -122,14 +116,7 @@ namespace ubv.server.logic
                 m_enemies.Add(id, enemyStateData);
                 state.AddEnemy(enemyStateData);
                 ++i;
-                yield return null;
             }
-            m_readyToUpdate = true;
-        }
-
-        private void EnemySpawn(WorldState state)
-        {
-            StartCoroutine(SpawnCoroutine(state));
         }
 
         bool IsEnemyAlive(int id)
