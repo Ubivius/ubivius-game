@@ -143,11 +143,17 @@ namespace ubv.client.logic
                 int diff = currentLocalHP - currentRemoteHP;
 
                 if (diff > 0)
-                {
+                {   
+                    if (currentRemoteHP <= 0)
+                        Players[id].PlayerAnimator.Kill();
+                    else
+                        Players[id].PlayerAnimator.Damage();
                     PlayerControllers[id].Damage(diff);
                 }
                 else if (diff < 0)
                 {
+                    if (currentLocalHP <= 0)
+                        Players[id].PlayerAnimator.Revive();
                     PlayerControllers[id].Heal(diff);
                 }
 

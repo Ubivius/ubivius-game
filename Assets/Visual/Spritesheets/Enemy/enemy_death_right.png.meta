@@ -1,37 +1,31 @@
 fileFormatVersion: 2
-guid: c1ed2c18cf3c8aa45801989cc575ff62
+guid: 502fe882f0e954043a9de5d1a0a1cd59
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7455724843017138735
-    second: enemy_move_left_0
+      213: 2156082188830632565
+    second: enemy_death_right_0
   - first:
-      213: 7396141443369321802
-    second: enemy_move_left_1
+      213: 1548514131941371631
+    second: enemy_death_right_1
   - first:
-      213: -3754116714216271012
-    second: enemy_move_left_2
+      213: -655825612182005318
+    second: enemy_death_right_2
   - first:
-      213: -3789158380948984220
-    second: enemy_move_left_3
+      213: 1044883370515930463
+    second: enemy_death_right_3
   - first:
-      213: 4671192254655392606
-    second: enemy_move_left_4
+      213: -1606962755624578716
+    second: enemy_death_right_4
   - first:
-      213: -965043459683935853
-    second: enemy_move_left_5
+      213: -6188044570372265272
+    second: enemy_death_right_5
   - first:
-      213: 543293690842147391
-    second: enemy_move_left_6
+      213: -4908136233172052951
+    second: enemy_death_right_6
   - first:
-      213: -3582003567605054706
-    second: enemy_move_left_7
-  - first:
-      213: 2877164223472202962
-    second: enemy_move_left_8
-  - first:
-      213: -1809666471111525466
-    second: enemy_move_left_9
+      213: 8033488980636302950
+    second: enemy_death_right_7
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -129,31 +123,10 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: enemy_move_left_0
+      name: enemy_death_right_0
       rect:
         serializedVersion: 2
-        x: 20
-        y: 1116
-        width: 92
-        height: 124
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: f22771b1e3e087760800000000000000
-      internalID: 7455724843017138735
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: enemy_move_left_1
-      rect:
-        serializedVersion: 2
-        x: 20
+        x: 7
         y: 992
         width: 92
         height: 124
@@ -164,17 +137,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a45c290d47f54a660800000000000000
-      internalID: 7396141443369321802
+      spriteID: 57aebcbc351fbed10800000000000000
+      internalID: 2156082188830632565
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: enemy_move_left_2
+      name: enemy_death_right_1
       rect:
         serializedVersion: 2
-        x: 20
+        x: 7
         y: 868
         width: 92
         height: 124
@@ -185,17 +158,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c5358c31db2b6ebc0800000000000000
-      internalID: -3754116714216271012
+      spriteID: feea90c066d6d7510800000000000000
+      internalID: 1548514131941371631
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: enemy_move_left_3
+      name: enemy_death_right_2
       rect:
         serializedVersion: 2
-        x: 20
+        x: 7
         y: 744
         width: 92
         height: 124
@@ -206,17 +179,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 46e67d147843a6bc0800000000000000
-      internalID: -3789158380948984220
+      spriteID: ab9d947941a06e6f0800000000000000
+      internalID: -655825612182005318
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: enemy_move_left_4
+      name: enemy_death_right_3
       rect:
         serializedVersion: 2
-        x: 20
+        x: 7
         y: 620
         width: 92
         height: 124
@@ -227,17 +200,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e5b6a484b9863d040800000000000000
-      internalID: 4671192254655392606
+      spriteID: f5d9053b3eb208e00800000000000000
+      internalID: 1044883370515930463
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: enemy_move_left_5
+      name: enemy_death_right_4
       rect:
         serializedVersion: 2
-        x: 20
+        x: 7
         y: 496
         width: 92
         height: 124
@@ -248,17 +221,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 39999b0261a7b92f0800000000000000
-      internalID: -965043459683935853
+      spriteID: 461d6b743ebe2b9e0800000000000000
+      internalID: -1606962755624578716
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: enemy_move_left_6
+      name: enemy_death_right_5
       rect:
         serializedVersion: 2
-        x: 20
+        x: 7
         y: 372
         width: 92
         height: 124
@@ -269,17 +242,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f3a6b5bbbba2a8700800000000000000
-      internalID: 543293690842147391
+      spriteID: 8ca2da8bf36af1aa0800000000000000
+      internalID: -6188044570372265272
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: enemy_move_left_7
+      name: enemy_death_right_6
       rect:
         serializedVersion: 2
-        x: 20
+        x: 7
         y: 248
         width: 92
         height: 124
@@ -290,17 +263,17 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e0308b8cbba2a4ec0800000000000000
-      internalID: -3582003567605054706
+      spriteID: 9245e80b91cc2ebb0800000000000000
+      internalID: -4908136233172052951
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: enemy_move_left_8
+      name: enemy_death_right_7
       rect:
         serializedVersion: 2
-        x: 20
+        x: 7
         y: 124
         width: 92
         height: 124
@@ -311,29 +284,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2d4f58c0e9dbde720800000000000000
-      internalID: 2877164223472202962
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: enemy_move_left_9
-      rect:
-        serializedVersion: 2
-        x: 20
-        y: 0
-        width: 92
-        height: 124
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6ab767bbee5c2e6e0800000000000000
-      internalID: -1809666471111525466
+      spriteID: 66e77d52aafac7f60800000000000000
+      internalID: 8033488980636302950
       vertices: []
       indices: 
       edges: []

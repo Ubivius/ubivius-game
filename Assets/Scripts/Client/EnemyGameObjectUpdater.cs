@@ -76,8 +76,13 @@ namespace ubv.client.logic
                         m_bodies[enemy.GUID.Value].position = enemy.Position.Value;
                     }
 
-                    if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() != enemy.HealthPoint.Value)
+                    if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() != enemy.HealthPoint.Value) 
                     {
+                        if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() <= 0) 
+                            m_enemyMain[enemy.GUID.Value].playerAnimator.Kill();
+                        else 
+                            m_enemyMain[enemy.GUID.Value].playerAnimator.Damage();
+                        
                         m_enemyMain[enemy.GUID.Value].HealthSystem.SetHealthPoint(enemy.HealthPoint.Value);
                     }
 
@@ -124,7 +129,8 @@ namespace ubv.client.logic
             {
                 if (IsEnemyAlive(enemyKey))
                 {
-                    Destroy(m_bodies[enemyKey].transform.gameObject);
+                    //Destroy(m_bodies[enemyKey].transform.gameObject);
+                    m_bodies[enemyKey].velocity = Vector2.zero;
                     m_bodies.Remove(enemyKey);
                     m_enemies.Remove(enemyKey);
                     m_enemyMain.Remove(enemyKey);

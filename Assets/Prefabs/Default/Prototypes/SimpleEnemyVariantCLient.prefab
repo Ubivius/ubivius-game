@@ -13,7 +13,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxHealthPoint: 100
-  DamagePoint: 25
+  m_damagePoints: 25
+  playerAnimator: {fileID: 2878497339594289176}
+--- !u!114 &2878497339594289176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3188290116599518035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fa40ce8df21afb4d8496d80cecfe14f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_body: {fileID: 3188290116599518034}
 --- !u!1001 &2717736607014455361
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -122,6 +136,12 @@ PrefabInstance:
 --- !u!1 &3188290116599518035 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 686873656258829074, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
+    type: 3}
+  m_PrefabInstance: {fileID: 2717736607014455361}
+  m_PrefabAsset: {fileID: 0}
+--- !u!50 &3188290116599518034 stripped
+Rigidbody2D:
+  m_CorrespondingSourceObject: {fileID: 686873656258829075, guid: 0fc42a915c8c2e84b88bbc5e57441d03,
     type: 3}
   m_PrefabInstance: {fileID: 2717736607014455361}
   m_PrefabAsset: {fileID: 0}
