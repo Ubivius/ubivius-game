@@ -39,15 +39,17 @@ namespace ubv.server.logic
                             playersId.Add(id2);
                         }
                     }
-
+                    Debug.Log("J'appuie sur intéragir");
                     foreach (int id2 in playersId)
                     {
                         Vector2 playerPos = state.Players()[id2].Position.Value;
                         float diff = (currentPlayerPosition - playerPos).sqrMagnitude;
                         if (diff <= c_buttonDistance)
                         {
+                            Debug.Log("Je suis à côter d'un joueur");
                             if (!m_playerMouvementUpdater.IsPlayerAlive(id2))
                             {
+                                Debug.Log("Je Heal un joueurs à terre");
                                 m_playerMouvementUpdater.Heal(id2);
                             }
                         }
