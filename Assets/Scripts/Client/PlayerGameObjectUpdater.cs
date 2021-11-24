@@ -11,6 +11,8 @@ namespace ubv.client.logic
     /// </summary>
     public class PlayerGameObjectUpdater : ClientStateUpdater
     {
+        [SerializeField] private AudioClip m_playerHurtClip;
+
         [SerializeField] private int m_maxLerpFrames = 10;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
@@ -149,6 +151,7 @@ namespace ubv.client.logic
                     else
                         Players[id].PlayerAnimator.Damage();
                     PlayerControllers[id].Damage(diff);
+                    client.audio.MainAudio.PlayOnce(m_playerHurtClip);
                 }
                 else if (diff < 0)
                 {

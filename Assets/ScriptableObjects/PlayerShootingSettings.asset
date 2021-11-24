@@ -16,3 +16,4 @@ MonoBehaviour:
   BulletDelay: 0.25
   GunHitPrefab: {fileID: 488842132039589032, guid: 23a7d9b8e2fea104daf51ea5fd320853,
     type: 3}
+  PlayerShootClip: {fileID: 8300000, guid: 7b37520298fcc454d83d708bffdd32f9, type: 3}

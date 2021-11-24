@@ -23,6 +23,9 @@ namespace ubv
                         return;
                     }
 
+#if !UNITY_SERVER
+                    client.audio.MainAudio.PlayOnce(playerShootingSettings.PlayerShootClip, 0.5f);
+#endif
                     if (!m_playerLastShot.ContainsKey(player))
                     {
                         m_playerLastShot.Add(player, playerShootingSettings.BulletDelay + 1);

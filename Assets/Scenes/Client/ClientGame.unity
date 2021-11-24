@@ -1087,6 +1087,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66fb5cb2c76006842817f259375f9096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_playerHurtClip: {fileID: 8300000, guid: 9b266db44944b6a4b89db378c7fbf697, type: 3}
   m_maxLerpFrames: 10
   m_correctionTolerance: 0.5
   m_playerSettings: {fileID: 11400000, guid: b8d133b304cd13c40b0e4e4a37bb5595, type: 2}
