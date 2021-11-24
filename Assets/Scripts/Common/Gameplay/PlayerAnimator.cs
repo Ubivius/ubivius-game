@@ -35,7 +35,6 @@ namespace ubv.client.logic
                     m_animator.SetFloat("Last Horizontal", m_lastXVelocity.x);
                     m_animator.SetFloat("Last Vertical", m_lastXVelocity.y);
                 }
-                    
             }
         }
 
@@ -63,6 +62,3 @@ namespace ubv.client.logic
         }
     }
 }
-
-
-
