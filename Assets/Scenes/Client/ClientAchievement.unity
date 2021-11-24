@@ -970,7 +970,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_FirstSelected: {fileID: 0}
+  m_FirstSelected: {fileID: 169884647}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
 --- !u!4 &818598040
@@ -1036,7 +1036,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 932389606}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 403978ae302897f4c829a44bf3bae0e2, type: 3}
+  m_Script: {fileID: 11500000, guid: 603c9a28896c9724792933b3146db8e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_achievementState: {fileID: 160192690}
@@ -1173,7 +1173,17 @@ PrefabInstance:
     - target: {fileID: 4639765599762925539, guid: 03305cafba4f2164c964bf389cec91b2,
         type: 3}
       propertyPath: m_UiScaleMode
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4639765599762925539, guid: 03305cafba4f2164c964bf389cec91b2,
+        type: 3}
+      propertyPath: m_ReferenceResolution.x
+      value: 1920
+      objectReference: {fileID: 0}
+    - target: {fileID: 4639765599762925539, guid: 03305cafba4f2164c964bf389cec91b2,
+        type: 3}
+      propertyPath: m_ReferenceResolution.y
+      value: 1080
       objectReference: {fileID: 0}
     - target: {fileID: 4639765599762925541, guid: 03305cafba4f2164c964bf389cec91b2,
         type: 3}

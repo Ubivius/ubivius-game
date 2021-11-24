@@ -939,12 +939,12 @@ PrefabInstance:
     - target: {fileID: 7336287852514340355, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_ReferenceResolution.x
-      value: 1600
+      value: 1920
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340355, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_ReferenceResolution.y
-      value: 900
+      value: 1080
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340380, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
