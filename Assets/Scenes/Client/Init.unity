@@ -210,6 +210,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1635190253 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3425702765846388672, guid: c732e1b58c017874bbf5da45531902cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 1877816069}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a8c4cbe801a6d0409e0b584b0234c56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1651257018
 GameObject:
   m_ObjectHideFlags: 0
@@ -414,6 +426,21 @@ PrefabInstance:
       propertyPath: m_RootOrder
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 3425702765846388672, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_timerOffset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3425702765846388672, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_fetchInterval
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3425702765846388672, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_conversationFetchInterval
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 4058432572729070908, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_timerOffset
@@ -483,6 +510,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_timerOffset
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6443474415815815136, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_fetchInterval
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6443474415815815136, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -641,6 +673,11 @@ PrefabInstance:
       propertyPath: m_HTTPClient
       value: 
       objectReference: {fileID: 1877816073}
+    - target: {fileID: 8253229592228528839, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_friendsFetcher
+      value: 
+      objectReference: {fileID: 1635190253}
     - target: {fileID: 8253229592228528839, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
@@ -902,12 +939,12 @@ PrefabInstance:
     - target: {fileID: 7336287852514340355, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_ReferenceResolution.x
-      value: 1600
+      value: 1920
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340355, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_ReferenceResolution.y
-      value: 900
+      value: 1080
       objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340380, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}

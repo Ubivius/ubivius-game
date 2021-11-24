@@ -166,6 +166,7 @@ namespace ubv.client.logic
 
         private void GoToGame()
         {
+            SocialServices.UpdateUserStatus(StatusType.InGame);
             m_currentSubState = SubState.SUBSTATE_TRANSITION;
             ClientStateManager.Instance.PushScene(m_clientPlayScene);
         }
