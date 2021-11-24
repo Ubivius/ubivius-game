@@ -64,7 +64,7 @@ namespace ubv.ui.client
 
         void Start() {
             TextChatIsExpanded = false;
-            m_textChatIsActive = false;
+            m_textChatIsActive = true;
             TextChatIsHidden = true;
             ToggleDisplayChat();
 
@@ -95,7 +95,6 @@ namespace ubv.ui.client
 
             if (Input.GetKeyDown(KeyCode.Escape) && m_textChatIsActive)
             {
-                m_textChatIsActive = false;
                 TextChatIsHidden = true;
                 ToggleDisplayChat();
                 m_messageInputField.DeactivateInputField();
@@ -121,10 +120,8 @@ namespace ubv.ui.client
 
         public void ToggleDisplayChat() {
 
-            if (TextChatIsExpanded && !TextChatIsHidden)
-                m_shrinkButton.gameObject.SetActive(m_textChatIsActive);
-            else
-                m_expandButton.gameObject.SetActive(m_textChatIsActive);
+            m_shrinkButton.gameObject.SetActive(m_textChatIsActive && TextChatIsExpanded && !TextChatIsHidden);
+            m_expandButton.gameObject.SetActive(m_textChatIsActive && !TextChatIsExpanded && !TextChatIsHidden);
 
             var t_color = m_chatBox.GetComponent<Image>().color;
 
@@ -142,10 +139,8 @@ namespace ubv.ui.client
             m_messageInputField.gameObject.SetActive(m_textChatIsActive);
             m_sendButton.gameObject.SetActive(m_textChatIsActive);
 
-            if (TextChatIsHidden)
-                m_showButton.gameObject.SetActive(m_textChatIsActive);
-            else
-                m_hideButton.gameObject.SetActive(m_textChatIsActive);
+            m_showButton.gameObject.SetActive(m_textChatIsActive && TextChatIsHidden);
+            m_hideButton.gameObject.SetActive(m_textChatIsActive && !TextChatIsHidden);
 
         }
 
