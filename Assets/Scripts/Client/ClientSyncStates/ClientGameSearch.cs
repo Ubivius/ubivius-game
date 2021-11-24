@@ -136,6 +136,7 @@ namespace ubv.client.logic
 
         private void OnServerInfoReceived(ServerInfo info)
         {
+            Debug.Log("Server info : " + info.GameID + ", " + info.ServerTCPAddress);
             data.LoadingData.GameID = info.GameID;
             data.ClientCacheData.SaveCache(info.GameID);
             EstablishConnectionToServer(info);

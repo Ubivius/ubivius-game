@@ -29,7 +29,7 @@ namespace ubv.microservices
         [System.Serializable]
         private struct JSONServerInfo
         {
-            public string game_id;
+            public string server_id;
             public string server_ip;
             public int tcp_port;
             public int udp_port;
@@ -39,7 +39,7 @@ namespace ubv.microservices
         {
             Debug.Log("Received response");
             JSONServerInfo jsonInfo = JsonUtility.FromJson<JSONServerInfo>(JSON);
-            ServerInfo serverInfo = new ServerInfo(jsonInfo.game_id, jsonInfo.server_ip, jsonInfo.server_ip, jsonInfo.tcp_port, jsonInfo.udp_port);
+            ServerInfo serverInfo = new ServerInfo(jsonInfo.server_id, jsonInfo.server_ip, jsonInfo.server_ip, jsonInfo.tcp_port, jsonInfo.udp_port);
 
             originalRequest.SuccessCallback.Invoke(serverInfo);
         }
@@ -47,7 +47,7 @@ namespace ubv.microservices
         protected override void OnPostResponse(string JSON, PostServerRequest originalRequest)
         {
             JSONServerInfo jsonInfo = JsonUtility.FromJson<JSONServerInfo>(JSON);
-            ServerInfo serverInfo = new ServerInfo(jsonInfo.game_id, jsonInfo.server_ip, jsonInfo.server_ip, jsonInfo.tcp_port, jsonInfo.udp_port);
+            ServerInfo serverInfo = new ServerInfo(jsonInfo.server_id, jsonInfo.server_ip, jsonInfo.server_ip, jsonInfo.tcp_port, jsonInfo.udp_port);
 
             originalRequest.Success?.Invoke(serverInfo);
         }
