@@ -18,6 +18,7 @@ namespace ubv.ui.client
         [SerializeField] private GameObject m_friendsList;
         [SerializeField] private GameObject m_friendsListBox;
         [SerializeField] private GameObject m_invitesListBox;
+        [SerializeField] private RectTransform m_friendsListContent;
         [SerializeField] private FriendsListHeader m_inviteHeader;
         [SerializeField] private FriendsListHeader m_friendHeader;
         [SerializeField] private InviteUI m_invitePrefab;
@@ -45,9 +46,7 @@ namespace ubv.ui.client
         private UserInfo m_activeUser;
         private bool m_inviteSent;
         private float m_timerNotif;
-        [SerializeField] private float m_timerDelayNotif = 10.0f;
-
-        public bool FriendsListIsHidden { get; set; }
+        [SerializeField] private float m_timerDelayNotif = 4.0f;
 
         private void Awake()
         {
@@ -86,7 +85,6 @@ namespace ubv.ui.client
                 InviteUI invitePrefab = Instantiate(m_invitePrefab, m_invitesListBox.transform);
                 m_invitesPrefabList.Add(invite.RelationID, invitePrefab);
                 invitePrefab.SetInvite(invite);
-                Canvas.ForceUpdateCanvases();
             }
             while (m_newFriendQueue.Count > 0)
             {
@@ -94,13 +92,13 @@ namespace ubv.ui.client
                 FriendUI friendPrefab = Instantiate(m_friendPrefab, m_friendsListBox.transform);
                 m_friendsPrefabList.Add(friend.RelationID, friendPrefab);
                 friendPrefab.SetFriend(friend);
-                Canvas.ForceUpdateCanvases();
             }
             while (m_updateFriendQueue.Count > 0)
             {
                 RelationInfo friend = m_updateFriendQueue.Dequeue();
                 m_friendsPrefabList[friend.RelationID].SetFriend(friend);
             }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(m_friendsListContent);
         }
 
         void Start() {
@@ -141,13 +139,11 @@ namespace ubv.ui.client
         private void OnDeleteInvite(string relationID)
         {
             m_invitesPrefabList.Remove(relationID);
-            Canvas.ForceUpdateCanvases();
         }
 
         public void Hide() {
             m_socialServices.SetFriendslistFetcher(false);
             m_friendsList.SetActive(false);
-            FriendsListIsHidden = true;
 
             m_hideButton.gameObject.SetActive(false);
             m_showButton.gameObject.SetActive(true);
@@ -156,7 +152,6 @@ namespace ubv.ui.client
         public void Show() {
             m_socialServices.SetFriendslistFetcher(true);
             m_friendsList.SetActive(true);
-            FriendsListIsHidden = false;
 
             m_hideButton.gameObject.SetActive(true);
             m_showButton.gameObject.SetActive(false);

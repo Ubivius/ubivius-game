@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 978479862769049960}
   - component: {fileID: 3492780137400773301}
   m_Layer: 5
-  m_Name: InvitesList
+  m_Name: InvitesListBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -172,7 +172,7 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 0.5882353}
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.6698113, g: 0.6698113, b: 0.6698113, a: 1}
     m_PressedColor: {r: 0.5882353, g: 0.5882353, b: 0.5882353, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -692,6 +692,7 @@ MonoBehaviour:
   m_friendsList: {fileID: 1932149009117155696}
   m_friendsListBox: {fileID: 3544779834221599720}
   m_invitesListBox: {fileID: 5108214743068556}
+  m_friendsListContent: {fileID: 708810364190074511}
   m_inviteHeader: {fileID: 8052187375721537367}
   m_friendHeader: {fileID: 5806734590596740410}
   m_invitePrefab: {fileID: 5373546007994484924, guid: 6eee9d6031329124a86b83b71ec56c35,
@@ -709,6 +710,7 @@ MonoBehaviour:
   m_offlineColor: {r: 0.67058825, g: 0, b: 0.047058824, a: 1}
   m_inGameColor: {r: 0, g: 0.6301079, b: 1, a: 1}
   m_timerDelayNotif: 5
+  FriendsListHiddenAtStart: 0
 --- !u!1 &1668925553625576130
 GameObject:
   m_ObjectHideFlags: 0
@@ -1126,7 +1128,7 @@ GameObject:
   - component: {fileID: 1932149009117155698}
   - component: {fileID: 1932149009117155699}
   m_Layer: 0
-  m_Name: Content
+  m_Name: FriendsList
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1175,7 +1177,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.39215687}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.74509805}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1395,7 +1397,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &9101857016656046351
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1647,7 +1649,7 @@ GameObject:
   - component: {fileID: 5763447239196984054}
   - component: {fileID: 2222445882468924703}
   m_Layer: 5
-  m_Name: FriendsList
+  m_Name: FriendsListBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2779,7 +2781,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3049,7 +3051,7 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 0.5882353}
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.754717, g: 0.754717, b: 0.754717, a: 1}
     m_PressedColor: {r: 0.5882353, g: 0.5882353, b: 0.5882353, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
