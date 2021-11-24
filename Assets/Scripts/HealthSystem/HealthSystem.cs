@@ -66,7 +66,6 @@ public class HealthSystem
 
     public void Heal(int amount) 
     {
-        Debug.Log("Dans HealhSystem");
         m_health += amount;
         if (m_health > m_healthMax) 
         {

@@ -53,7 +53,6 @@ namespace ubv.common.gameplay
 
         public void Heal(int healing)
         {
-            Debug.Log("Heal dans le playerController");
             m_healthSystem.Heal(healing);
         }
 

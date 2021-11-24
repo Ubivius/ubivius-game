@@ -102,7 +102,6 @@ namespace ubv.server.logic
 
         public void Heal(int playerID)
         {
-            Debug.Log("Dans le heal de playerMovementUpdater");
             m_playerControllers[playerID].Heal(m_playerControllers[playerID].GetMaxHealth()/2);
         }
     }
