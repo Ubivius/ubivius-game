@@ -105,6 +105,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FirePoint: {fileID: 7993229010338054016}
+  PlayerAnimator: {fileID: -8184666661811255946}
 --- !u!212 &3613650373499371973
 SpriteRenderer:
   m_ObjectHideFlags: 0

@@ -61,9 +61,14 @@ namespace ubv.client.logic
                 common.logic.PlayerShooting.Execute(Players[m_playerGUID], m_playerShootingSettings, m_shootingDirection[m_playerGUID], deltaTime);
             }
         }
-        
-        public override void FixedStateUpdate(float deltaTime)
-        { }
+
+        public override void FixedStateUpdate(float deltaTime) 
+        {
+            foreach (int player in Players.Keys)
+            {
+                Players[player].PlayerAnimator.UpdateAimingDirection(m_shootingDirection[player]);
+            }
+        }
 
         public override void SaveSimulationInState(ref WorldState state)
         {
