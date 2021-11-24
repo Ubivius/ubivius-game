@@ -12,7 +12,12 @@ namespace ubv.client
         [SerializeField] private EventSystem m_eventSystem;
         
         public override void OnStart()
-        { }
+        {
+            data.ClientCacheData.SaveCache(string.Empty);
+            data.LoadingData.GameChatID = string.Empty;
+            data.LoadingData.GameID = string.Empty;
+            m_server.Disconnect();
+        }
 
         public void GoToMenu()
         {
