@@ -18,6 +18,11 @@ namespace ubv
 
                 static public void Execute(PlayerPrefab player, PlayerShootingSettings playerShootingSettings, Vector2 aimDirection, float deltaTime)
                 {
+                    if (!player.GetComponent<gameplay.PlayerController>().IsAlive())
+                    {
+                        return;
+                    }
+
                     if (!m_playerLastShot.ContainsKey(player))
                     {
                         m_playerLastShot.Add(player, playerShootingSettings.BulletDelay + 1);

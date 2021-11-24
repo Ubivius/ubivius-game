@@ -157,6 +157,11 @@ namespace ubv.client.logic
                     PlayerControllers[id].Heal(diff);
                 }
 
+                if(currentRemoteHP <= 0)
+                {
+                    Bodies[id].velocity = Vector2.zero;
+                }
+
                 if (id != m_playerGUID)
                 {
                     // movement

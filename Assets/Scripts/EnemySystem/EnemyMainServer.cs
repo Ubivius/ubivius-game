@@ -8,14 +8,18 @@ using ubv.common.gameplay;
 
 public class EnemyMainServer : MonoBehaviour
 {
+    [SerializeField] private float m_attackRefreshDelay = 0.75f;
     [SerializeField] public int MaxHealthPoint = 100;
     [SerializeField] private int m_damagePoints = 25;
     [SerializeField] private int m_attackPoints = 10;
     public Rigidbody2D EnemyRigidbody2D { get; private set; }
     public HealthSystem HealthSystem { get; private set; }
 
+    private Collider2D m_collider;
+
     private void Awake()
     {
+        m_collider = GetComponent<Collider2D>();
         EnemyRigidbody2D = GetComponent<Rigidbody2D>();
 
         HealthSystem = new HealthSystem(MaxHealthPoint);
@@ -50,6 +54,14 @@ public class EnemyMainServer : MonoBehaviour
         if (player != null)
         {
             player.Damage(m_attackPoints);
+            StartCoroutine(RefreshCollider());
         }
+    }
+
+    private IEnumerator RefreshCollider()
+    {
+        m_collider.enabled = false;
+        yield return new WaitForSeconds(m_attackRefreshDelay);
+        m_collider.enabled = true;
     }
 }
