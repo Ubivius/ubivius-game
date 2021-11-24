@@ -26,7 +26,7 @@ namespace ubv.server.logic
 
         protected override void StateStart() 
         {
-            
+            m_agones.ShutdownGameServer();
         }
 
 
@@ -37,10 +37,6 @@ namespace ubv.server.logic
 
         protected override void StateUpdate()
         {
-            if(m_activeClients.Count <= 0)
-            {
-                m_agones.ShutdownGameServer();
-            }
         }
 
         protected override void OnPlayerConnect(int playerID)
@@ -50,7 +46,6 @@ namespace ubv.server.logic
 
         protected override void OnPlayerDisconnect(int playerID)
         {
-            m_activeClients.Remove(playerID);
             
         }
     }
