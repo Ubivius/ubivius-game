@@ -1275,6 +1275,7 @@ GameObject:
   m_Component:
   - component: {fileID: 712751739}
   - component: {fileID: 712751740}
+  - component: {fileID: 712751741}
   m_Layer: 5
   m_Name: Audio Source
   m_TagString: Untagged
@@ -1311,7 +1312,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: bec56fa66b1f84248903be0484916d72, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 9769a64709867fc4b85b6352fdc65831, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.2
   m_Pitch: 1
@@ -1397,6 +1398,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &712751741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 712751738}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de213fd801010544cbe1e90ecf3d3e06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &787635289
 GameObject:
   m_ObjectHideFlags: 0
@@ -3040,6 +3053,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b694c0d986d43044ba03b11c7d536263, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_mainMenuTrack: {fileID: 8300000, guid: 9769a64709867fc4b85b6352fdc65831, type: 3}
   m_clientGameSearch: ClientGameSearch
   m_clientCharacterSelect: ClientCharacterSelect
   m_clientMyCharatcers: ClientMyCharacters
