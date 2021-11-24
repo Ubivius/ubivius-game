@@ -3,6 +3,7 @@ using System.Collections;
 using ubv.client.logic;
 using System;
 using UnityEngine.EventSystems;
+using ubv.microservices;
 
 namespace ubv.client
 {
@@ -59,13 +60,16 @@ namespace ubv.client
         }
 
         protected override void StateLoad()
-        { }
+        {
+            SocialServices.UpdateUserStatus(StatusType.Online);
+        }
 
         protected override void StatePause()
         { }
 
         protected override void StateResume()
         {
+            SocialServices.UpdateUserStatus(StatusType.Online);
             m_eventSystem.UpdateModules();
         }
 

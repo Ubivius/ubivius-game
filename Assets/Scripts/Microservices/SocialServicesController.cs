@@ -54,7 +54,6 @@ namespace ubv.microservices
                     m_textChat.IsFetcherActive = true;
                     m_friendsList.IsFetcherActive = true;
                     OnAuthentication.Invoke(userID);
-                    UpdateUserStatus(StatusType.Online);
                     m_textChat.OnNewMessageInConversation += (string conversationID, MessageInfo msg) => {
 
                         if (conversationID.Equals(client.data.LoadingData.GameChatID))
