@@ -211,7 +211,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &160762944
 Transform:
   m_ObjectHideFlags: 0
@@ -1339,7 +1339,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1740651405
 Transform:
   m_ObjectHideFlags: 0
@@ -1745,7 +1745,7 @@ MonoBehaviour:
   m_mock: 0
   m_mockData: {fileID: 0}
   m_HTTPClient: {fileID: 1033997611}
-  m_serviceEndpoint: http://textchat.dev.ubivius.tk
+  m_serviceEndpoint: http://microservice-text-chat:9091
   m_messagesFetcher: {fileID: 0}
   IsFetcherActive: 0
   m_auth: {fileID: 0}

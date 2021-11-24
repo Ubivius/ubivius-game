@@ -64,8 +64,8 @@ namespace ubv.ui.client
 
         void Start() {
             TextChatIsExpanded = false;
-            m_textChatIsActive = true;
-            TextChatIsHidden = false;
+            m_textChatIsActive = false;
+            TextChatIsHidden = true;
             ToggleDisplayChat();
 
             m_system = EventSystem.current;
@@ -83,13 +83,21 @@ namespace ubv.ui.client
                 if (TextChatIsHidden)
                     Show();
 
+                m_textChatIsActive = true;
                 ToggleDisplayChat();
                 m_messageInputField.Select();
                 m_messageInputField.ActivateInputField();
             }
-            else if (Input.GetKeyDown(KeyCode.Return)) {
-                ToggleDisplayChat();
+            else if (Input.GetKeyDown(KeyCode.Return) && m_textChatIsActive)
+            {
                 Send();
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape) && m_textChatIsActive)
+            {
+                m_textChatIsActive = false;
+                TextChatIsHidden = true;
+                ToggleDisplayChat();
                 m_messageInputField.DeactivateInputField();
                 m_system.SetSelectedGameObject(null);
             }
@@ -112,7 +120,6 @@ namespace ubv.ui.client
         }
 
         public void ToggleDisplayChat() {
-            m_textChatIsActive = !m_textChatIsActive;
 
             if (TextChatIsExpanded && !TextChatIsHidden)
                 m_shrinkButton.gameObject.SetActive(m_textChatIsActive);
