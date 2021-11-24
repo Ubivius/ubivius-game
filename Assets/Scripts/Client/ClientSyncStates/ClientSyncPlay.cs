@@ -360,7 +360,7 @@ namespace ubv.client.logic
                 Debug.Log("SIMULATING PACKET LOSS");
             }
 #else
-            m_server.UDPSend(inputMessage.GetBytes(), PlayerID.Value);
+            m_server.UDPSend(inputMessage.GetBytes());
 #endif //NETWORK_SIMULATE       
                     
         }

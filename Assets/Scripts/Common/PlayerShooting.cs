@@ -18,6 +18,11 @@ namespace ubv
 
                 static public void Execute(PlayerPrefab player, PlayerShootingSettings playerShootingSettings, Vector2 aimDirection, float deltaTime)
                 {
+                    if (!player.GetComponent<gameplay.PlayerController>().IsAlive())
+                    {
+                        return;
+                    }
+
                     if (!m_playerLastShot.ContainsKey(player))
                     {
                         m_playerLastShot.Add(player, playerShootingSettings.BulletDelay + 1);
@@ -27,7 +32,6 @@ namespace ubv
                     {
                         Vector3 shootingDirection = new Vector3(aimDirection.x, aimDirection.y, 0.0f);
                         RaycastHit2D hit = Physics2D.Raycast(player.transform.position, shootingDirection, playerShootingSettings.MaxShootingDist, ~LayerMask.GetMask("Players"));
-
                         if (hit.collider != null)
                         {
                             Hittable hittable = hit.collider.GetComponent<Hittable>();
