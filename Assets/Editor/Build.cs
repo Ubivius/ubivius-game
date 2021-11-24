@@ -21,7 +21,6 @@ public class Build
     {
         BuildPlayerOptions build = new BuildPlayerOptions();
         build.scenes = new[] {
-            "Assets/Scenes/ServerScene.unity",
             "Assets/Scenes/Server/Server.unity"
         };
         build.locationPathName = "/github/workspace/build/Server/ubivius-server.x86_64";
@@ -35,12 +34,10 @@ public class Build
     {
         BuildPlayerOptions build = new BuildPlayerOptions();
         build.scenes = new[] {
-            "Assets/Scenes/ServerScene.unity",
             "Assets/Scenes/Server/Server.unity"
         };
         build.locationPathName = "/github/workspace/build/Server/ubivius-server.exe";
         build.target = BuildTarget.StandaloneWindows64;
-        build.options = BuildOptions.EnableHeadlessMode;
         BuildPipeline.BuildPlayer(build);
     }
 }
