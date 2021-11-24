@@ -60,7 +60,10 @@ namespace ubv.server.logic
             m_allPlayerDead = true;
             foreach (int id in state.Players().Keys)
             {
-                m_allPlayerDead = !m_playerMovementUpdater.IsPlayerAlive(id);
+                if (m_playerMovementUpdater.IsPlayerAlive(id))
+                {
+                    m_allPlayerDead = false;
+                }
             }
             if(m_allPlayerDead)
             {
