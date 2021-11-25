@@ -32,6 +32,7 @@ namespace ubv.server.logic
         {
             foreach (int id in state.Players().Keys)
             {
+                m_wasAlive[id] = true;
                 PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
                 m_playersGameObjects.Add(id, playerGameObject);
                 Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
