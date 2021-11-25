@@ -41,5 +41,12 @@ public class EnemyMainClient : MonoBehaviour
     public void DestroySelf()
     {
         //play dead animation
+        StartCoroutine(DestroyAfterTime(1f));
+    }
+
+    private IEnumerator DestroyAfterTime(float time)
+    {
+        yield return new WaitForSeconds(time);
+        Destroy(this.gameObject);
     }
 }

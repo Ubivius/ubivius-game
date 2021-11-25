@@ -125,7 +125,7 @@ namespace ubv.ui.client
 
             var t_color = m_chatBox.GetComponent<Image>().color;
 
-            if (m_textChatIsActive) {
+            if (!TextChatIsHidden) {
                 InputSystem.DisableDevice(Keyboard.current);
                 t_color.a = 0.4f;
                 m_chatBox.GetComponent<Image>().color = t_color;

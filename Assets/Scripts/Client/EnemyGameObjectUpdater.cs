@@ -78,9 +78,12 @@ namespace ubv.client.logic
 
                     if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() != enemy.HealthPoint.Value) 
                     {
-                        if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() <= 0) 
+                        if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() <= 0)
+                        {
                             m_enemyMain[enemy.GUID.Value].playerAnimator.Kill();
-                        else 
+                            m_enemyMain[enemy.GUID.Value].DestroySelf();
+                        }
+                        else
                             m_enemyMain[enemy.GUID.Value].playerAnimator.Damage();
                         
                         m_enemyMain[enemy.GUID.Value].HealthSystem.SetHealthPoint(enemy.HealthPoint.Value);
