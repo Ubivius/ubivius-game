@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using ubv.http.client;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace ubv.microservices
 {
@@ -21,7 +22,7 @@ namespace ubv.microservices
         private void GetRequest(GetReq request)
         {
             m_HTTPClient.SetEndpoint(m_serviceEndpoint);
-            m_HTTPClient.Get(request.URL(), (HttpResponseMessage message) => {
+            m_HTTPClient.Get(request.URL(), (UnityWebRequest message) => {
                 OnGetResponse(message, request);
             });
         }
@@ -29,7 +30,7 @@ namespace ubv.microservices
         private void PutRequest(PutReq request)
         {
             m_HTTPClient.SetEndpoint(m_serviceEndpoint);
-            m_HTTPClient.PutJSON(request.URL(), request.JSONString(), (HttpResponseMessage message) => {
+            m_HTTPClient.PutJSON(request.URL(), request.JSONString(), (UnityWebRequest message) => {
                 OnPutResponse(message, request);
             } );
         }
@@ -37,7 +38,7 @@ namespace ubv.microservices
         private void DeleteRequest(DelReq request)
         {
             m_HTTPClient.SetEndpoint(m_serviceEndpoint);
-            m_HTTPClient.Delete(request.URL(), (HttpResponseMessage message) => {
+            m_HTTPClient.Delete(request.URL(), (UnityWebRequest message) => {
                 OnDeleteResponse(message, request);
             });
         }
@@ -45,7 +46,7 @@ namespace ubv.microservices
         private void PostRequest(PostReq request)
         {
             m_HTTPClient.SetEndpoint(m_serviceEndpoint);
-            m_HTTPClient.PostJSON(request.URL(), request.JSONString(), (HttpResponseMessage message) => {
+            m_HTTPClient.PostJSON(request.URL(), request.JSONString(), (UnityWebRequest message) => {
                 OnPostResponse(message, request);
             });
         }
@@ -96,46 +97,46 @@ namespace ubv.microservices
         protected virtual void OnDeleteResponse(string JSON, DelReq originalRequest) { }
         protected virtual void OnPutResponse(string JSON, PutReq originalRequest) { }
 
-        private void OnGetResponse(HttpResponseMessage message, GetReq request)
+        private void OnGetResponse(UnityWebRequest message, GetReq request)
         {
-            if (message.IsSuccessStatusCode)
+            if (!message.isNetworkError && !message.isHttpError)
             {
 #if DEBUG_LOG
                 Debug.Log("GET Request was successful");
 #endif // DEBUG_LOG
-                string JSON = message.Content.ReadAsStringAsync().Result;
+                string JSON = message.downloadHandler.text;
                 OnGetResponse(JSON, request);
             }
             else
             {
 #if DEBUG_LOG
-                Debug.Log("GET Request was not successful:" + message.ReasonPhrase);
+                Debug.Log("GET Request was not successful:" + message.error);
 #endif // DEBUG_LOG
-                request.FailureCallback?.Invoke(message.ReasonPhrase);
+                request.FailureCallback?.Invoke(message.error);
             }
         }
 
-        private void OnPostResponse(HttpResponseMessage message, PostReq request)
+        private void OnPostResponse(UnityWebRequest message, PostReq request)
         {
-            if (message.IsSuccessStatusCode)
+            if (!message.isNetworkError && !message.isHttpError)
             {
-                string JSON = message.Content.ReadAsStringAsync().Result;
+                string JSON = message.downloadHandler.text;
                 OnPostResponse(JSON, request);
             }
             else
             {
 #if DEBUG_LOG
-                Debug.Log("POST Request " + request.URL() + " was not successful: " + message.ReasonPhrase);
+                Debug.Log("POST Request " + request.URL() + " was not successful: " + message.error);
 #endif // DEBUG_LOG
-                request.FailureCallback?.Invoke(message.ReasonPhrase);
+                request.FailureCallback?.Invoke(message.error);
             }
         }
 
-        private void OnPutResponse(HttpResponseMessage message, PutReq request)
+        private void OnPutResponse(UnityWebRequest message, PutReq request)
         {
-            if (message.IsSuccessStatusCode)
+            if (!message.isNetworkError && !message.isHttpError)
             {
-                string JSON = message.Content.ReadAsStringAsync().Result;
+                string JSON = message.downloadHandler.text;
                 OnPutResponse(JSON, request);
             }
             else
@@ -143,15 +144,15 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("PUT Request was not successful");
 #endif // DEBUG_LOG
-                request.FailureCallback?.Invoke(message.ReasonPhrase);
+                request.FailureCallback?.Invoke(message.error);
             }
         }
 
-        private void OnDeleteResponse(HttpResponseMessage message, DelReq request)
+        private void OnDeleteResponse(UnityWebRequest message, DelReq request)
         {
-            if (message.IsSuccessStatusCode)
+            if (!message.isNetworkError && !message.isHttpError)
             {
-                string JSON = message.Content.ReadAsStringAsync().Result;
+                string JSON = message.downloadHandler.text;
                 OnDeleteResponse(JSON, request);
             }
             else
@@ -159,7 +160,7 @@ namespace ubv.microservices
 #if DEBUG_LOG
                 Debug.Log("DELETE Request was not successful");
 #endif // DEBUG_LOG
-                request.FailureCallback?.Invoke(message.ReasonPhrase);
+                request.FailureCallback?.Invoke(message.error);
             }
         }
     }

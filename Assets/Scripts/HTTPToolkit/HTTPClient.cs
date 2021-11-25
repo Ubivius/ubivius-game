@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Networking;
 
 namespace ubv.http.client
 {
@@ -15,23 +17,25 @@ namespace ubv.http.client
     /// </summary>
     public class HTTPClient : MonoBehaviour
     {
-        static private readonly HttpClient m_client = CreateHTTPClient();
+        /*static private readonly HttpClient m_client = CreateHTTPClient();
 
         static private HttpClient CreateHTTPClient()
         {
             HttpClient client = new HttpClient();
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.SystemDefault;
             return client;
-        }
+        }*/
 
         private string m_endPoint = "http://localhost:9090";
         
-        public delegate void HttpResponseMessageDelegate(HttpResponseMessage response);
+        public delegate void HttpResponseMessageDelegate(UnityWebRequest response);
+
+        private System.Net.Http.Headers.AuthenticationHeaderValue m_authHeader = null;
 
         public void SetAuthenticationToken(string token)
         {
-            m_client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            m_authHeader = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         }
 
         public void SetEndpoint(string address)
@@ -41,12 +45,7 @@ namespace ubv.http.client
 
         public void PostJSON(string requestUrl, string jsonString, HttpResponseMessageDelegate callbackOnResponse = null)
         {
-            new Task(() =>
-            {
-                StringContent data = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
-                HttpResponseMessage response = m_client.PostAsync(m_endPoint + "/" + requestUrl, data).Result;
-                callbackOnResponse?.Invoke(response);
-            }).Start();
+            m_actionQueue.Enqueue(() => StartCoroutine(PostRequestCoroutine(requestUrl, jsonString, callbackOnResponse)));
         }
 
         public void Post(string requestUrl, object objToSerialize, HttpResponseMessageDelegate callbackOnResponse = null)
@@ -54,49 +53,94 @@ namespace ubv.http.client
             PostJSON(requestUrl, JsonUtility.ToJson(objToSerialize), callbackOnResponse);
         }
 
+        private IEnumerator PostRequestCoroutine(string requestUrl, string data, HttpResponseMessageDelegate callback)
+        {
+            UnityWebRequest test = UnityWebRequest.Post(m_endPoint + "/" + requestUrl, data);
+            var cert = new ForceAcceptAll();
+            test.certificateHandler = cert;
+
+            test.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(data));
+
+            test.SetRequestHeader("Content-Type", "application/json");
+            if (m_authHeader != null)
+                test.SetRequestHeader("Authorization", m_authHeader.Scheme + " " + m_authHeader.Parameter);
+            yield return test.SendWebRequest();
+            callback?.Invoke(test);
+        }
+
         public void PutJSON(string requestUrl, string jsonString, HttpResponseMessageDelegate callbackOnResponse = null)
         {
-            new Task(() =>
-            {
-                StringContent data = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
-                HttpResponseMessage response = m_client.PutAsync(m_endPoint + "/" + requestUrl, data).Result;
-                callbackOnResponse?.Invoke(response);
-                
-            }).Start();
+            m_actionQueue.Enqueue(() => StartCoroutine(PutRequestCoroutine(requestUrl, jsonString, callbackOnResponse)));
+        }
+
+        private IEnumerator PutRequestCoroutine(string requestUrl, string data, HttpResponseMessageDelegate callback)
+        {
+            UnityWebRequest test = UnityWebRequest.Put(m_endPoint + "/" + requestUrl, data);
+            var cert = new ForceAcceptAll();
+            test.certificateHandler = cert;
+
+            test.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(data));
+
+            test.SetRequestHeader("Content-Type", "application/json");
+            if (m_authHeader != null)
+                test.SetRequestHeader("Authorization", m_authHeader.Scheme + " " + m_authHeader.Parameter);
+            yield return test.SendWebRequest();
+            callback?.Invoke(test);
         }
 
         public void Put(string requestUrl, object objToSerialize, HttpResponseMessageDelegate callbackOnResponse = null)
         {
-            PutJSON(requestUrl, JsonUtility.ToJson(objToSerialize), callbackOnResponse);
+            m_actionQueue.Enqueue(() => PutJSON(requestUrl, JsonUtility.ToJson(objToSerialize), callbackOnResponse));
         }
 
         public void Get(string requestUrl, HttpResponseMessageDelegate callbackOnResponse = null)
         {
-            new Task(() =>
-            {
-                try
-                { 
-                    Debug.Log("Starting request to " + m_endPoint + "/" + requestUrl);
-                    HttpResponseMessage response = m_client.GetAsync(m_endPoint + "/" + requestUrl).Result;
-                    string responseContent = response.Content.ReadAsStringAsync().Result;
-                    Debug.Log("Done with request to to " + m_endPoint + "/" + requestUrl);
-                    callbackOnResponse?.Invoke(response);
-                }
-                catch (System.Exception e)
-                {
-                    Debug.Log(e);
-                }
-            }).Start();
+            m_actionQueue.Enqueue(() => StartCoroutine(GetRequestCoroutine(requestUrl, callbackOnResponse)));
+        }
+
+        private IEnumerator GetRequestCoroutine(string requestUrl, HttpResponseMessageDelegate callback)
+        {
+            UnityWebRequest test = UnityWebRequest.Get(m_endPoint + "/" + requestUrl);
+            var cert = new ForceAcceptAll();
+            test.certificateHandler = cert;
+            if (m_authHeader != null)
+                test.SetRequestHeader("Authorization", m_authHeader.Scheme + " " + m_authHeader.Parameter);
+            yield return test.SendWebRequest();
+            callback?.Invoke(test);
         }
 
         public void Delete(string requestUrl,  HttpResponseMessageDelegate callbackOnResponse = null)
         {
-            new Task(() =>
+            m_actionQueue.Enqueue(() => StartCoroutine(DeleteRequestCoroutine(requestUrl, callbackOnResponse)));
+        }
+
+        private IEnumerator DeleteRequestCoroutine(string requestUrl, HttpResponseMessageDelegate callback)
+        {
+            UnityWebRequest test = UnityWebRequest.Delete(m_endPoint + "/" + requestUrl);
+            var cert = new ForceAcceptAll();
+            test.certificateHandler = cert;
+            if (m_authHeader != null)
+                test.SetRequestHeader("Authorization", m_authHeader.Scheme + " " + m_authHeader.Parameter);
+            yield return test.SendWebRequest();
+            callback?.Invoke(test);
+        }
+
+        private Queue<UnityAction> m_actionQueue = new Queue<UnityAction>();
+
+        private void Update()
+        {
+            while(m_actionQueue.Count> 0)
             {
-                HttpResponseMessage result = m_client.DeleteAsync(m_endPoint + "/" + requestUrl).Result;
-                callbackOnResponse?.Invoke(result);
-            }).Start();
-            
+                m_actionQueue.Dequeue().Invoke();
+            }
+        }
+
+        private class ForceAcceptAll : CertificateHandler
+        {
+            protected override bool ValidateCertificate(byte[] certificateData)
+            {
+                return true;
+            }
         }
     }
 }

@@ -16,8 +16,8 @@ namespace Tests
 
             CreateMockHTTPServer();
 
-            client.Get("products/1", (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.OK)); });
-            client.Get("products/1", (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.NotFound)); });
+            client.Get("products/1", (message) => { Assert.IsTrue(message.responseCode.Equals(System.Net.HttpStatusCode.OK)); });
+            client.Get("products/1", (message) => { Assert.IsTrue(message.responseCode.Equals(System.Net.HttpStatusCode.NotFound)); });
         }
 
         [Test]
@@ -27,7 +27,7 @@ namespace Tests
 
             CreateMockHTTPServer();
             
-            client.Post("products", new object(), (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.Created)); });
+            client.Post("products", new object(), (message) => { Assert.IsTrue(message.responseCode.Equals(System.Net.HttpStatusCode.Created)); });
         }
 
         [Test]
@@ -37,7 +37,7 @@ namespace Tests
 
             CreateMockHTTPServer();
 
-            client.Put("products", new object(), (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.Created)); });
+            client.Put("products", new object(), (message) => { Assert.IsTrue(message.responseCode.Equals(System.Net.HttpStatusCode.Created)); });
         }
 
         [Test]
@@ -47,8 +47,8 @@ namespace Tests
 
             CreateMockHTTPServer();
 
-            client.Delete("products/1", (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.NoContent)); });
-            client.Delete("products/99", (message) => { Assert.IsTrue(message.StatusCode.Equals(System.Net.HttpStatusCode.NotFound)); });
+            client.Delete("products/1", (message) => { Assert.IsTrue(message.responseCode.Equals(System.Net.HttpStatusCode.NoContent)); });
+            client.Delete("products/99", (message) => { Assert.IsTrue(message.responseCode.Equals(System.Net.HttpStatusCode.NotFound)); });
         }
         
         private void CreateMockHTTPServer()
