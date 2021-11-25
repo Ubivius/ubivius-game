@@ -102,7 +102,6 @@ namespace ubv.ui.client
         }
 
         void Start() {
-            Show();
             m_activeUser = m_socialServices.CurrentUser;
             m_username.text = m_activeUser.UserName;
             if(m_activeUser.Status != StatusType.Online)
@@ -114,6 +113,7 @@ namespace ubv.ui.client
             m_socialServices.OnNewFriend += OnNewFriend;
             m_socialServices.UpdateFriend += UpdateFriend;
             m_socialServices.OnDeleteInvite += OnDeleteInvite;
+            Hide();
         }
 
         private void OnNewInvite(RelationInfo invite)

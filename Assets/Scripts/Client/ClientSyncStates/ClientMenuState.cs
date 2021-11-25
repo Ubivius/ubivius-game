@@ -20,7 +20,7 @@ namespace ubv.client
         public override void OnStart()
         {
             data.ClientCacheData cache = data.ClientCacheData.LoadCache();
-            if (cache != null)
+            /*if (cache != null)
             {
                 if ((DateTime.UtcNow - cache.LastUpdated).TotalSeconds > 1200)
                 {
@@ -32,7 +32,7 @@ namespace ubv.client
                     // for now, auto rejoin
                     RejoinGame();
                 }
-            }
+            }*/
 
             client.audio.MainAudio.SetMainTrack(m_mainMenuTrack);
         }
