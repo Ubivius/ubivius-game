@@ -60,6 +60,7 @@ namespace ubv.server.logic
 
                 if (!m_playerControllers[id].IsAlive() && m_wasAlive[id])
                 {
+                    Debug.Log("Player downed");
                     GameplayState.PlayerStats[id].NumberOfDowns.Value++;
                 }
 

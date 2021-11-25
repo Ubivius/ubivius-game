@@ -45,6 +45,7 @@ public class EnemyMainServer : MonoBehaviour
     {
         foreach (int id in GameplayState.PlayerStats.Keys)
         {
+            Debug.Log("New kill!");
             GameplayState.PlayerStats[id].NumberOfKills.Value++;
         }
         Destroy(transform.gameObject);
