@@ -282,7 +282,7 @@ MonoBehaviour:
   m_mock: 0
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1877816073}
-  m_serviceEndpoint: http://achievements.dev.ubivius.tk
+  m_serviceEndpoint: http://achievements.player.dev.ubivius.tk
 --- !u!1001 &1877816069
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -513,7 +513,7 @@ PrefabInstance:
     - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://auth.anon.dev.ubivius.tk
+      value: http://authentication.anon.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 6292887063064703510, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -553,7 +553,7 @@ PrefabInstance:
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://character.dev.ubivius.tk
+      value: http://character-data.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -594,7 +594,7 @@ PrefabInstance:
     - target: {fileID: 7282349304918615770, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://textchat.dev.ubivius.tk
+      value: http://text-chat.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -619,7 +619,7 @@ PrefabInstance:
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://dispatch.player.dev.ubivius.tk
+      value: http://dispatcher.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -659,7 +659,7 @@ PrefabInstance:
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://user.dev.ubivius.tk
+      value: http://user.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 8156371440444099849, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -695,7 +695,7 @@ PrefabInstance:
     - target: {fileID: 8253229592228528839, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://friendslist.dev.ubivius.tk
+      value: http://friendslist.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
