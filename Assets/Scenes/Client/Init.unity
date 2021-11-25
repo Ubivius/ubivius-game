@@ -403,12 +403,12 @@ PrefabInstance:
     - target: {fileID: 2306795571984995539, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_TCPTimeout
-      value: 30
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 2306795571984995539, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_UDPTimeout
-      value: 30
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 2629458355001083077, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -483,7 +483,7 @@ PrefabInstance:
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_connectionTimeoutInMS
-      value: 30000
+      value: 50000
       objectReference: {fileID: 0}
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}

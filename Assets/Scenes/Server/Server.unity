@@ -1275,7 +1275,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_port: 9151
   m_maxConcurrentListeners: 6
-  m_connectionTimeoutInMS: 30000
+  m_connectionTimeoutInMS: 50000
   m_coonnectionKeepAliveTimerIntervalMS: 250
 --- !u!1 &1730964087
 GameObject:
