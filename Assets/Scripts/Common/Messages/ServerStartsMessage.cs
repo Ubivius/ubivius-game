@@ -70,6 +70,12 @@ namespace ubv.common.data
             InitSerializableMembers(GameStats);
         }
 
+        public ServerEndsMessage(ServerPlayerGameStatsMessage playerStats)
+        {
+            GameStats = playerStats;
+            InitSerializableMembers(GameStats);
+        }
+
         protected override ID.BYTE_TYPE SerializationID()
         {
             return ID.BYTE_TYPE.SERVER_ENDS_MESSAGE;

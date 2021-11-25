@@ -37,13 +37,27 @@ namespace ubv.ui.client
 
         public void UpdateStats(ServerPlayerGameStatsMessage stats, string characterName)
         {
-            m_characterName.text = characterName;
-            m_finalScore.text = stats.PlayerScore.Value.ToString();
-            m_collectiveKills.text = stats.NumberOfKills.Value.ToString();
-            m_numberOfDowns.text = stats.NumberOfDowns.Value.ToString();
-            m_victory.text = stats.Win.Value ? "VICTOIRE" : "DEFAITE";
-            var duration = System.TimeSpan.FromSeconds(stats.GameDuration.Value);
-            m_gameDuration.text = string.Format("{0}:{1:00}", (int)duration.TotalMinutes, duration.Seconds);
+            m_stats = stats;
+            m_character = characterName;
+        }
+
+        private ServerPlayerGameStatsMessage m_stats;
+        private string m_character;
+        private bool m_updated = false;
+
+        public void LateUpdate()
+        {
+            if (m_stats != null && m_character != null && m_updated)
+            {
+                m_updated = true;
+                m_characterName.text = m_character;
+                m_finalScore.text = m_stats.PlayerScore.Value.ToString();
+                m_collectiveKills.text = m_stats.NumberOfKills.Value.ToString();
+                m_numberOfDowns.text = m_stats.NumberOfDowns.Value.ToString();
+                m_victory.text = m_stats.Win.Value ? "VICTOIRE" : "DEFAITE";
+                var duration = System.TimeSpan.FromSeconds(m_stats.GameDuration.Value);
+                m_gameDuration.text = string.Format("{0}:{1:00}", (int)duration.TotalMinutes, duration.Seconds);
+            }
         }
     }
 }
