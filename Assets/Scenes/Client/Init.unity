@@ -695,7 +695,7 @@ PrefabInstance:
     - target: {fileID: 8253229592228528839, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://friendslist.dev.ubivius.tk
+      value: https://friendslist.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}

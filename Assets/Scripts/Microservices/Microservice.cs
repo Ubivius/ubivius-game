@@ -100,13 +100,16 @@ namespace ubv.microservices
         {
             if (message.IsSuccessStatusCode)
             {
+#if DEBUG_LOG
+                Debug.Log("GET Request was successful");
+#endif // DEBUG_LOG
                 string JSON = message.Content.ReadAsStringAsync().Result;
                 OnGetResponse(JSON, request);
             }
             else
             {
 #if DEBUG_LOG
-                Debug.Log("GET Request was not successful");
+                Debug.Log("GET Request was not successful:" + message.ReasonPhrase);
 #endif // DEBUG_LOG
                 request.FailureCallback?.Invoke(message.ReasonPhrase);
             }

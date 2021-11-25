@@ -15,7 +15,15 @@ namespace ubv.http.client
     /// </summary>
     public class HTTPClient : MonoBehaviour
     {
-        static private readonly HttpClient m_client = new HttpClient();
+        static private readonly HttpClient m_client = CreateHTTPClient();
+
+        static private HttpClient CreateHTTPClient()
+        {
+            HttpClient client = new HttpClient();
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+            return client;
+        }
 
         private string m_endPoint = "http://localhost:9090";
         
@@ -53,6 +61,7 @@ namespace ubv.http.client
                 StringContent data = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
                 HttpResponseMessage response = m_client.PutAsync(m_endPoint + "/" + requestUrl, data).Result;
                 callbackOnResponse?.Invoke(response);
+                
             }).Start();
         }
 
@@ -65,9 +74,18 @@ namespace ubv.http.client
         {
             new Task(() =>
             {
-                HttpResponseMessage response = m_client.GetAsync(m_endPoint + "/" + requestUrl).Result;
-                string responseContent = response.Content.ReadAsStringAsync().Result;
-                callbackOnResponse?.Invoke(response);
+                try
+                { 
+                    Debug.Log("Starting request to " + m_endPoint + "/" + requestUrl);
+                    HttpResponseMessage response = m_client.GetAsync(m_endPoint + "/" + requestUrl).Result;
+                    string responseContent = response.Content.ReadAsStringAsync().Result;
+                    Debug.Log("Done with request to to " + m_endPoint + "/" + requestUrl);
+                    callbackOnResponse?.Invoke(response);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.Log(e);
+                }
             }).Start();
         }
 
