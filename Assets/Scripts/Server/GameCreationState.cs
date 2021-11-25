@@ -33,6 +33,7 @@ namespace ubv.server.logic
 
         private SubState m_currentSubState;
 
+        [SerializeField] private string m_serverID;
         [SerializeField] private TextChatService m_textChatService;
         [SerializeField] private common.world.WorldGenerator m_worldGenerator;
 
@@ -77,8 +78,10 @@ namespace ubv.server.logic
             {
                 initializer.Init();
             }
-            
-            m_textChatService.CreateNewConversation(m_uniqueGameID, new string[0], OnConversationCreated);
+
+            string[] users = new string[1];
+            users[0] = m_serverID;
+            m_textChatService.CreateNewConversation(m_uniqueGameID, users, OnConversationCreated);
         }
 
         private void OnConversationCreated(string conversationID)
@@ -279,6 +282,11 @@ namespace ubv.server.logic
 #endif // DEBUG_LOG
             RemovePlayerFromLobby(playerID);
             BroadcastPlayerList();
+        }
+
+        public void SendToAllPlayers(string message)
+        {
+            m_textChatService.SendMessageToConversation(m_serverID, m_conversationID, message);
         }
 
         private void RemovePlayerFromLobby(int playerID)
