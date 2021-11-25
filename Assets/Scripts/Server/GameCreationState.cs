@@ -81,7 +81,7 @@ namespace ubv.server.logic
 
             string[] users = new string[1];
             users[0] = m_serverID;
-            m_textChatService.CreateNewConversation(m_uniqueGameID, users, OnConversationCreated);
+            m_textChatService.CreateNewConversation(m_uniqueGameID, new string[0], OnConversationCreated);
         }
 
         private void OnConversationCreated(string conversationID)
