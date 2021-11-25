@@ -117,6 +117,11 @@ namespace ubv.client
         public void OnDisconnect()
         {
             OnServerDisconnect?.Invoke();
+            data.LoadingData.ActiveCharacterID = string.Empty;
+            data.LoadingData.GameChatID = string.Empty;
+            data.LoadingData.GameID = string.Empty;
+            data.LoadingData.ServerInit = null;
+            data.LoadingData.GameStats = null;
             m_currentSubState = SubState.SUBSTATE_IDLE;
         }
 
