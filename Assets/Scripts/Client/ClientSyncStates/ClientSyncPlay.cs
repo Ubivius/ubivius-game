@@ -452,6 +452,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                 Debug.Log("Received server end message.");
 #endif // DEBUG_LOG
+                data.LoadingData.GameStats = finish.GameStats;
                 m_currentSubState = SubState.SUBSTATE_END;
                 return;
             }

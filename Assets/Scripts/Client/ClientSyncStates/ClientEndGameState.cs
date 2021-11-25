@@ -3,6 +3,8 @@ using System.Collections;
 using ubv.client.logic;
 using System;
 using UnityEngine.EventSystems;
+using UnityEngine.Events;
+using ubv.common.data;
 
 namespace ubv.client
 {
@@ -10,12 +12,17 @@ namespace ubv.client
     {
         [SerializeField] private string m_clientGameMenu;
         [SerializeField] private EventSystem m_eventSystem;
-        
+
+        public UnityAction<ServerPlayerGameStatsMessage, string> UpdateMenu;
+
         public override void OnStart()
         {
             data.ClientCacheData.SaveCache(string.Empty);
             data.LoadingData.GameChatID = string.Empty;
             data.LoadingData.GameID = string.Empty;
+            CharacterService.GetCharacter(data.LoadingData.ActiveCharacterID, (character) => {
+                UpdateMenu?.Invoke(data.LoadingData.GameStats, character.Name);
+            });
             m_server.Disconnect();
         }
 

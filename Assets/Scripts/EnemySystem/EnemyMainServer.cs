@@ -5,6 +5,7 @@ using UnityEngine;
 using ubv.server.logic.ai;
 using ubv.common.gameplay.shooting;
 using ubv.common.gameplay;
+using ubv.server.logic;
 
 public class EnemyMainServer : MonoBehaviour
 {
@@ -42,6 +43,10 @@ public class EnemyMainServer : MonoBehaviour
 
     public void DestroySelf()
     {
+        foreach (int id in GameplayState.PlayerStats.Keys)
+        {
+            GameplayState.PlayerStats[id].NumberOfKills.Value++;
+        }
         Destroy(transform.gameObject);
         //ex when we'll need to add animation
         //Destroy(GetComponent<BoxCollider>());

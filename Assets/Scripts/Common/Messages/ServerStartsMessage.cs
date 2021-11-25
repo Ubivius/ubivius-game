@@ -63,9 +63,11 @@ namespace ubv.common.data
 
     public class ServerEndsMessage : Serializable
     {
+        public ServerPlayerGameStatsMessage GameStats;
         public ServerEndsMessage()
         {
-            InitSerializableMembers();
+            GameStats = new ServerPlayerGameStatsMessage();
+            InitSerializableMembers(GameStats);
         }
 
         protected override ID.BYTE_TYPE SerializationID()

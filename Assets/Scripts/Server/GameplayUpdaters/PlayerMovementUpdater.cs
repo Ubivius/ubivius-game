@@ -16,6 +16,7 @@ namespace ubv.server.logic
         private Dictionary<int, PlayerState> m_playerStates;
         private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
         private Dictionary<int, bool> m_isSprinting;
+        private Dictionary<int, bool> m_wasAlive;
 
         public override void Setup()
         {
@@ -24,6 +25,7 @@ namespace ubv.server.logic
             m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             m_playerStates = new Dictionary<int, PlayerState>();
             m_isSprinting = new Dictionary<int, bool>();
+            m_wasAlive = new Dictionary<int, bool>();
         }
 
         public override void InitWorld(WorldState state)
@@ -55,6 +57,12 @@ namespace ubv.server.logic
             foreach (int id in client.Players().Keys)
             {
                 Rigidbody2D body = m_bodies[id];
+
+                if (!m_playerControllers[id].IsAlive() && m_wasAlive[id])
+                {
+                    GameplayState.PlayerStats[id].NumberOfDowns.Value++;
+                }
+
                 if (m_playerControllers[id].IsAlive())
                 {
                     Vector2 velocity = common.logic.PlayerMovement.GetVelocity(frames[id].Movement.Value,
@@ -68,6 +76,9 @@ namespace ubv.server.logic
                 {
                     body.velocity = Vector2.zero;
                 }
+
+
+                m_wasAlive[id] = m_playerControllers[id].IsAlive();
             }
         }
 

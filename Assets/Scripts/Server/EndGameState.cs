@@ -20,7 +20,9 @@ namespace ubv.server.logic
             m_activeClients = new HashSet<int>(playerList);
             foreach (int id in playerList)
             {
-                m_serverConnection.TCPServer.Send(new ServerEndsMessage().GetBytes(), id);
+                ServerEndsMessage msg = new ServerEndsMessage();
+                msg.GameStats = GameplayState.PlayerStats[id];
+                m_serverConnection.TCPServer.Send(msg.GetBytes(), id);
             }
             m_agones.ShutdownGameServer();
         }
