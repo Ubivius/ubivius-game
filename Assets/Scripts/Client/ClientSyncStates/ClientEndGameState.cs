@@ -13,7 +13,7 @@ namespace ubv.client
         
         public override void OnStart()
         {
-            data.ClientCacheData.SaveCache(string.Empty);
+            //data.ClientCacheData.SaveCache(string.Empty);
             data.LoadingData.GameChatID = string.Empty;
             data.LoadingData.GameID = string.Empty;
             data.LoadingData.ActiveCharacterID = string.Empty;

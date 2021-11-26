@@ -14,7 +14,7 @@ namespace ubv.client.data
         public string LastGameID;
         public DateTime LastUpdated;
 
-        public static void SaveCache(string lastGameID)
+        /*public static void SaveCache(string lastGameID)
         {
             ClientCacheData cache = new ClientCacheData
             {
@@ -27,6 +27,6 @@ namespace ubv.client.data
         public static ClientCacheData LoadCache()
         {
             return io.ClientFileSaveManager.LoadFromFile<ClientCacheData>("cache.ubv");
-        }
+        }*/
     }
 }

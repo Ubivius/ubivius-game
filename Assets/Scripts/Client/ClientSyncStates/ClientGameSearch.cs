@@ -85,7 +85,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                         Debug.Log("Server info cannot be found.");
 #endif // DEBUG_LOG
-                        data.ClientCacheData.SaveCache(string.Empty);
+                        //data.ClientCacheData.SaveCache(string.Empty);
                         GoBackToPreviousState();
                     }
                     break;
@@ -138,7 +138,7 @@ namespace ubv.client.logic
         {
             Debug.Log("Server info : " + info.GameID + ", " + info.ServerTCPAddress);
             data.LoadingData.GameID = info.GameID;
-            data.ClientCacheData.SaveCache(info.GameID);
+            //data.ClientCacheData.SaveCache(info.GameID);
             EstablishConnectionToServer(info);
         }
 
@@ -156,7 +156,7 @@ namespace ubv.client.logic
 
         private void OnFailureToConnect()
         {
-            data.ClientCacheData.SaveCache(string.Empty);
+            //data.ClientCacheData.SaveCache(string.Empty);
             m_currentSubState = SubState.SUBSTATE_GOING_BACK;
         }
 
@@ -166,6 +166,7 @@ namespace ubv.client.logic
             Debug.Log("Disconnected from server");
 #endif // DEBUG_LOG
             m_currentSubState = SubState.SUBSTATE_GOING_BACK;
+            data.LoadingData.GameID = string.Empty;
         }
         
         private void Receive(tcp.TCPToolkit.Packet packet)
@@ -198,7 +199,7 @@ namespace ubv.client.logic
 #if DEBUG_LOG
                         Debug.LogWarning("Player has no character. Back to menu.");
 #endif // DEBUG_LOG
-                        data.ClientCacheData.SaveCache(string.Empty);
+                        //data.ClientCacheData.SaveCache(string.Empty);
                         data.LoadingData.GameID = string.Empty;
                         m_currentSubState = SubState.SUBSTATE_GOING_BACK;
                         return;
@@ -260,6 +261,9 @@ namespace ubv.client.logic
         private void GoBackToPreviousState()
         {
             m_currentSubState = SubState.SUBSTATE_TRANSITION;
+            data.LoadingData.GameID = string.Empty;
+            data.LoadingData.ActiveCharacterID = string.Empty;
+            data.LoadingData.GameChatID = string.Empty;
             ClientStateManager.Instance.PopState();
         }
 

@@ -195,12 +195,14 @@ namespace ubv.client.logic
 #if DEBUG_LOG
             Debug.Log("Lobby : lost connection to game server. Leaving lobby.");
 #endif // DEBUG_LOG
+            data.LoadingData.GameID = string.Empty;
             m_currentSubState = SubState.SUBSTATE_LEAVING_LOBBY;
         }
 
         public void BackToCharacterSelect()
         {
             m_currentSubState = SubState.SUBSTATE_TRANSITION;
+            data.LoadingData.GameID = string.Empty;
             if (!ClientStateManager.Instance.BackToScene(m_characterSelectScene))
             {
                 ClientStateManager.Instance.BackToScene(m_menuScene);

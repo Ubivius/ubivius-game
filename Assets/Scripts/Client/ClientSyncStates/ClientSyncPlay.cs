@@ -463,6 +463,7 @@ namespace ubv.client.logic
             Debug.Log("Disconnected from server.");
 #endif // DEBUG_LOG
             m_currentSubState = SubState.SUBSTATE_LEAVING;
+            data.LoadingData.GameID = string.Empty;
         }
 
         protected override void StateUnload()
