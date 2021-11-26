@@ -123,9 +123,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_attackRefreshDelay: 0.75
-  MaxHealthPoint: 100
-  m_damagePoints: 20
-  m_attackPoints: 25
+  MaxHealthPoint: 125
+  m_damagePoints: 8
+  m_attackPoints: 9
 --- !u!114 &686873656258829070
 MonoBehaviour:
   m_ObjectHideFlags: 0
