@@ -121,7 +121,7 @@ namespace ubv.client
             data.LoadingData.GameChatID = string.Empty;
             data.LoadingData.GameID = string.Empty;
             data.LoadingData.ServerInit = null;
-            data.LoadingData.GameStats = null;
+            //data.LoadingData.GameStats = null;
             m_currentSubState = SubState.SUBSTATE_IDLE;
         }
 

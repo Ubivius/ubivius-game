@@ -63,22 +63,23 @@ namespace ubv.common.data
 
     public class ServerEndsMessage : Serializable
     {
-        public serialization.types.Int32 NumberOfKills;
+        /*public serialization.types.Int32 NumberOfKills;
         public serialization.types.Bool Win;
         public serialization.types.Int32 NumberOfDowns;
         public serialization.types.Int32 NumberOfHelps;
         public serialization.types.Float GameDuration;
-        public serialization.types.Int32 PlayerScore;
+        public serialization.types.Int32 PlayerScore;*/
         
         public ServerEndsMessage()
         {
-            NumberOfHelps = new serialization.types.Int32(0);
+            /*NumberOfHelps = new serialization.types.Int32(0);
             NumberOfDowns = new serialization.types.Int32(0);
             NumberOfKills = new serialization.types.Int32(0);
             GameDuration = new serialization.types.Float(0);
             PlayerScore = new serialization.types.Int32(0);
             Win = new serialization.types.Bool(false);
-            InitSerializableMembers(NumberOfDowns, NumberOfKills, Win, NumberOfHelps, GameDuration, PlayerScore);
+            InitSerializableMembers(NumberOfDowns, NumberOfKills, Win, NumberOfHelps, GameDuration, PlayerScore);*/
+            InitSerializableMembers();
         }
 
         protected override ID.BYTE_TYPE SerializationID()

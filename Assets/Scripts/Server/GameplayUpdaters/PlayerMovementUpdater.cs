@@ -16,7 +16,7 @@ namespace ubv.server.logic
         private Dictionary<int, PlayerState> m_playerStates;
         private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
         private Dictionary<int, bool> m_isSprinting;
-        private Dictionary<int, bool> m_wasAlive;
+        //private Dictionary<int, bool> m_wasAlive;
 
         public override void Setup()
         {
@@ -25,14 +25,14 @@ namespace ubv.server.logic
             m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             m_playerStates = new Dictionary<int, PlayerState>();
             m_isSprinting = new Dictionary<int, bool>();
-            m_wasAlive = new Dictionary<int, bool>();
+            //m_wasAlive = new Dictionary<int, bool>();
         }
 
         public override void InitWorld(WorldState state)
         {
             foreach (int id in state.Players().Keys)
             {
-                m_wasAlive[id] = true;
+                //m_wasAlive[id] = true;
                 PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
                 m_playersGameObjects.Add(id, playerGameObject);
                 Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
@@ -59,11 +59,11 @@ namespace ubv.server.logic
             {
                 Rigidbody2D body = m_bodies[id];
 
-                if (!m_playerControllers[id].IsAlive() && m_wasAlive[id])
+                /*if (!m_playerControllers[id].IsAlive() && m_wasAlive[id])
                 {
                     Debug.Log("Player downed");
                     GameplayState.PlayerStats[id].NumberOfDowns.Value++;
-                }
+                }*/
 
                 if (m_playerControllers[id].IsAlive())
                 {
@@ -80,7 +80,7 @@ namespace ubv.server.logic
                 }
 
 
-                m_wasAlive[id] = m_playerControllers[id].IsAlive();
+                //m_wasAlive[id] = m_playerControllers[id].IsAlive();
             }
         }
 

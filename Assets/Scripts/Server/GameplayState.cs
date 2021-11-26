@@ -244,19 +244,19 @@ namespace ubv.server.logic
 
         public void EndGame()
         {
-            foreach (int id in m_clients)
+           /* foreach (int id in m_clients)
             {
                 PlayerStats[id].GameDuration.Value = m_gameTimer;
-            }
+            }*/
 
-            foreach (ServerEndsMessage stats in PlayerStats.Values)
+            /*foreach (ServerEndsMessage stats in PlayerStats.Values)
             {
                 stats.PlayerScore.Value = 1000 - (100 * stats.NumberOfDowns.Value)
                     + (120 * stats.NumberOfHelps.Value)
                     + (300 * stats.NumberOfKills.Value)
                     + (2000 * (stats.Win.Value ? 1 : 0))
                     + Mathf.RoundToInt(500f / stats.GameDuration.Value);
-            }
+            }*/
 
             m_endGameState.Init(new List<int>(m_clients));
             ChangeState(m_endGameState);

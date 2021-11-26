@@ -20,9 +20,9 @@ namespace ubv.client
             data.ClientCacheData.SaveCache(string.Empty);
             data.LoadingData.GameChatID = string.Empty;
             data.LoadingData.GameID = string.Empty;
-            CharacterService.GetCharacter(data.LoadingData.ActiveCharacterID, (character) => {
+            /*CharacterService.GetCharacter(data.LoadingData.ActiveCharacterID, (character) => {
                 UpdateMenu?.Invoke(data.LoadingData.GameStats, character.Name);
-            });
+            });*/
             m_server.Disconnect();
         }
 

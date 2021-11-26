@@ -47,7 +47,7 @@ namespace ubv.server.logic
                         {
                             if (!m_playerMouvementUpdater.IsPlayerAlive(id2))
                             {
-                                GameplayState.PlayerStats[id].NumberOfHelps.Value++;
+                                //GameplayState.PlayerStats[id].NumberOfHelps.Value++;
                                 m_playerMouvementUpdater.Heal(id2);
                             }
                         }

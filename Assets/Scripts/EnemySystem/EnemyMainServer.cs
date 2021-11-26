@@ -43,11 +43,11 @@ public class EnemyMainServer : MonoBehaviour
 
     public void DestroySelf()
     {
-        foreach (int id in GameplayState.PlayerStats.Keys)
+        /*foreach (int id in GameplayState.PlayerStats.Keys)
         {
             Debug.Log("New kill!");
             GameplayState.PlayerStats[id].NumberOfKills.Value++;
-        }
+        }*/
         Destroy(transform.gameObject);
         //ex when we'll need to add animation
         //Destroy(GetComponent<BoxCollider>());

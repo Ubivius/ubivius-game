@@ -69,10 +69,10 @@ namespace ubv.server.logic
             }
             if(m_allPlayerDead)
             {
-                foreach (int id in GameplayState.PlayerStats.Keys)
+                /*foreach (int id in GameplayState.PlayerStats.Keys)
                 {
                     GameplayState.PlayerStats[id].Win.Value = false;
-                }
+                }*/
                 m_gamePlayState.EndGame();
             }
         }
@@ -152,10 +152,10 @@ namespace ubv.server.logic
         public void InteractFinalButton()
         {
             Debug.LogWarning("PARTIE FINI FINI FINI FINI FINI FINI FINI");
-            foreach (int id in GameplayState.PlayerStats.Keys)
+            /*foreach (int id in GameplayState.PlayerStats.Keys)
             {
                 GameplayState.PlayerStats[id].Win.Value = true;
-            }
+            }*/
             m_gamePlayState.EndGame();
         }
 

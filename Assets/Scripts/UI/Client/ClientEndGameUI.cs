@@ -12,7 +12,7 @@ namespace ubv.ui.client
 {
     public class ClientEndGameUI : TabBehaviour
     {
-        [SerializeField] private TextMeshProUGUI m_characterName;
+        //[SerializeField] private TextMeshProUGUI m_characterName;
         [SerializeField]
         private ClientEndGameState m_EndGameState;
 
@@ -27,7 +27,7 @@ namespace ubv.ui.client
 
         private void Awake()
         {
-            m_EndGameState.UpdateMenu += UpdateStats;
+            //m_EndGameState.UpdateMenu += UpdateStats;
         }
 
         public void Menu()
@@ -35,7 +35,7 @@ namespace ubv.ui.client
             m_EndGameState.GoToMenu();
         }
 
-        public void UpdateStats(ServerEndsMessage stats, string characterName)
+        /*public void UpdateStats(ServerEndsMessage stats, string characterName)
         {
             m_stats = stats;
             m_character = characterName;
@@ -51,13 +51,13 @@ namespace ubv.ui.client
             {
                 m_updated = true;
                 m_characterName.text = m_character;
-                m_finalScore.text = m_stats.PlayerScore.Value.ToString();
+                /*m_finalScore.text = m_stats.PlayerScore.Value.ToString();
                 m_collectiveKills.text = m_stats.NumberOfKills.Value.ToString();
                 m_numberOfDowns.text = m_stats.NumberOfDowns.Value.ToString();
                 m_victory.text = m_stats.Win.Value ? "VICTOIRE" : "DEFAITE";
                 var duration = System.TimeSpan.FromSeconds(m_stats.GameDuration.Value);
                 m_gameDuration.text = string.Format("{0}:{1:00}", (int)duration.TotalMinutes, duration.Seconds);
             }
-        }
+        }*/
     }
 }
