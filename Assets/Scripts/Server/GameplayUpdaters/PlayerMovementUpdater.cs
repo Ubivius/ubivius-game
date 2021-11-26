@@ -16,6 +16,7 @@ namespace ubv.server.logic
         private Dictionary<int, PlayerState> m_playerStates;
         private Dictionary<int, common.gameplay.PlayerController> m_playerControllers;
         private Dictionary<int, bool> m_isSprinting;
+        //private Dictionary<int, bool> m_wasAlive;
 
         public override void Setup()
         {
@@ -24,12 +25,14 @@ namespace ubv.server.logic
             m_playerControllers = new Dictionary<int, common.gameplay.PlayerController>();
             m_playerStates = new Dictionary<int, PlayerState>();
             m_isSprinting = new Dictionary<int, bool>();
+            //m_wasAlive = new Dictionary<int, bool>();
         }
 
         public override void InitWorld(WorldState state)
         {
             foreach (int id in state.Players().Keys)
             {
+                //m_wasAlive[id] = true;
                 PlayerPrefab playerGameObject = GameObject.Instantiate(m_playerSettings.PlayerPrefab);
                 m_playersGameObjects.Add(id, playerGameObject);
                 Rigidbody2D body = playerGameObject.GetComponent<Rigidbody2D>();
@@ -43,6 +46,7 @@ namespace ubv.server.logic
                 PlayerState playerState = state.Players()[id];
 
                 playerState.Position.Value = m_bodies[id].position;
+                playerState.CurrentHP.Value = playerCtrl.GetCurrentHP();
 
                 m_playerControllers.Add(id, playerCtrl);
                 m_playerStates.Add(id, state.Players()[id]);
@@ -54,10 +58,29 @@ namespace ubv.server.logic
             foreach (int id in client.Players().Keys)
             {
                 Rigidbody2D body = m_bodies[id];
-                Vector2 velocity = common.logic.PlayerMovement.GetVelocity(frames[id].Movement.Value, 
-                    frames[id].Sprinting.Value, m_playerControllers[id].GetStats());
-                common.logic.PlayerMovement.Execute(ref body, velocity);
-                m_isSprinting[id] = frames[id].Sprinting.Value;
+
+                /*if (!m_playerControllers[id].IsAlive() && m_wasAlive[id])
+                {
+                    Debug.Log("Player downed");
+                    GameplayState.PlayerStats[id].NumberOfDowns.Value++;
+                }*/
+
+                if (m_playerControllers[id].IsAlive())
+                {
+                    Vector2 velocity = common.logic.PlayerMovement.GetVelocity(frames[id].Movement.Value,
+                        frames[id].Sprinting.Value, m_playerControllers[id].GetStats());
+                    common.logic.PlayerMovement.Execute(ref body, velocity);
+                    m_isSprinting[id] = frames[id].Sprinting.Value;
+
+                    client.Players()[id].CurrentHP.Value = m_playerControllers[id].GetCurrentHP();
+                }
+                else
+                {
+                    body.velocity = Vector2.zero;
+                }
+
+
+                //m_wasAlive[id] = m_playerControllers[id].IsAlive();
             }
         }
 
@@ -69,6 +92,7 @@ namespace ubv.server.logic
                 PlayerState player = m_playerStates[id];
                 player.Position.Value = body.position;
                 player.Velocity.Value = body.velocity;
+                player.CurrentHP.Value = m_playerControllers[id].GetCurrentHP();
                 player.States.Set((int)PlayerStateEnum.IS_SPRINTING, m_isSprinting[id]);
             }
         }
@@ -82,6 +106,16 @@ namespace ubv.server.logic
         {
             m_bodies[player.GUID.Value].position = pos;
             player.Position.Value = m_bodies[player.GUID.Value].position;
+        }
+
+        public bool IsPlayerAlive(int playerID)
+        {
+            return m_playerControllers[playerID].IsAlive();
+        }
+
+        public void Heal(int playerID)
+        {
+            m_playerControllers[playerID].Heal(m_playerControllers[playerID].GetMaxHealth()/2);
         }
     }
 }

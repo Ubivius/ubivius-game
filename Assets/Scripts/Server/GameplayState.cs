@@ -30,11 +30,15 @@ namespace ubv.server.logic
 
         private uint m_tickAccumulator;
 
+        private float m_gameTimer;
+
         private PhysicsScene2D m_serverPhysics;
         
         [SerializeField] private List<ServerGameplayStateUpdater> m_updaters;
 
         private InputFrame m_zeroFrame;
+
+        public static Dictionary<int, ServerEndsMessage> PlayerStats = new Dictionary<int, ServerEndsMessage>();
 
         protected override void StateAwake()
         {
@@ -62,6 +66,7 @@ namespace ubv.server.logic
             // add each player to client states
             foreach (int id in m_clients)
             {
+                PlayerStats.Add(id, new ServerEndsMessage());
                 PlayerState player = new PlayerState();
                 player.GUID.Value = id;
                 m_currentWorldState.AddPlayer(player);
@@ -78,10 +83,21 @@ namespace ubv.server.logic
             {
                 updater.InitWorld(m_currentWorldState);
             }
+            
+            ServerStartsMessage message = new ServerStartsMessage();
+#if DEBUG_LOG
+            Debug.Log("Starting game.");
+#endif // DEBUG_LOG
+            foreach (int id in m_clients)
+            {
+                m_serverConnection.TCPServer.Send(message.GetBytes(), id);
+            }
+            m_gameTimer = 0;
         }
                 
         protected override void StateFixedUpdate()
         {
+            m_gameTimer += Time.fixedDeltaTime;
             lock (m_lock)
             {
                 // update state based on received input
@@ -97,7 +113,7 @@ namespace ubv.server.logic
 #if DEBUG_LOG
                     else
                     { 
-                        Debug.Log("SERVER Missed input " + m_masterTick + " from client " + id);
+                        //Debug.Log("SERVER Missed input " + m_masterTick + " from client " + id);
                     }
 #endif // DEBUG_LOG
 
@@ -228,6 +244,20 @@ namespace ubv.server.logic
 
         public void EndGame()
         {
+           /* foreach (int id in m_clients)
+            {
+                PlayerStats[id].GameDuration.Value = m_gameTimer;
+            }*/
+
+            /*foreach (ServerEndsMessage stats in PlayerStats.Values)
+            {
+                stats.PlayerScore.Value = 1000 - (100 * stats.NumberOfDowns.Value)
+                    + (120 * stats.NumberOfHelps.Value)
+                    + (300 * stats.NumberOfKills.Value)
+                    + (2000 * (stats.Win.Value ? 1 : 0))
+                    + Mathf.RoundToInt(500f / stats.GameDuration.Value);
+            }*/
+
             m_endGameState.Init(new List<int>(m_clients));
             ChangeState(m_endGameState);
         }

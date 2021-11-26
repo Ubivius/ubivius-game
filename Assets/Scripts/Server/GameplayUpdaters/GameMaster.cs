@@ -10,11 +10,13 @@ using UnityEngine;
 using ubv.common.world.cellType;
 using ubv.common.world;
 using UnityEngine.Tilemaps;
+using ubv.microservices;
 
 namespace ubv.server.logic
 {
     class GameMaster : ServerGameplayStateUpdater
     {
+        [SerializeField] private GameCreationState m_textChat;
         [SerializeField] private ubv.common.world.WorldGenerator m_world;
         [SerializeField] private PlayerMovementUpdater m_playerMovementUpdater;
         [SerializeField] private GameplayState m_gamePlayState;
@@ -36,6 +38,7 @@ namespace ubv.server.logic
 
         private Tilemap m_finalDoorTilemap;
         private bool m_alreadyOpen;
+        private bool m_allPlayerDead;
 
         private void Awake()
         {
@@ -56,6 +59,22 @@ namespace ubv.server.logic
         public override void FixedUpdateFromClient(WorldState state, Dictionary<int, InputFrame> frames, float deltaTime)
         {
             state.SetOpeningDoor(m_openingDoorList);
+            m_allPlayerDead = true;
+            foreach (int id in state.Players().Keys)
+            {
+                if (m_playerMovementUpdater.IsPlayerAlive(id))
+                {
+                    m_allPlayerDead = false;
+                }
+            }
+            if(m_allPlayerDead)
+            {
+                /*foreach (int id in GameplayState.PlayerStats.Keys)
+                {
+                    GameplayState.PlayerStats[id].Win.Value = false;
+                }*/
+                m_gamePlayState.EndGame();
+            }
         }
 
         public override void UpdateWorld(WorldState state)
@@ -73,15 +92,19 @@ namespace ubv.server.logic
             switch (cell.Section)
             {
                 case Section.NorthEast:
+                    m_textChat.SendToAllPlayers("Opened North-East section of the ship");
                     m_sectionState._NorthEastDoorButton = true;
                     break;
                 case Section.SouthEast:
+                    m_textChat.SendToAllPlayers("Opened South-East section of the ship");
                     m_sectionState._SouthEastDoorButton = true;
                     break;
                 case Section.SouthWest:
+                    m_textChat.SendToAllPlayers("Opened Sputh-West section of the ship");
                     m_sectionState._SouthWestDoorButton = true;
                     break;
                 case Section.NorthWest:
+                    m_textChat.SendToAllPlayers("Opened North-West section of the ship");
                     m_sectionState._NorthWestDoorButton = true;
                     break;
             }
@@ -129,7 +152,10 @@ namespace ubv.server.logic
         public void InteractFinalButton()
         {
             Debug.LogWarning("PARTIE FINI FINI FINI FINI FINI FINI FINI");
-
+            /*foreach (int id in GameplayState.PlayerStats.Keys)
+            {
+                GameplayState.PlayerStats[id].Win.Value = true;
+            }*/
             m_gamePlayState.EndGame();
         }
 

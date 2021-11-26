@@ -2,11 +2,12 @@
 using UnityEditor;
 using System.Collections.Generic;
 using UnityEngine.Events;
+using System;
 
 namespace ubv.microservices
 {
     public class TextChatService : Microservice<GetTextChatRequest,
-        PostTextChatRequest, PutMicroserviceRequest, DeleteMicroserviceRequest>
+        PostTextChatRequest, PutTextChatRequest, DeleteMicroserviceRequest>
     {
         [SerializeField]
         private MicroserviceAutoFetcher m_messagesFetcher;
@@ -25,7 +26,8 @@ namespace ubv.microservices
             m_activeRequestCount = 0;
             IsFetcherActive = false;
             m_cachedConversations = new Dictionary<string, Dictionary<string, MessageInfo>>();
-            m_messagesFetcher.FetchLogic += FetchNewMessages;
+            if(m_messagesFetcher != null)
+                m_messagesFetcher.FetchLogic += FetchNewMessages;
         }
 
         public void AddConversationToCache(string conversationID)
@@ -74,6 +76,16 @@ namespace ubv.microservices
             }
         }
 
+        public void CreateNewConversation(string gameID, string[] users, UnityAction<string> OnConversationCreated)
+        {
+            this.Request(new PostConversationRequest(gameID, users, OnConversationCreated, null));
+        }
+
+        public void SetUsersOfConversation(string conversationID, string gameID, string[] users, UnityAction OnConversationUpdated)
+        {
+            this.Request(new PutTextChatRequest(conversationID, gameID, users, OnConversationUpdated, null));
+        }
+
         /// <summary>
         /// Updates the conversations, caching it if not already locally cached, and
         /// callbacks OnNewMessages if enabled
@@ -106,12 +118,6 @@ namespace ubv.microservices
             }
         }
 
-        public struct JSONConversationInfo
-        {
-            public string[] user_id;
-            public string game_id;
-        }
-
         protected override void OnGetResponse(string JSON, GetTextChatRequest originalRequest)
         {
             if (originalRequest is GetMessagesRequest msgReq)
@@ -133,7 +139,7 @@ namespace ubv.microservices
             }
             else if (originalRequest is GetConversationInfoRequest convReq)
             {
-                JSONConversationInfo conversationJSON = JsonUtility.FromJson<JSONConversationInfo>(JSON);
+                JSONConversation conversationJSON = JsonUtility.FromJson<JSONConversation>(JSON);
 
                 convReq.Callback.Invoke(new ConversationInfo(conversationJSON.user_id, conversationJSON.game_id));
             }
@@ -141,12 +147,29 @@ namespace ubv.microservices
 
         protected override void OnPostResponse(string JSON, PostTextChatRequest originalRequest)
         {
+            if (originalRequest is PostMessageRequest postMessage)
+            {
+                postMessage.Callback?.Invoke();
+            }
+            else if(originalRequest is PostConversationRequest postConversation)
+            {
+                JSONConversationInfo conversation = JsonUtility.FromJson<JSONConversationInfo>(JSON);
+                postConversation.Callback?.Invoke(conversation.id);
+            }
+        }
+
+        protected override void OnPutResponse(string JSON, PutTextChatRequest originalRequest)
+        {
             originalRequest.Callback?.Invoke();
         }
 
         public void SendMessageToConversation(string currentUserID, string conversationID, string text, UnityAction successCallback = default, UnityAction<string> failCallback = default)
         {
-            this.Request(new PostTextChatRequest(currentUserID, conversationID, text, successCallback, failCallback));
+            if (!m_cachedConversations.ContainsKey(conversationID))
+            {
+                AddConversationToCache(conversationID);
+            }
+            this.Request(new PostMessageRequest(currentUserID, conversationID, text, successCallback, failCallback));
         }
 
 #if UNITY_EDITOR
@@ -173,7 +196,7 @@ namespace ubv.microservices
                         Debug.Log("Conversation messages: ");
                         foreach (MessageInfo msg in messages)
                         {
-                            m_users.Request(new GetUserInfoRequest(msg.UserID, (UserInfo info) =>
+                            m_users.Request(new GetUserInfoByIDRequest(msg.UserID, (UserInfo info) =>
                             {
                                 Debug.Log(info.UserName + ": " + msg.Text);
                             }));

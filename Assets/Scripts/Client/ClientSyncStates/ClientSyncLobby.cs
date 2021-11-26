@@ -35,7 +35,8 @@ namespace ubv.client.logic
 
         private ServerInitMessage m_awaitedInitMessage;
 
-        public UnityAction<List<CharacterData>> OnClientListUpdate;
+        public UnityAction<HashSet<int>> OnReadyClientSetUpdate;
+        public UnityAction<List<CharacterData>> OnClientCharacterListUpdate;
 
         private string m_activeCharacterID;
 
@@ -73,12 +74,9 @@ namespace ubv.client.logic
                 CharacterListMessage clientList = common.serialization.IConvertible.CreateFromBytes<CharacterListMessage>(packet.Data.ArraySegment());
                 if (clientList != null)
                 {
-                    Debug.Log("Received " + clientList.PlayerCharacters.Value.Count + " characters from server");
                     m_clientCharacters.Clear(); // clear old list
                     foreach (common.serialization.types.String id in clientList.PlayerCharacters.Value.Values)
                     {
-                        Debug.Log("Fetching character " + id.Value + " from microservice");
-                        // fetch character data from microservice
                         string strID = id.Value;
                         CharacterService.GetCharacter(strID, (CharacterData character) =>
                         {
@@ -90,10 +88,25 @@ namespace ubv.client.logic
                                 {
                                     data.LoadingData.ActiveCharacterID = character.ID;
                                 }
-                                OnClientListUpdate?.Invoke(new List<CharacterData>(m_clientCharacters.Values));
+                                OnClientCharacterListUpdate?.Invoke(new List<CharacterData>(m_clientCharacters.Values));
                             }
                         });
                     }
+                    return;
+                }
+
+                ClientStatusMessage clientStatus = common.serialization.IConvertible.CreateFromBytes<ClientStatusMessage>(packet.Data.ArraySegment());
+                if (clientStatus != null)
+                {
+                    HashSet<int> readyClients = new HashSet<int>();
+                    foreach(int id in clientStatus.ClientReadyStatus.Value.Keys)
+                    {
+                        if (clientStatus.ClientReadyStatus.Value[id].Value)
+                        {
+                            readyClients.Add(id);
+                        }
+                    }
+                    OnReadyClientSetUpdate?.Invoke(readyClients);
                     return;
                 }
 
@@ -153,19 +166,21 @@ namespace ubv.client.logic
 
         private void GoToGame()
         {
+            SocialServices.UpdateUserStatus(StatusType.InGame);
             m_currentSubState = SubState.SUBSTATE_TRANSITION;
             ClientStateManager.Instance.PushScene(m_clientPlayScene);
         }
 
         private void Init()
         {
+            SocialServices.AddConversationToCache(data.LoadingData.GameChatID);
             m_activeCharacterID = data.LoadingData.ActiveCharacterID;
             if (!string.IsNullOrEmpty(m_activeCharacterID))
             {
                 m_awaitedInitMessage = null;
                 m_clientCharacters?.Clear();
                 Debug.Log("Entering lobby with character:" + m_activeCharacterID);
-                m_server.TCPSend(new OnLobbyEnteredMessage(m_activeCharacterID).GetBytes());
+                m_server.TCPSend(new OnLobbyEnteredMessage(m_activeCharacterID, CurrentUser.StringID).GetBytes());
             }
             else
             {

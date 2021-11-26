@@ -11,6 +11,8 @@ namespace ubv.client.logic
     /// </summary>
     public class PlayerGameObjectUpdater : ClientStateUpdater
     {
+        [SerializeField] private AudioClip m_playerHurtClip;
+
         [SerializeField] private int m_maxLerpFrames = 10;
         [SerializeField] private float m_correctionTolerance = 0.01f;
         [SerializeField] private PlayerSettings m_playerSettings;
@@ -72,7 +74,6 @@ namespace ubv.client.logic
             PlayerState localPlayer = localState.Players()[m_playerGUID];
             PlayerState remotePlayer = remoteState.Players()[m_playerGUID];
             bool isDiff = localPlayer.IsPositionDifferent(remotePlayer, m_correctionTolerance);
-            if (isDiff) Debug.LogWarning("Player and server positions are different.");
             return isDiff;
         }
 
@@ -86,18 +87,22 @@ namespace ubv.client.logic
                 player.Position.Value = Bodies[id].position;
                 player.Velocity.Value = Bodies[id].velocity;
                 player.States.Set((int)PlayerStateEnum.IS_SPRINTING, isSprinting);
+                player.CurrentHP.Value = PlayerControllers[id].GetCurrentHP();
             }
         }
 
         public override void Step(InputFrame input, float deltaTime)
         {
-            m_sprintActions[m_playerGUID].Invoke(input.Sprinting.Value);
+            if (PlayerControllers[m_playerGUID].IsAlive())
+            {
+                m_sprintActions[m_playerGUID].Invoke(input.Sprinting.Value);
 
-            Vector2 velocity = common.logic.PlayerMovement.GetVelocity(input.Movement.Value,
-                input.Sprinting.Value,
-                PlayerControllers[m_playerGUID].GetStats());
+                Vector2 velocity = common.logic.PlayerMovement.GetVelocity(input.Movement.Value,
+                    input.Sprinting.Value,
+                    PlayerControllers[m_playerGUID].GetStats());
 
-            common.logic.PlayerMovement.Execute(ref m_localPlayerBody, velocity);
+                common.logic.PlayerMovement.Execute(ref m_localPlayerBody, velocity);
+            }
         }
 
         public override void ResetSimulationToState(WorldState state)
@@ -129,13 +134,40 @@ namespace ubv.client.logic
                     body.simulated = true;
                 }
             }
+
             // update every remote player
             foreach (PlayerState player in m_players.Values)
             {
                 int id = player.GUID.Value;
+                // health
+                int currentRemoteHP = player.CurrentHP.Value;
+                int currentLocalHP = PlayerControllers[id].GetCurrentHP();
+                int diff = currentLocalHP - currentRemoteHP;
+
+                if (diff > 0)
+                {   
+                    if (currentRemoteHP <= 0)
+                        Players[id].PlayerAnimator.Kill();
+                    else
+                        Players[id].PlayerAnimator.Damage();
+                    PlayerControllers[id].Damage(diff);
+                    client.audio.MainAudio.PlayOnce(m_playerHurtClip);
+                }
+                else if (diff < 0)
+                {
+                    if (currentLocalHP <= 0)
+                        Players[id].PlayerAnimator.Revive();
+                    PlayerControllers[id].Heal(diff);
+                }
+
+                if(currentRemoteHP <= 0)
+                {
+                    Bodies[id].velocity = Vector2.zero;
+                }
 
                 if (id != m_playerGUID)
                 {
+                    // movement
                     float walkVelocity = PlayerControllers[id].GetStats().WalkingVelocity.Value;
                     float sprintVelocity = walkVelocity * PlayerControllers[id].GetStats().RunningMultiplier.Value;
                     Rigidbody2D body = Bodies[id];

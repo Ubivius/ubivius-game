@@ -28,6 +28,9 @@ namespace ubv.client.logic
             SUBSTATE_END
         }
 
+        [SerializeField] private AudioClip m_mainGameTrack;
+        [SerializeField] private AudioClip m_defaultTrack;
+
         [SerializeField] private string m_menuScene;
         [SerializeField] private string m_EndScene;
         [SerializeField] private string m_physicsScene;
@@ -99,6 +102,7 @@ namespace ubv.client.logic
         public override void OnStart()
         {
             Init(data.LoadingData.ServerInit);
+            client.audio.MainAudio.SetMainTrack(m_mainGameTrack);
         }
 
         private void Init(ServerInitMessage serverInit)
@@ -179,7 +183,12 @@ namespace ubv.client.logic
                     break;
             }
         }
-        
+
+        public void LeaveGame()
+        {
+            m_currentSubState = SubState.SUBSTATE_LEAVING;
+        }
+
         private void UpdateStateFromWorldAndStep(ref WorldState state, InputFrame input, float deltaTime)
         {
             for (int i = 0; i < m_updaters.Count; i++)
@@ -355,7 +364,7 @@ namespace ubv.client.logic
                 Debug.Log("SIMULATING PACKET LOSS");
             }
 #else
-            m_server.UDPSend(inputMessage.GetBytes(), PlayerID.Value);
+            m_server.UDPSend(inputMessage.GetBytes());
 #endif //NETWORK_SIMULATE       
                     
         }
@@ -437,12 +446,14 @@ namespace ubv.client.logic
                 m_currentSubState = SubState.SUBSTATE_PLAY;
                 return;
             }
+
             ServerEndsMessage finish = common.serialization.IConvertible.CreateFromBytes<ServerEndsMessage>(packet.Data.ArraySegment());
             if (finish != null)
             {
 #if DEBUG_LOG
                 Debug.Log("Received server end message.");
 #endif // DEBUG_LOG
+                //data.LoadingData.GameStats = finish;
                 m_currentSubState = SubState.SUBSTATE_END;
                 return;
             }
@@ -461,6 +472,7 @@ namespace ubv.client.logic
             m_server.OnTCPReceive += ReceiveTCP;
             m_server.OnUDPReceive += ReceiveUDP;
             m_currentSubState = SubState.SUBSTATE_WAITING_FOR_SERVER_GO;
+            client.audio.MainAudio.SetMainTrack(m_defaultTrack);
         }
 
         protected override void StatePause()

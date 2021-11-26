@@ -2,6 +2,7 @@
 using UnityEditor;
 using System;
 using UnityEngine.Events;
+using static ubv.microservices.RelationInfo;
 
 namespace ubv.microservices
 {
@@ -18,15 +19,23 @@ namespace ubv.microservices
 
         public readonly string RelationID;
         public readonly string FriendUserID;
+        public readonly string FriendUsername;
+        public readonly StatusType FriendStatus;
         public readonly RelationshipType RelationType;
         public readonly string ConversationID;
+        public readonly string CreatedOn;
+        public readonly string UpdatedOn;
 
-        public RelationInfo(string relationID, string friendID, RelationshipType relationship, string conversationID)
+        public RelationInfo(string relationID, string friendID, string friendUsername, StatusType friendStatus, RelationshipType relationship, string conversationID, string createdOn, string updatedOn)
         {
             RelationID = relationID;
-            FriendUserID = friendID; ;
+            FriendUserID = friendID;
+            FriendUsername = friendUsername;
+            FriendStatus = friendStatus;
             RelationType = relationship;
             ConversationID = conversationID;
+            CreatedOn = createdOn;
+            UpdatedOn = updatedOn;
         }
     }
     
@@ -38,12 +47,33 @@ namespace ubv.microservices
     }
 
     [Serializable]
+    public struct JSONDetailedFriendInfo
+    {
+        public string id;
+        public string username;
+        public string status;
+        public string relationship_type;
+    }
+
+    [Serializable]
     public struct JSONRelationInfo
+    {
+        public string id;
+        public JSONDetailedFriendInfo user;
+        public string conversation_id;
+        public string created_on;
+        public string updated_on;
+    }
+
+    [Serializable]
+    public struct JSONPutRelationInfo
     {
         public string id;
         public JSONFriendInfo user_1;
         public JSONFriendInfo user_2;
         public string conversation_id;
+        public string created_on;
+        public string updated_on;
     }
 
     [Serializable]
@@ -122,6 +152,73 @@ namespace ubv.microservices
         public override string URL()
         {
             return "relationships";
+        }
+    }
+
+    public class ResponseToInviteRequest : PutMicroserviceRequest
+    {
+        private readonly string m_user_id;
+        private readonly RelationInfo m_relation;
+        private readonly RelationshipType m_response;
+
+        public readonly UnityAction Callback;
+
+        public ResponseToInviteRequest(string userID, RelationInfo relation, RelationshipType response, UnityAction callback = default)
+        {
+            Callback = callback;
+            m_user_id = userID;
+            m_relation = relation;
+            m_response = response;
+        }
+
+        public override string JSONString()
+        {
+            RelationshipType m_friendRelationType = m_relation.RelationType;
+            if (m_response == RelationshipType.Friend)
+            {
+                m_friendRelationType = RelationshipType.Friend;
+            }
+
+            return JsonUtility.ToJson(new JSONPutRelationInfo
+            {
+                id = m_relation.RelationID,
+                user_1 = new JSONFriendInfo
+                {
+                    user_id = m_user_id,
+                    relationship_type = m_response.ToString()
+                },
+                user_2 = new JSONFriendInfo
+                {
+                    user_id = m_relation.FriendUserID,
+                    relationship_type = m_friendRelationType.ToString()
+                },
+                conversation_id = m_relation.ConversationID,
+                created_on = m_relation.CreatedOn,
+                updated_on = m_relation.UpdatedOn
+            }).ToString();
+        }
+
+        public override string URL()
+        {
+            return "relationships";
+        }
+    }
+
+    public class DeleteRelationRequest : DeleteMicroserviceRequest
+    {
+        private readonly string m_relationID;
+
+        public readonly UnityAction Callback;
+
+        public DeleteRelationRequest(string relationID, UnityAction callback = default)
+        {
+            m_relationID = relationID;
+            Callback = callback;
+        }
+
+        public override string URL()
+        {
+            return "relationships/" + m_relationID;
         }
     }
 }

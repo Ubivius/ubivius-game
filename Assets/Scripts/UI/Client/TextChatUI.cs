@@ -65,14 +65,15 @@ namespace ubv.ui.client
         void Start() {
             TextChatIsExpanded = false;
             m_textChatIsActive = true;
-            TextChatIsHidden = false;
+            TextChatIsHidden = true;
             ToggleDisplayChat();
 
             m_system = EventSystem.current;
             m_rectTransform = transform.GetComponent<RectTransform>();
             m_scrollbar.value = 0;
             
-            m_socialServices.OnNewMessage += OnNewPrivateMessageFrom;
+            m_socialServices.OnNewPrivateMessage += OnNewPrivateMessageFrom;
+            m_socialServices.OnNewGeneralMessage += OnNewGeneralMessage;
         }
 
         void Update() {
@@ -82,13 +83,20 @@ namespace ubv.ui.client
                 if (TextChatIsHidden)
                     Show();
 
+                m_textChatIsActive = true;
                 ToggleDisplayChat();
                 m_messageInputField.Select();
                 m_messageInputField.ActivateInputField();
             }
-            else if (Input.GetKeyDown(KeyCode.Return)) {
-                ToggleDisplayChat();
+            else if (Input.GetKeyDown(KeyCode.Return) && m_textChatIsActive)
+            {
                 Send();
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape) && m_textChatIsActive)
+            {
+                TextChatIsHidden = true;
+                ToggleDisplayChat();
                 m_messageInputField.DeactivateInputField();
                 m_system.SetSelectedGameObject(null);
             }
@@ -111,16 +119,13 @@ namespace ubv.ui.client
         }
 
         public void ToggleDisplayChat() {
-            m_textChatIsActive = !m_textChatIsActive;
 
-            if (TextChatIsExpanded && !TextChatIsHidden)
-                m_shrinkButton.gameObject.SetActive(m_textChatIsActive);
-            else
-                m_expandButton.gameObject.SetActive(m_textChatIsActive);
+            m_shrinkButton.gameObject.SetActive(m_textChatIsActive && TextChatIsExpanded && !TextChatIsHidden);
+            m_expandButton.gameObject.SetActive(m_textChatIsActive && !TextChatIsExpanded && !TextChatIsHidden);
 
             var t_color = m_chatBox.GetComponent<Image>().color;
 
-            if (m_textChatIsActive) {
+            if (!TextChatIsHidden) {
                 InputSystem.DisableDevice(Keyboard.current);
                 t_color.a = 0.4f;
                 m_chatBox.GetComponent<Image>().color = t_color;
@@ -134,10 +139,8 @@ namespace ubv.ui.client
             m_messageInputField.gameObject.SetActive(m_textChatIsActive);
             m_sendButton.gameObject.SetActive(m_textChatIsActive);
 
-            if (TextChatIsHidden)
-                m_showButton.gameObject.SetActive(m_textChatIsActive);
-            else
-                m_hideButton.gameObject.SetActive(m_textChatIsActive);
+            m_showButton.gameObject.SetActive(m_textChatIsActive && TextChatIsHidden);
+            m_hideButton.gameObject.SetActive(m_textChatIsActive && !TextChatIsHidden);
 
         }
 
@@ -206,7 +209,7 @@ namespace ubv.ui.client
                 }
                 else
                 {
-                    m_socialServices.SendMessageToCurrentGameChat(t_matchFriend.Groups[3].Value, null, (string message) => {
+                    m_socialServices.SendMessageToCurrentGameChat(m_messageInputField.text, null, (string message) => {
                         m_errorMessageQueue.Enqueue(message);
                     });
                 }
@@ -222,6 +225,13 @@ namespace ubv.ui.client
                 m_socialServices.GetUserInfo(receiverID, (UserInfo receiver) => {
                     m_newPrivateMessagesQueue.Enqueue(new Tuple<string, string, string, DateTime>(sender.UserName, receiver.UserName, msg.Text, msg.CreatedOn));
                 });
+            });
+        }
+
+        private void OnNewGeneralMessage(string senderID, MessageInfo msg)
+        {
+            m_socialServices.GetUserInfo(senderID, (UserInfo sender) => {
+                m_newGeneralMessagesQueue.Enqueue(new Tuple<string, string, DateTime>(sender.UserName, msg.Text, msg.CreatedOn));
             });
         }
 

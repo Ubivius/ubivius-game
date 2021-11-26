@@ -121,6 +121,20 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &680992117 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7336287852514340380, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+    type: 3}
+  m_PrefabInstance: {fileID: 1954187829}
+  m_PrefabAsset: {fileID: 0}
+--- !u!81 &680992118
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680992117}
+  m_Enabled: 1
 --- !u!1 &1091697069
 GameObject:
   m_ObjectHideFlags: 0
@@ -210,6 +224,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1635190253 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3425702765846388672, guid: c732e1b58c017874bbf5da45531902cf,
+    type: 3}
+  m_PrefabInstance: {fileID: 1877816069}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a8c4cbe801a6d0409e0b584b0234c56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1651257018
 GameObject:
   m_ObjectHideFlags: 0
@@ -256,7 +282,7 @@ MonoBehaviour:
   m_mock: 0
   m_mockData: {fileID: 11400000, guid: a5164338022925942ae27aab0caf569c, type: 2}
   m_HTTPClient: {fileID: 1877816073}
-  m_serviceEndpoint: http://achievements.dev.ubivius.tk
+  m_serviceEndpoint: http://achievements.player.dev.ubivius.tk
 --- !u!1001 &1877816069
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -377,12 +403,12 @@ PrefabInstance:
     - target: {fileID: 2306795571984995539, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_TCPTimeout
-      value: 30
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 2306795571984995539, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_UDPTimeout
-      value: 30
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 2629458355001083077, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -399,6 +425,11 @@ PrefabInstance:
       propertyPath: SocialServices
       value: 
       objectReference: {fileID: 1877816071}
+    - target: {fileID: 2629458355001083077, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: AchievementService
+      value: 
+      objectReference: {fileID: 1651257020}
     - target: {fileID: 2833739906713535996, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_RootOrder
@@ -408,6 +439,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_RootOrder
       value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3425702765846388672, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_timerOffset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3425702765846388672, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_fetchInterval
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3425702765846388672, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_conversationFetchInterval
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 4058432572729070908, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -437,7 +483,7 @@ PrefabInstance:
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_connectionTimeoutInMS
-      value: 30000
+      value: 50000
       objectReference: {fileID: 0}
     - target: {fileID: 5214724981417358588, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -467,7 +513,7 @@ PrefabInstance:
     - target: {fileID: 5996061036848143753, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://auth.anon.dev.ubivius.tk
+      value: http://authentication.anon.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 6292887063064703510, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -478,6 +524,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_timerOffset
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6443474415815815136, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
+      propertyPath: m_fetchInterval
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6443474415815815136, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -502,7 +553,7 @@ PrefabInstance:
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://character.dev.ubivius.tk
+      value: http://character-data.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 6793292407888554963, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -543,12 +594,12 @@ PrefabInstance:
     - target: {fileID: 7282349304918615770, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://textchat.dev.ubivius.tk
+      value: http://text-chat.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_mock
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -568,7 +619,7 @@ PrefabInstance:
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: 172.105.110.175
+      value: http://dispatcher.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 7434323783986351494, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -608,7 +659,7 @@ PrefabInstance:
     - target: {fileID: 7756809264957448054, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://user.dev.ubivius.tk
+      value: http://user.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 8156371440444099849, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -638,8 +689,13 @@ PrefabInstance:
       objectReference: {fileID: 1877816073}
     - target: {fileID: 8253229592228528839, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
+      propertyPath: m_friendsFetcher
+      value: 
+      objectReference: {fileID: 1635190253}
+    - target: {fileID: 8253229592228528839, guid: c732e1b58c017874bbf5da45531902cf,
+        type: 3}
       propertyPath: m_serviceEndpoint
-      value: http://friendslist.dev.ubivius.tk
+      value: http://friendslist.player.dev.ubivius.tk
       objectReference: {fileID: 0}
     - target: {fileID: 8752211695502532364, guid: c732e1b58c017874bbf5da45531902cf,
         type: 3}
@@ -774,6 +830,16 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3645800645136762654, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3645800645136762654, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340354, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_Pivot.x
@@ -879,6 +945,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7336287852514340355, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_UiScaleMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7336287852514340355, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_ReferenceResolution.x
+      value: 1920
+      objectReference: {fileID: 0}
+    - target: {fileID: 7336287852514340355, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_ReferenceResolution.y
+      value: 1080
+      objectReference: {fileID: 0}
     - target: {fileID: 7336287852514340380, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
         type: 3}
       propertyPath: m_Name
@@ -889,6 +970,36 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8192677910900368387, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192677910900368387, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192677910900368387, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192677910900368387, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192677910900368387, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192677910900368387, guid: cdbd62b2c6d1d6c4e92c9373112f7879,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cdbd62b2c6d1d6c4e92c9373112f7879, type: 3}
 --- !u!114 &1954187830 stripped
@@ -897,7 +1008,7 @@ MonoBehaviour:
     type: 3}
   m_PrefabInstance: {fileID: 1954187829}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 680992117}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4c89c84bc9d8aa0459b7d9a0c9e1e179, type: 3}

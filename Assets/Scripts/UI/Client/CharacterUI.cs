@@ -22,7 +22,7 @@ namespace ubv.ui.client
         {
             if (TargetPlayerTransform != null)
             {
-                transform.position = TargetPlayerTransform.position + Vector3.up * (0.5f);
+                transform.position = TargetPlayerTransform.position;
             }
         }
     }

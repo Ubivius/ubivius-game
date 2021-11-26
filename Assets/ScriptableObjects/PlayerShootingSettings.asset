@@ -12,5 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23e49d1e638c32445a6a19f2cecb66a8, type: 3}
   m_Name: PlayerShootingSettings
   m_EditorClassIdentifier: 
-  BulletForce: 3
-  BulletDelay: 0.5
+  MaxShootingDist: 15
+  BulletDelay: 0.25
+  GunHitPrefab: {fileID: 488842132039589032, guid: 23a7d9b8e2fea104daf51ea5fd320853,
+    type: 3}
+  PlayerShootClip: {fileID: 8300000, guid: 7b37520298fcc454d83d708bffdd32f9, type: 3}
