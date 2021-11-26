@@ -19,7 +19,7 @@ namespace ubv.client
         
         public override void OnStart()
         {
-            data.ClientCacheData cache = data.ClientCacheData.LoadCache();
+            /*data.ClientCacheData cache = data.ClientCacheData.LoadCache();
             if (cache != null)
             {
                 if ((DateTime.UtcNow - cache.LastUpdated).TotalSeconds > 1200)
@@ -32,7 +32,11 @@ namespace ubv.client
                     // for now, auto rejoin
                     RejoinGame();
                 }
-            }
+            }*/
+            data.LoadingData.ActiveCharacterID = string.Empty;
+            data.LoadingData.GameChatID = string.Empty;
+            data.LoadingData.GameID = string.Empty;
+            data.LoadingData.ServerInit = null;
 
             client.audio.MainAudio.SetMainTrack(m_mainMenuTrack);
         }

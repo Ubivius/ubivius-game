@@ -16,6 +16,8 @@ namespace ubv.client
             data.ClientCacheData.SaveCache(string.Empty);
             data.LoadingData.GameChatID = string.Empty;
             data.LoadingData.GameID = string.Empty;
+            data.LoadingData.ActiveCharacterID = string.Empty;
+            data.LoadingData.ServerInit = null;
             m_server.Disconnect();
         }
 
