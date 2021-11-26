@@ -35,13 +35,13 @@ namespace ubv.ui.client
             m_EndGameState.GoToMenu();
         }
 
-        public void UpdateStats(ServerPlayerGameStatsMessage stats, string characterName)
+        public void UpdateStats(ServerEndsMessage stats, string characterName)
         {
             m_stats = stats;
             m_character = characterName;
         }
 
-        private ServerPlayerGameStatsMessage m_stats;
+        private ServerEndsMessage m_stats;
         private string m_character;
         private bool m_updated = false;
 

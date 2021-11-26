@@ -13,7 +13,7 @@ namespace ubv.client.data
     public static class LoadingData
     {
         static public ServerInitMessage ServerInit = null;
-        static public ServerPlayerGameStatsMessage GameStats = null;
+        static public ServerEndsMessage GameStats = null;
         static public string GameID = string.Empty;
         static public string ActiveCharacterID = string.Empty;
         static public string GameChatID = null;

@@ -13,7 +13,7 @@ namespace ubv.client
         [SerializeField] private string m_clientGameMenu;
         [SerializeField] private EventSystem m_eventSystem;
 
-        public UnityAction<ServerPlayerGameStatsMessage, string> UpdateMenu;
+        public UnityAction<ServerEndsMessage, string> UpdateMenu;
 
         public override void OnStart()
         {

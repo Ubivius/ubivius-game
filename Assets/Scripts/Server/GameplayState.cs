@@ -38,7 +38,7 @@ namespace ubv.server.logic
 
         private InputFrame m_zeroFrame;
 
-        public static Dictionary<int, ServerPlayerGameStatsMessage> PlayerStats = new Dictionary<int, ServerPlayerGameStatsMessage>();
+        public static Dictionary<int, ServerEndsMessage> PlayerStats = new Dictionary<int, ServerEndsMessage>();
 
         protected override void StateAwake()
         {
@@ -66,7 +66,7 @@ namespace ubv.server.logic
             // add each player to client states
             foreach (int id in m_clients)
             {
-                PlayerStats.Add(id, new ServerPlayerGameStatsMessage());
+                PlayerStats.Add(id, new ServerEndsMessage());
                 PlayerState player = new PlayerState();
                 player.GUID.Value = id;
                 m_currentWorldState.AddPlayer(player);
@@ -249,7 +249,7 @@ namespace ubv.server.logic
                 PlayerStats[id].GameDuration.Value = m_gameTimer;
             }
 
-            foreach (ServerPlayerGameStatsMessage stats in PlayerStats.Values)
+            foreach (ServerEndsMessage stats in PlayerStats.Values)
             {
                 stats.PlayerScore.Value = 1000 - (100 * stats.NumberOfDowns.Value)
                     + (120 * stats.NumberOfHelps.Value)
