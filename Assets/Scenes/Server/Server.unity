@@ -379,6 +379,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df3363ff45431ed4e98f454f273e5dc9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_textChat: {fileID: 1249463060}
   m_world: {fileID: 1802319659}
   m_playerMovementUpdater: {fileID: 1470650681}
   m_gamePlayState: {fileID: 1089558531}
@@ -1009,6 +1010,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_agones: {fileID: 1740651406}
+  m_serverID: '5a40c33a-89a3-4816-87b6-7ec3f6667c04 '
   m_textChatService: {fileID: 1985295696}
   m_worldGenerator: {fileID: 1802319659}
   m_serverInitializers:
@@ -1275,7 +1277,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_port: 9151
   m_maxConcurrentListeners: 6
-  m_connectionTimeoutInMS: 30000
+  m_connectionTimeoutInMS: 50000
   m_coonnectionKeepAliveTimerIntervalMS: 250
 --- !u!1 &1730964087
 GameObject:

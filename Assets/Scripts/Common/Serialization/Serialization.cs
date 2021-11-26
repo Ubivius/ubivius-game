@@ -69,7 +69,8 @@ namespace ubv.common.serialization
             SERVER_STATUS_MESSAGE,
             SERVER_ENDS_MESSAGE,
             HASHMAP_INT_BOOL,
-            CLIENT_STATUS_MESSAGE
+            CLIENT_STATUS_MESSAGE,
+            SERVER_PLAYER_STATS_MESSAGE
         }
     }
 }

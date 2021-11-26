@@ -52,7 +52,7 @@ namespace ubv.client.logic
                     toRemove.Add(enemy.GUID.Value);
                 }
 
-                if (IsEnemyAlive(enemy.GUID.Value))
+                if (IsEnemyAlive(enemy.GUID.Value) && m_bodies.ContainsKey(enemy.GUID.Value) && m_enemyMain.ContainsKey(enemy.GUID.Value))
                 {
                     enemy.Position.Value = m_bodies[enemy.GUID.Value].position;
                     enemy.HealthPoint.Value = m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint();
@@ -78,6 +78,8 @@ namespace ubv.client.logic
 
                     if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() != enemy.HealthPoint.Value) 
                     {
+                        m_enemyMain[enemy.GUID.Value].HealthSystem.SetHealthPoint(enemy.HealthPoint.Value);
+
                         if (m_enemyMain[enemy.GUID.Value].HealthSystem.GetHealthPoint() <= 0)
                         {
                             m_enemyMain[enemy.GUID.Value].playerAnimator.Kill();
@@ -85,8 +87,6 @@ namespace ubv.client.logic
                         }
                         else
                             m_enemyMain[enemy.GUID.Value].playerAnimator.Damage();
-                        
-                        m_enemyMain[enemy.GUID.Value].HealthSystem.SetHealthPoint(enemy.HealthPoint.Value);
                     }
 
                     common.logic.EnemyMovement.Execute(m_bodies[enemy.GUID.Value], enemy.Position.Value, m_enemySettings.Velocity);

@@ -155,7 +155,11 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 },
                 {
                     ""name"": """",
+<<<<<<< HEAD
                     ""id"": ""11b69f0a-f6fd-40ef-b1fe-339f519a40e8"",
+=======
+                    ""id"": ""9ffc43f7-cf71-4b0a-b581-f32eb091c768"",
+>>>>>>> master
                     ""path"": ""<Gamepad>/dpad"",
                     ""interactions"": """",
                     ""processors"": """",
