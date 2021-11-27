@@ -1474,7 +1474,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc75538b967bb964d831e27b26a69e00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_enemyInitializer: {fileID: 0}
+  m_enemyInitializer: {fileID: 611772154}
   m_playerMovementUpdater: {fileID: 1470650681}
   m_enemySettings: {fileID: 11400000, guid: 387cec5fcfcc1a6499b0d050382f46fd, type: 2}
   m_enemyCount: 40

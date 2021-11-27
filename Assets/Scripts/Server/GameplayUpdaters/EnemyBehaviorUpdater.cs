@@ -87,7 +87,6 @@ namespace ubv.server.logic
         
         private void EnemySpawn(WorldState state)
         {
-            int i = 0;
             foreach(EnemyInitializer.Enemy e in m_enemyInitializer.Enemies)
             {
                 m_bodies.Add(e.id, e.Body);
@@ -100,7 +99,6 @@ namespace ubv.server.logic
 
                 m_enemies.Add(e.id, enemyStateData);
                 state.AddEnemy(enemyStateData);
-                ++i;
             }
         }
 
