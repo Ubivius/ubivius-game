@@ -13,6 +13,8 @@ namespace ubv.server.logic.ai
         //public Transform player;
         private EnemyMovementUpdater m_movement;
 
+        static public bool IsActive = false;
+
         private void Awake()
         {
             m_movement = GetComponent<EnemyMovementUpdater>();
@@ -26,7 +28,10 @@ namespace ubv.server.logic.ai
         // Update is called once per frame
         void FixedUpdate()
         {
-            m_currentEnemyState = m_currentEnemyState?.Update();
+            if (IsActive)
+            {
+                m_currentEnemyState = m_currentEnemyState?.Update();
+            }
         }
     }
 }

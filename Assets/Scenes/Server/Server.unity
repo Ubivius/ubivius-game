@@ -555,6 +555,54 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_gameMaster: {fileID: 380608787}
+--- !u!1 &611772152
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 611772153}
+  - component: {fileID: 611772154}
+  m_Layer: 0
+  m_Name: EnemyInit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &611772153
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 611772152}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 866771879}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &611772154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 611772152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3c9a3193418c4549b67315e11a51005, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_playerMovementUpdater: {fileID: 1470650681}
+  m_worldGenerator: {fileID: 1802319659}
+  m_enemySettings: {fileID: 11400000, guid: 387cec5fcfcc1a6499b0d050382f46fd, type: 2}
+  m_pathfindingGridManager: {fileID: 1730964089}
+  m_enemyCount: 50
 --- !u!1 &779656959
 GameObject:
   m_ObjectHideFlags: 0
@@ -714,6 +762,7 @@ Transform:
   m_Children:
   - {fileID: 1802319658}
   - {fileID: 1730964088}
+  - {fileID: 611772153}
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -832,7 +881,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 802da27c55ee1034dba8bca9ead5ea62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_snapshotTicks: 2
+  m_snapshotTicks: 3
   m_physicsSceneName: Server
   m_updaters:
   - {fileID: 1470650681}
@@ -1013,6 +1062,7 @@ MonoBehaviour:
   m_worldGenerator: {fileID: 1802319659}
   m_serverInitializers:
   - {fileID: 1802319659}
+  - {fileID: 611772154}
 --- !u!4 &1249463061
 Transform:
   m_ObjectHideFlags: 0
@@ -1276,7 +1326,7 @@ MonoBehaviour:
   m_port: 9151
   m_maxConcurrentListeners: 6
   m_connectionTimeoutInMS: 30000
-  m_coonnectionKeepAliveTimerIntervalMS: 250
+  m_coonnectionKeepAliveTimerIntervalMS: 1000
 --- !u!1 &1730964087
 GameObject:
   m_ObjectHideFlags: 0
@@ -1424,10 +1474,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc75538b967bb964d831e27b26a69e00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_enemyInitializer: {fileID: 611772154}
   m_playerMovementUpdater: {fileID: 1470650681}
-  m_worldGenerator: {fileID: 1802319659}
   m_enemySettings: {fileID: 11400000, guid: 387cec5fcfcc1a6499b0d050382f46fd, type: 2}
-  m_pathfindingGridManager: {fileID: 1730964089}
   m_enemyCount: 40
 --- !u!1001 &1802319657
 PrefabInstance:

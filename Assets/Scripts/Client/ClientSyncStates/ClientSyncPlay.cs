@@ -364,7 +364,11 @@ namespace ubv.client.logic
                 Debug.Log("SIMULATING PACKET LOSS");
             }
 #else
-            m_server.UDPSend(inputMessage.GetBytes());
+            if (Time.frameCount % 3 != 0)
+            {
+                m_server.UDPSend(inputMessage.GetBytes());
+            }
+
 #endif //NETWORK_SIMULATE       
                     
         }
