@@ -11,10 +11,9 @@ namespace ubv.server.logic
 {
     public class EnemyBehaviorUpdater : ServerGameplayStateUpdater
     {
+        [SerializeField] private EnemyInitializer m_enemyInitializer;
         [SerializeField] private PlayerMovementUpdater m_playerMovementUpdater;
-        [SerializeField] private WorldGenerator m_worldGenerator;
         [SerializeField] private EnemySettings m_enemySettings;
-        [SerializeField] private PathfindingGridManager m_pathfindingGridManager;
         [SerializeField] private int m_enemyCount;
 
         private PathNode[,] m_mapNodes;
@@ -36,7 +35,6 @@ namespace ubv.server.logic
 
         public override void InitWorld(WorldState state)
         {
-            m_mapNodes = m_pathfindingGridManager.GetPathNodeArray();
             EnemySpawn(state);
         }
         
@@ -86,34 +84,21 @@ namespace ubv.server.logic
                 m_enemyMovementUpdaters.Remove(id);
             }
         }
-
+        
         private void EnemySpawn(WorldState state)
         {
             int i = 0;
-            while (i < m_enemyCount)
+            foreach(EnemyInitializer.Enemy e in m_enemyInitializer.Enemies)
             {
-                GameObject enemyGameObject = Instantiate(m_enemySettings.EnemyPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-                Rigidbody2D body = enemyGameObject.GetComponent<Rigidbody2D>();
-                EnemyMovementUpdater enemyPathFindingMovement = enemyGameObject.GetComponent<EnemyMovementUpdater>();
-                enemyPathFindingMovement.SetPathfinding(m_pathfindingGridManager);
+                m_bodies.Add(e.id, e.Body);
+                m_enemyMovementUpdaters.Add(e.id, e.EnemyMovement);
+                m_enemyMain.Add(e.id, e.EnemyMain);
 
-                EnemyMainServer enemyMain = enemyGameObject.GetComponent<EnemyMainServer>();
+                EnemyState enemyStateData = new EnemyState(e.id);
+                enemyStateData.Position.Value = m_enemyMovementUpdaters[e.id].GetNextPosition();
+                enemyStateData.HealthPoint.Value = m_enemyMain[e.id].MaxHealthPoint;
 
-                EnemyStateMachine stateMachine = enemyGameObject.GetComponent<EnemyStateMachine>();
-                stateMachine.Init(m_playerMovementUpdater, m_worldGenerator, m_pathfindingGridManager);
-
-                int id = System.Guid.NewGuid().GetHashCode();
-                body.name = "Server enemy " + id.ToString();
-
-                m_bodies.Add(id, body);
-                m_enemyMovementUpdaters.Add(id, enemyPathFindingMovement);
-                m_enemyMain.Add(id, enemyMain);
-
-                EnemyState enemyStateData = new EnemyState(id);
-                enemyStateData.Position.Value = m_enemyMovementUpdaters[id].GetNextPosition();
-                enemyStateData.HealthPoint.Value = m_enemyMain[id].MaxHealthPoint;
-
-                m_enemies.Add(id, enemyStateData);
+                m_enemies.Add(e.id, enemyStateData);
                 state.AddEnemy(enemyStateData);
                 ++i;
             }

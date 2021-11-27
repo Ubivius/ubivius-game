@@ -3,6 +3,7 @@ using System.Net;
 using ubv.common;
 using ubv.common.data;
 using ubv.common.serialization;
+using ubv.server.logic.ai;
 using ubv.tcp;
 using ubv.utils;
 using UnityEngine;
@@ -87,6 +88,8 @@ namespace ubv.server.logic
             {
                 m_serverConnection.TCPServer.Send(message.GetBytes(), id);
             }
+
+            EnemyStateMachine.IsActive = true;
         }
                 
         protected override void StateFixedUpdate()
